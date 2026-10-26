@@ -16,6 +16,10 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
     [SerializeField] private GameObject[] legacyMessageRoots;
     [SerializeField] private RectTransform[] focusTargets;
     [SerializeField] private Vector2[] messagePositions;
+    [SerializeField, Tooltip("시설 기능 개요 안내창의 수평 위치 보정입니다. Canvas 기준 단위입니다.")]
+    private float overviewOffsetX = -20;
+    private JcTutorialGraphic cardBackground;
+    private const int FacilitiesOverviewIndex = 1;
 
     private int shownIndex = -1;
     private int openedFrame;
@@ -45,6 +49,8 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
             originalBackgroundEnabled[i] = background != null && background.enabled;
         }
         initialized = true;
+        cardBackground = view.panel.GetComponentInChildren<JcTutorialGraphic>(true);
+
         TakeOwnership();
     }
 
@@ -91,14 +97,16 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
             if (background != null) background.enabled = false;
         }
         view.SetSideLayout(null);
+        bool overview = index == FacilitiesOverviewIndex;
+        if (cardBackground != null) cardBackground.SetOpaqueFill(true);
         view.SetContent("협회 안내", sourceMessages[index] != null ? sourceMessages[index].text : "");
         var card = (RectTransform)view.panel.transform;
         if (messagePositions != null && index < messagePositions.Length)
-            card.anchoredPosition = messagePositions[index];
+            card.anchoredPosition = messagePositions[index] + (overview ? new Vector2(overviewOffsetX, 0) : Vector2.zero);
         view.panel.alpha = 0;
         view.FitMessageLayout();
         var focus = focusTargets != null && index < focusTargets.Length ? focusTargets[index] : null;
-        if (focus != null && card.anchoredPosition.x > 0) view.SetSideLayout(focus, null, true);
+        if (focus != null && card.anchoredPosition.x > 0) view.SetSideLayout(focus, null, true, overview ? new Vector2(overviewOffsetX, 0) : Vector2.zero);
         view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.DimmedExplanation);
         bool final = index == panels.Length - 1;
         if (continueButton != null) continueButton.gameObject.SetActive(!final);
@@ -110,6 +118,7 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
         if (continueButton != null) continueButton.onClick.RemoveListener(Advance);
         if (shieldButton != null) shieldButton.onClick.RemoveListener(Advance);
         if (!initialized) return;
+        if (cardBackground != null) cardBackground.SetOpaqueFill(false);
         if (view != null) { view.SetSideLayout(null); view.SetVisible(false); }
         if (inputShield != null) inputShield.SetActive(false);
         if (progression != null) progression.enabled = wasProgressionEnabled;

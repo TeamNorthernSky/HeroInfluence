@@ -22,8 +22,9 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
 
     private void Update()
     {
+        JcBuildingSilhouetteFeature.ClearHoverHighlight(this);
+        if (gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene()) return;
         if (DHGameEndState.IsEnding) return;
-        if (!Input.GetMouseButtonDown(0)) return;
 
         // 입력 차단 가드 (Modal/WorldInputGate)
         if (WorldInputGate.IsBlocked) return;
@@ -37,13 +38,15 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
         if (worldCamera == null) worldCamera = Camera.main;
         if (worldCamera == null) return;
 
-        Ray ray = worldCamera.ScreenPointToRay(Input.mousePosition);
-        if (!Physics.Raycast(ray, out RaycastHit hit, rayDistance)) return;
+        if (!BuildingEntryPointer.TryHit(worldCamera, rayDistance, out RaycastHit hit)) return;
 
         // 자기 본부 GO hit 여부 (자식 콜라이더 hit 포함)
         HeroUnionUnit hitHeroUnion = hit.collider != null ? hit.collider.GetComponentInParent<HeroUnionUnit>() : null;
         if (hitHeroUnion == null || hitHeroUnion.gameObject != gameObject) return;
         if (!HasPlayerPartyAtInteractionCell(hitHeroUnion)) return;
+
+        JcBuildingSilhouetteFeature.SetHoverHighlight(this, transform);
+        if (!Input.GetMouseButtonDown(0)) return;
 
         // 더블클릭 임계값 검사
         float now = Time.unscaledTime;
@@ -56,6 +59,12 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
         {
             lastClickTime = now;
         }
+    }
+
+    private void OnDisable()
+    {
+        JcBuildingSilhouetteFeature.ClearHoverHighlight(this);
+        lastClickTime = -1f;
     }
 
     private void EnterLobby()
@@ -107,5 +116,26 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
             return registry.PlayerParty;
 
         return Object.FindFirstObjectByType<PartyGridMover>();
+    }
+}
+
+// 동일 카메라의 건물들이 프레임마다 같은 포인터 Raycast를 반복하지 않도록 공유한다.
+internal static class BuildingEntryPointer
+{
+    private static int frame = -1;
+    private static Camera camera;
+    private static float distance;
+    private static bool hasHit;
+    private static RaycastHit hit;
+
+    public static bool TryHit(Camera worldCamera, float rayDistance, out RaycastHit result)
+    {
+        if (frame != Time.frameCount || camera != worldCamera || distance != rayDistance)
+        {
+            frame = Time.frameCount; camera = worldCamera; distance = rayDistance;
+            hasHit = Physics.Raycast(worldCamera.ScreenPointToRay(Input.mousePosition), out hit, rayDistance);
+        }
+        result = hit;
+        return hasHit;
     }
 }

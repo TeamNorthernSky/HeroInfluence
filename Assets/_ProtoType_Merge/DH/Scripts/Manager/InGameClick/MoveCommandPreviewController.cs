@@ -470,6 +470,10 @@ public class MoveCommandPreviewController
             && movePath.Count > 0;
     }
 
+    public bool IsConfirmableMarker(Transform hit)
+        => CanConfirmCurrentPreview(null) && marker != null && marker.gameObject.activeInHierarchy
+            && hit != null && (hit == marker || hit.IsChildOf(marker));
+
     private bool CanConfirmZeroStepInteraction(PartyGridMover activeMover)
     {
         if (activeMover == null || gridManager == null || !hasMarkerGrid)

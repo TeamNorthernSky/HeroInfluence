@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -13,28 +13,48 @@ namespace JC.BattleTesting
         static bool Character(Transform t){for(;t!=null;t=t.parent)if(t.GetComponent<BattleCharactor>()!=null||t.GetComponent<EnemyGridMover>()!=null||t.name.StartsWith("Armature",StringComparison.OrdinalIgnoreCase))return true;return false;}
         static string Group(Transform t){for(var p=t;p!=null;p=p.parent)if(p.name.EndsWith("(Clone)",StringComparison.Ordinal))return p.GetInstanceID().ToString();return t.GetInstanceID().ToString();}
 
+        // 탐사 원본은 유지하고 전투 배경 입력에서만 차단물 외형을 제외합니다.
+        static bool Barricade(Transform transform)
+        {
+            for (var current = transform; current != null; current = current.parent)
+            {
+                var placement = current.GetComponent<DecorativeObjectPlacement>();
+                if (placement != null && string.Equals(placement.PrefabKey, "barrier", StringComparison.OrdinalIgnoreCase))
+                    return true;
+                // 게이트 내부 모델에는 배치 컴포넌트가 없는 경우도 있습니다.
+                if (string.Equals(current.name, "barrier", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(current.name, "barrier(Clone)", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
         // 입력 씬이 살아 있는 동안 Capture 결과를 Build에 전달합니다. 결과는 자원을 독립 소유합니다.
-        public static JcDynamicBattleSource Capture(Scene scene)
+        public static JcDynamicBattleSource Capture(Scene scene, bool tutorial = false)
         {
             if(!scene.IsValid()||!scene.isLoaded)throw new InvalidOperationException("탐사 입력 씬이 로드되지 않았습니다.");
             var data=ScriptableObject.CreateInstance<JcDynamicBattleSource>();data.hideFlags=HideFlags.DontSave;data.sourceScene=scene.path;
             var parts=new List<JcDynamicBattleSource.Part>();var roads=new List<JcDynamicBattleSource.Road>();
             foreach(var f in scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<MeshFilter>()))
             {
-                var r=f.GetComponent<MeshRenderer>();if(r==null||!r.enabled||r.forceRenderingOff||f.sharedMesh==null||Character(f.transform))continue;
-                bool ground=Ancestor(f.transform,"Generated Tile Meshes")||Ancestor(f.transform,"JC_ExploreDetail_Visuals");
+                var r=f.GetComponent<MeshRenderer>();if(r==null||!r.enabled||r.forceRenderingOff||f.sharedMesh==null||Character(f.transform)||Barricade(f.transform))continue;
+                bool tutorialSurface = tutorial && f.transform.parent != null && f.transform.parent.name == "Tutorial_VisualOnly";
+                bool ground=Ancestor(f.transform,"Generated Tile Meshes")||Ancestor(f.transform,"JC_ExploreDetail_Visuals")||tutorialSurface;
                 if(!ground&&!roots.Contains(f.transform.root.name))continue;
                 if(f.GetComponentInParent<JcDynamicBattleOutput>()!=null)continue;
                 var inputMesh=f.sharedMesh;
                 if(!Application.isEditor&&!inputMesh.isReadable)
                 {
-                    var cache=Resources.Load<JcDynamicBattleSource>("JC_Encounters/DynamicSource");
+                    var cache=Resources.Load<JcDynamicBattleSource>(tutorial ? "JC_Encounters/TutorialDynamicSource" : "JC_Encounters/DynamicSource");
                     var readable=cache!=null?cache.parts.FirstOrDefault(part=>part.originalMesh==inputMesh&&part.mesh!=null&&part.mesh.isReadable):null;
                     if(readable==null)throw new InvalidOperationException("읽기 가능한 외형 캐시를 갱신해 주세요: "+f.name);
                     inputMesh=readable.mesh;
                 }
                 var part=new JcDynamicBattleSource.Part{name=f.name,group=Group(f.transform),mesh=inputMesh,originalMesh=f.sharedMesh,materials=r.sharedMaterials,matrix=f.transform.localToWorldMatrix,bounds=r.bounds,terrain=ground,renderer=r};
                 parts.Add(part);
+                // 비이동 타일의 시각적 도로 보강도 배경 배치 후보로만 사용합니다. 레벨/이동 데이터는 수정하지 않습니다.
+                if (tutorialSurface && f.name.StartsWith("BlockedRoad_", StringComparison.Ordinal))
+                    roads.Add(new JcDynamicBattleSource.Road { center = r.bounds.center, size = Mathf.Min(r.bounds.size.x, r.bounds.size.z) });
             }
             // 외형 보강으로 숨겨진 원본 청크에서도 도로 측정 좌표를 읽습니다.
             foreach(var f in scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<MeshFilter>()).Where(f=>f.name.StartsWith("TileChunk_",StringComparison.Ordinal)&&f.sharedMesh!=null))
@@ -187,7 +207,7 @@ namespace JC.BattleTesting
                     if(mesh==null)continue;output.Add(part.name,mesh,part.materials,part.terrain,part.renderer);
                 }
                 output.Report=$"조우 {settings.encounterPosition} → 기준점 {p} / 이동 {Vector3.Distance(new Vector3(settings.encounterPosition.x,p.y,settings.encounterPosition.z),p):F2} / 방향 {(placement.alongX?"X":"Z")} / 동일 확대 {scale:F2} / 원형 보존 외형 {selected.Length}";
-                JcBattleSurfaceDressing.Apply(root,Mathf.RoundToInt(settings.encounterPosition.x*1000)^Mathf.RoundToInt(settings.encounterPosition.z*7919),cameras);
+                if (settings.addBattleSurfaceDetails) JcBattleSurfaceDressing.Apply(root,Mathf.RoundToInt(settings.encounterPosition.x*1000)^Mathf.RoundToInt(settings.encounterPosition.z*7919),cameras);
                 Debug.Log(output.Report,root);
                 return root;
             }

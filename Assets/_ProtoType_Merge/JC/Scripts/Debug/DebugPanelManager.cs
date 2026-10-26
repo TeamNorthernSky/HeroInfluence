@@ -4,6 +4,10 @@ public class DebugPanelManager : MonoBehaviour
 {
     public static DebugPanelManager Instance { get; private set; }
 
+    // 백쿼트 활성화와 닫기 시퀀스가 사용하는 실제 디버그 창 상태를 공유한다.
+    public static bool IsDebugPanelActive => Instance != null && Instance.isActiveAndEnabled &&
+        Instance.panelController != null && Instance.panelController.IsCanvasActive;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
     {

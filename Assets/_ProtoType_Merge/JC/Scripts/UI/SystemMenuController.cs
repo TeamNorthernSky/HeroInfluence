@@ -30,6 +30,7 @@ public class SystemMenuController : MonoBehaviour
 
     private void Update()
     {
+        if (JC.Environment.JcDayNightController.IsTransitioning) return;
         if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
         var sceneName = SceneManager.GetActiveScene().name;
         if (sceneName == TitleScene) return;
@@ -69,7 +70,7 @@ public class SystemMenuController : MonoBehaviour
 
     private void OpenModal()
     {
-        if (_modal == null) return;
+        if (JC.Environment.JcDayNightController.IsTransitioning || _modal == null) return;
         transform.SetAsLastSibling();
         _modal.SetActive(true);
     }
@@ -79,7 +80,7 @@ public class SystemMenuController : MonoBehaviour
 
     private void TogglePause()
     {
-        if (_modal == null) return;
+        if (JC.Environment.JcDayNightController.IsTransitioning || _modal == null) return;
 
         if (_modal.activeSelf)
         {
@@ -97,11 +98,13 @@ public class SystemMenuController : MonoBehaviour
     // [KJ 260708] SystemMenu는 닫지 않고 Settings를 그 위에 스택으로 연다(ModalManager 재사용).
     public void OnClickOptions()
     {
+        if (JC.Environment.JcDayNightController.IsTransitioning) return;
         CommonUIManager.Instance.SettingsModal.Open();
     }
 
     public void OnClickResume()
     {
+        if (JC.Environment.JcDayNightController.IsTransitioning) return;
         if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
         if (_modal != null) _modal.SetActive(false);
         Time.timeScale = 1f;
@@ -111,6 +114,7 @@ public class SystemMenuController : MonoBehaviour
     // GameSaveService가 스냅샷 부재/IO 실패를 자체 처리(스냅샷 없으면 저장 스킵, false). 메뉴는 열어둔 채 저장만 수행.
     public void OnClickSave()
     {
+        if (JC.Environment.JcDayNightController.IsTransitioning) return;
         bool saved = GameSaveService.SaveToSlot(SaveSlotRepository.CurrentSlot);
         Debug.Log(saved
             ? $"[SystemMenu] 저장 완료 — 슬롯 {SaveSlotRepository.CurrentSlot}."
@@ -119,6 +123,7 @@ public class SystemMenuController : MonoBehaviour
 
     public void OnClickToTitle()
     {
+        if (JC.Environment.JcDayNightController.IsTransitioning) return;
         if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
         returningToTitle = true;
         SceneManager.sceneLoaded += HandleTitleSceneLoaded;
@@ -148,6 +153,7 @@ public class SystemMenuController : MonoBehaviour
 
     public void OnClickQuit()
     {
+        if (JC.Environment.JcDayNightController.IsTransitioning) return;
         Debug.Log("[SystemMenu] Quit");
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

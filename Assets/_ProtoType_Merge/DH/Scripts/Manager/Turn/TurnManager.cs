@@ -27,6 +27,8 @@ public class TurnManager : MonoBehaviour
     }
 
     private bool enemyTurnRunning;
+    private bool completingTurn;
+    private Coroutine completionRoutine;
     private Coroutine pendingEnemyTurnStartCoroutine;
     private PartyGridMover autoEndTurnParty;
     private PartyIdentity autoEndTurnPartyIdentity;
@@ -37,7 +39,7 @@ public class TurnManager : MonoBehaviour
     private int automaticEndTurnReadyFrames;
 
     public bool IsEnemyTurnRunning => enemyTurnRunning;
-    public bool IsPlayerTurn => !enemyTurnRunning;
+    public bool IsPlayerTurn => !enemyTurnRunning && !completingTurn && pendingEnemyTurnStartCoroutine == null;
 
     private void Awake()
     {
@@ -57,6 +59,7 @@ public class TurnManager : MonoBehaviour
         if (GameManager.Instance != null)
             day = GameManager.Instance.CurrentDay;
 
+        JC.Environment.JcDayNightController.Ensure(gameObject.scene);
         UpdateTurnStateText("Player Turn");
     }
 
@@ -83,7 +86,7 @@ public class TurnManager : MonoBehaviour
 
     public void EndPlayerTurn()
     {
-        if (DHGameEndState.IsEnding || enemyTurnRunning || pendingEnemyTurnStartCoroutine != null)
+        if (DHGameEndState.IsEnding || enemyTurnRunning || completingTurn || pendingEnemyTurnStartCoroutine != null)
             return;
 
         ClearAutomaticEndTurn();
@@ -141,6 +144,9 @@ public class TurnManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (completionRoutine != null) { StopCoroutine(completionRoutine); WorldInputGate.IsTurnResolving = false; }
+        completionRoutine = null; completingTurn = false;
+        JC.Environment.JcDayNightController.CancelForScene(gameObject.scene);
         UnbindAutomaticEndTurnParty();
         // Keep the repository reservation across combat scene changes.
         automaticEndTurnReadyFrames = 0;
@@ -203,7 +209,7 @@ public class TurnManager : MonoBehaviour
 
     private bool CanExecuteAutomaticEndTurn()
     {
-        if (DHGameEndState.IsEnding || enemyTurnRunning || pendingEnemyTurnStartCoroutine != null ||
+        if (DHGameEndState.IsEnding || enemyTurnRunning || completingTurn || pendingEnemyTurnStartCoroutine != null ||
             WorldInputGate.IsTurnResolving ||
             gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene() ||
             autoEndTurnParty == null || autoEndTurnPartyIdentity == null || autoEndTurnParty.IsMoving ||
@@ -283,9 +289,28 @@ public class TurnManager : MonoBehaviour
             return;
         }
 
-        AdvanceDay();
-        ProduceClaimedOutposts();
-        StartPlayerTurn();
+        if (completingTurn) return;
+        completingTurn = true;
+        completionRoutine = StartCoroutine(CompleteTurnWithPresentation());
+    }
+
+    private IEnumerator CompleteTurnWithPresentation()
+    {
+        try
+        {
+            var cycle = JC.Environment.JcDayNightController.Ensure(gameObject.scene);
+            if (cycle != null) yield return cycle.Transition(day, day + 1);
+            if (!isActiveAndEnabled || DHGameEndState.IsEnding || gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene()) yield break;
+            AdvanceDay();
+            ProduceClaimedOutposts();
+            StartPlayerTurn();
+        }
+        finally
+        {
+            completingTurn = false; completionRoutine = null;
+            EnemyTurnStateChanged?.Invoke(false);
+            WorldInputGate.IsTurnResolving = false;
+        }
     }
 
     private void StartPlayerTurn()
@@ -360,7 +385,6 @@ public class TurnManager : MonoBehaviour
         }
 
         enemyTurnRunning = false;
-        EnemyTurnStateChanged?.Invoke(false);
         EndEnemyTurn();
     }
 

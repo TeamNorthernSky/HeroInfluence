@@ -18,7 +18,9 @@ namespace JC.BattleTesting
         Quaternion originalRotation, startRotation, endRotation;
         float originalFov, startFov, endFov, elapsed, createdAt;
         bool moving, entered, cameraOnly;
-        public string Report => background != null ? background.GetComponent<JcDynamicBattleOutput>().Report : string.Empty;
+        JcBankBattleBackground bankSettings;
+        public string Report => background == null ? string.Empty :
+            background.TryGetComponent<JcDynamicBattleOutput>(out var output) ? output.Report : "은행 실내 배경";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetState() { pending = null; fixedOrigin = null; fixedKey = null; fixedZone = 0; }
@@ -89,7 +91,7 @@ namespace JC.BattleTesting
             Prepare(party, enemy, battleScene, false);
         }
 
-        // 호출 API는 유지합니다. 튜토리얼 배경은 보존하고 공통 카메라와 HUD를 연결합니다.
+        // 튜토리얼도 공통 카메라/HUD 및 명시된 실내 배경 분기를 사용합니다.
         public static void PrepareCameraOnly(string battleScene)
         {
             Prepare(null, null, battleScene, true);
@@ -109,8 +111,22 @@ namespace JC.BattleTesting
             bridge.createdAt = Time.realtimeSinceStartup; pending = bridge;
             SceneManager.sceneLoaded += bridge.Loaded;
 
+            // 명시된 은행 전투만 실내로 교체합니다. 진형·판정·카메라는 공통 경로를 유지합니다.
+            var bank = JcBankBattleBackground.Load();
+            if (bank != null && bank.Matches(context))
+            {
+                if (bank.visualPrefab != null)
+                {
+                    bridge.background = Instantiate(bank.visualPrefab, owner.transform, false);
+                    bridge.bankSettings = bank;
+                    bridge.background.SetActive(false);
+                    return;
+                }
+                Debug.LogError("[JC Battle] 은행 실내 배경 프리팹 연결 누락");
+            }
             // 점령/본부 전투 또는 생성 실패에도 카메라와 UI는 독립적으로 적용합니다.
-            if (cameraOnly || !UsesExplorationBackground(context)) return;
+            bool tutorialOutdoor = cameraOnly && context != null && context.IsTutorial && context.TutorialBattleKey == "TUT_01";
+            if (!tutorialOutdoor && (cameraOnly || !UsesExplorationBackground(context))) return;
             JcDynamicBattleSource source = null;
             GameObject output = null;
             try
@@ -122,8 +138,19 @@ namespace JC.BattleTesting
                         e.TryGetComponent<EnemyIdentity>(out var identity) &&
                         MapProgressKey.NormalizeSegment(identity.PlacementKey) == MapProgressKey.NormalizeSegment(sourceEnemy));
 
-                var settings = ResolveBackgroundSettings(party.gameObject.scene, party.transform.position, enemy, context.EventBattle);
-                source = JcDynamicBattleGeometry.Capture(party.gameObject.scene);
+                var sourceScene = tutorialOutdoor ? SceneManager.GetActiveScene() : party.gameObject.scene;
+                JcDynamicBattleSettings settings;
+                if (tutorialOutdoor)
+                {
+                    var origin = sourceScene.GetRootGameObjects()
+                        .SelectMany(r => r.GetComponentsInChildren<TutorialEnemyObject>(true))
+                        .FirstOrDefault(e => e.TutorialBattleKey == context.TutorialBattleKey);
+                    if (origin == null) throw new InvalidOperationException("첫 튜토리얼 전투의 탐사 조우 위치 누락");
+                    settings = new JcDynamicBattleSettings { encounterPosition = origin.transform.position,
+                        enemyPosition = origin.transform.position + Vector3.right, axis = JcBattleRoadAxis.X, addBattleSurfaceDetails = false };
+                }
+                else settings = ResolveBackgroundSettings(sourceScene, party.transform.position, enemy, context.EventBattle);
+                source = JcDynamicBattleGeometry.Capture(sourceScene, tutorialOutdoor);
                 settings.source = source;
                 cameraProfile.viewA.Resolve(Vector3.zero, out var a, out _, out _);
                 cameraProfile.viewB.Resolve(Vector3.zero, out var b, out _, out _);
@@ -150,12 +177,14 @@ namespace JC.BattleTesting
             if (background != null)
             foreach (var root in scene.GetRootGameObjects())
                 if (root != gameObject && (root.name == "Ground" || root.name == "HeroUnionZ1" || root.name.StartsWith("BGOffice", StringComparison.Ordinal) ||
-                    root.name.StartsWith("BGHouse", StringComparison.Ordinal) || root.name.StartsWith("BGStore", StringComparison.Ordinal)))
+                    root.name.StartsWith("BGHouse", StringComparison.Ordinal) || root.name.StartsWith("BGStore", StringComparison.Ordinal) ||
+                    root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
             if (background != null) background.SetActive(true);
             Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);
             battleCamera = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Camera>()).FirstOrDefault(c => c.CompareTag("MainCamera"));
             if (battleCamera == null) return;
+            bankSettings?.ApplyCamera(battleCamera);
             var roots = scene.GetRootGameObjects();
             var player = roots.FirstOrDefault(r => r.name == "PlayerPlace");
             var enemies = roots.FirstOrDefault(r => r.name == "EnemyPlace");
@@ -187,6 +216,8 @@ namespace JC.BattleTesting
         void OnGUI()
         {
             if (!entered) return;
+            // 빌드 씬에서는 디버그 창이 활성화된 동안에만 카메라 전환 버튼을 그린다.
+            if (gameObject.scene.buildIndex >= 0 && !DebugPanelManager.IsDebugPanelActive) return;
             if (GUI.Button(new Rect(Screen.width - 306, 8, 96, 24), "A [F6]")) SelectView(0);
             if (GUI.Button(new Rect(Screen.width - 206, 8, 96, 24), "B [F7]")) SelectView(1);
             if (GUI.Button(new Rect(Screen.width - 106, 8, 96, 24), "F8")) SelectView(2);

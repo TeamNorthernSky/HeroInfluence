@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 namespace JC.BattleTesting
 {
@@ -32,6 +32,8 @@ namespace JC.BattleTesting
     {
         [Tooltip("Auto는 도로 형태에 맞춰 선택합니다. X/Z는 지정 축으로만 배치를 검사합니다.")]
         public JcBattleRoadAxis axis;
+        [Tooltip("전투 전용 차선/자연물 후처리를 추가합니다. 튜토리얼은 탐사에서 확정한 드레싱을 그대로 사용합니다.")]
+        public bool addBattleSurfaceDetails = true;
         [Tooltip("실제 탐사씬이 없을 때 사용할 맵 전체 공통 외형 입력입니다.")]
         public JcDynamicBattleSource source;
         [Tooltip("조우 당시 플레이어의 탐사 월드 위치입니다. 후보 이외 좌표도 입력할 수 있습니다.")]

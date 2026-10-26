@@ -362,9 +362,9 @@ MonoBehaviour:
       lightness: 0.855
       saturation: 0.000011362135
       ignoreSourceColorAndShading: 0
-    - hue: 56.943523
-      lightness: 0.571
-      saturation: 25.3
+    - hue: 138.7348
+      lightness: 0.8
+      saturation: 13
       ignoreSourceColorAndShading: 0
     - hue: 256.43576
       lightness: 0.5425389
@@ -382,9 +382,9 @@ MonoBehaviour:
       lightness: 0.685
       saturation: 6.08936
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.7370528
-      saturation: 27.159132
+    - hue: 138.7348
+      lightness: 0.8
+      saturation: 13
       ignoreSourceColorAndShading: 0
     - hue: 31.085646
       lightness: 0.6647152
@@ -435,9 +435,9 @@ MonoBehaviour:
       lightness: 0.855
       saturation: 0.000011362135
       ignoreSourceColorAndShading: 0
-    - hue: 138.73483
-      lightness: 0.635
-      saturation: 25.9
+    - hue: 250
+      lightness: 0.6
+      saturation: 25
       ignoreSourceColorAndShading: 0
     - hue: 263.10568
       lightness: 0.5986981
@@ -455,9 +455,9 @@ MonoBehaviour:
       lightness: 0.58873343
       saturation: 26.430971
       ignoreSourceColorAndShading: 0
-    - hue: 22.458448
-      lightness: 0.74189734
-      saturation: 26.376064
+    - hue: 250
+      lightness: 0.6
+      saturation: 25
       ignoreSourceColorAndShading: 0
     - hue: 261.09268
       lightness: 0.5242287
@@ -1225,3 +1225,611 @@ MonoBehaviour:
     - foliage
     - floor
     - accent
+  - buildingId: BGHouse001
+    variantId: yellow
+    displayName: 평지붕 · 노랑
+    weight: 1
+    parts:
+    - hue: 90
+      lightness: 1
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 73.58144
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 256.43576
+      lightness: 0.5389753
+      saturation: 34.236553
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6374
+      lightness: 0.35369703
+      saturation: 14.397416
+      ignoreSourceColorAndShading: 0
+    - hue: 91.5944
+      lightness: 0.7602642
+      saturation: 4.3492503
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.8435668
+      saturation: 16.645641
+      ignoreSourceColorAndShading: 0
+    - hue: 73.58144
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHouse002
+    variantId: lime
+    displayName: 경사지붕 · 연두
+    weight: 1
+    parts:
+    - hue: 90
+      lightness: 1
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 135
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 256.43576
+      lightness: 0.5389753
+      saturation: 34.236553
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6374
+      lightness: 0.35369703
+      saturation: 14.397416
+      ignoreSourceColorAndShading: 0
+    - hue: 91.5944
+      lightness: 0.7602642
+      saturation: 4.3492503
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.8435668
+      saturation: 16.645641
+      ignoreSourceColorAndShading: 0
+    - hue: 135
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHouse001
+    variantId: pink
+    displayName: 평지붕 · 분홍
+    weight: 1
+    parts:
+    - hue: 90
+      lightness: 1
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 30
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 256.43576
+      lightness: 0.5389753
+      saturation: 34.236553
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6374
+      lightness: 0.35369703
+      saturation: 14.397416
+      ignoreSourceColorAndShading: 0
+    - hue: 91.5944
+      lightness: 0.7602642
+      saturation: 4.3492503
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.8435668
+      saturation: 16.645641
+      ignoreSourceColorAndShading: 0
+    - hue: 30
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHouse002
+    variantId: light-brown
+    displayName: 경사지붕 · 라이트브라운
+    weight: 1
+    parts:
+    - hue: 90
+      lightness: 1
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 65
+      lightness: 0.7
+      saturation: 20
+      ignoreSourceColorAndShading: 0
+    - hue: 256.43576
+      lightness: 0.5389753
+      saturation: 34.236553
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6374
+      lightness: 0.35369703
+      saturation: 14.397416
+      ignoreSourceColorAndShading: 0
+    - hue: 91.5944
+      lightness: 0.7602642
+      saturation: 4.3492503
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.8435668
+      saturation: 16.645641
+      ignoreSourceColorAndShading: 0
+    - hue: 65
+      lightness: 0.7
+      saturation: 20
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHouse001
+    variantId: pastel-blue
+    displayName: 평지붕 · 파스텔 파랑
+    weight: 1
+    parts:
+    - hue: 90
+      lightness: 1
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 245
+      lightness: 0.82
+      saturation: 20
+      ignoreSourceColorAndShading: 0
+    - hue: 256.43576
+      lightness: 0.5389753
+      saturation: 34.236553
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6374
+      lightness: 0.35369703
+      saturation: 14.397416
+      ignoreSourceColorAndShading: 0
+    - hue: 91.5944
+      lightness: 0.7602642
+      saturation: 4.3492503
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.8435668
+      saturation: 16.645641
+      ignoreSourceColorAndShading: 0
+    - hue: 245
+      lightness: 0.82
+      saturation: 20
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHouse002
+    variantId: yellow
+    displayName: 경사지붕 · 노랑
+    weight: 1
+    parts:
+    - hue: 90
+      lightness: 1
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 73.58144
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 256.43576
+      lightness: 0.5389753
+      saturation: 34.236553
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6374
+      lightness: 0.35369703
+      saturation: 14.397416
+      ignoreSourceColorAndShading: 0
+    - hue: 91.5944
+      lightness: 0.7602642
+      saturation: 4.3492503
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.8435668
+      saturation: 16.645641
+      ignoreSourceColorAndShading: 0
+    - hue: 73.58144
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHouse001
+    variantId: pale-green
+    displayName: 평지붕 · 밝은 연녹
+    weight: 1
+    parts:
+    - hue: 90.0
+      lightness: 0.8550000190734863
+      saturation: 1.1362135410308838e-05
+      ignoreSourceColorAndShading: 0
+    - hue: 138.7348
+      lightness: 0.8
+      saturation: 13
+      ignoreSourceColorAndShading: 0
+    - hue: 256.4357604980469
+      lightness: 0.5425388813018799
+      saturation: 16.905561447143555
+      ignoreSourceColorAndShading: 0
+    - hue: 134.1385498046875
+      lightness: 0.6222646236419678
+      saturation: 30.87051773071289
+      ignoreSourceColorAndShading: 0
+    - hue: 91.59439849853516
+      lightness: 0.7071189284324646
+      saturation: 5.306085586547852
+      ignoreSourceColorAndShading: 0
+    - hue: 77.98989868164062
+      lightness: 0.6850000023841858
+      saturation: 6.089360237121582
+      ignoreSourceColorAndShading: 0
+    - hue: 138.7348
+      lightness: 0.8
+      saturation: 13
+      ignoreSourceColorAndShading: 0
+    - hue: 31.08564567565918
+      lightness: 0.6647151708602905
+      saturation: 3.073385000228882
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38494873046875
+      lightness: 0.5554548501968384
+      saturation: 25.118417739868164
+      ignoreSourceColorAndShading: 0
+    - hue: 17.27788543701172
+      lightness: 0.853457510471344
+      saturation: 1.999829888343811
+      ignoreSourceColorAndShading: 0
+    - hue: 17.27788543701172
+      lightness: 0.853457510471344
+      saturation: 1.999829888343811
+      ignoreSourceColorAndShading: 0
+    - hue: 17.27788543701172
+      lightness: 0.9053192138671875
+      saturation: 1.639204740524292
+      ignoreSourceColorAndShading: 0
+    - hue: 31.08564567565918
+      lightness: 0.6647151708602905
+      saturation: 3.073385000228882
+      ignoreSourceColorAndShading: 0
+    - hue: 17.27788543701172
+      lightness: 0.9053192138671875
+      saturation: 1.639204740524292
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHouse002
+    variantId: blue
+    displayName: 경사지붕 · 중간 파랑
+    weight: 1
+    parts:
+    - hue: 90.0
+      lightness: 0.8550000190734863
+      saturation: 1.1362135410308838e-05
+      ignoreSourceColorAndShading: 0
+    - hue: 250
+      lightness: 0.6
+      saturation: 25
+      ignoreSourceColorAndShading: 0
+    - hue: 263.1056823730469
+      lightness: 0.598698079586029
+      saturation: 12.61611557006836
+      ignoreSourceColorAndShading: 0
+    - hue: 134.69497680664062
+      lightness: 0.5276574492454529
+      saturation: 30.215530395507812
+      ignoreSourceColorAndShading: 0
+    - hue: 91.59439849853516
+      lightness: 0.7071189284324646
+      saturation: 5.306085586547852
+      ignoreSourceColorAndShading: 0
+    - hue: 49.431976318359375
+      lightness: 0.588733434677124
+      saturation: 26.430971145629883
+      ignoreSourceColorAndShading: 0
+    - hue: 250
+      lightness: 0.6
+      saturation: 25
+      ignoreSourceColorAndShading: 0
+    - hue: 261.0926818847656
+      lightness: 0.5242286920547485
+      saturation: 10.766240119934082
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38494873046875
+      lightness: 0.5554548501968384
+      saturation: 25.118417739868164
+      ignoreSourceColorAndShading: 0
+    - hue: 67.24394989013672
+      lightness: 0.6825836300849915
+      saturation: 12.179490089416504
+      ignoreSourceColorAndShading: 0
+    - hue: 251.6142578125
+      lightness: 0.7810390591621399
+      saturation: 13.4772367477417
+      ignoreSourceColorAndShading: 0
+    - hue: 90.0
+      lightness: 0.6703332662582397
+      saturation: 6.242965355340857e-06
+      ignoreSourceColorAndShading: 0
+    - hue: 90.0
+      lightness: 0.4726835787296295
+      saturation: 4.402209015097469e-06
+      ignoreSourceColorAndShading: 0
+    - hue: 17.27788543701172
+      lightness: 0.9053192138671875
+      saturation: 1.639204740524292
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
