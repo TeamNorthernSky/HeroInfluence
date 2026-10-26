@@ -67,7 +67,7 @@ namespace JC.Environment
 
         private void Update()
         {
-            if (Application.IsPlaying(gameObject)) Advance(Time.deltaTime);
+            if (Application.IsPlaying(gameObject)) Advance(Time.deltaTime * JcDayNightController.CloudSpeed);
         }
 
         private void Advance(float delta)

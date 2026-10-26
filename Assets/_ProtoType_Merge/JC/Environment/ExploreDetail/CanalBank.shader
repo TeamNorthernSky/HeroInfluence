@@ -1,4 +1,4 @@
-﻿Shader "JC/Environment/Canal Bank"
+Shader "JC/Environment/Canal Bank"
 {
  Properties {
   _BaseColor("콘크리트 색",Color)=(.57,.59,.58,1)
@@ -11,6 +11,7 @@
   HLSLINCLUDE
   #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
   // 모든 패스의 재질 레이아웃을 일치시킵니다.
+  float4 _JcDayNight; // 유효 여부, 낮 밝기, 예약
   CBUFFER_START(UnityPerMaterial)
    half4 _BaseColor;float _PanelLength;half _JointStrength,_WetStrength;
   CBUFFER_END
@@ -36,7 +37,7 @@
     half wet=smoothstep(.75,.94,i.depth)*_WetStrength;
     half3 c=_BaseColor.rgb*(1-joint*_JointStrength-wet)+grain;
     Light l=GetMainLight(TransformWorldToShadowCoord(i.world));half3 n=normalize(i.normal);
-    c*=max(SampleSH(n),half3(.4,.4,.4))+l.color*saturate(dot(n,l.direction))*.55*lerp(.55,1,l.shadowAttenuation);
+    c*=max(SampleSH(n),lerp(.4,lerp(_JcDayNight.z,.4,_JcDayNight.y),_JcDayNight.x).xxx)+l.color*saturate(dot(n,l.direction))*.55*lerp(.55,1,l.shadowAttenuation);
     return half4(MixFog(c,i.fog),1);
    }
    ENDHLSL

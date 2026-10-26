@@ -65,7 +65,7 @@ namespace JC.Environment
             {
                 if (material == null || controller == null || !controller.isActiveAndEnabled) return;
                 var cmd = CommandBufferPool.Get();
-                cmd.SetGlobalVector("_JcCloudSettings", new Vector4(Mathf.Clamp01(controller.strength), Mathf.Max(1, controller.size),
+                cmd.SetGlobalVector("_JcCloudSettings", new Vector4(Mathf.Clamp01(controller.strength) * JcDayNightController.CloudFactor, Mathf.Max(1, controller.size),
                     Mathf.Clamp(controller.softness, .05f, .5f), Mathf.Clamp(controller.coverage, .1f, .9f)));
                 cmd.SetGlobalVector("_JcCloudMotion", new Vector4(controller.Offset.x, controller.Offset.y, controller.Travel, 0));
                 Color tint = QualitySettings.activeColorSpace == ColorSpace.Linear ? controller.shadowColor.linear : controller.shadowColor;
