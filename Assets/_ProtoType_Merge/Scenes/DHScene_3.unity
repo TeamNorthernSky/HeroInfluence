@@ -22062,6 +22062,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 824261026000000002}
   - {fileID: 1436007284}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -198236,7 +198237,6 @@ GameObject:
   - component: {fileID: 1870279756}
   - component: {fileID: 1870279754}
   - component: {fileID: 1870279757}
-  - component: {fileID: 1870279758}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -198270,7 +198270,7 @@ MonoBehaviour:
   pathPreviewRenderer: {fileID: 347558455}
   zoneGuidanceArrowShader: {fileID: 4800000, guid: c5fe5486de6ae6c41931c6b3ce53cc28,
     type: 3}
-  moveRangeController: {fileID: 0}
+  moveRangeController: {fileID: 1870279758}
   uiInputBlocker: {fileID: 390268228}
   validMarkerColor: {r: 0, g: 1, b: 0, a: 1}
   invalidMarkerColor: {r: 1, g: 0, b: 0, a: 1}
@@ -198432,7 +198432,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1870279747}
+  m_GameObject: {fileID: 824261026000000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f9690c2be77fd643b5075d3915875df, type: 3}
@@ -198440,11 +198440,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1870279752}
   partyRegistry: {fileID: 1919126566}
-  lineRoot: {fileID: 1870279753}
-  lineMaterial: {fileID: 0}
-  lineColor: {r: 1, g: 1, b: 1, a: 0.9}
-  lineWidth: 0.05
+  lineRoot: {fileID: 824261026000000002}
+  gridColor: {r: 0, g: 1, b: 0.019969702, a: 1}
+  gridOpacity: 0.042
+  gridEmissionIntensity: 8
+  gridWidth: 0.06
+  gridEdgeSoftness: 0.3
   lineYOffset: 0.035
+  curtainHeight: 0.18
+  curtainOpacity: 0.2
+  curtainIntensity: 1.92
+  curtainSoftness: 3.05
   maxSearchCells: 1000
 --- !u!1 &1870363068
 GameObject:
@@ -227062,3 +227068,35 @@ SceneRoots:
   - {fileID: 1293311820}
   - {fileID: 206211936}
   - {fileID: 1075043726}
+--- !u!1 &824261026000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 824261026000000002}
+  - component: {fileID: 1870279758}
+  m_Layer: 0
+  m_Name: MoveRangeGrid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &824261026000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 824261026000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 206211936}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
