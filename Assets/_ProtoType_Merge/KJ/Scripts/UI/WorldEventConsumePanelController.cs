@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -40,13 +39,14 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
     private DHWorldEventRuntimeManager manager;
     private DHWorldEventPresentationRequest currentRequest;
     private int selectionFrame = -1;
+    private Button resultClickArea;
 
     private void Awake()
     {
         ResolveView();
         proceedButton.onClick.AddListener(OnProceed);
         declineButton.onClick.AddListener(OnDecline);
-        AddPanelClickHandler();
+        AddResultClickArea();
         manager = DHWorldEventRuntimeManager.EnsureInstance();
         manager.PresentationChanged += OnPresentationChanged;
         manager.PresentationClosed += OnPresentationClosed;
@@ -59,6 +59,8 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (resultClickArea != null)
+            Destroy(resultClickArea.gameObject);
         if (manager == null)
             return;
 
@@ -71,15 +73,20 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         // ESC나 외부 모달 닫기 경로가 런타임 이벤트를 중간에 숨기지 못하게 한다.
         if (currentRequest != null && panelRoot != null && !panelRoot.activeSelf)
             panelRoot.SetActive(true);
+        UpdateResultClickArea();
     }
 
-    private void OnPanelPointerClick(BaseEventData eventData)
+    private void OnDisable()
+    {
+        if (resultClickArea != null) resultClickArea.gameObject.SetActive(false);
+    }
+
+    private void OnResultClick()
     {
         if (currentRequest == null || !currentRequest.IsWaitingFinalConfirm || Time.frameCount == selectionFrame)
             return;
 
-        PointerEventData pointer = eventData as PointerEventData;
-        if (pointer != null && pointer.pointerPress != null && pointer.pointerPress.GetComponentInParent<Button>() != null)
+        if (manager == null || !ReferenceEquals(manager.CurrentRequest, currentRequest))
             return;
 
         manager?.ConfirmCurrentMessage();
@@ -94,6 +101,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         Render(request);
         panelRoot.transform.SetAsLastSibling();
         panelRoot.SetActive(true);
+        UpdateResultClickArea();
     }
 
     private void OnPresentationClosed(DHWorldEventPresentationRequest request)
@@ -103,6 +111,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
         currentRequest = null;
         panelRoot.SetActive(false);
+        UpdateResultClickArea();
     }
 
     private static bool IsConditionConsumeRequest(DHWorldEventPresentationRequest request)
@@ -306,17 +315,36 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         return null;
     }
 
-    private void AddPanelClickHandler()
+    private void AddResultClickArea()
     {
-        EventTrigger trigger = panelRoot.GetComponent<EventTrigger>();
-        if (trigger == null)
-            trigger = panelRoot.AddComponent<EventTrigger>();
-        if (trigger.triggers == null)
-            trigger.triggers = new List<EventTrigger.Entry>();
+        var receiver = new GameObject("ConsumeResultClickArea", typeof(RectTransform), typeof(Image), typeof(Button));
+        receiver.layer = panelRoot.layer;
+        receiver.transform.SetParent(panelRoot.transform.parent, false);
+        var rect = (RectTransform)receiver.transform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        var image = receiver.GetComponent<Image>();
+        image.color = Color.clear;
+        image.raycastTarget = true;
+        resultClickArea = receiver.GetComponent<Button>();
+        resultClickArea.targetGraphic = image;
+        resultClickArea.transition = Selectable.Transition.None;
+        resultClickArea.onClick.AddListener(OnResultClick);
+        receiver.SetActive(false);
+    }
 
-        var entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
-        entry.callback.AddListener(OnPanelPointerClick);
-        trigger.triggers.Add(entry);
+    private void UpdateResultClickArea()
+    {
+        if (resultClickArea == null) return;
+        bool waiting = currentRequest != null && currentRequest.IsWaitingFinalConfirm && panelRoot.activeInHierarchy;
+        resultClickArea.gameObject.SetActive(waiting);
+        if (waiting)
+        {
+            // The modal layer stretches across the screen; the message panel itself does not.
+            resultClickArea.transform.SetParent(panelRoot.transform.parent, false);
+            resultClickArea.transform.SetAsLastSibling();
+        }
     }
 
 }

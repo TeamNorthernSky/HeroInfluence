@@ -4,6 +4,8 @@ using System.Collections.Generic;
 [Serializable]
 public class PartyPersistentData
 {
+    private static readonly int[] DefaultUnitSlots = { 5, 1, 3, 2, 4, 6 };
+
     public string PartyId => partyId;
     public IReadOnlyList<int> UnitIndices => unitIndices;
     public IReadOnlyList<int> UnitSlots => unitSlots;
@@ -73,6 +75,10 @@ public class PartyPersistentData
 
     public void SetUnitSlots(IReadOnlyList<int> source)
     {
+        // Rebuilding the repository can pass this instance's own slot list.
+        if (ReferenceEquals(source, unitSlots) && source != null)
+            source = new List<int>(source);
+
         if (unitSlots == null) unitSlots = new List<int>();
         unitSlots.Clear();
 
@@ -86,6 +92,16 @@ public class PartyPersistentData
         }
 
         for (int i = unitSlots.Count; i < unitIndices.Count; i++)
-            unitSlots.Add(i + 1);
+        {
+            int slot = 1;
+            while (unitSlots.Contains(slot)) slot++;
+            foreach (int preferredSlot in DefaultUnitSlots)
+            {
+                if (unitSlots.Contains(preferredSlot)) continue;
+                slot = preferredSlot;
+                break;
+            }
+            unitSlots.Add(slot);
+        }
     }
 }

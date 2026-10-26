@@ -321,7 +321,7 @@ public class HQUpgradeFlowController : MonoBehaviour
 
     private void CloseProgress()
     {
-        if (modalProgressRoot != null) modalProgressRoot.SetActive(false);
+        if (modalProgressRoot != null) LobbyModalButtonPop.Close(modalProgressRoot);
     }
 
     private void ShowResult(int before, int after)
@@ -385,6 +385,6 @@ public class HQUpgradeFlowController : MonoBehaviour
 
     private void CloseResult()
     {
-        if (modalResultRoot != null) modalResultRoot.SetActive(false);
+        if (modalResultRoot != null) LobbyModalButtonPop.Close(modalResultRoot);
     }
 }

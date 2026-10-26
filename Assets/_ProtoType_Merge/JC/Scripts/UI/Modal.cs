@@ -64,7 +64,7 @@ public class Modal : MonoBehaviour
             : null;
         if (!RectTransformUtility.RectangleContainsScreenPoint(contentRect, Input.mousePosition, cam))
         {
-            gameObject.SetActive(false);
+            LobbyModalButtonPop.Close(gameObject);
         }
     }
 }

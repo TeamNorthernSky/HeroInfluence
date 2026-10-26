@@ -73,7 +73,7 @@ public class HeroInfoModal : MonoBehaviour
 
     public void Close()
     {
-        GetRoot().SetActive(false);
+        LobbyModalButtonPop.Close(GetRoot());
     }
 
     private GameObject GetRoot()

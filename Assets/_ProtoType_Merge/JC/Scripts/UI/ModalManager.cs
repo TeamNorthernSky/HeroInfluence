@@ -42,7 +42,7 @@ public class ModalManager : MonoBehaviour
     public static void CloseTop()
     {
         var top = Top;
-        if (top != null) top.SetActive(false); // Modal.OnDisable → Unregister
+        if (top != null) LobbyModalButtonPop.Close(top); // Modal.OnDisable → Unregister after closing.
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -62,6 +62,7 @@ public class ModalManager : MonoBehaviour
     private GameObject dimGo;
     private RectTransform dimRt;
     private Image dimImage;
+    private bool dimRefreshPending;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
@@ -112,8 +113,21 @@ public class ModalManager : MonoBehaviour
         dimGo.SetActive(false);
     }
 
-    // 스택 top 모달 뒤(형제 바로 아래)로 dim을 co-locate. wantsDim=false거나 모달 없으면 주차.
+    // Modal.OnEnable/OnDisable 중에는 부모·형제 순서를 변경할 수 없으므로 예약만 한다.
     private void HandleStackChanged()
+    {
+        dimRefreshPending = true;
+    }
+
+    private void LateUpdate()
+    {
+        if (!dimRefreshPending) return;
+        dimRefreshPending = false;
+        RefreshDim();
+    }
+
+    // 같은 프레임에 여러 모달이 닫혀도 최종 top을 기준으로 한 번만 배치한다.
+    private void RefreshDim()
     {
         EnsureDim();
 

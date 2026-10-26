@@ -2974,6 +2974,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 164600813}
   m_CullTransparentMesh: 1
+--- !u!224 &168806581 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8913083401697384048, guid: 84f1cc0a884961c419cc368e0f93fb45,
+    type: 3}
+  m_PrefabInstance: {fileID: 1004272264}
+  m_PrefabAsset: {fileID: 0}
 --- !u!21 &172171440
 Material:
   serializedVersion: 8
@@ -4658,7 +4664,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "MAX\ub294 \ub0a8\uc740 \ud64d\ubcf4 \ud69f\uc218\uc640\n\uc601\uc6c5\uc758 IP \uc6a9\ub7c9\uc744 \n\ud568\uaed8 \ud655\uc778\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc744 \ud074\ub9ad\ud558\uc5ec\n\ub0a8\uc740 \ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\ub97c\n\ubaa8\ub450 \uc0ac\uc6a9\ud558\ub3c4\ub85d \uc124\uc815\ud558\uc138\uc694."
+  m_text: "MAX\uB294 \uB0A8\uC740 \uD64D\uBCF4 \uD69F\uC218\uC640\n\uC601\uC6C5\uC758
+    IP \uC6A9\uB7C9\uC744 \n\uD568\uAED8 \uD655\uC778\uD569\uB2C8\uB2E4.\nMAX \uBC84\uD2BC\uC744
+    \uD074\uB9AD\uD558\uC5EC\n\uB0A8\uC740 \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uB97C\n\uBAA8\uB450
+    \uC0AC\uC6A9\uD558\uB3C4\uB85D \uC124\uC815\uD558\uC138\uC694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -11765,8 +11774,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 34
+  m_fontSizeBase: 34
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -19095,8 +19104,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 175, y: -70}
-  m_SizeDelta: {x: 200, y: 71.6}
+  m_AnchoredPosition: {x: 190, y: -125}
+  m_SizeDelta: {x: 240, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &873982918
 MonoBehaviour:
@@ -19426,8 +19435,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 34
+  m_fontSizeBase: 34
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -19587,8 +19596,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -175, y: -70}
-  m_SizeDelta: {x: 200, y: 71.6}
+  m_AnchoredPosition: {x: -190, y: -125}
+  m_SizeDelta: {x: 240, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &888589286
 MonoBehaviour:
@@ -20505,7 +20514,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\ud64d\ubcf4 1\ud68c\uc5d0\ub294 \uc790\uae08 100\uc774 \ud544\uc694\ud558\uba70,\n\uc601\uc6c5\uc758 IP\uac00 1 \uc99d\uac00\ud569\ub2c8\ub2e4.\n\uc774\ubc88 \uc2e4\uc2b5\uc5d0\uc11c\ub294 \uc800\uc2a4\ud2f0\uc2a4\ub97c\n\ucd1d 40\ud68c \ud64d\ubcf4\ud569\ub2c8\ub2e4.\n\uc790\uae08 4,000\uc774 \ud544\uc694\ud569\ub2c8\ub2e4."
+  m_text: "\uD64D\uBCF4 1\uD68C\uC5D0\uB294 \uC790\uAE08 100\uC774 \uD544\uC694\uD558\uBA70,\n\uC601\uC6C5\uC758
+    IP\uAC00 1 \uC99D\uAC00\uD569\uB2C8\uB2E4.\n\uC774\uBC88 \uC2E4\uC2B5\uC5D0\uC11C\uB294
+    \uC800\uC2A4\uD2F0\uC2A4\uB97C\n\uCD1D 40\uD68C \uD64D\uBCF4\uD569\uB2C8\uB2E4.\n\uC790\uAE08
+    4,000\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -24385,7 +24397,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\ub0a8\uc740 \ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\ub9cc\ud07c\n\ud64d\ubcf4\uac00 \uac00\ub2a5\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc73c\ub85c \ud604\uc7ac \uc9c4\ud589 \uac00\ub2a5\ud55c\n\ucd5c\ub300 \ud69f\uc218\ub97c \uc120\ud0dd\ud574 \ubd05\uc2dc\ub2e4."
+  m_text: "\uB0A8\uC740 \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uB9CC\uD07C\n\uD64D\uBCF4\uAC00
+    \uAC00\uB2A5\uD569\uB2C8\uB2E4.\nMAX \uBC84\uD2BC\uC73C\uB85C \uD604\uC7AC \uC9C4\uD589
+    \uAC00\uB2A5\uD55C\n\uCD5C\uB300 \uD69F\uC218\uB97C \uC120\uD0DD\uD574 \uBD05\uC2DC\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -29901,7 +29915,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uc800\uc2a4\ud2f0\uc2a4\uc758 IP\uac00\n\ud64d\ubcf4 \ud69f\uc218\ub9cc\ud07c \uc99d\uac00\ud588\uc2b5\ub2c8\ub2e4.\n\ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\uc640 \uc790\uae08\uc774\n\uc18c\ubaa8\ub418\uc5c8\uc2b5\ub2c8\ub2e4."
+  m_text: "\uC800\uC2A4\uD2F0\uC2A4\uC758 IP\uAC00\n\uD64D\uBCF4 \uD69F\uC218\uB9CC\uD07C
+    \uC99D\uAC00\uD588\uC2B5\uB2C8\uB2E4.\n\uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uC640
+    \uC790\uAE08\uC774\n\uC18C\uBAA8\uB418\uC5C8\uC2B5\uB2C8\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -37858,7 +37874,10 @@ MonoBehaviour:
       rect: {fileID: 1506796138}
   - panelIndex: 3
     advance: 0
-    message: "\ud64d\ubcf4 1\ud68c\uc5d0\ub294 \uc790\uae08 100\uc774 \ud544\uc694\ud558\uba70,\n\uc601\uc6c5\uc758 IP\uac00 1 \uc99d\uac00\ud569\ub2c8\ub2e4.\n\uc774\ubc88 \uc2e4\uc2b5\uc5d0\uc11c\ub294 \uc800\uc2a4\ud2f0\uc2a4\ub97c\n\ucd1d 40\ud68c \ud64d\ubcf4\ud569\ub2c8\ub2e4.\n\uc790\uae08 4,000\uc774 \ud544\uc694\ud569\ub2c8\ub2e4."
+    message: "\uD64D\uBCF4 1\uD68C\uC5D0\uB294 \uC790\uAE08 100\uC774 \uD544\uC694\uD558\uBA70,\n\uC601\uC6C5\uC758
+      IP\uAC00 1 \uC99D\uAC00\uD569\uB2C8\uB2E4.\n\uC774\uBC88 \uC2E4\uC2B5\uC5D0\uC11C\uB294
+      \uC800\uC2A4\uD2F0\uC2A4\uB97C\n\uCD1D 40\uD68C \uD64D\uBCF4\uD569\uB2C8\uB2E4.\n\uC790\uAE08
+      4,000\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
     targetCount: 0
     highlightIndices: 
     explanationPanel: {fileID: 0}
@@ -38064,7 +38083,9 @@ MonoBehaviour:
       rect: {fileID: 1223897444}
   - panelIndex: 5
     advance: 0
-    message: "\uc800\uc2a4\ud2f0\uc2a4\uc758 IP\uac00\n\ud64d\ubcf4 \ud69f\uc218\ub9cc\ud07c \uc99d\uac00\ud588\uc2b5\ub2c8\ub2e4.\n\ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\uc640 \uc790\uae08\uc774\n\uc18c\ubaa8\ub418\uc5c8\uc2b5\ub2c8\ub2e4."
+    message: "\uC800\uC2A4\uD2F0\uC2A4\uC758 IP\uAC00\n\uD64D\uBCF4 \uD69F\uC218\uB9CC\uD07C
+      \uC99D\uAC00\uD588\uC2B5\uB2C8\uB2E4.\n\uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uC640
+      \uC790\uAE08\uC774\n\uC18C\uBAA8\uB418\uC5C8\uC2B5\uB2C8\uB2E4."
     targetCount: 0
     highlightIndices: 
     explanationPanel: {fileID: 0}
@@ -38161,7 +38182,10 @@ MonoBehaviour:
       rect: {fileID: 1691445151}
   - panelIndex: 6
     advance: 0
-    message: "\ub0a8\uc740 \ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\ub9cc\ud07c\n\ud64d\ubcf4\uac00 \uac00\ub2a5\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc73c\ub85c \ud604\uc7ac \uc9c4\ud589 \uac00\ub2a5\ud55c\n\ucd5c\ub300 \ud69f\uc218\ub97c \uc120\ud0dd\ud574 \ubd05\uc2dc\ub2e4."
+    message: "\uB0A8\uC740 \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uB9CC\uD07C\n\uD64D\uBCF4\uAC00
+      \uAC00\uB2A5\uD569\uB2C8\uB2E4.\nMAX \uBC84\uD2BC\uC73C\uB85C \uD604\uC7AC
+      \uC9C4\uD589 \uAC00\uB2A5\uD55C\n\uCD5C\uB300 \uD69F\uC218\uB97C \uC120\uD0DD\uD574
+      \uBD05\uC2DC\uB2E4."
     targetCount: 0
     highlightIndices: 
     explanationPanel: {fileID: 0}
@@ -38258,7 +38282,10 @@ MonoBehaviour:
       rect: {fileID: 1384674511}
   - panelIndex: 7
     advance: 3
-    message: "MAX\ub294 \ub0a8\uc740 \ud64d\ubcf4 \ud69f\uc218\uc640\n\uc601\uc6c5\uc758 IP \uc6a9\ub7c9\uc744 \ud568\uaed8 \ud655\uc778\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc744 \ud074\ub9ad\ud558\uc5ec\n\ub0a8\uc740 \ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\ub97c\n\ubaa8\ub450 \uc0ac\uc6a9\ud558\ub3c4\ub85d \uc124\uc815\ud558\uc138\uc694."
+    message: "MAX\uB294 \uB0A8\uC740 \uD64D\uBCF4 \uD69F\uC218\uC640\n\uC601\uC6C5\uC758
+      IP \uC6A9\uB7C9\uC744 \uD568\uAED8 \uD655\uC778\uD569\uB2C8\uB2E4.\nMAX \uBC84\uD2BC\uC744
+      \uD074\uB9AD\uD558\uC5EC\n\uB0A8\uC740 \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uB97C\n\uBAA8\uB450
+      \uC0AC\uC6A9\uD558\uB3C4\uB85D \uC124\uC815\uD558\uC138\uC694."
     targetCount: 0
     highlightIndices: 
     explanationPanel: {fileID: 0}
@@ -44224,8 +44251,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 20}
-  m_SizeDelta: {x: 800, y: 550}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 840, y: 510}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1992086611
 MonoBehaviour:
@@ -47208,7 +47235,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 75}
-  m_SizeDelta: {x: 600, y: 100}
+  m_SizeDelta: {x: 600, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2105428467
 MonoBehaviour:
@@ -48540,10 +48567,3 @@ SceneRoots:
   - {fileID: 1050741659}
   - {fileID: 1327263448}
   - {fileID: 1743440935}
-
---- !u!224 &168806581 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 8913083401697384048, guid: 84f1cc0a884961c419cc368e0f93fb45,
-    type: 3}
-  m_PrefabInstance: {fileID: 1004272264}
-  m_PrefabAsset: {fileID: 0}
