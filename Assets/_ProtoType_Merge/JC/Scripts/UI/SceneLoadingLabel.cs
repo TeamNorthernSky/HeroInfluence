@@ -1,11 +1,9 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
-/// <summary>검정 로딩 화면에서 글자별 높이와 푸른 글로우를 순차적으로 움직인다.</summary>
+/// <summary>검정 로딩 화면에 고정된 글자와 푸른 글로우를 표시한다.</summary>
 public sealed class SceneLoadingLabel : MonoBehaviour
 {
-    private RectTransform[] letters;
-    private TMP_Text[] glows;
     private Material glowMaterial;
     public void Initialize(Transform parent)
     {
@@ -15,8 +13,7 @@ public sealed class SceneLoadingLabel : MonoBehaviour
         root.sizeDelta = new Vector2(420, 100);
         const string text = "Loading...";
         var widths = new float[text.Length];
-        letters = new RectTransform[text.Length];
-        glows = new TMP_Text[text.Length];
+        var letters = new RectTransform[text.Length];
         for (int i = 0; i < text.Length; i++)
         {
             var host = new GameObject("Letter " + i, typeof(RectTransform));
@@ -35,7 +32,7 @@ public sealed class SceneLoadingLabel : MonoBehaviour
                 glowMaterial.SetFloat("_FaceDilate", .15f);
             }
             glow.fontSharedMaterial = glowMaterial;
-            glows[i] = glow;
+            glow.alpha = .4f;
             var face = CreateGlyph(rect, text[i], Color.white);
             widths[i] = face.GetPreferredValues(text[i].ToString()).x + 3;
         }
@@ -65,20 +62,6 @@ public sealed class SceneLoadingLabel : MonoBehaviour
         rect.offsetMin = rect.offsetMax = Vector2.zero;
         return label;
     }
-    public void RenderAnimation(float time)
-    {
-        if (letters == null) return;
-        for (int i = 0; i < letters.Length; i++)
-        {
-            float phase = Mathf.Repeat(time * .65f - i * .075f, 1f);
-            float wave = phase < .4f ? Mathf.Sin(phase / .4f * Mathf.PI) : 0;
-            var position = letters[i].anchoredPosition;
-            position.y = wave * 16;
-            letters[i].anchoredPosition = position;
-            glows[i].alpha = Mathf.Lerp(.12f, 1f, wave);
-        }
-    }
-    private void Update() => RenderAnimation(Time.unscaledTime);
     private void OnDestroy()
     {
         if (glowMaterial == null) return;

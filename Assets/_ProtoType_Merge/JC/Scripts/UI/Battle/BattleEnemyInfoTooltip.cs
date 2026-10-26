@@ -112,11 +112,13 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
         if (ShouldHide()) { Hide(); return; }
         var target = FindHoveredUnit();
         if (target == null || target.IsPlayer || target.IsDead) { Hide(); return; }
+        if (!JC.Tutorial.JcTutorialBattleGuide.AllowsHover(gameObject.scene, target, hoveredTurnUI)) { Hide(); return; }
         hoverLink.Show(target, hoveredTurnUI, hoveredTurnSlot,
             battlefieldCamera != null ? battlefieldCamera : Camera.main);
         if (target != shownUnit) Bind(target);
         RefreshStats();
         PlaceAtPointer(Input.mousePosition);
+        JC.Tutorial.JcTutorialBattleGuide.PlaceTooltip(gameObject.scene, panel);
     }
 
     private BattleCharactor FindHoveredUnit()

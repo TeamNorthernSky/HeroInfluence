@@ -34,6 +34,9 @@ public sealed class JcBattleTooltipPlacement
         Rect current = CanvasBounds(panel);
         Vector2 size = current.size;
         obstacles.Clear();
+        var tutorialMessage = JC.Tutorial.JcTutorialBattleGuide.MessageObstacle;
+        if (tutorialMessage != null && tutorialMessage.gameObject.scene == panel.gameObject.scene)
+            obstacles.Add(Expand(CanvasBounds(tutorialMessage), gap));
         float modelGap = Mathf.Max(gap, modelClearancePixels / Mathf.Max(.01f, canvas.scaleFactor));
         gap = Mathf.Max(gap, badgeClearance);
         bool hasTurn = false;
@@ -54,7 +57,6 @@ public sealed class JcBattleTooltipPlacement
             if (!hasTurn) { turn = badge; obstacles.Add(Expand(turn, gap)); hasTurn = true; }
             // 배지 호버는 커서 이동과 무관한 슬롯 중앙을 기준으로 합니다.
             preferred = new Vector2(turn.xMin - gap - size.x, badge.center.y + size.y * 0.5f);
-            if (TryModelBounds(unit, worldCamera, uiCamera, out var model)) obstacles.Add(Expand(model, modelGap));
         }
         else
         {
@@ -62,6 +64,9 @@ public sealed class JcBattleTooltipPlacement
             // 툴팁이 커서를 덮어서 호버가 끊기는 현상도 방지합니다.
             obstacles.Add(new Rect(localPointer - Vector2.one * gap, Vector2.one * gap * 2f));
         }
+
+        // 메시 직접 호버도 모델과 바닥 표시를 함께 강조하므로 양쪽 경로 모두 보호합니다.
+        if (TryModelBounds(unit, worldCamera, uiCamera, out var model)) obstacles.Add(Expand(model, modelGap));
 
         Rect chosen;
         bool placed = false;
