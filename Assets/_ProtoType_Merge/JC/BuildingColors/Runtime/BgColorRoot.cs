@@ -34,8 +34,8 @@ namespace JC.BuildingColors
 
         void OnEnable(){InvalidateTargets();appliedProfileHash=int.MinValue;refreshRequested=true;}
         void OnValidate(){appliedProfileHash=int.MinValue;refreshRequested=true;}
-        void OnDisable(){Unsubscribe();RemoveGenerated();InvalidateTargets();}
-        void OnDestroy(){Unsubscribe();RemoveGenerated();}
+        void OnDisable(){Unsubscribe();RemoveGenerated(true);InvalidateTargets();}
+        void OnDestroy(){Unsubscribe();RemoveGenerated(true);}
         void Update()
         {
             if(Time.realtimeSinceStartupAsDouble>=nextProfileCheck){
@@ -131,13 +131,28 @@ namespace JC.BuildingColors
                 return h;
             }
         }
-        void RemoveGenerated()
+        void RemoveGenerated(bool deferHierarchy = false)
         {
             variants.Clear();supportedTypes.Clear();
-            if(!generatedRoot)return;
-            generatedRoot.SetActive(false);generatedRoot.transform.SetParent(null);
-            if(Application.IsPlaying(gameObject))Destroy(generatedRoot);else DestroyImmediate(generatedRoot);
-            generatedRoot=null;
+            var retiring = generatedRoot;
+            generatedRoot = null; // OnDisable/OnDestroy 중복 정리를 방지합니다.
+            if(!retiring)return;
+            // 부모 활성 상태 전파 중에는 계층을 변경하거나 즉시 삭제하지 않습니다.
+            foreach(var modifier in retiring.GetComponentsInChildren<BgColorModifier>(true))
+            {
+                modifier.ResetTargets();
+                modifier.enabled = false;
+            }
+            if(Application.IsPlaying(gameObject))Destroy(retiring);
+            else
+            {
+                #if UNITY_EDITOR
+                if(deferHierarchy)
+                    UnityEditor.EditorApplication.delayCall += () => { if(retiring) DestroyImmediate(retiring); };
+                else
+                #endif
+                    DestroyImmediate(retiring);
+            }
         }
         void RebuildVariants()
         {

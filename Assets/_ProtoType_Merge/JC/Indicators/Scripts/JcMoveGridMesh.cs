@@ -19,6 +19,7 @@ public sealed class JcMoveGridMesh : System.IDisposable
     private float halfWidth;
     private Bounds groundBounds;
     private float curtainExtent;
+    private float projectionExtent;
 
     public JcMoveGridMesh(Transform parent)
     {
@@ -128,6 +129,17 @@ public sealed class JcMoveGridMesh : System.IDisposable
         material.SetFloat("_EdgeSoftness", Mathf.Clamp(edgeSoftness, 0f, 0.5f));
     }
 
+    public void SetViewCompensation(JcMoveRangeGridProfile profile)
+    {
+        if (material == null) return;
+        material.SetFloat("_UniformCurtain", profile.uniformCurtainSize ? 1 : 0);
+        material.SetFloat("_CurtainScreenHeight", profile.curtainScreenHeight);
+        material.SetFloat("_CurtainMaxHeight", profile.curtainMaxHeight);
+        material.SetFloat("_AdaptDayNight", profile.adaptToDayNight ? 1 : 0);
+        material.SetFloat("_NightIntensityMultiplier", profile.nightIntensityMultiplier);
+        projectionExtent = profile.uniformCurtainSize ? profile.curtainMaxHeight : 0;
+    }
+
     public void SetCurtain(float height, float opacity, float intensity, float softness)
     {
         if (material == null) return;
@@ -136,7 +148,7 @@ public sealed class JcMoveGridMesh : System.IDisposable
         material.SetFloat("_CurtainOpacity", Mathf.Clamp01(opacity));
         material.SetFloat("_CurtainIntensity", Mathf.Max(0, intensity));
         material.SetFloat("_CurtainSoftness", Mathf.Clamp(softness, 0.5f, 6f));
-        float extent = height;
+        float extent = height > 0 ? Mathf.Max(height, projectionExtent) : 0;
         if (curtainExtent != extent) { curtainExtent = extent; UpdateBounds(); }
     }
 

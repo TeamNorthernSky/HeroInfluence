@@ -98,7 +98,7 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
         }
         view.SetSideLayout(null);
         bool overview = index == FacilitiesOverviewIndex;
-        if (cardBackground != null) cardBackground.SetOpaqueFill(overview);
+        if (cardBackground != null) cardBackground.SetOpaqueFill(true);
         view.SetContent("협회 안내", sourceMessages[index] != null ? sourceMessages[index].text : "");
         var card = (RectTransform)view.panel.transform;
         if (messagePositions != null && index < messagePositions.Length)

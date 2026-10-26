@@ -9,29 +9,28 @@ public class MoveRangeController : MonoBehaviour
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private Transform lineRoot;
 
-    [Header("Movement Grid")]
-    [SerializeField, Tooltip("이동 가능 그리드의 색상입니다. 투명도는 아래 항목에서 별도로 조절합니다.")]
-    private Color gridColor = new Color(0.15f, 1f, 0.35f, 1f);
-    [SerializeField, Range(0f, 1f), Tooltip("그리드의 불투명도입니다. 0은 투명, 1은 불투명입니다.")]
-    private float gridOpacity = 0.4f;
-    [SerializeField, Min(0f), Tooltip("주변 조명과 무관한 선의 자체 발광 강도입니다. 1보다 큰 HDR 값은 카메라의 Bloom이 켜져 있을 때 빛 번짐에도 반영됩니다.")]
-    private float gridEmissionIntensity = 3f;
-    [SerializeField, Min(0.001f), Tooltip("그리드 선의 월드 단위 두께입니다. 셀 크기의 1/4 이하로 제한합니다.")]
-    private float gridWidth = 0.025f;
-    [SerializeField, Range(0f, 0.5f), Tooltip("선 두께 대비 가장자리의 부드러운 감쇠 폭입니다. 0은 기본 픽셀 안티앨리어싱만 적용하며, 높일수록 선 경계가 부드러워집니다.")]
-    private float gridEdgeSoftness = 0.15f;
-    [SerializeField, Tooltip("바닥과 겹쳐 깜빡이지 않도록 그리드를 지면에서 띄우는 높이입니다.")]
-    private float lineYOffset = 0.035f;
+    private JcMoveRangeGridProfile gridProfile;
+    // 씬의 복제값이나 시작 시 복사본을 사용하지 않아 씬 전환과 실시간 편집이 일치합니다.
+    public JcMoveRangeGridProfile GridProfile
+    {
+        get
+        {
+            if (gridProfile == null)
+                gridProfile = Resources.Load<JcMoveRangeGridProfile>(JcMoveRangeGridProfile.ResourceName);
+            return gridProfile;
+        }
+    }
 
-    [Header("Light Curtain")]
-    [SerializeField, Min(0f), Tooltip("선을 따라 올라오는 빛 장막의 월드 단위 높이입니다. 0이면 장막을 숨깁니다.")]
-    private float curtainHeight = 0.18f;
-    [SerializeField, Range(0f, 1f), Tooltip("빛 장막의 불투명도입니다. 선의 투명도와 별도로 적용합니다.")]
-    private float curtainOpacity = 0.16f;
-    [SerializeField, Min(0f), Tooltip("빛 장막의 자체 발광 강도입니다.")]
-    private float curtainIntensity = 1.5f;
-    [SerializeField, Range(0.5f, 6f), Tooltip("위로 올라갈수록 장막이 흐려지는 정도입니다. 높을수록 윗부분이 더 빨리 사라집니다.")]
-    private float curtainSoftness = 2f;
+    private Color gridColor => GridProfile.gridColor;
+    private float gridOpacity => GridProfile.gridOpacity;
+    private float gridEmissionIntensity => GridProfile.gridEmissionIntensity;
+    private float gridWidth => GridProfile.gridWidth;
+    private float gridEdgeSoftness => GridProfile.gridEdgeSoftness;
+    private float lineYOffset => GridProfile.lineYOffset;
+    private float curtainHeight => GridProfile.curtainHeight;
+    private float curtainOpacity => GridProfile.curtainOpacity;
+    private float curtainIntensity => GridProfile.curtainIntensity;
+    private float curtainSoftness => GridProfile.curtainSoftness;
 
     [Header("Search Guard")]
     [SerializeField, Min(16)] private int maxSearchCells = 1000;
@@ -113,6 +112,12 @@ public class MoveRangeController : MonoBehaviour
 
     private void OnEnable()
     {
+        if (GridProfile == null)
+        {
+            Debug.LogError("공통 이동범위 그리드 프로필을 찾을 수 없습니다: " + JcMoveRangeGridProfile.ResourceName, this);
+            enabled = false;
+            return;
+        }
         RefreshForCurrentParty();
         RequestRefreshAfterSceneSetup();
     }
@@ -168,6 +173,7 @@ public class MoveRangeController : MonoBehaviour
     {
         if (gridMesh == null) return;
         gridMesh.SetAppearance(gridColor, gridOpacity, gridEmissionIntensity, gridEdgeSoftness);
+        gridMesh.SetViewCompensation(GridProfile);
         gridMesh.SetCurtain(curtainHeight, curtainOpacity, curtainIntensity, curtainSoftness);
     }
 
