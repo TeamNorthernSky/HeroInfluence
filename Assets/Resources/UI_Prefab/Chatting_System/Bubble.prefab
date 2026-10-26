@@ -101,26 +101,6 @@ MonoBehaviour:
   narrationBubbleColor: {r: 1, g: 1, b: 1, a: 1}
   portraitRoot: {fileID: 5765105513668889902}
   portraitImage: {fileID: 2052048249500157356}
-  characterPortraits:
-  - {fileID: 21300000, guid: c652d427b53054f4c9a69922a2a4b2c2, type: 3}
-  - {fileID: 21300000, guid: e43a5c02f56cf8c448936cc656e7ecd5, type: 3}
-  - {fileID: 21300000, guid: f7cc15a4561e4844abdbe6095ca6addc, type: 3}
-  - {fileID: 21300000, guid: 3e2a61bde78cd01429705b7e61495791, type: 3}
-  - {fileID: 21300000, guid: 4b832376a4427ba4894b5f91bfb3adf4, type: 3}
-  - {fileID: 21300000, guid: b5947eff56790a14d8e41933a688ff21, type: 3}
-  - {fileID: 21300000, guid: d10faf1e761447c4fa81d1fbb55b101e, type: 3}
-  - {fileID: 21300000, guid: 92b6a27801dcc394d8fb3b054a3e9502, type: 3}
-  - {fileID: 21300000, guid: fad83fe9757b8ba44b35321b5fb76b45, type: 3}
-  - {fileID: 21300000, guid: 9bd16c4644e32f3478663a1815369f4e, type: 3}
-  - {fileID: 21300000, guid: 66c61dfbbc23c1f498231f59ce677a8a, type: 3}
-  - {fileID: 21300000, guid: 6e3be5d54f0437b4ba6d890bb2dbd858, type: 3}
-  - {fileID: 21300000, guid: 81e863fccfea595409daadeb6ab906af, type: 3}
-  - {fileID: 21300000, guid: 11b5c94c935f474996d1b3e70ccbca9c, type: 3}
-  - {fileID: 21300000, guid: 41a0f00af8a247a581b8e054a832122a, type: 3}
-  - {fileID: 21300000, guid: 62f39af6ca8787942b956368a4becfc5, type: 3}
-  - {fileID: 21300000, guid: f806462c2d514c34f9f36edfcb32dd43, type: 3}
-  - {fileID: 21300000, guid: 720058fdd3b2b3343bb2e87685a9f875, type: 3}
-  - {fileID: 21300000, guid: ad18426806526f34f805cad667975cf6, type: 3}
   singleLineSprite: {fileID: 21300000, guid: 1fbbdab26fdbfa44286fc0c75fc2108b, type: 3}
   multiLineSprite: {fileID: 21300000, guid: 65ceedf300edc6f4c9f27ab476887199, type: 3}
   narrationSprite: {fileID: 21300000, guid: edab2bc49355f494abb12e9765048e72, type: 3}

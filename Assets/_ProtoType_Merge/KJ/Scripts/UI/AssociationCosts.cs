@@ -81,6 +81,15 @@ public static class AssociationCosts
         return row != null;
     }
 
+    public static bool TryInfirmary(int level, out DHAssociationInfirmaryTemplate row)
+    {
+        row = null;
+        var catalog = AssociationResourceCatalog.Instance;
+        return catalog != null && level >= 1 && catalog.TryGetInfirmaryTemplate(level, out row)
+            && row != null && row.HpRecoveryFraction > 0f && row.HpRecoveryFraction <= 1f
+            && TryMoney(row.Cost, out _);
+    }
+
     public static bool TryPromotion(int level, out DHAssociationPromotionTemplate row)
     {
         row = null;

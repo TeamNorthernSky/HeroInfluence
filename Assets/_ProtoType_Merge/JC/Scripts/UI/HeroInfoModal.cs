@@ -118,8 +118,8 @@ public class HeroInfoModal : MonoBehaviour
         SetText(hpText, $"{s.HP:F0}");
         SetText(atkText, $"{s.Atk:F0}");
         SetText(defText, $"{s.DEF:F0}");
-        SetText(critRateText, $"{s.CriticalRate:F0}%");
-        SetText(counterRateText, $"{s.CounterRate:F0}%");
+        SetText(critRateText, $"{s.CriticalRate * 100f:F0}%");
+        SetText(counterRateText, $"{s.CounterRate * 100f:F0}%");
         SetText(damageReductionText, "—");
         SetText(speedText, $"{s.Speed:F0}");
 

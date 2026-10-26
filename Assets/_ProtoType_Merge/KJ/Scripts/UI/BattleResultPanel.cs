@@ -63,6 +63,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
         if (result == BattleResult.Defeat)
         {
+            DefeatInfirmaryGuide.Request(CombatContext.Instance);
             defeatVisibility = GetComponent<CanvasGroup>();
             if (defeatVisibility == null) defeatVisibility = gameObject.AddComponent<CanvasGroup>();
             previousAlpha = defeatVisibility.alpha;

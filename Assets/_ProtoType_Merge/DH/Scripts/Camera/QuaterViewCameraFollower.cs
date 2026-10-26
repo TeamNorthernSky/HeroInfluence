@@ -96,6 +96,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public bool IsExternalInputLocked => externalInputLocked;
     public bool IsEventZoomApplied => eventZoomApplied;
+    public bool IsEventFocusMoving => eventFocusMoving;
     public event System.Action<bool> EventZoomChanged;
     public bool IsManualNavigationLocked => externalInputLocked || IsFollowTargetPartyMoving();
 
@@ -215,11 +216,9 @@ public class QuarterViewCameraFollower : MonoBehaviour
             positionOffset = new Vector3(0f, 3f, -2.5f);
             fixedEulerAngles = new Vector3(40f, 0f, 0f);
             ResolveMapBoundsReferences();
-            if (clampToMapBounds && targetCamera != null && gridManager != null
-                && TryGetMapWorldBounds(out Rect eventBounds))
+            if (gridManager != null && TryGetMapWorldBounds(out Rect eventBounds))
             {
-                AdjustEventFocusPitch(eventBounds,
-                    new Plane(Vector3.up, new Vector3(0f, gridManager.GetLandSurfaceY(), 0f)));
+                AdjustEventFocusForMapPosition(eventBounds);
             }
         }
         // Resolve the existing map boundary/zoom constraints at the destination.
@@ -233,39 +232,14 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (!returnToFollow) EventZoomChanged?.Invoke(true);
     }
 
-    private void AdjustEventFocusPitch(Rect mapBounds, Plane groundPlane)
+    private void AdjustEventFocusForMapPosition(Rect mapBounds)
     {
-        Vector3 savedPosition = transform.position;
-        Quaternion savedRotation = transform.rotation;
-        Vector3 eventPosition = new Vector3(externalFocusWorldPosition.x, positionOffset.y,
-            externalFocusWorldPosition.z + positionOffset.z);
-        float bestPitch = fixedEulerAngles.x;
-        float bestOverflow = float.PositiveInfinity;
-
-        // Keep the usual angle wherever it fits. Near an edge, look down more to
-        // reduce the displacement imposed by the existing map boundary.
-        for (float pitch = fixedEulerAngles.x; pitch <= 75f; pitch += 1f)
-        {
-            transform.SetPositionAndRotation(eventPosition,
-                Quaternion.Euler(pitch, fixedEulerAngles.y, fixedEulerAngles.z));
-            if (!TryGetViewportGroundRect(groundPlane, out Rect viewport))
-                continue;
-
-            float overflow = Mathf.Max(0f, mapBounds.xMin - viewport.xMin)
-                + Mathf.Max(0f, viewport.xMax - mapBounds.xMax)
-                + Mathf.Max(0f, mapBounds.yMin - viewport.yMin)
-                + Mathf.Max(0f, viewport.yMax - mapBounds.yMax);
-            if (overflow < bestOverflow)
-            {
-                bestOverflow = overflow;
-                bestPitch = pitch;
-            }
-            if (overflow <= 0.001f)
-                break;
-        }
-
-        transform.SetPositionAndRotation(savedPosition, savedRotation);
-        fixedEulerAngles.x = bestPitch;
+        // Keep the original framing below the map center, then blend both values
+        // together as the NPC approaches the upper Z edge.
+        float upperMapRatio = Mathf.InverseLerp(mapBounds.center.y, mapBounds.yMax,
+            externalFocusWorldPosition.z);
+        positionOffset.z = Mathf.Lerp(-2.5f, -1.5f, upperMapRatio);
+        fixedEulerAngles.x = Mathf.Lerp(40f, 55f, upperMapRatio);
     }
 
     public void LockExternalFocusTarget(Transform target, bool snapImmediately = true)
