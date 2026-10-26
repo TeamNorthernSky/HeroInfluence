@@ -20,6 +20,22 @@ public sealed class LobbyModalButtonPop : MonoBehaviour
     private float elapsed;
     private bool running;
     private bool hasSnapshot;
+    private bool closing;
+
+    public static void Close(GameObject modalRoot)
+    {
+        if (modalRoot == null) return;
+        var effect = modalRoot.GetComponent<LobbyModalButtonPop>();
+        if (effect != null && effect.isActiveAndEnabled && effect.hasSnapshot)
+        {
+            if (effect.closing) return;
+            effect.closing = true;
+            effect.running = true;
+            effect.contentGroup.interactable = false;
+            return;
+        }
+        modalRoot.SetActive(false);
+    }
 
     private void OnEnable()
     {
@@ -42,6 +58,7 @@ public sealed class LobbyModalButtonPop : MonoBehaviour
         // Track the visual centre, so scaling a non-centred pivot cannot curve its path.
         startPosition = new Vector3(local.x, local.y, endPosition.z);
         elapsed = 0f;
+        closing = false;
         running = true;
         contentGroup.interactable = false;
         Evaluate(0f);
@@ -51,9 +68,10 @@ public sealed class LobbyModalButtonPop : MonoBehaviour
     {
         if (!running) return;
         float seconds = Mathf.Max(0.01f, duration);
-        elapsed = Mathf.Min(elapsed + Time.unscaledDeltaTime, seconds);
+        elapsed = Mathf.Clamp(elapsed + (closing ? -1f : 1f) * Time.unscaledDeltaTime, 0f, seconds);
         Evaluate(elapsed / seconds);
-        if (elapsed >= seconds) Restore();
+        if (closing && elapsed <= 0f) gameObject.SetActive(false);
+        else if (!closing && elapsed >= seconds) Restore(false);
     }
 
     private void Evaluate(float normalizedTime)
@@ -70,7 +88,7 @@ public sealed class LobbyModalButtonPop : MonoBehaviour
     private Vector3 CentreOffset(Vector3 scale) =>
         content.localRotation * Vector3.Scale(content.rect.center, scale);
 
-    private void Restore()
+    private void Restore(bool clearSnapshot = true)
     {
         running = false;
         if (!hasSnapshot) return;
@@ -84,7 +102,11 @@ public sealed class LobbyModalButtonPop : MonoBehaviour
             contentGroup.alpha = endAlpha;
             contentGroup.interactable = endInteractable;
         }
-        hasSnapshot = false;
+        if (clearSnapshot)
+        {
+            hasSnapshot = false;
+            closing = false;
+        }
     }
 
     private void OnDisable() => Restore();

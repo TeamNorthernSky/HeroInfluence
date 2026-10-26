@@ -167,7 +167,7 @@ public class SortieController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void CloseModal() { if (modalRoot != null) modalRoot.SetActive(false); }
+    public void CloseModal() { if (modalRoot != null) LobbyModalButtonPop.Close(modalRoot); }
 
     // ─── 로스터(영웅창) 전환 ─────────────────────────────────
     // [JC 260703] dormant: 편성 드래그-추가 기획 재활성 시 rosterController(HeroListController selection)를 결선하면 동작.

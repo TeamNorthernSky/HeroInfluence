@@ -24,6 +24,8 @@ public sealed class HeroLicenseView : MonoBehaviour
     private int lastCore = -1;
     private int lastCoreLevel = -1;
     private static readonly FieldInfo UnitIndexField = typeof(HeroInfoModal).GetField("currentUnitIndex", BindingFlags.Instance | BindingFlags.NonPublic);
+    private static readonly FieldInfo DamageReductionField = typeof(HeroInfoModal).GetField("damageReductionText", BindingFlags.Instance | BindingFlags.NonPublic);
+    private TMP_Text damageReductionValue;
     private int lastUnit = -1;
     private int lastLevel = -1;
     private void OnEnable() { lastUnit = -1; lastLevel = -1; lastCore = -1; lastCoreLevel = -1; BindStatHovers(); }
@@ -33,6 +35,10 @@ public sealed class HeroLicenseView : MonoBehaviour
         int index = (int)UnitIndexField.GetValue(owner);
         var repo = PersistentUnitRepository.Instance;
         if (repo == null || !repo.TryGetUnit(index, out var unit) || unit == null) return;
+        if (damageReductionValue == null && DamageReductionField != null)
+            damageReductionValue = DamageReductionField.GetValue(owner) as TMP_Text;
+        if (damageReductionValue != null)
+            damageReductionValue.text = $"{Mathf.Clamp01(unit.IngameStats.AvoidRate) * 100f:F0}%";
         float maximum = Mathf.Max(0f, unit.IngameStats.HP);
         hpValue.text = $"{unit.CurrentHp:F0}/{maximum:F0}";
         hpFill.fillAmount = maximum > 0f ? Mathf.Clamp01(unit.CurrentHp / maximum) : 0f;
@@ -125,7 +131,7 @@ public sealed class HeroLicenseView : MonoBehaviour
                 case "VF_Info_Def": title="방어력"; desc="상대의 공격으로 받는 피해를 줄이는 능력치입니다."; break;
                 case "VF_Info_CritRate": title="치명타율"; desc="공격 시 치명타가 발생할 확률입니다."; break;
                 case "VF_Info_CounterRate": title="반격률"; desc="공격을 받았을 때 반격할 확률입니다."; break;
-                case "VF_Info_DamageReduction": title="피해 경감률"; desc="받는 피해를 줄이는 비율입니다."; break;
+                case "VF_Info_DamageReduction": title="피해 경감률"; desc="후열에서 공격을 받았을 때 피해를 절반으로 줄일 확률입니다. 반격에는 적용되지 않습니다."; break;
                 case "VF_Info_Speed": title="행동 속도"; desc="전투에서 유닛의 행동 순서에 영향을 줍니다."; break;
                 case "VF_Info_HP": title="HP"; desc="현재 체력 / 최대 체력입니다. 체력이 0이 되면 전투 불능 상태가 됩니다."; break;
                 case "VF_Info_IP": title="IP"; desc="히어로의 영향력입니다. 스킬 사용에 필요한 자원입니다."; break;

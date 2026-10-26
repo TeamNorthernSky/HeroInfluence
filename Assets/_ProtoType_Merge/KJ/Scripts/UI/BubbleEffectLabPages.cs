@@ -8,6 +8,7 @@ public sealed class BubbleEffectLabPages : MonoBehaviour
     [SerializeField] private GameObject cameraShakePage;
     [SerializeField] private GameObject turnButtonPage;
     [SerializeField] private GameObject dialoguePopPage;
+    [SerializeField] private GameObject ambientButtonPage;
 
     public void Configure(GameObject original, GameObject sidePop)
     {
@@ -20,6 +21,7 @@ public sealed class BubbleEffectLabPages : MonoBehaviour
     public void ShowCameraShake() => Show(2);
     public void ShowTurnButton() => Show(3);
     public void ShowDialoguePop() => Show(4);
+    public void ShowAmbientButton() => Show(5);
 
     private void Show(int page)
     {
@@ -28,5 +30,6 @@ public sealed class BubbleEffectLabPages : MonoBehaviour
         if (cameraShakePage != null) cameraShakePage.SetActive(page == 2);
         if (turnButtonPage != null) turnButtonPage.SetActive(page == 3);
         if (dialoguePopPage != null) dialoguePopPage.SetActive(page == 4);
+        if (ambientButtonPage != null) ambientButtonPage.SetActive(page == 5);
     }
 }

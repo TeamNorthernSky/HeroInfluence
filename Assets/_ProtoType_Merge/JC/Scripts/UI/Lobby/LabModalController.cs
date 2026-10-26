@@ -219,7 +219,7 @@ public class LabModalController : MonoBehaviour
 
     public void CloseModal()
     {
-        if (modalRoot != null) modalRoot.SetActive(false);
+        if (modalRoot != null) LobbyModalButtonPop.Close(modalRoot);
     }
 
     private void OnHeroSelected(int unitIndex)

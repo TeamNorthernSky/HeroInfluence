@@ -84,8 +84,7 @@ public class InfirmaryModalController : MonoBehaviour
 
     public void CloseModal()
     {
-        if (modalRoot != null) modalRoot.SetActive(false);
-        else gameObject.SetActive(false);
+        LobbyModalButtonPop.Close(modalRoot != null ? modalRoot : gameObject);
     }
 
     // ─── 개별 회복/부활 ─────────────────────────────────────────

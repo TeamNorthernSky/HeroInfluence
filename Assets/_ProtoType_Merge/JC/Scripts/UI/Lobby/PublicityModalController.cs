@@ -115,7 +115,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
 
     public void CloseModal()
     {
-        if (modalPublicityRoot != null) modalPublicityRoot.SetActive(false);
+        if (modalPublicityRoot != null) LobbyModalButtonPop.Close(modalPublicityRoot);
     }
 
     // ─── 영웅 선택 ──────────────────────────────────────────

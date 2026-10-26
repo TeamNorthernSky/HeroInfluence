@@ -26,6 +26,83 @@ public sealed class ChatRewardResultView : MonoBehaviour
 
     private readonly List<CharacterSlot> slots = new List<CharacterSlot>();
     private RectTransform partyRewards;
+    private readonly List<(ResourceGainNumberMotion motion, TMP_Text label, int value)> numbers =
+        new List<(ResourceGainNumberMotion, TMP_Text, int)>();
+    private Coroutine numberRoutine;
+    public sealed class ValueSnapshot
+    {
+        public readonly Dictionary<string, int> Values = new Dictionary<string, int>();
+        public static ValueSnapshot Capture()
+        {
+            var snapshot = new ValueSnapshot();
+            var economy = GameManager.Instance != null ? GameManager.Instance.Economy : null;
+            if (economy != null)
+            {
+                snapshot.Values["Money"] = economy.Get(ResourceType.Money);
+                snapshot.Values["Medal"] = economy.Get(ResourceType.Chip);
+                snapshot.Values["Gem"] = economy.Get(ResourceType.Crystal);
+                snapshot.Values["Supply"] = economy.Get(ResourceType.Supply);
+            }
+            var repository = PersistentUnitRepository.Instance;
+            if (repository != null)
+                foreach (var unit in repository.Units)
+                {
+                    if (unit == null || string.IsNullOrEmpty(unit.UnitTemplateKey)) continue;
+                    string key = unit.UnitTemplateKey + "/";
+                    if (snapshot.Values.ContainsKey(key + "IP")) continue;
+                    snapshot.Values[key + "IP"] = Mathf.RoundToInt(unit.CurrentInfluence);
+                    snapshot.Values[key + "HP"] = Mathf.RoundToInt(unit.IngameStats.HP);
+                    snapshot.Values[key + "ATK"] = Mathf.RoundToInt(unit.IngameStats.Atk);
+                    snapshot.Values[key + "DEF"] = Mathf.RoundToInt(unit.IngameStats.DEF);
+                    snapshot.Values[key + "Heal"] = Mathf.RoundToInt(unit.CurrentHp);
+                }
+            return snapshot;
+        }
+    }
+    private ValueSnapshot beforeValues;
+    private readonly Dictionary<TMP_Text, string> valueKeys = new Dictionary<TMP_Text, string>();
+    public void SetBeforeValues(ValueSnapshot snapshot) => beforeValues = snapshot;
+
+    private void QueueNumber(TMP_Text label, int value, string prefix = "", string key = null)
+    {
+        // EXP is a per-unit grant, not a shared balance: keep its reward amount.
+        if (key == null) { label.text = prefix + Signed(value); return; }
+        var current = ValueSnapshot.Capture();
+        int start = beforeValues != null && beforeValues.Values.TryGetValue(key, out int oldValue)
+            ? oldValue : current.Values.TryGetValue(key, out int currentValue) ? currentValue : value;
+        var motion = new ResourceGainNumberMotion(n => prefix + n.ToString("N0"), showNotices: false, animateColor: false);
+        motion.Set(label, start);
+        valueKeys[label] = key;
+        numbers.Add((motion, label, value));
+    }
+
+    private System.Collections.IEnumerator PlayNumbersAfterEntrance()
+    {
+        yield return null; // Let layout and the modal entrance initialize first.
+        var after = ValueSnapshot.Capture(); // Dispatch listeners have now all applied the reward.
+        var modal = GetComponentInParent<ChatModalController>();
+        while (modal != null && modal.IsEntrancePlaying) yield return null;
+        foreach (var number in numbers)
+            if (after.Values.TryGetValue(valueKeys[number.label], out int total))
+                number.motion.Set(number.label, total);
+        numberRoutine = null;
+    }
+
+    private void Update()
+    {
+        foreach (var number in numbers) number.motion.Advance(Time.unscaledDeltaTime);
+    }
+
+    private void ClearNumbers()
+    {
+        if (numberRoutine != null) StopCoroutine(numberRoutine);
+        numberRoutine = null;
+        foreach (var number in numbers) number.motion.Reset();
+        numbers.Clear();
+        valueKeys.Clear();
+    }
+
+    private void OnDisable() => ClearNumbers();
 
     public void Bind(DHEventRewardTemplate reward)
     {
@@ -36,6 +113,7 @@ public sealed class ChatRewardResultView : MonoBehaviour
     public void Bind(DHEventRewardTemplate reward, IReadOnlyList<string> partyKeys)
     {
         if (reward == null) return;
+        ClearNumbers();
         Set("Money", reward.Money);
         Set("Medal", reward.Medal);
         Set("Gem", reward.Gem);
@@ -44,10 +122,11 @@ public sealed class ChatRewardResultView : MonoBehaviour
         if (exp != null)
         {
             exp.gameObject.SetActive(reward.Exp != 0);
-            exp.text = "EXP " + Signed(reward.Exp);
+            if (reward.Exp != 0) QueueNumber(exp, reward.Exp, "EXP ");
         }
         BindCharacters(reward, partyKeys);
         LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
+        if (isActiveAndEnabled) numberRoutine = StartCoroutine(PlayNumbersAfterEntrance());
     }
 
     private static IReadOnlyList<string> ResolvePartyKeys()
@@ -141,7 +220,7 @@ public sealed class ChatRewardResultView : MonoBehaviour
             for (int stat = 0; stat < values.Length; stat++)
             {
                 if (values[stat] == 0) continue;
-                BindStat(slot, rowIndex++, StatNames[stat], values[stat], spacing);
+                BindStat(slot, rowIndex++, StatNames[stat], values[stat], spacing, key);
             }
         }
     }
@@ -168,7 +247,7 @@ public sealed class ChatRewardResultView : MonoBehaviour
         return Mathf.Min(height, Mathf.Max(0, available / (count - 1)));
     }
 
-    private void BindStat(CharacterSlot slot, int index, string stat, int value, float spacing)
+    private void BindStat(CharacterSlot slot, int index, string stat, int value, float spacing, string unitKey)
     {
         while (slot.Rows.Count <= index)
         {
@@ -190,8 +269,8 @@ public sealed class ChatRewardResultView : MonoBehaviour
             if (resourceStyle != null && resourceStyle.font != null)
                 label.font = resourceStyle.font;
         }
-        label.text = (stat == "Heal" ? "회복 " : "") + Signed(value);
         label.color = value < 0 ? Red : Blue;
+        QueueNumber(label, value, stat == "Heal" ? "회복 " : "", unitKey + "/" + stat);
     }
 
     private Sprite GetStatIcon(string stat)
@@ -221,8 +300,9 @@ public sealed class ChatRewardResultView : MonoBehaviour
         TMP_Text text = FindText(key);
         if (text == null) return;
         text.gameObject.SetActive(true);
-        text.text = value == 0 ? "-" : Signed(value);
         text.color = value < 0 ? Red : Blue;
+        if (value == 0) text.text = "-";
+        else QueueNumber(text, value, key: key);
     }
 
     private TMP_Text FindText(string key)

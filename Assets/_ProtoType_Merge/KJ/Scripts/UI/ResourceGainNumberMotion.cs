@@ -7,6 +7,16 @@ using UnityEngine.UI;
 /// <summary>Display-only resource count changes with signed notices below the top bar.</summary>
 public sealed class ResourceGainNumberMotion
 {
+    private readonly Func<int, string> format;
+    private readonly bool showNotices;
+    private readonly bool animateColor;
+
+    public ResourceGainNumberMotion(Func<int, string> format = null, bool showNotices = true, bool animateColor = true)
+    {
+        this.format = format ?? (value => value.ToString("N0"));
+        this.showNotices = showNotices;
+        this.animateColor = animateColor;
+    }
     private TMP_Text label;
     private Color originalColor;
     private int target;
@@ -45,7 +55,7 @@ public sealed class ResourceGainNumberMotion
             Snap(value);
             return;
         }
-        ShowChange((long)value - target);
+        if (showNotices) ShowChange((long)value - target);
         start = displayed;
         target = value;
         elapsed = progress = 0;
@@ -156,7 +166,7 @@ public sealed class ResourceGainNumberMotion
         target = value;
         displayed = value;
         active = false;
-        label.text = value.ToString("N0");
+        label.text = format(value);
         label.color = originalColor;
     }
 
@@ -167,7 +177,7 @@ public sealed class ResourceGainNumberMotion
             ? settings.ipRecoveryColors : BattleUnitBarVisualSettings.DefaultIpRecoveryColors;
         Color color = colors.Evaluate(time);
         color.a *= originalColor.a;
-        label.color = color;
-        label.text = ((int)Math.Round(displayed, MidpointRounding.AwayFromZero)).ToString("N0");
+        label.color = animateColor ? color : originalColor;
+        label.text = format((int)Math.Round(displayed, MidpointRounding.AwayFromZero));
     }
 }
