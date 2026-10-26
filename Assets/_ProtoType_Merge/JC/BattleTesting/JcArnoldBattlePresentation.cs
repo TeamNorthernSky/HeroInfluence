@@ -204,6 +204,8 @@ namespace JC.BattleTesting
         void OnGUI()
         {
             if (!entered) return;
+            // 빌드 씬에서는 디버그 창이 활성화된 동안에만 카메라 전환 버튼을 그린다.
+            if (gameObject.scene.buildIndex >= 0 && !DebugPanelManager.IsDebugPanelActive) return;
             if (GUI.Button(new Rect(Screen.width - 306, 8, 96, 24), "A [F6]")) SelectView(0);
             if (GUI.Button(new Rect(Screen.width - 206, 8, 96, 24), "B [F7]")) SelectView(1);
             if (GUI.Button(new Rect(Screen.width - 106, 8, 96, 24), "F8")) SelectView(2);
