@@ -13,6 +13,12 @@ public sealed class JcBattleTooltipPlacement
     private TurnOrderUI[] turnOrders;
     private BattleCharactor cachedUnit;
     private Renderer[] renderers;
+    private bool hasPlacement;
+    private RectTransform previousPanel;
+    private BattleCharactor previousUnit;
+    private TurnSlotUI previousSlot;
+    private Rect previousArea, previousPlacement;
+    private Vector2 previousSize, previousPointer;
 
     public void Initialize(Canvas owner)
     {
@@ -21,6 +27,7 @@ public sealed class JcBattleTooltipPlacement
         turnOrders = owner != null ? owner.GetComponentsInChildren<TurnOrderUI>(true) : null;
         cachedUnit = null;
         renderers = null;
+        hasPlacement = false;
     }
 
     public bool Place(RectTransform panel, BattleCharactor unit, TurnSlotUI slot, Camera worldCamera,
@@ -32,7 +39,8 @@ public sealed class JcBattleTooltipPlacement
         Rect area = canvasRect.rect;
         area = Rect.MinMaxRect(area.xMin + edgePadding, area.yMin + edgePadding, area.xMax - edgePadding, area.yMax - edgePadding);
         Rect current = CanvasBounds(panel);
-        Vector2 size = current.size;
+        // 위치와 무관한 방향 벡터로 크기를 계산하여 이동에 따른 반올림 오차의 반복을 방지합니다.
+        Vector2 size = CanvasSize(panel);
         obstacles.Clear();
         var tutorialMessage = JC.Tutorial.JcTutorialBattleGuide.MessageObstacle;
         if (tutorialMessage != null && tutorialMessage.gameObject.scene == panel.gameObject.scene)
@@ -68,6 +76,18 @@ public sealed class JcBattleTooltipPlacement
         // 메시 직접 호버도 모델과 바닥 표시를 함께 강조하므로 양쪽 경로 모두 보호합니다.
         if (TryModelBounds(unit, worldCamera, uiCamera, out var model)) obstacles.Add(Expand(model, modelGap));
 
+        // 같은 호버에서는 여전히 안전한 위치를 유지해 모델 경계의 미세 변화로 인한 왕복을 방지합니다.
+        float pointerThreshold = 1f / Mathf.Max(.01f, canvas.scaleFactor);
+        if (hasPlacement && previousPanel == panel && previousUnit == unit && previousSlot == slot
+            && previousArea == area && previousSize == size
+            && (slot != null || (localPointer - previousPointer).sqrMagnitude <= pointerThreshold * pointerThreshold)
+            && IsClear(previousPlacement, obstacles))
+        {
+            panel.position += canvasRect.TransformVector(new Vector3(
+                previousPlacement.xMin - current.xMin, previousPlacement.yMax - current.yMax, 0));
+            return true;
+        }
+
         Rect chosen;
         bool placed = false;
         if (slot != null && hasTurn)
@@ -77,7 +97,11 @@ public sealed class JcBattleTooltipPlacement
         }
         else chosen = default;
         if (!placed) placed = TryPlace(area, size, preferred, obstacles, xs, ys, out chosen);
-        if (!placed) return false; // 물리적으로 공간이 없으면 아웃라인을 가리는 대신 정보창만 숨깁니다.
+        if (!placed) { hasPlacement = false; return false; } // 공간이 없으면 정보창만 숨깁니다.
+
+        hasPlacement = true;
+        previousPanel = panel; previousUnit = unit; previousSlot = slot;
+        previousArea = area; previousSize = size; previousPointer = localPointer; previousPlacement = chosen;
 
         // 피봇/앵커/Canvas 배율과 무관하게 실제 화면상의 좌상단 차이로 이동합니다.
         var shift = new Vector3(chosen.xMin - current.xMin, chosen.yMax - current.yMax, 0);
@@ -98,6 +122,21 @@ public sealed class JcBattleTooltipPlacement
         }
         return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
     }
+
+    private Vector2 CanvasSize(RectTransform rect)
+    {
+        Vector3 x = canvasRect.InverseTransformVector(rect.TransformVector(new Vector3(rect.rect.width, 0, 0)));
+        Vector3 y = canvasRect.InverseTransformVector(rect.TransformVector(new Vector3(0, rect.rect.height, 0)));
+        return new Vector2(Mathf.Abs(x.x) + Mathf.Abs(y.x), Mathf.Abs(x.y) + Mathf.Abs(y.y));
+    }
+
+    private static bool IsClear(Rect candidate, IReadOnlyList<Rect> obstacles)
+    {
+        foreach (var obstacle in obstacles) if (candidate.Overlaps(obstacle)) return false;
+        return true;
+    }
+
+    private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
 
     private bool TryModelBounds(BattleCharactor unit, Camera camera, Camera uiCamera, out Rect result)
     {
@@ -158,27 +197,38 @@ public sealed class JcBattleTooltipPlacement
         List<float> xs, List<float> ys, out Rect result)
     {
         result = default;
+        if (!Finite(size.x) || !Finite(size.y) || !Finite(preferredTopLeft.x) || !Finite(preferredTopLeft.y)
+            || !Finite(area.xMin) || !Finite(area.yMin) || !Finite(area.xMax) || !Finite(area.yMax)) return false;
         if (size.x <= 0 || size.y <= 0 || area.width < size.x || area.height < size.y) return false;
+        // 여유 공간이 있는 후보를 우선하되, 정확히 맞는 좁은 공간도 사용할 수 있어야 합니다.
+        float skin = Mathf.Max(.01f, Mathf.Max(area.width, area.height) * 0.000002f);
+        return TryPlaceWithSkin(area, size, preferredTopLeft, obstacles, xs, ys, skin, out result)
+            || TryPlaceWithSkin(area, size, preferredTopLeft, obstacles, xs, ys, 0, out result);
+    }
+
+    private static bool TryPlaceWithSkin(Rect area, Vector2 size, Vector2 preferredTopLeft, IReadOnlyList<Rect> obstacles,
+        List<float> xs, List<float> ys, float skin, out Rect result)
+    {
+        result = default;
         xs.Clear(); ys.Clear();
         float preferredY = preferredTopLeft.y - size.y;
+        // 경계 접촉을 float 오차로 겹침으로 판정하지 않도록 아주 작은 여유를 확보합니다.
         xs.Add(Mathf.Clamp(preferredTopLeft.x, area.xMin, area.xMax - size.x));
         ys.Add(Mathf.Clamp(preferredY, area.yMin, area.yMax - size.y));
         xs.Add(area.xMin); xs.Add(area.xMax - size.x);
         ys.Add(area.yMin); ys.Add(area.yMax - size.y);
         foreach (var obstacle in obstacles)
         {
-            xs.Add(Mathf.Clamp(obstacle.xMin - size.x, area.xMin, area.xMax - size.x));
-            xs.Add(Mathf.Clamp(obstacle.xMax, area.xMin, area.xMax - size.x));
-            ys.Add(Mathf.Clamp(obstacle.yMin - size.y, area.yMin, area.yMax - size.y));
-            ys.Add(Mathf.Clamp(obstacle.yMax, area.yMin, area.yMax - size.y));
+            xs.Add(Mathf.Clamp(obstacle.xMin - size.x - skin, area.xMin, area.xMax - size.x));
+            xs.Add(Mathf.Clamp(obstacle.xMax + skin, area.xMin, area.xMax - size.x));
+            ys.Add(Mathf.Clamp(obstacle.yMin - size.y - skin, area.yMin, area.yMax - size.y));
+            ys.Add(Mathf.Clamp(obstacle.yMax + skin, area.yMin, area.yMax - size.y));
         }
         float best = float.PositiveInfinity;
         foreach (float x in xs) foreach (float y in ys)
         {
             var candidate = new Rect(x, y, size.x, size.y);
-            bool blocked = false;
-            foreach (var obstacle in obstacles) if (candidate.Overlaps(obstacle)) { blocked = true; break; }
-            if (blocked) continue;
+            if (!IsClear(candidate, obstacles)) continue;
             float score = (new Vector2(x, y) - new Vector2(preferredTopLeft.x, preferredY)).sqrMagnitude;
             if (score >= best) continue;
             best = score; result = candidate;
