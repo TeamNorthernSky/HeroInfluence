@@ -1,0 +1,8 @@
+{
+  "name": "UliaVfx.Amplifier",
+  "rootNamespace": "UliaVfx",
+  "references": [
+    "UliaVfx.Shared"
+  ],
+  "autoReferenced": true
+}

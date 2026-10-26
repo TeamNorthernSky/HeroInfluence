@@ -751,6 +751,20 @@ public class EnemySpawner : MonoBehaviour
         return gridRotation * FacingPlayerYawOffset;
     }
 
+    /// <summary>
+    /// 연출용 조회: 칸의 월드 위치와, 지금 소환할 수 있는 빈 칸인지(TrySpawnUnitIfEmpty와 같은 점유 기준).
+    /// 상태는 바꾸지 않는다.
+    /// </summary>
+    public bool TryGetEmptyGridPosition(int gridNumber, out Vector3 position)
+    {
+        position = default;
+        if (!hierarchyReady) return false;
+        if (!gridSlots.TryGetValue(gridNumber, out position)) return false;
+        if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null) return false;
+        return cell.GetComponentInChildren<BattleCharactor>(true) == null
+            && cell.GetComponentInChildren<HostageBattleActor>(true) == null;
+    }
+
     /// <summary>GridCell에 대응하는 스포너의 표준 gridNumber를 반환한다.</summary>
     public bool TryGetGridNumber(GridCellRef cell, out int gridNumber)
     {

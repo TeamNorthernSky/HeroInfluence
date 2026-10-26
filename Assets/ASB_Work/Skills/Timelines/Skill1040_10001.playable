@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
-  m_Name: Presentation Marker Track (1)
+  m_Name: Sound
   m_EditorClassIdentifier: 
   m_Version: 3
   m_AnimClip: {fileID: 0}

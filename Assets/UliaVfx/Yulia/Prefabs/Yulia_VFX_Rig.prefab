@@ -1,0 +1,227 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4794447831789777549
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5820382337141035474}
+  - component: {fileID: 6258130531378263043}
+  m_Layer: 0
+  m_Name: DespairRing_Cast
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5820382337141035474
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4794447831789777549}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1336312182227310164}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6258130531378263043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4794447831789777549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 133b131f0a806c9448084ca6491bf917, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  castPrefab: {fileID: 8251054824596030187, guid: 185cf2f1172c7c74d937e4e9edab1dfe,
+    type: 3}
+  portalPrefab: {fileID: 1475618779179179817, guid: 35d3b8792f929c34185022d2e97469a8,
+    type: 3}
+  orbPrefab: {fileID: 5608231744471294428, guid: c8216fd408b7f0547a38e95b088b7823,
+    type: 3}
+  rushPrefab: {fileID: 7653787099927154482, guid: c5ec2e726c9db304abdb30a95c0a37b9,
+    type: 3}
+  shieldPrefab: {fileID: 871324411638548333, guid: a4bbd2573e6fbbf4091bfdcea130f32a,
+    type: 3}
+  startMotion: {fileID: 1827226128182048838, guid: 2b5aaa79ba9f62b43a241ca4fe826fa8,
+    type: 3}
+  maintainMotion: {fileID: 1827226128182048838, guid: 35a1d8ba7369e9e4e80f7501b3ccd6b0,
+    type: 3}
+  idleMotion: {fileID: 1827226128182048838, guid: 2163e7a9fac66454d874b3f6f8afcb83,
+    type: 3}
+  summonGatherPrefab: {fileID: 2026266475295086964, guid: f155b514c51fb484cbc11ecf7ae4aef1,
+    type: 3}
+  summonGatherScaleByHeight: 0.13
+  summonGatherNativeBurstSeconds: 2.7
+  summonBurstPeak: 1.22
+  leadIn: 0
+  chargeScale: 0.3
+  portalScale: 0.34
+  orbScale: 0.17
+  riseSeconds: 0.8
+  hoverHeight: 0.85
+  spinSeconds: 0.912
+  spinDegreesPerSecond: 1800
+  splitTravelSeconds: 0.354667
+  portalHoldSeconds: 0
+  portalMorphSeconds: 0.083333
+  portalFadeSeconds: 0.15
+  matchCharacterHeight: 1
+  characterHeight: 0
+  replay: 0
+  rush: 0
+  autoRush: 0
+  waitBeforeRush: 2.5
+  status: 
+--- !u!1 &6169701069526671294
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7804274332429473708}
+  - component: {fileID: 4533136705701709404}
+  - component: {fileID: 7756075806398788149}
+  m_Layer: 0
+  m_Name: Shield
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7804274332429473708
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6169701069526671294}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1336312182227310164}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4533136705701709404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6169701069526671294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc9b7042d3c9ae146894134d25f81c27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shieldPrefab: {fileID: 871324411638548333, guid: a4bbd2573e6fbbf4091bfdcea130f32a,
+    type: 3}
+  impactPrefab: {fileID: 934617562227915448, guid: a3a8bf1ea169f3b40a80a18067ea93d8,
+    type: 3}
+  holdShader: {fileID: 4800000, guid: 9998a01571ab65e40a26eba05f5170a3, type: 3}
+  peelShader: {fileID: 4800000, guid: 54df2ad3ccc18e84887911978edac218, type: 3}
+  playOnEnable: 0
+  previewKeys: 0
+  diameter: 2.473502
+  leadIn: 0
+  peelSeconds: 1.05
+  localImpactDirection: {x: 0, y: 0, z: -1}
+--- !u!114 &7756075806398788149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6169701069526671294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d90cc7999449184192c57e96c94255e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  barrier: {fileID: 4533136705701709404}
+  impactPrefab: {fileID: 934617562227915448, guid: a3a8bf1ea169f3b40a80a18067ea93d8,
+    type: 3}
+  reactionShader: {fileID: 4800000, guid: 3ca54a468233f9c4d98839d9fdef81ae, type: 3}
+  effectCamera: {fileID: 0}
+  playOnEnable: 0
+  reactionSeconds: 0.7
+  stage: 
+  shieldMaintained: 0
+--- !u!1 &8559566449976941425
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1336312182227310164}
+  - component: {fileID: 4134257505806884997}
+  m_Layer: 0
+  m_Name: Yulia_VFX_Rig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1336312182227310164
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8559566449976941425}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7804274332429473708}
+  - {fileID: 5820382337141035474}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4134257505806884997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8559566449976941425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78abb70ed98862f4c90770a147ab0760, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  idlePrefab: {fileID: 8251054824596030187, guid: 5369483e2c3f8fd4e85288adbea67722,
+    type: 3}
+  bodyHitPrefab: {fileID: 934617562227915448, guid: a3a8bf1ea169f3b40a80a18067ea93d8,
+    type: 3}
+  supplyPrefab: {fileID: 2026266475295086964, guid: f155b514c51fb484cbc11ecf7ae4aef1,
+    type: 3}
+  ringPrefab: {fileID: 5112927752348178660, guid: 296d9e07141b9bd4d81f350c3fae09a2,
+    type: 3}
+  casting: {fileID: 6258130531378263043}
+  shield: {fileID: 4533136705701709404}
+  shieldHit: {fileID: 7756075806398788149}
+  unit: {fileID: 0}
+  handSocket: {fileID: 0}
+  shieldCenter: {fileID: 0}
+  actorAnimator: {fileID: 0}
+  effectCamera: {fileID: 0}
+  characterHeight: 2.061252

@@ -333,6 +333,27 @@ public sealed class BossController : MonoBehaviour
         return count;
     }
 
+    /// <summary>
+    /// 연출용 조회: 스킬 소환 엔트리 중 이 미니언이 지금 들어갈 수 있는 빈 칸의 월드 위치를 모은다.
+    /// 소환·상태 변경은 하지 않는다(실제 소환은 <see cref="TrySummonForSkill"/>).
+    /// </summary>
+    public void CollectEmptySkillSummonPositions(string minionEnemyId, List<Vector3> positions)
+    {
+        if (positions == null || _skillSummonEntries == null || string.IsNullOrWhiteSpace(minionEnemyId)) return;
+        EnemySpawner spawner = ResolveSpawner();
+        if (spawner == null) return;
+
+        string wanted = BattleScenarioUnitKey.Normalize(minionEnemyId);
+        var seen = new HashSet<int>();
+        for (int i = 0; i < _skillSummonEntries.Count; i++)
+        {
+            SkillSummonEntry e = _skillSummonEntries[i];
+            if (string.IsNullOrWhiteSpace(e.MinionEnemyId) || BattleScenarioUnitKey.Normalize(e.MinionEnemyId) != wanted) continue;
+            if (!seen.Add(e.GridNumber)) continue;
+            if (spawner.TryGetEmptyGridPosition(e.GridNumber, out Vector3 position)) positions.Add(position);
+        }
+    }
+
     private EnemySpawner ResolveSpawner()
     {
         if (_spawner == null)

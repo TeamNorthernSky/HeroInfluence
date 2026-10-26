@@ -413,11 +413,13 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         try
         {
             SetSkillPanelVisible(false);
-            if (panelMotion != null) yield return panelMotion;
+            // 공유 Coroutine을 yield하면 대기자로 등록되는데, 대기자는 하나뿐이다. 앞서 멈춘 턴 연출이
+            // 그 자리를 차지하고 있으면 이 연출이 영영 재개되지 않아 적 턴 잠금이 풀리지 않는다 → 조건으로 기다린다.
+            if (panelMotion != null) yield return new WaitWhile(() => panelMotion != null);
             if (useTurnCamera && actor != null)
             {
                 MoveCameraForTurn(actor.IsPlayer);
-                if (cameraMotion != null) yield return cameraMotion;
+                if (cameraMotion != null) yield return new WaitWhile(() => cameraMotion != null);
             }
             if (actor != null && actor.IsPlayer) SetSkillPanelVisible(true);
             else if (actor != null && enemyAttackDelay > 0f)
@@ -625,7 +627,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     public System.Collections.IEnumerator HideSkillPanelBeforeCast()
     {
         SetSkillPanelVisible(false);
-        if (panelMotion != null) yield return panelMotion;
+        if (panelMotion != null) yield return new WaitWhile(() => panelMotion != null);
         if (skillCastDelay > 0f) yield return new WaitForSecondsRealtime(skillCastDelay);
     }
 

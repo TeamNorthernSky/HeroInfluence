@@ -45,6 +45,7 @@ public sealed class VisualEffectGraphEffect : JC.VFX.VfxEffect, ISkillEffectBeha
     private float fadeOutMaxSeconds = 2f;
 
     [SerializeField] private bool destroyOnFinish = true;
+    [SerializeField] private UliaVfx.UliaSavedEffect productionComposite;
 
     [Header("Socket Attach")]
     [SerializeField] private bool attachToSocket;
@@ -102,6 +103,7 @@ public sealed class VisualEffectGraphEffect : JC.VFX.VfxEffect, ISkillEffectBeha
         _stopping = true;
         _stopElapsed = 0f;
         IsPlaying = false;
+        if (productionComposite != null) productionComposite.gameObject.SetActive(false);
         for (int i = 0; i < _effects.Length; i++)
         {
             if (_effects[i] != null) _effects[i].Stop();
@@ -154,6 +156,11 @@ public sealed class VisualEffectGraphEffect : JC.VFX.VfxEffect, ISkillEffectBeha
     {
         CacheComponents();
         ResetState();
+        if (productionComposite != null)
+        {
+            productionComposite.gameObject.SetActive(true);
+            productionComposite.Replay();
+        }
         for (int i = 0; i < _effects.Length; i++)
         {
             VisualEffect effect = _effects[i];
@@ -203,6 +210,15 @@ public sealed class VisualEffectGraphEffect : JC.VFX.VfxEffect, ISkillEffectBeha
         {
             VisualEffect effect = _effects[i];
             if (effect != null && !Mathf.Approximately(effect.playRate, rate)) effect.playRate = rate;
+        }
+
+        if (_particles == null) return;
+        for (int i = 0; i < _particles.Length; i++)
+        {
+            ParticleSystem particle = _particles[i];
+            if (particle == null) continue;
+            var main = particle.main;
+            if (!Mathf.Approximately(main.simulationSpeed, rate)) main.simulationSpeed = rate;
         }
     }
 
@@ -255,7 +271,7 @@ public sealed class VisualEffectGraphEffect : JC.VFX.VfxEffect, ISkillEffectBeha
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (GetComponentInChildren<VisualEffect>(true) == null)
+        if (productionComposite == null && GetComponentInChildren<VisualEffect>(true) == null)
             Debug.LogWarning($"[VisualEffectGraphEffect] '{name}'과 자식에 VisualEffect가 없습니다.", this);
 
         // 같은 오브젝트에 다른 수명/재생 재료가 있으면 큐 시스템이 한쪽만 부르거나 고정 시간에 잘린다.

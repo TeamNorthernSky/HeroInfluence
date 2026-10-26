@@ -10,7 +10,7 @@ public sealed class YuliaAbsorbVfxTests
 {
     private const BindingFlags AnyStatic = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
     private const string MadonnaUnitPath = "Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanMadonna_40001.prefab";
-    private const string ArcPrefabPath = "Assets/ASB_Work/Effect/Yulia/FX_YuliaAbsorbArc.prefab";
+    private const string ArcPrefabPath = "Assets/ASB_Work/Effect/Yulia/Boss/FX_YuliaAbsorbArc.prefab";
 
     [Test]
     public void ComputeControlPoints_LiftsThirdsByArchHeight()

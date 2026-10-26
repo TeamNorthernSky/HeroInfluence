@@ -22,7 +22,8 @@ MonoBehaviour:
   pulseSeconds: 0.45
   destroySeconds: 2
   summonSeconds: 0.8
-  hoverHeight: 0.07
+  hoverHeight: 0.12
+  hoverPeriodSeconds: 3.8
   chargeSeconds: 0.35
   dashSeconds: 0.4
   impactDelaySeconds: 0.08
@@ -31,14 +32,21 @@ MonoBehaviour:
   trailSeconds: 0.28
   wheelVisualPrefab: {fileID: 3516408699533521458, guid: 095b497c8fdebd648a1f2f24f452b4ba,
     type: 3}
-  wheelVisualRadius: 0.75
+  wheelVisualRadius: 0.814
   summonPortalPrefab: {fileID: 1334416723058873251, guid: 6876575750e78584c8aad0bcb9df2bad,
     type: 3}
   wheelBreakPrefab: {fileID: 8236952506926979336, guid: 14ea5394faffe344589133f221428aa1,
     type: 3}
-  breakFlashSeconds: 0.3
-  breakFlashIntensity: 1.8
-  breakFlashScale: 1.25
+  breakFlashSeconds: 0.16
+  breakFlashIntensity: 3.3
+  breakFlashScale: 1.14
   dashArcPrefab: {fileID: 2295814229495359148, guid: 5aca5efc75941d246bb4fc013e6918bd,
     type: 3}
+  productionRushPrefab: {fileID: 7653787099927154482, guid: c5ec2e726c9db304abdb30a95c0a37b9,
+    type: 3}
+  productionExplosionPrefab: {fileID: 5749234427374420805, guid: 4b49031b85aa66f4ebd9098b9a3ab462,
+    type: 3}
   dashArcLag: 0.35
+  summonBurstPeak: 1.22
+  summonBurstRiseSeconds: 0.045
+  summonBurstSettleSeconds: 0.115

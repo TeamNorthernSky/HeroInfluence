@@ -66,15 +66,19 @@ public sealed class YuliaBattleVfxTests
         float radius = (float)preset.GetType().GetField("wheelVisualRadius").GetValue(preset);
         float hover = (float)preset.GetType().GetField("hoverHeight").GetValue(preset);
         var orb = (GameObject)preset.GetType().GetField("wheelVisualPrefab").GetValue(preset);
-        var effect = orb.GetComponent<UnityEngine.VFX.VisualEffect>();
+        // 보이는 외형은 켜진 MagicOrb08 하나다(율리아 연출 시뮬레이션: 월드 배율 = 율리아 키 ÷ 5.3, 중심 = 키의 55%).
+        const float yuliaHeight = 2.061252f;
+        var effect = orb.GetComponentsInChildren<UnityEngine.VFX.VisualEffect>(true).FirstOrDefault(v => v.enabled);
         Assert.That(effect, Is.Not.Null);
-        float visualDiameter = effect.GetFloat("CircleSize") * orb.transform.localScale.x;
-        Assert.That(visualDiameter, Is.EqualTo(1.5f).Within(.02f), "구체 지름은 1.5m여야 한다.");
-        Assert.That(radius * 2f, Is.EqualTo(visualDiameter).Within(.02f), "높이 계산 반지름과 실제 구체 크기가 일치해야 한다.");
+        Assert.That(effect.transform.lossyScale.x, Is.EqualTo(yuliaHeight / 5.3f).Within(.005f), "구체 크기는 시뮬레이션과 같아야 한다.");
 
         MethodInfo resolve = FindRuntimeType("HoopWheelVisual").GetMethod("ResolveWheelHeight", AnyStatic);
         float height = (float)resolve.Invoke(null, new object[] { preset });
+        Assert.That(height, Is.EqualTo(yuliaHeight * .55f).Within(.01f), "중심 높이는 시뮬레이션과 같아야 한다.");
         Assert.That(height - hover - radius, Is.GreaterThanOrEqualTo(.19f), "부유 최저점에서도 외형 아래쪽과 바닥 사이에 간격이 있어야 한다.");
+        Renderer body = orb.GetComponentsInChildren<MeshRenderer>(true).FirstOrDefault(r => r.name == "Dense_Purple_Inner_Body");
+        Assert.That(body, Is.Not.Null, "안쪽 보라 구체가 없으면 배경이 비쳐 색이 연해진다.");
+        Assert.That(height - hover - body.transform.lossyScale.x * .5f, Is.GreaterThan(0f), "안쪽 구체도 바닥에 묻히지 않아야 한다.");
     }
 
     [Test]
@@ -153,8 +157,8 @@ public sealed class YuliaBattleVfxTests
     // ----- 2026-10-19 미적용 항목 보완(Y01·Y05·Y06·Y07·Y10·Y11·A04) -----
 
     private const string WheelUnitPath = "Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanWheel_40005.prefab";
-    private const string RowLightningPath = "Assets/ASB_Work/Effect/FX_400011_RowLightning.prefab";
-    private const string RowBeamPath = "Assets/ASB_Work/Effect/FX_400012_RowBeam.prefab";
+    private const string RowLightningPath = "Assets/ASB_Work/Effect/Yulia/Boss/FX_400011_RowLightning.prefab";
+    private const string RowBeamPath = "Assets/ASB_Work/Effect/Yulia/Boss/FX_400012_RowBeam.prefab";
 
     [Test]
     public void Stasis_ShieldShrinksAwayOnDeath()
@@ -290,6 +294,43 @@ public sealed class YuliaBattleVfxTests
         MethodInfo progress = type.GetMethod("BreakFlashProgress", AnyStatic);
         Assert.That((float)progress.Invoke(null, new object[] { 0f }), Is.EqualTo(0f));
         Assert.That((float)progress.Invoke(null, new object[] { 1f }), Is.EqualTo(1f), "끝에서 최고 밝기로 연기와 바뀐다.");
+    }
+
+    [Test]
+    public void HoopSummonBurst_PopsThenSettles()
+    {
+        MethodInfo scale = FindRuntimeType("HoopWheelVisual").GetMethod("SummonBurstScale", AnyStatic);
+        float At(float t) => (float)scale.Invoke(null, new object[] { t, 0.045f, 0.115f, 1.22f });
+        Assert.That(At(0f), Is.EqualTo(1f).Within(0.0001f), "나타나는 첫 프레임은 원래 크기.");
+        Assert.That(At(0.045f), Is.EqualTo(1.22f).Within(0.0001f), "0.045초에 최대로 튄다.");
+        Assert.That(At(0.1f), Is.InRange(1f, 1.22f));
+        Assert.That(At(0.16f), Is.EqualTo(1f).Within(0.0001f), "0.16초에 원래 크기로 돌아온다.");
+    }
+
+    [TestCase("Assets/ASB_Work/Effect/EffectRegistry.asset")]
+    [TestCase("Assets/RenderFX/_Seam/Data/Merged/JC_Merged_EffectRegistry.asset")]
+    public void HoopSummonCast_WiredToYuliaSummonChargeCue(string registryPath)
+    {
+        const int effectId = 400013;
+        var presentation = new SerializedObject(AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/ASB_Work/Skills/SkillPresentation_400013.asset"));
+        SerializedProperty cue = presentation.FindProperty("Attack.Beats.Array.data[0].Cues.Array.data[0]");
+        Assert.That(cue.FindPropertyRelative("CueName").stringValue, Is.EqualTo("yulia_cast_charge"));
+        SerializedProperty ids = cue.FindPropertyRelative("EffectIds");
+        Assert.That(Enumerable.Range(0, ids.arraySize).Select(i => ids.GetArrayElementAtIndex(i).intValue), Does.Contain(effectId),
+            "충전 Cue에서 소환 연출이 시작되고, 충전 종료 Cue(Stop)가 칸으로 보내는 신호가 된다.");
+
+        SerializedProperty entries = new SerializedObject(AssetDatabase.LoadAssetAtPath<ScriptableObject>(registryPath)).FindProperty("_entries");
+        GameObject prefab = Enumerable.Range(0, entries.arraySize).Select(entries.GetArrayElementAtIndex)
+            .Where(e => e.FindPropertyRelative("Id").intValue == effectId)
+            .Select(e => e.FindPropertyRelative("Prefab").objectReferenceValue as GameObject)
+            .FirstOrDefault();
+        Assert.That(prefab, Is.Not.Null, "전투 씬은 병합 레지스트리를 읽는다. 원본과 병합본 모두 있어야 재생성 후에도 유지된다.");
+
+        Component effect = prefab.GetComponent(FindRuntimeType("HoopSummonCastEffect"));
+        Assert.That(effect, Is.Not.Null);
+        var so = new SerializedObject(effect);
+        foreach (string field in new[] { "orbPrefab", "ringPrefab", "gatherPrefab", "splitTrailMaterial", "preset" })
+            Assert.That(so.FindProperty(field).objectReferenceValue, Is.Not.Null, field);
     }
 
     // ----- 3페이즈 진입: 쓰러진 증폭기 즉시 부활 → 율리아 정지장 -----

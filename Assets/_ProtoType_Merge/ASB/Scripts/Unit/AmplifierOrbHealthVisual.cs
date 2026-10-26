@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.VFX;
 
 /// <summary>
 /// Keeps the amplifier's 2010 orb visible while its battle unit has HP.
@@ -21,6 +22,9 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
     [SerializeField]
     [Tooltip("구체가 사라진 뒤 피어오를 연기(Stylized Smoke). 비우면 숨김만 한다.")]
     private GameObject deathSmokePrefab;
+    [SerializeField] private GameObject deathExplosionPrefab;
+    [SerializeField] private GameObject reviveSupplyPrefab;
+    [SerializeField, Min(0f)] private float reviveGatherSeconds = 2.05f;
 
     [SerializeField, Min(0f)]
     [Tooltip("빛이 사그라지며 구체가 줄어드는 시간(전투 배속 기준 초). 0이면 즉시 숨김.")]
@@ -46,6 +50,7 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
     private Vector3 _orbPosition;
     private bool _orbScaleCached;
     private bool _shownAlive;
+    private GameObject _deathSmoke;
 
     /// <summary>2010 구체. 흡수 연출 등 외부 이펙트의 기준 위치.</summary>
     public Transform Orb => orb != null ? orb.transform : null;
@@ -92,6 +97,9 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
             _revive = null;
             FinishRevive();
         }
+
+        if (_deathSmoke != null) Destroy(_deathSmoke);
+        _deathSmoke = null;
 
         owner = null;
     }
@@ -148,6 +156,8 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
         }
 
         _shownAlive = false;
+        if (animate && deathExplosionPrefab != null)
+            UliaVfx.VfxSpawn.Burst(deathExplosionPrefab, orb.transform.position, 0.28f, null);
         if (animate && fadeSeconds > 0f && isActiveAndEnabled && orb.activeInHierarchy)
         {
             _fade = StartCoroutine(FadeOut());
@@ -174,8 +184,22 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
     {
         if (idleElectric != null) idleElectric.SetActive(false);
         ApplyReveal(0f);
-        orb.SetActive(true);
-        if (reviveFlash != null)
+        orb.SetActive(reviveSupplyPrefab == null);
+        if (_deathSmoke != null)
+        {
+            foreach (VisualEffect effect in _deathSmoke.GetComponentsInChildren<VisualEffect>(true)) effect.Stop();
+            Destroy(_deathSmoke);
+            _deathSmoke = null;
+        }
+        if (reviveSupplyPrefab != null)
+        {
+            GameObject supply = UliaVfx.VfxSpawn.Spawn(reviveSupplyPrefab,
+                orb.transform.position - Vector3.up * (1.77f * 0.22f), Quaternion.identity, 0.22f);
+            Destroy(supply, 6f);
+            for (float t = 0f; t < reviveGatherSeconds; t += Time.deltaTime * BattleSpeed()) yield return null;
+            orb.SetActive(true);
+        }
+        else if (reviveFlash != null)
         {
             reviveFlash.gameObject.SetActive(true);
             reviveFlash.Play();
@@ -217,10 +241,29 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
             return;
         }
 
-        GameObject smoke = Instantiate(deathSmokePrefab, position, Quaternion.identity);
-        JC.VFX.VfxEffect effect = smoke.GetComponent<JC.VFX.VfxEffect>();
-        if (effect != null) effect.Play();
-        else EffectFallbackRelease.Ensure(smoke);
+        if (_deathSmoke != null) Destroy(_deathSmoke);
+        _deathSmoke = UliaVfx.VfxSpawn.Spawn(deathSmokePrefab, position,
+            Quaternion.identity, 0.75f);
+        ConfigureWhiteSmoke(_deathSmoke);
+    }
+
+    private static void ConfigureWhiteSmoke(GameObject smoke)
+    {
+        foreach (VisualEffect effect in smoke.GetComponentsInChildren<VisualEffect>(true))
+        {
+            if (effect.HasFloat("SmokeRate")) effect.SetFloat("SmokeRate", 2f);
+            if (effect.HasFloat("SmokeSize")) effect.SetFloat("SmokeSize", 0.65f);
+            if (effect.HasFloat("SmokeLifetime")) effect.SetFloat("SmokeLifetime", 1.6f);
+            if (effect.HasVector3("SmokeVelocity"))
+                effect.SetVector3("SmokeVelocity", new Vector3(0.05f, 0.6f, 0.05f));
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(.9f, .9f, .9f), .4f), new GradientColorKey(new Color(.75f, .75f, .75f), 1f) },
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(.9f, .08f), new GradientAlphaKey(.75f, .4f), new GradientAlphaKey(.2f, .7f), new GradientAlphaKey(0f, 1f) });
+            if (effect.HasGradient("SmokeGradient")) effect.SetGradient("SmokeGradient", gradient);
+            effect.Reinit();
+            effect.Play();
+        }
     }
 
     private static float BattleSpeed()

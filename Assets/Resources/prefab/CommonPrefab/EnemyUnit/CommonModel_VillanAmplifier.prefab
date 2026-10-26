@@ -105,6 +105,11 @@ MonoBehaviour:
   orb: {fileID: 1318201327960317782}
   deathSmokePrefab: {fileID: 1977884762511334423, guid: 4ad13877345c37047ac293b046988940,
     type: 3}
+  deathExplosionPrefab: {fileID: 5749234427374420805, guid: 6c16a6fb5101851438d03f92f5853fe4,
+    type: 3}
+  reviveSupplyPrefab: {fileID: 2026266475295086964, guid: 983dc6ceba5da5e469d0f34f6f5fe42d,
+    type: 3}
+  reviveGatherSeconds: 2.05
   fadeSeconds: 0.4
   reviveSeconds: 0.6
   reviveFlash: {fileID: 5725544075285080433}

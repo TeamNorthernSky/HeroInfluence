@@ -26,6 +26,7 @@ public sealed class YuliaStasisVfx : MonoBehaviour
 {
     [Header("Shield")]
     [SerializeField] private GameObject shieldPrefab;
+    [SerializeField] private UliaVfx.YuliaVfxRig productionVfxRigPrefab;
     [Tooltip("막 중심의 높이(유닛 루트 기준, m). 몸 전체가 막 안에 보이도록.")]
     [SerializeField] private float shieldHeight = 0.9f;
     [SerializeField, Min(0.01f)] private float shieldWorldScale = 1.2f;
@@ -35,9 +36,17 @@ public sealed class YuliaStasisVfx : MonoBehaviour
     private BattleCharactor _boss;
     private readonly List<BattleCharactor> _amplifiers = new List<BattleCharactor>();
     private GameObject _shield;
+    private UliaVfx.YuliaVfxRig _productionShield;
+    private bool _initialShieldGenerated;
     private bool _stasis;
 
     public bool IsInStasis => _stasis;
+
+    public void PlayShieldHit(Vector3 attackerPosition)
+    {
+        if (_productionShield != null && _productionShield.IsShieldVisible)
+            _productionShield.HitShield(attackerPosition);
+    }
 
     private void Awake()
     {
@@ -116,6 +125,44 @@ public sealed class YuliaStasisVfx : MonoBehaviour
     {
         if (shieldPrefab == null || _shield != null) return;
 
+        if (productionVfxRigPrefab != null)
+        {
+            _shield = new GameObject("StasisShieldPivot");
+            _shield.transform.SetParent(transform, false);
+            _shield.transform.localPosition = Vector3.up * shieldHeight;
+            _productionShield = Instantiate(productionVfxRigPrefab, transform);
+            Animator animator = GetComponentInChildren<Animator>();
+            YuliaHandOrbState handOrb = GetComponentInChildren<YuliaHandOrbState>(true);
+            Transform handSocket = handOrb != null && handOrb.transform.parent != null
+                ? handOrb.transform.parent : transform;
+            if (animator != null)
+            {
+                _productionShield.Bind(transform, animator, handSocket, _shield.transform,
+                    2.061252f * shieldWorldScale / 1.15f, Camera.main);
+                if (!_initialShieldGenerated)
+                {
+                    var cores = new List<Vector3>();
+                    foreach (BattleCharactor amplifier in _amplifiers)
+                    {
+                        if (amplifier == null) continue;
+                        AmplifierOrbHealthVisual visual = amplifier.GetComponentInChildren<AmplifierOrbHealthVisual>(true);
+                        cores.Add(visual != null && visual.Orb != null
+                            ? visual.Orb.position : amplifier.transform.position + Vector3.up);
+                    }
+                    if (cores.Count > 0) _productionShield.GenerateShield(cores.ToArray());
+                    else _productionShield.ShowShieldPop();
+                    _initialShieldGenerated = true;
+                }
+                else _productionShield.ShowShieldPop();
+                return;
+            }
+
+            Destroy(_productionShield.gameObject);
+            _productionShield = null;
+            Destroy(_shield);
+            _shield = null;
+        }
+
         // 막 프리팹(Sci-Fi Shield 메시)은 자체 등장 애니메이션이 루트 스케일을 0→1로 키운다.
         // 크기는 피벗에 걸고 막은 그 아래에서 애니메이션하게 둔다.
         _shield = new GameObject("StasisShieldPivot");
@@ -138,8 +185,21 @@ public sealed class YuliaStasisVfx : MonoBehaviour
     private void DismissCurrentShield()
     {
         if (_shield == null) return;
+        if (_productionShield != null)
+        {
+            UliaVfx.YuliaVfxRig rig = _productionShield;
+            _productionShield = null;
+            rig.BreakShield(rig.transform.position + Vector3.back);
+            StartCoroutine(DestroyProductionShield(rig));
+        }
         StartCoroutine(DismissShield(_shield));
         _shield = null;
+    }
+
+    private IEnumerator DestroyProductionShield(UliaVfx.YuliaVfxRig rig)
+    {
+        yield return new WaitForSeconds(1.7f / BattleSpeed());
+        if (rig != null) Destroy(rig.gameObject);
     }
 
     private IEnumerator DismissShield(GameObject pivot)

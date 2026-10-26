@@ -391,20 +391,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shieldPrefab: {fileID: 3730859483087561641, guid: 2c316560f42175b4491d5f5496ed7541,
     type: 3}
+  productionVfxRigPrefab: {fileID: 4134257505806884997, guid: 832e060c1c3eb934daa00543c09e0bff,
+    type: 3}
   shieldHeight: 0.9
   shieldWorldScale: 1.15
   shieldDismissSeconds: 0.3
-  hitStateName: Hit
-  freezeDelaySeconds: 0.2
-  enterSeconds: 1.6
-  shakeSeconds: 0.2
-  shakeAmplitude: 0.06
-  hideWhileStasis:
-  - {fileID: 8754070470665505159}
-  disableWhileStasis:
-  - {fileID: 2411088998492695956}
-  suppressEffectsWhileStasis:
-  - {fileID: 5624129214405423041, guid: 2d65ab9d6d5eee149b8607f812121a9d, type: 3}
 --- !u!114 &1912755412874654208
 MonoBehaviour:
   m_ObjectHideFlags: 0

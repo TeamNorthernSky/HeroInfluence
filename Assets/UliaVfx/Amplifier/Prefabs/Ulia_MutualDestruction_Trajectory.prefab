@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6213913939777161011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 245018695561789773}
+  - component: {fileID: 3228044897485633166}
+  m_Layer: 0
+  m_Name: Ulia_MutualDestruction_Trajectory
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &245018695561789773
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6213913939777161011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3228044897485633166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6213913939777161011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 279318656a8b569428bae44c57e1a299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectKind: 1
+  playOnEnable: 0
+  effectCamera: {fileID: 0}
+  chargePrefab: {fileID: 0}
+  coreGlowPrefab: {fileID: 0}
+  arcPrefab: {fileID: 4650703487308424826, guid: 4985bd5acac4db64f938f95276e35f35,
+    type: 3}
+  orbPrefab: {fileID: 8251054824596030187, guid: fa86266d30fe39b4c882a7574c157323,
+    type: 3}
+  trajectoryPortalPrefab: {fileID: 1475618779179179817, guid: d92cde367d328694bb102e2f9f31e5fc,
+    type: 3}
+  trajectoryImpactPrefab: {fileID: 934617562227915448, guid: 54cb0bb15c4a19849994eb71f75111c8,
+    type: 3}
+  trajectoryVolumetricPortalPrefab: {fileID: 5431652299015141023, guid: 38979881de89e4a4fb94c333d1489eea,
+    type: 3}
+  trajectoryChargePrefab: {fileID: 1314792655186534367, guid: bfecb08390732f949bdb754112f75026,
+    type: 3}
+  trajectoryBranchPrefab: {fileID: 5698192594985081635, guid: 1425e8bcab2a8c34e827bb22d1290d07,
+    type: 3}
+  trajectoryLightningPrefab: {fileID: 18111134782449830, guid: 54e5ee3edfdbbbb498dfe90d94822284,
+    type: 3}
+  wormholeShader: {fileID: 4800000, guid: c41a941340d7e8e40bc9e9f21a86cd92, type: 3}
+  trajectoryCrispShader: {fileID: 4800000, guid: 60aa412c959efda4a86756ea66f4b521,
+    type: 3}
+  trajectoryChargeSeconds: 0.55
+  trajectoryWidthMultiplier: 1.85
+  trajectoryAfterglowSeconds: 0.1
+  chargeSeconds: 0.55
+  drawSeconds: 0.09
+  holdSeconds: 0.035
+  localEndPoint: {x: 0, y: 0, z: -12.95}
+  endTarget: {fileID: 0}
