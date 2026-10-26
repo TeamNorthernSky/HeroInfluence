@@ -248,6 +248,7 @@ public class InputHandler : MonoBehaviour
     /// <summary>사용자 입력으로 선택을 비웁니다. 자동전투·공격 실행 중에는 false를 반환하고 유지합니다.</summary>
     public bool TryCancelSkillSelection()
     {
+        if (!JC.Tutorial.JcTutorialBattleGuide.AllowsCancel) return false;
         if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return false;
         if (IsAutoBattleActive || isProcessingAction) return false;
         ResetTargetingState();
@@ -343,6 +344,7 @@ public class InputHandler : MonoBehaviour
 
     public void BeginPendingAction(PendingActionType actionType, int skillId = 0)
     {
+        if (!JC.Tutorial.JcTutorialBattleGuide.AllowsSkill(gameObject.scene, actionType, skillId)) return;
         if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return;
         if (IsAutoBattleActive || isProcessingAction) return;
         if (!TryGetCurrentActor(out BattleCharactor actor))
@@ -409,6 +411,7 @@ public class InputHandler : MonoBehaviour
         SetHoverHostageTarget(null);
         OnActionSelected?.Invoke(BuildSelectedActionLabel(actor, actionType));
         SelectionChanged?.Invoke();
+        JC.Tutorial.JcTutorialBattleGuide.SkillSelected(gameObject.scene, actor, PendingSkill);
     }
 
     private string BuildSelectedActionLabel(BattleCharactor actor, PendingActionType actionType)
