@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering.Universal;
 
 namespace JC.Env.EditorTools
 {
@@ -22,7 +23,9 @@ namespace JC.Env.EditorTools
         public const string PrefabPath = "Assets/RenderFX/Environment/Prefabs/JC_WorldDressing.prefab";
         public const string RootName = "JC_WorldDressing";
         /// <summary>샤프 엣지 나무의 그림자 노멀 바이어스 누출(가는 빛 줄) 방지값 — 260908 실측.</summary>
-        public const float ShadowNormalBias = 0.15f;
+        public const float ShadowNormalBias = 0.05f;
+        // 기존 URP의 실제 Depth Bias를 유지하고 Normal Bias만 낮춘다.
+        public const float ShadowDepthBias = 1.0f;
 
         [MenuItem("JC/월드 드레싱/설치 · 재적용 (활성 씬)")]
         public static void InstallOrReapply()
@@ -45,10 +48,29 @@ namespace JC.Env.EditorTools
             // 라이트: 샤프 엣지 그림자 누출 방지 바이어스
             var sun = RenderSettings.sun;
             if (sun == null) sun = Object.FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional && l.gameObject.scene == scene);
-            if (sun != null && !Mathf.Approximately(sun.shadowNormalBias, ShadowNormalBias))
+            if (sun != null)
             {
-                Undo.RecordObject(sun, "JC shadowNormalBias");
-                sun.shadowNormalBias = ShadowNormalBias;
+                // URP 공용 설정이 켜져 있으면 Light의 개별 Bias는 무시된다.
+                var lightData = sun.GetComponent<UniversalAdditionalLightData>();
+                if (lightData == null)
+                {
+                    Debug.LogWarning("[JC] 태양광의 UniversalAdditionalLightData가 없어 개별 그림자 바이어스를 적용하지 못했습니다.", sun);
+                }
+                else
+                {
+                    if (lightData.usePipelineSettings)
+                    {
+                        Undo.RecordObject(lightData, "JC shadow bias override");
+                        lightData.usePipelineSettings = false;
+                    }
+                    if (!Mathf.Approximately(sun.shadowNormalBias, ShadowNormalBias) ||
+                        !Mathf.Approximately(sun.shadowBias, ShadowDepthBias))
+                    {
+                        Undo.RecordObject(sun, "JC shadow bias");
+                        sun.shadowNormalBias = ShadowNormalBias;
+                        sun.shadowBias = ShadowDepthBias;
+                    }
+                }
             }
 
             // DOF 트래커 → 씬 메인 카메라

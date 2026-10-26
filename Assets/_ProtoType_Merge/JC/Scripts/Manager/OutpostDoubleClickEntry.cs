@@ -29,8 +29,9 @@ public class OutpostDoubleClickEntry : MonoBehaviour
 
     private void Update()
     {
+        JcBuildingSilhouetteFeature.ClearHoverHighlight(this);
+        if (gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene()) return;
         if (DHGameEndState.IsEnding) return;
-        if (!Input.GetMouseButtonDown(0)) return;
         if (outpost == null || !outpost.IsPlayerClaimed) return;
 
         if (WorldInputGate.IsBlocked) return;
@@ -40,12 +41,14 @@ public class OutpostDoubleClickEntry : MonoBehaviour
         if (worldCamera == null) worldCamera = Camera.main;
         if (worldCamera == null) return;
 
-        Ray ray = worldCamera.ScreenPointToRay(Input.mousePosition);
-        if (!Physics.Raycast(ray, out RaycastHit hit, rayDistance)) return;
+        if (!BuildingEntryPointer.TryHit(worldCamera, rayDistance, out RaycastHit hit)) return;
 
         Outpost hitOutpost = hit.collider != null ? hit.collider.GetComponentInParent<Outpost>() : null;
         if (hitOutpost == null || hitOutpost.gameObject != gameObject) return;
         if (!HasPlayerPartyAtInteractionCell(hitOutpost)) return;
+
+        JcBuildingSilhouetteFeature.SetHoverHighlight(this, transform);
+        if (!Input.GetMouseButtonDown(0)) return;
 
         float now = Time.unscaledTime;
         if (lastClickTime > 0f && now - lastClickTime <= doubleClickThreshold)
@@ -57,6 +60,12 @@ public class OutpostDoubleClickEntry : MonoBehaviour
         {
             lastClickTime = now;
         }
+    }
+
+    private void OnDisable()
+    {
+        JcBuildingSilhouetteFeature.ClearHoverHighlight(this);
+        lastClickTime = -1f;
     }
 
     private void EnterLobby()

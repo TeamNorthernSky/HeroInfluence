@@ -26,6 +26,21 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
     }
     public static void ClearTutorialHighlight(UnityEngine.Object owner)
     { if (tutorialOwner == owner) { tutorialOwner = null; tutorialTarget = null; } }
+    private static UnityEngine.Object hoverOwner;
+    private static Transform hoverTarget, cachedHoverTarget;
+    private static Renderer[] hoverRenderers;
+
+    public static void SetHoverHighlight(UnityEngine.Object owner, Transform target)
+    {
+        if (owner == null || target == null) return;
+        hoverOwner = owner; hoverTarget = target;
+        if (cachedHoverTarget != target || hoverRenderers == null)
+        { cachedHoverTarget = target; hoverRenderers = target.GetComponentsInChildren<Renderer>(true); }
+    }
+
+    public static void ClearHoverHighlight(UnityEngine.Object owner)
+    { if (hoverOwner == owner) { hoverOwner = null; hoverTarget = null; } }
+
     private MaskPass tutorialMaskPass;
     private CompositePass tutorialCompositePass;
     private MaskPass maskPass;
@@ -34,13 +49,15 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
     public override void Create()
     {
+        compositePass?.Dispose();
+        tutorialCompositePass?.Dispose();
         maskPass?.Dispose();
         tutorialMaskPass?.Dispose();
         shadowRemovalPass?.Dispose();
         tutorialMaskPass = new MaskPass("_JcTutorialBuildingMask");
-        tutorialMaskPass.renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents + 1);
+        tutorialMaskPass.renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 2);
         tutorialCompositePass = new CompositePass(tutorialMaskPass);
-        tutorialCompositePass.renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents + 2);
+        tutorialCompositePass.renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 1);
         maskPass = new MaskPass();
         compositePass = new CompositePass(maskPass);
         shadowRemovalPass = new ShadowRemovalPass(maskPass);
@@ -66,17 +83,24 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         if (!PartyOcclusionFadeController.TryHasFadedObjects(scene, out bool hasFaded) || hasFaded)
             renderer.EnqueuePass(shadowRemovalPass);
         renderer.EnqueuePass(compositePass);
-        if (tutorialOwner != null && tutorialTarget != null && tutorialTarget.gameObject.scene == scene)
+        // 튜토리얼 안내가 있으면 일반 호버보다 우선한다. 외곽선 합성은 같은 패스를 사용한다.
+        bool tutorial = tutorialOwner != null && tutorialTarget != null && tutorialTarget.gameObject.scene == scene;
+        bool hover = hoverOwner != null && hoverTarget != null && hoverTarget.gameObject.scene == scene;
+        if (tutorial || hover)
         {
+            JC.Indicators.JcBuildingHoverOutlineController.Resolve(scene, out var hoverColor, out var hoverTuning, out var hoverShape);
             var highlight = JcBuildingSilhouetteSettings.Default;
             float pulse = .5f + .5f * Mathf.Sin(Time.unscaledTime * Mathf.PI * 2 / 1.6f);
             highlight.opacity = 0;
-            highlight.outlineColor = Color.Lerp(tutorialColor, Color.white, pulse);
+            highlight.outlineColor = tutorial ? Color.Lerp(tutorialColor, Color.white, pulse) : hoverColor;
             highlight.outlineOpacity = 1;
             highlight.outlineWidthMode = JcBuildingOutlineWidthMode.ScreenPixels;
-            highlight.outlineWidth = Mathf.Lerp(9, 15, pulse);
+            highlight.outlineWidth = tutorial ? Mathf.Lerp(9, 15, pulse) : 9f;
             tutorialMaskPass.Setup(true, highlight, renderingData.cameraData.camera);
-            tutorialMaskPass.explicitRenderers = tutorialRenderers;
+            tutorialMaskPass.explicitRenderers = tutorial ? tutorialRenderers : hoverRenderers;
+            if (!tutorial) tutorialMaskPass.SetHoverOrbit(renderingData.cameraData.camera, hoverRenderers, hoverTuning, hoverShape);
+            JC.Indicators.JcBuildingHoverOutlineController.ResolveAntialiasing(scene, out float smoothing);
+            tutorialMaskPass.SetAntialiasing(smoothing);
             tutorialMaskPass.overrideMaterial = silhouetteMaterial;
             tutorialCompositePass.Setup(silhouetteMaterial, compositeIndex);
             renderer.EnqueuePass(tutorialMaskPass);
@@ -86,6 +110,8 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
     protected override void Dispose(bool disposing)
     {
+        compositePass?.Dispose();
+        tutorialCompositePass?.Dispose();
         maskPass?.Dispose();
         tutorialMaskPass?.Dispose();
         shadowRemovalPass?.Dispose();
@@ -99,6 +125,10 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         private static readonly int OutlineId = Shader.PropertyToID("_JcBuildingOutline");
         private static readonly int PixelSizeId = Shader.PropertyToID("_JcBuildingPixelSize");
         private static readonly int OutlineSettingsId = Shader.PropertyToID("_JcBuildingOutlineSettings");
+        private static readonly int OrbitBoundsId = Shader.PropertyToID("_JcBuildingOrbitBounds");
+        private static readonly int OrbitId = Shader.PropertyToID("_JcBuildingOrbit");
+        private static readonly int OrbitIntensityId = Shader.PropertyToID("_JcBuildingOrbitIntensity");
+        private Vector4 orbitBounds, orbit, orbitIntensity;
         private Vector4 tuningVector;
         private Vector4 outlineSettings;
         private Color fill;
@@ -108,9 +138,20 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         public Renderer[] explicitRenderers;
         public Material overrideMaterial;
         private readonly string maskName;
+        private static readonly int EdgeSmoothingId = Shader.PropertyToID("_JcBuildingEdgeSmoothing");
+        private float edgeSmoothing;
+
+        public float EdgeSmoothing => edgeSmoothing;
+
+        public void SetAntialiasing(float smoothing)
+        {
+            edgeSmoothing = smoothing;
+        }
 
         public void Setup(bool enabled, JcBuildingSilhouetteSettings tuning, Camera camera)
         {
+            orbit = Vector4.zero;
+            edgeSmoothing = 0;
             tuningVector = new Vector4(enabled ? 1f : 0f, tuning.opacity, tuning.depthBias, tuning.outlineWidth);
             fill = QualitySettings.activeColorSpace == ColorSpace.Linear ? tuning.fillColor.linear : tuning.fillColor;
             outline = QualitySettings.activeColorSpace == ColorSpace.Linear ? tuning.outlineColor.linear : tuning.outlineColor;
@@ -120,8 +161,44 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
                 Mathf.Abs(camera.projectionMatrix.m11) * camera.pixelHeight * 0.5f, camera.orthographic ? 1f : 0f);
         }
 
+        public void SetHoverOrbit(Camera camera, Renderer[] renderers, Vector3 tuning, Vector3 shape)
+        {
+            if (renderers == null) return;
+            Vector2 min = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+            Vector2 max = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+            foreach (var renderer in renderers)
+            {
+                if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy) continue;
+                if (!(renderer is MeshRenderer) && !(renderer is SkinnedMeshRenderer)) continue;
+                Bounds b = renderer.bounds;
+                for (int i = 0; i < 8; i++)
+                {
+                    Vector3 corner = b.center + Vector3.Scale(b.extents,
+                        new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                    Vector3 uv = camera.WorldToViewportPoint(corner);
+                    if (uv.z <= camera.nearClipPlane) continue;
+                    min = Vector2.Min(min, new Vector2(uv.x, uv.y));
+                    max = Vector2.Max(max, new Vector2(uv.x, uv.y));
+                }
+            }
+            if (float.IsInfinity(min.x)) return;
+            Vector2 size = max - min;
+            size.x = Mathf.Max(size.x, .0001f); size.y = Mathf.Max(size.y, .0001f);
+            Vector2 center = (min + max) * .5f;
+            orbitBounds = new Vector4(center.x, center.y, 2f / size.x, 2f / size.y);
+            orbit = new Vector4(1f, Mathf.Repeat(Time.unscaledTime * tuning.y, 1f),
+                size.x * camera.pixelWidth / (size.y * camera.pixelHeight), shape.z);
+            orbitIntensity = new Vector4(tuning.x, tuning.z, shape.x, shape.y);
+        }
+
         public void WriteTuning(CommandBuffer cmd)
         {
+            cmd.SetGlobalFloat("_JcBuildingHighlight", overrideMaterial != null && explicitRenderers != null ? 1f : 0f);
+            if (Mask != null) cmd.SetGlobalTexture("_JcBuildingShapeDepth", Mask.nameID);
+            cmd.SetGlobalFloat(EdgeSmoothingId, edgeSmoothing);
+            cmd.SetGlobalVector(OrbitBoundsId, orbitBounds);
+            cmd.SetGlobalVector(OrbitId, orbit);
+            cmd.SetGlobalVector(OrbitIntensityId, orbitIntensity);
             cmd.SetGlobalVector(TuningId, tuningVector);
             cmd.SetGlobalColor(FillId, fill);
             cmd.SetGlobalColor(OutlineId, outline);
@@ -129,7 +206,14 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             cmd.SetGlobalVector(OutlineSettingsId, outlineSettings);
         }
 
-        public void ClearTuning(CommandBuffer cmd) => cmd.SetGlobalVector(TuningId, Vector4.zero);
+        public void ClearTuning(CommandBuffer cmd)
+        {
+            cmd.SetGlobalFloat("_JcBuildingHighlight", 0);
+            cmd.SetGlobalTexture("_JcBuildingShapeDepth", Texture2D.blackTexture);
+            cmd.SetGlobalFloat(EdgeSmoothingId, 0);
+            cmd.SetGlobalVector(TuningId, Vector4.zero);
+            cmd.SetGlobalVector(OrbitId, Vector4.zero);
+        }
 
         public MaskPass(string name = "_JcBuildingSilhouetteMask")
         {
@@ -148,13 +232,19 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             desc.bindMS = false;
             // R: 모양, G: DH 폴백 알파, B: 가장 가까운 건물의 역깊이.
             // 알파가 0이어도 모양이 남으며, Max 블렌딩으로 중복 메시와 깊이를 함께 합친다.
-            desc.graphicsFormat = GraphicsFormat.R16G16B16A16_SFloat;
+            // 강조는 가려지지 않은 모양 R/최근접 역깊이 G를 보존한다. 일반 투과 마스크는 기존 RGB 유지.
+            bool highlightMask = overrideMaterial != null && explicitRenderers != null;
+            desc.graphicsFormat = !highlightMask ? GraphicsFormat.R16G16B16A16_SFloat
+                : SystemInfo.IsFormatSupported(GraphicsFormat.R32G32_SFloat, FormatUsage.Render)
+                    && SystemInfo.IsFormatSupported(GraphicsFormat.R32G32_SFloat, FormatUsage.Blend)
+                    ? GraphicsFormat.R32G32_SFloat : GraphicsFormat.R32G32B32A32_SFloat;
             desc.useMipMap = false;
             desc.autoGenerateMips = false;
             RTHandle target = Mask;
             RenderingUtils.ReAllocateIfNeeded(ref target, desc, FilterMode.Bilinear,
                 TextureWrapMode.Clamp, name: maskName);
             Mask = target;
+            // 카메라 깊이와 같은 단일 샘플로 검사한다. AA는 최종 선에만 적용한다.
             ConfigureTarget(Mask);
             ConfigureClear(ClearFlag.Color, Color.clear);
         }
@@ -162,21 +252,33 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             CommandBuffer cmd = CommandBufferPool.Get("JC Building Silhouette Tuning");
-            WriteTuning(cmd);
-            if (overrideMaterial != null && explicitRenderers != null)
+            try
             {
-                int pass = overrideMaterial.FindPass("SilhouetteMask");
-                if (pass >= 0) foreach (var target in explicitRenderers)
+                WriteTuning(cmd);
+                if (overrideMaterial != null && explicitRenderers != null)
                 {
-                    if (target == null || !target.enabled || !target.gameObject.activeInHierarchy) continue;
-                    Mesh mesh = target is SkinnedMeshRenderer skin ? skin.sharedMesh : target.GetComponent<MeshFilter>()?.sharedMesh;
-                    if (mesh == null) continue;
-                    for (int i = 0; i < mesh.subMeshCount; i++) cmd.DrawRenderer(target, overrideMaterial, i, pass);
+                    int pass = overrideMaterial.FindPass("SilhouetteMask");
+                    if (pass >= 0) foreach (var target in explicitRenderers)
+                    {
+                        if (target == null || !target.enabled || !target.gameObject.activeInHierarchy) continue;
+                        // 방문 표식(SpriteRenderer) 등은 건물 메시가 아니다.
+                        // Unity의 누락된 Component에는 ?. 대신 명시적 존재 검사를 사용한다.
+                        Mesh mesh = null;
+                        if (target is SkinnedMeshRenderer skin) mesh = skin.sharedMesh;
+                        else if (target is MeshRenderer && target.TryGetComponent<MeshFilter>(out var meshFilter) && meshFilter != null)
+                            mesh = meshFilter.sharedMesh;
+                        if (mesh == null) continue;
+                        for (int i = 0; i < mesh.subMeshCount; i++) cmd.DrawRenderer(target, overrideMaterial, i, pass);
+                    }
+                    context.ExecuteCommandBuffer(cmd);
+                    return;
                 }
-                context.ExecuteCommandBuffer(cmd); CommandBufferPool.Release(cmd); return;
+                context.ExecuteCommandBuffer(cmd);
             }
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
+            finally
+            {
+                CommandBufferPool.Release(cmd);
+            }
             DrawingSettings draw = CreateDrawingSettings(MaskTag, ref renderingData, SortingCriteria.None);
             draw.perObjectData = PerObjectData.None;
             FilteringSettings filter = new FilteringSettings(RenderQueueRange.transparent);
@@ -270,6 +372,8 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         private readonly MaskPass source;
         private Material material;
         private int passIndex;
+        private RTHandle outlineColor;
+        private int rawPassIndex, smoothPassIndex;
 
         public CompositePass(MaskPass source)
         {
@@ -282,10 +386,22 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         {
             material = nextMaterial;
             passIndex = nextPass;
+            rawPassIndex = material.FindPass("OutlineRaw");
+            smoothPassIndex = material.FindPass("OutlineAntialiasing");
         }
 
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
         {
+            if (source.EdgeSmoothing > 0 && rawPassIndex >= 0 && smoothPassIndex >= 0)
+            {
+                var desc = renderingData.cameraData.cameraTargetDescriptor;
+                desc.depthBufferBits = 0; desc.msaaSamples = 1; desc.bindMS = false;
+                desc.graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm;
+                desc.useMipMap = false; desc.autoGenerateMips = false;
+                RenderingUtils.ReAllocateIfNeeded(ref outlineColor, desc, FilterMode.Bilinear,
+                    TextureWrapMode.Clamp, name: "_JcBuildingOutlineColor");
+            }
+            else { outlineColor?.Release(); outlineColor = null; }
             ConfigureTarget(renderingData.cameraData.renderer.cameraColorTargetHandle);
             ConfigureClear(ClearFlag.None, Color.clear);
         }
@@ -294,14 +410,26 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         {
             if (source.Mask == null || material == null) return;
             CommandBuffer cmd = CommandBufferPool.Get("JC Building Silhouette Composite");
-            source.WriteTuning(cmd);
-            // 원본 카메라 색은 Load로 유지하며 하드웨어 알파 합성한다. 색 복사 RT는 불필요.
-            Blitter.BlitCameraTexture(cmd, source.Mask,
-                renderingData.cameraData.renderer.cameraColorTargetHandle,
-                RenderBufferLoadAction.Load, RenderBufferStoreAction.Store, material, passIndex);
-            source.ClearTuning(cmd);
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
+            try
+            {
+                source.WriteTuning(cmd);
+                if (outlineColor != null)
+                {
+                    // 건물 화면을 복사하지 않고 선의 premultiplied 색/알파만 만든다.
+                    Blitter.BlitCameraTexture(cmd, source.Mask, outlineColor,
+                        RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, material, rawPassIndex);
+                    Blitter.BlitCameraTexture(cmd, outlineColor, renderingData.cameraData.renderer.cameraColorTargetHandle,
+                        RenderBufferLoadAction.Load, RenderBufferStoreAction.Store, material, smoothPassIndex);
+                }
+                else
+                    Blitter.BlitCameraTexture(cmd, source.Mask, renderingData.cameraData.renderer.cameraColorTargetHandle,
+                        RenderBufferLoadAction.Load, RenderBufferStoreAction.Store, material, passIndex);
+                source.ClearTuning(cmd);
+                context.ExecuteCommandBuffer(cmd);
+            }
+            finally { CommandBufferPool.Release(cmd); }
         }
+
+        public void Dispose() { outlineColor?.Release(); outlineColor = null; }
     }
 }
