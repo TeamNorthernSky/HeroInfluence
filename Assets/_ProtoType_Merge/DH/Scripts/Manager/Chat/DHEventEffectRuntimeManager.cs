@@ -334,7 +334,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
             if (subEvent == null || !IsSameEventKey(subEvent.EventKey, eventKey))
                 continue;
 
-            subEvent.gameObject.SetActive(false);
+            subEvent.DeactivateByDisableEffect();
         }
     }
 

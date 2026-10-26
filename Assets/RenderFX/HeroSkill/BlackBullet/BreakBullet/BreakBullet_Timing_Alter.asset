@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77fb1e79fb9b9db4ab355fcba0fb088c, type: 3}
+  m_Name: BreakBullet_Timing_Alter
+  m_EditorClassIdentifier: 
+  targetPrefab: {fileID: 5946269698738115957, guid: 66c7a570351399848896e3e35c98e9fd,
+    type: 3}
+  targetParts: []
+  launchDelay: 0.06
+  travelTime: 0.19
+  muzzleFlash:
+    enabled: 1
+    startDelay: 0
+    lifetime: 0.55
+    fadeIn: 0
+    fadeOut: 0.35
+    fadeInEase: 0
+    fadeOutEase: 0
+    startSize: 0.18
+    maxSize: 4.52
+    endSize: 0.12
+    expandEnd: 0.251
+    holdEnd: 0.476
+    expandEase: 0
+    shrinkEase: 2
+    offset: {x: 0, y: 0, z: 0.02}
+  bulletHead:
+    enabled: 1
+    startDelay: 0.06
+    lifetime: 0.19
+    fadeIn: 0
+    fadeOut: 0.25
+    fadeInEase: 0
+    fadeOutEase: 0
+    startSize: 2.6
+    maxSize: 3
+    endSize: 0.8
+    expandEnd: 0.12
+    holdEnd: 0.7
+    expandEase: 0
+    shrinkEase: 2
+    offset: {x: 0, y: 0, z: 0}
+  trail:
+    enabled: 1
+    startDelay: 0.06
+    lifetime: 0.59000003
+    fadeIn: 0
+    fadeOut: 0.4
+    fadeInEase: 0
+    fadeOutEase: 0
+    startSize: 0.28
+    maxSize: 0.28
+    endSize: 0.04
+    expandEnd: 0
+    holdEnd: 0.65
+    expandEase: 0
+    shrinkEase: 0
+    offset: {x: 0, y: 0, z: 0}
+  tailReachSeconds: 0.4
+  trailTailWidthRatio: 0.18
+  trailTailBrightnessRatio: 0.35
+  trailTaperCurve: 1.15
+  impactBurst:
+    enabled: 1
+    startDelay: 0.25
+    lifetime: 0.8
+    fadeIn: 0
+    fadeOut: 0.45
+    fadeInEase: 0
+    fadeOutEase: 2
+    startSize: 8
+    maxSize: 5.5
+    endSize: 1.5
+    expandEnd: 0.12
+    holdEnd: 0.45
+    expandEase: 2
+    shrinkEase: 0
+    offset: {x: 0, y: 0.8, z: 0}
+  muzzleColors:
+    headColor: {r: 0, g: 0.106132984, b: 1, a: 1}
+    midColor: {r: 0, g: 0.04706006, b: 0.6226415, a: 1}
+    tailColor: {r: 1, g: 1, b: 1, a: 1}
+    edgeEmission: 3
+    innerColor: {r: 1, g: 1, b: 1, a: 1}
+    innerEmission: 2
+    chromaHold: 1
+  headColors:
+    headColor: {r: 0, g: 0.106132984, b: 1, a: 1}
+    midColor: {r: 0, g: 0.04706006, b: 0.6226415, a: 1}
+    tailColor: {r: 1, g: 1, b: 1, a: 1}
+    edgeEmission: 3.2
+    innerColor: {r: 1, g: 1, b: 1, a: 1}
+    innerEmission: 2.4
+    chromaHold: 1
+  trailColors:
+    headColor: {r: 0.1, g: 0.4, b: 1, a: 1}
+    midColor: {r: 0.06, g: 0.25, b: 0.8, a: 1}
+    tailColor: {r: 0.025, g: 0.08, b: 0.3, a: 1}
+    edgeEmission: 1
+    innerColor: {r: 0.25, g: 0.65, b: 1, a: 1}
+    innerEmission: 1.3
+    chromaHold: 1
+  impactColors:
+    headColor: {r: 0, g: 0.106132984, b: 1, a: 1}
+    midColor: {r: 0, g: 0.04706006, b: 0.6226415, a: 1}
+    tailColor: {r: 1, g: 1, b: 1, a: 1}
+    edgeEmission: 3.4
+    innerColor: {r: 1, g: 1, b: 1, a: 1}
+    innerEmission: 2.2
+    chromaHold: 1
+  casterFallbackOffset: {x: 0.35, y: 1, z: 0.15}

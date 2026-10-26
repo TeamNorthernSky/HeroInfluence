@@ -69,8 +69,72 @@ public class BattleVisualDirector : MonoBehaviour
         if (prefab == null) return;
         var instance = Instantiate(prefab,
             result.Target.transform.position + _commonHitEffectOffset, Quaternion.identity);
+        PlaceSharedHitBehindSkills(instance);
         EffectFallbackRelease.Ensure(instance);
         TrackHitEffect(instance, true);
+    }
+
+    // Shared damage feedback renders behind skill-specific visuals, including prefab overrides.
+    private static void PlaceSharedHitBehindSkills(GameObject instance)
+    {
+        foreach (var renderer in instance.GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.sortingLayerID = 0;
+            renderer.sortingOrder = -1000;
+        }
+    }
+
+    private sealed class RecentHitKeys
+    {
+        private const int Capacity = 128;
+        private readonly HashSet<string> _keys = new HashSet<string>();
+        private readonly Queue<string> _order = new Queue<string>();
+
+        public bool TryAdd(string cast, BattleCharactor target)
+        {
+            string key = cast + ":" + target.GetInstanceID();
+            if (!_keys.Add(key)) return false;
+            _order.Enqueue(key);
+            while (_order.Count > Capacity) _keys.Remove(_order.Dequeue());
+            return true;
+        }
+
+        public void Clear()
+        {
+            _keys.Clear();
+            _order.Clear();
+        }
+    }
+
+    private readonly RecentHitKeys _sharedHitKeys = new RecentHitKeys();
+    private readonly RecentHitKeys _hitReactionKeys = new RecentHitKeys();
+
+    private static bool ShouldPlayFirstHit(BattleCharactor actor, BattleCharactor target,
+        BattleHitResult result, RecentHitKeys keys, PresentationRuntimeContext context = null)
+    {
+        string cast = result?.ExecutionId;
+        if (string.IsNullOrEmpty(cast))
+        {
+            if (context == null && actor != null)
+                context = actor.GetComponent<PresentationRuntimeContext>();
+            if (context == null || context.CurrentActionInstanceId == 0) return true;
+            cast = "presentation:" + context.CurrentActionInstanceId;
+        }
+        return keys.TryAdd(cast, target);
+    }
+
+    public bool ShouldPlayTargetHitAnimation(BattleCharactor actor, BattleCharactor target, BattleHitResult result)
+    {
+        var context = actor != null ? actor.GetComponent<PresentationRuntimeContext>() : null;
+        int skillIndex = result != null && result.SkillIndex > 0 ? result.SkillIndex
+            : context?.Current?.Presentation?.SkillIndex ?? 0;
+        if ((skillIndex != 3030 && skillIndex != 3031) || target == null) return true;
+        return ShouldPlayFirstHit(actor, target, result, _hitReactionKeys, context);
+    }
+
+    private bool ShouldPlaySharedHit(BattleCharactor actor, BattleHitResult result)
+    {
+        return ShouldPlayFirstHit(actor, result.Target, result, _sharedHitKeys);
     }
 
     private void PlayCommonHitEffect(BattleCharactor target)
@@ -80,6 +144,7 @@ public class BattleVisualDirector : MonoBehaviour
             _commonHitEffect = Resources.Load<GameObject>("BattleEffects/HCFX_Hit_01_NoStar");
         if (_commonHitEffect == null) return;
         var instance = Instantiate(_commonHitEffect, target.transform.position + _commonHitEffectOffset, Quaternion.identity);
+        PlaceSharedHitBehindSkills(instance);
         EffectFallbackRelease.Ensure(instance);
         TrackHitEffect(instance, true);
     }
@@ -191,8 +256,11 @@ public class BattleVisualDirector : MonoBehaviour
         if (!isActiveAndEnabled || result == null || result.Target == null || result.IsHeal || result.IsMiss ||
             (result.AppliedDamage <= 0f && (!_reactToPreventedDamage || result.Damage <= 0f))) return;
         FlashBody(result.Target);
-        PlayCommonHitEffect(result.Target);
-        PlayJusticeHitEffect(result);
+        if (ShouldPlaySharedHit(actor, result))
+        {
+            PlayCommonHitEffect(result.Target);
+            PlayJusticeHitEffect(result);
+        }
         if (_lastMarkerActor == actor && _lastMarkerTarget == result.Target &&
             Time.unscaledTime - _lastMarkerTime < 0.15f) return;
         SkillPresentationData presentation = GetPresentation(result.SkillIndex);
@@ -247,6 +315,8 @@ public class BattleVisualDirector : MonoBehaviour
 
     private void OnDisable()
     {
+        _sharedHitKeys.Clear();
+        _hitReactionKeys.Clear();
         foreach (Renderer renderer in _bodyFlashes.Keys) SetBodyFlash(renderer, 0f);
         _bodyFlashes.Clear();
         if (_hitStopRoutine != null) StopCoroutine(_hitStopRoutine);

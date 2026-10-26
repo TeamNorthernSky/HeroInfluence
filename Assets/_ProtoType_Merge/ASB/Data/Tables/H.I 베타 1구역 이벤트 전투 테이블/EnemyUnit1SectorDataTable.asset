@@ -1135,7 +1135,7 @@ MonoBehaviour:
     EnemyName: "\uC728\uB9AC\uC544"
     EnemyConcept: "4\uAD6C\uC5ED \uCD5C\uC885\uBCF4\uC2A4"
     UnitMaxHP: 200
-    UnitATK: 12
+    UnitATK: 15
     UnitDEF: 18
     CriticalRate: 0.25
     CounterRate: 0.1
@@ -1211,7 +1211,7 @@ MonoBehaviour:
     EnemyName: "\uB098\uB77D\uC758 \uC99D\uD3ED\uAE30"
     EnemyConcept: "\uC99D\uD3ED\uAE30{\uB098\uB77D\uC758 \uD3ED\uD48D}"
     UnitMaxHP: 80
-    UnitATK: 10
+    UnitATK: 12
     UnitDEF: 15
     CriticalRate: 0.2
     CounterRate: 0
@@ -1288,7 +1288,7 @@ MonoBehaviour:
     EnemyName: "\uACF5\uBA78\uC758 \uC99D\uD3ED\uAE30"
     EnemyConcept: "\uC99D\uD3ED\uAE30{\uACF5\uBA78\uC758 \uADA4\uC801}"
     UnitMaxHP: 80
-    UnitATK: 10
+    UnitATK: 12
     UnitDEF: 15
     CriticalRate: 0.2
     CounterRate: 0
@@ -1367,7 +1367,7 @@ MonoBehaviour:
     EnemyName: "\uC728\uB9AC\uC544\uB97C \uAC00\uB454 \uC7A5\uB9C9"
     EnemyConcept: "\uC9C4 \uCD5C\uC885 \uBCF4\uC2A4"
     UnitMaxHP: 200
-    UnitATK: 10
+    UnitATK: 15
     UnitDEF: 18
     CriticalRate: 0.25
     CounterRate: 0.1
@@ -1434,17 +1434,16 @@ MonoBehaviour:
     EnemyName: "\uC808\uB9DD\uC758 \uAD74\uB801\uC1E0"
     EnemyConcept: "\uC808\uB9DD\uC758 \uAD74\uB808 \uC18C\uD658\uCCB4"
     UnitMaxHP: 10
-    UnitATK: 12
+    UnitATK: 100
     UnitDEF: 10
     CriticalRate: 0
     CounterRate: 0
     ReduceRate: 0
     Speed: 1
     EnemySkill1_Name: "\uB3CC\uC9C4"
-    EnemySkill1_Description: "\uBCF8\uC778 \uD134\uC5D0 \uD574\uB2F9 \uD589\uC758
-      \uD788\uC5B4\uB85C \uC9C4\uC601\uC73C\uB85C \uB3CC\uC9C4\uD574 \uD589 \uC804\uCCB4\uC5D0
-      {EnemySkill1Value} \uB9CC\uD07C \uAD11\uC5ED \uD53C\uD574. \uB3CC\uC9C4 \uD6C4
-      \uC0AC\uB77C\uC9D0."
+    EnemySkill1_Description: "\uAD74\uB801\uC1E0\uAC00 \uC704\uCE58\uD55C \uD589\uC758
+      \uD788\uC5B4\uB85C \uC9C4\uC601\uC73C\uB85C \uB3CC\uC9C4 \uD6C4 \uC0AC\uB77C\uC9C4\uB2E4.
+      100 \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4. "
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1

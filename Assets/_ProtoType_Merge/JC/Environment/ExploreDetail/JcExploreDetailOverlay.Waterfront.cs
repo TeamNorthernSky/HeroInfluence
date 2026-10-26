@@ -136,7 +136,9 @@ namespace JC.EnvironmentDetail
                         var polygon=new List<WaterVertex>{a,b,c};builder.Polygon(ClipWater(polygon,width,true),0,width,cap);
                         if(width<=0)return;
                         float[] limits={0,cap,width*.85f,width};
-                        for(int band=0;band<3;band++)builder.Polygon(ClipWater(ClipWater(polygon,limits[band],true),limits[band+1],false),1,width,cap);
+                        // 교량 아래의 호안 상단은 유지되는 도로 상판과 같은 높이로 겹칩니다.
+                        // 수면과 경사면은 유지하고, 도로가 덮는 수평 상단 띠만 생성하지 않습니다.
+                        for(int band=underBridge?1:0;band<3;band++)builder.Polygon(ClipWater(ClipWater(polygon,limits[band],true),limits[band+1],false),1,width,cap);
                     };
                     for(int z=0;z<steps;z++)for(int x=0;x<steps;x++){var a=sample(x,z);var b=sample(x+1,z);var c=sample(x+1,z+1);var d=sample(x,z+1);triangle(a,c,b);triangle(a,d,c);}
                 }

@@ -1,0 +1,62 @@
+﻿율리아 실전 적용 묶음 — 2026-10-23
+
+기준: Unity 2022.3.62f3 / URP 14.0.12 / Visual Effect Graph 14.0.12
+이 묶음만 Import해도 율리아 관련 프리팹과 예제 씬이 열립니다. 증폭기 묶음은 별도이며, 공통 에셋은 같은 GUID로 제공되어 두 묶음을 함께 Import해도 중복되지 않습니다.
+
+바로 적용할 프리팹
+Assets/UliaVfx/Yulia/Prefabs/Yulia_VFX_Rig.prefab
+Assets/UliaVfx/Yulia/Prefabs/DespairRing_VFX.prefab
+SourceAssets는 조합용 원본입니다. 실제 적용에는 Prefabs의 Rig/굴렁쇠 프리팹을 사용합니다.
+
+설치 및 초기 연결
+1. Yulia_VFX_Rig를 생성하고 YuliaVfxRig 컴포넌트를 가져옵니다.
+2. Bind(actor, animator, handSocket, shieldCenter, characterHeight, effectCamera)를 한 번 호출합니다.
+actor: 율리아 유닛 Transform. animator: 실제 모션을 재생할 Animator.
+handSocket: 에너지 구체가 붙을 손 위치 Transform. shieldCenter: 방어막 중심 Transform.
+characterHeight: 월드 단위 키. 기존 시연 기준 약 2.061252. effectCamera: 실제 전투 카메라.
+씬 오브젝트 이름, Enemy_40001, Grid 이름, 전투 매니저는 사용하지 않습니다.
+
+사용 예
+var fx = Instantiate(yuliaRigPrefab);
+fx.Bind(unitTransform, unitAnimator, rightHandSocket, shieldAnchor, unitHeight, battleCamera);
+fx.SetIdle(true);
+fx.ShowShield();
+fx.HitShield(worldHitPoint);
+fx.BreakShield(worldHitPoint);
+
+전투 진입 / 방어막
+fx.GenerateShield(new[] { upperCore.position, lowerCore.position });
+→ 두 위치에서 top_down_bomb_Core_Active 응집 → 2.7초 방출에 방어막 팝 → 유지.
+증폭기 복구 이벤트에서 공급을 이미 재생했다면 fx.ShowShieldPop()만 호출합니다. GenerateShield를 다시 호출하면 공급까지 중복됩니다.
+ShowShield(): 유지 상태를 즉시 표시. HitShield(point): 기존 보라색과 크기를 유지한 강한 일렁임 후 복원.
+BreakShield(point): 지정 충격 방향에서 껍질이 벗겨지듯 소멸.
+IsShieldVisible은 연출 상태이며 피해/무적 판정 값으로 사용하지 않습니다.
+
+절망의 굴렁쇠
+fx.Summoned += born => { /* born 배열을 소환 유닛의 표시 구성에 연결 */ };
+fx.CastDespairRings(new[] { tileA.position, tileB.position, tileC.position });
+입력은 타일의 월드 바닥 위치 세 개입니다. 모션 원본 속도 1배, 손의 구체 회전/분열, 소환진, 에너지 방출과 순간 소환을 한 번에 재생합니다.
+소환 완료 후 DespairRingVfx 세 개를 Summoned 이벤트와 LastSummoned로 전달합니다.
+각 인스턴스에 RushTo(worldEnd) / Explode() / Stop()를 호출합니다.
+RushTo의 끝점은 굴렁쇠 중심의 월드 위치입니다. 바닥 타일이라면 필요한 중심 높이를 더해 주세요.
+한 기의 돌진/파괴는 나머지 굴렁쇠를 건드리지 않습니다. 돌진 완료 후 표시가 숨겨지며 RushFinished가 발생합니다.
+별도 대기 인스턴스: var ring=Instantiate(ringPrefab); ring.Show(worldCenter,unitHeight);
+
+수명과 정리
+Stop(): 율리아의 시전/보호막/손 에너지와 자체 효과를 정리합니다. 이미 전달된 굴렁쇠는 독립 인스턴스이므로 유지됩니다.
+각 소환 유닛이 없어질 때 ring.Stop(); Destroy(ring.gameObject);를 호출합니다.
+리그를 풀에 반납할 때 Stop(), 재사용 시 필요한 Bind/표시 API를 호출합니다. 재생 중 비활성화하면 연출을 중단합니다.
+현재 승인된 타이밍을 유지하기 위해 모션과 VFX는 unscaled time으로 재생합니다. 일시정지/전환 시 정지는 호출 측에서 Stop/비활성화로 제어합니다.
+
+예제
+Assets/UliaVfx/Yulia/Samples/Yulia_IntegrationExample.unity
+임의 이름의 캐릭터와 직접 지정한 손/중심/위치로 모든 율리아 연출을 재생합니다.
+예제는 시각 연결용입니다. 실제 HP, 피해, 무적, 턴, 전투 유닛 생성/삭제는 게임 코드에서 처리합니다.
+캐스팅 시 제공된 AnimationClip을 Animator Playable로 재생하고 완료/중단 시 해제하여 게임 Animator에 제어권을 돌려줍니다. 게임 쪽 스킬 모션 제어와 동시에 중복 재생하지 마세요.
+
+폴더
+Prefabs: 게임에 연결할 제어 프리팹.
+SourceAssets: 실제 사용한 원본 VFX 프리팹.
+Runtime: 제어 코드와 승인된 연출 처리. UliaVfx.Yulia 어셈블리.
+Samples: 연결된 모델 예제와 버튼 재생 씬.
+Shared: 공통 제어 코드, 셰이더, 머티리얼, 텍스처, 메시, 애니메이션 등 필수 종속 파일.

@@ -269,10 +269,10 @@ MonoBehaviour:
   _blackboard: {fileID: 0}
   _useIncapacitation: 0
   _keepCorpseAfterDeath: 1
-  _reviveStartPhase: 2
+  _reviveStartPhase: 1
   _corpseReviveDelayRounds: 2
   _reviveHpRatio: 0.5
-  _immediateRevivePhase: 3
+  _immediateRevivePhase: 0
   _immediateReviveHoldSeconds: 0.7
 --- !u!1 &7706491001306831887
 GameObject:
@@ -522,6 +522,66 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6181626145654986074, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c1b57ba0858c18116b60b11816872a7f, type: 2}
+    - target: {fileID: 5213453868313099831, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: d127e17b8ce791f313eeafa18bfdde9c, type: 2}
+    - target: {fileID: 1354659972102087699, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 7a2d65421f0593978b676d080c0cf820, type: 2}
+    - target: {fileID: 2503996714293667742, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: eff05022080264b9f384189809b111c8, type: 2}
+    - target: {fileID: 3542448368068196030, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 4f96ff37f52da169beba48d9c4eefaff, type: 2}
+    - target: {fileID: 5574910272484511231, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2392be80f13d7a1c9d78838e5fe43139, type: 2}
+    - target: {fileID: 682694939608099790, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 341387a4cb98e2b1075f6a03b2dd7239, type: 2}
+    - target: {fileID: 5906142732580310682, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 5906142732580310682, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5906142732580310682, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3647718022730696049, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: baseIntensity
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3647718022730696049, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: intensityAmplitude
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

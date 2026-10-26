@@ -81,6 +81,7 @@ MonoBehaviour:
     Enabled: 1
     UseUnitMovement: 1
     ForceApproach: 0
+    ApproachEffectId: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     SfxKey: 
@@ -108,7 +109,7 @@ MonoBehaviour:
         Time: 0
         CueId: 728a0dc5e34c49cc93b861a3560a32a2
       - CueName: fire_left
-        EffectIds: de7e0100
+        EffectIds: f87e0100
         SoundIds: 
         Operation: 0
         InstanceKey: 

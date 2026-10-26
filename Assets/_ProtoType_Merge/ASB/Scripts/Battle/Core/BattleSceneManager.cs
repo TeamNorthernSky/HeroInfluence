@@ -375,6 +375,7 @@ public class BattleSceneManager : MonoBehaviour
 
     private void Start()
     {
+        JC.BattleTesting.JcBattleHudEntryGate.Install(gameObject.scene, battleFlowManager);
         CombatContext combatContext = CombatContext.Instance;
         bool isEventBattle = combatContext != null && combatContext.HasEventBattle;
 

@@ -18,7 +18,7 @@ public sealed class BossController : MonoBehaviour
     [Serializable]
     public struct SummonEntry
     {
-        [Tooltip("소환할 미니언의 EnemyData.Index(=enemyId). 미니언 템플릿의 UnitAI를 미니언 AI index로 지정해 두어야 한다.")]
+        [Tooltip("소환할 미니언의 구역 테이블 유닛 키(EnemyIndex). AI는 유닛 인덱스(4000x 등)로 결정된다.")]
         public string MinionEnemyId;
 
         [Tooltip("소환 그리드 번호. 비어 있어야 소환 성공(점유 시 기존 유닛 보존, 실패).")]
@@ -34,7 +34,7 @@ public sealed class BossController : MonoBehaviour
         [Tooltip("이 스킬키로 시전되면 소환. 예: FV40001_3 (이벤트 전투의 40001_3도 같은 스킬로 매칭)")]
         public string SkillKey;
 
-        [Tooltip("소환할 미니언 EnemyData.Index. 예: FV40005")]
+        [Tooltip("소환할 미니언의 구역 테이블 유닛 키(EnemyIndex). 예: FV40005 또는 40005")]
         public string MinionEnemyId;
 
         [Tooltip("소환 그리드 번호(빈 칸일 때만 성공).")]
@@ -59,6 +59,8 @@ public sealed class BossController : MonoBehaviour
     [SerializeField] private List<SummonEntry> _summonEntries = new List<SummonEntry>();
     [Tooltip("스킬키로 트리거되는 소환(절망의 굴레 등). 여러 칸 = 여러 줄.")]
     [SerializeField] private List<SkillSummonEntry> _skillSummonEntries = new List<SkillSummonEntry>();
+    [Tooltip("이벤트 전투가 아닐 때(모의 전투 등) 소환체 데이터를 읽을 EventScriptCatalog 구역. 이벤트 전투 중에는 그 전투의 구역을 쓴다.")]
+    [SerializeField] private int _summonDataZoneId = 2;
     [Tooltip("씬의 EnemySpawner. 미지정 시 런타임에 부모/씬에서 탐색한다.")]
     [SerializeField] private EnemySpawner _spawner;
     [Tooltip("씬의 BattleFlowManager. 미지정 시 런타임에 탐색한다. 소환 미니언의 턴 참가자 등록에 사용.")]
@@ -233,21 +235,12 @@ public sealed class BossController : MonoBehaviour
             return false;
         }
 
-        GameObject go;
-        bool spawned;
-        if (BattleScenarioUnitKey.Normalize(minionEnemyId) == "40005")
+        if (!TryBuildMinionEntry(minionEnemyId, out EnemySpawnEntry entry))
         {
-            if (!TryBuildHoopStats(out StatBlock hoopStats))
-                return false;
-
-            spawned = spawner.TrySpawnUnitIfEmpty(minionEnemyId, gridNumber, hoopStats, out go);
-        }
-        else
-        {
-            spawned = spawner.TrySpawnUnitIfEmpty(minionEnemyId, gridNumber, out go);
+            return false;
         }
 
-        if (!spawned || go == null)
+        if (!spawner.TrySpawnUnitIfEmpty(entry, gridNumber, out GameObject go) || go == null)
         {
             return false; // 점유중이면 기존 유닛 보존, 실패
         }
@@ -278,30 +271,23 @@ public sealed class BossController : MonoBehaviour
         return true;
     }
 
-    private bool TryBuildHoopStats(out StatBlock stats)
+    // 소환체도 이벤트 전투 적과 같은 구역 테이블(EventScriptCatalog)에서 스탯·스킬·설명을 만든다.
+    // 구역은 진행 중인 이벤트 전투를 따르고, 이벤트 전투가 아니면(모의 전투 등) _summonDataZoneId. 폴백 없음.
+    private bool TryBuildMinionEntry(string minionEnemyId, out EnemySpawnEntry entry)
     {
-        stats = default;
-        EventScriptCatalog catalog = EventScriptCatalog.Instance;
-        if (catalog == null ||
-            !catalog.TryGetBattleEnemyUnitTemplate(2, "FV40005", out DHEventBattleUnitTemplate row) || row == null)
+        CombatContext context = CombatContext.Instance;
+        CombatEventBattleData eventBattle = context != null && context.HasEventBattle ? context.EventBattle : null;
+        int zoneId = eventBattle != null ? eventBattle.ZoneId : _summonDataZoneId;
+        int enemyLevel = eventBattle != null ? eventBattle.EnemyLevel : 1;
+
+        if (EnemySpawnPlanBuilder.TryBuildEventUnitEntry(zoneId, minionEnemyId, enemyLevel, out entry, out string error))
         {
-            Debug.LogError("[BossController] DataStorage의 2구역 FV40005 테이블 행을 찾지 못해 굴렁쇠 소환을 중단합니다.", this);
-            return false;
+            return true;
         }
 
-        int enemyLevel = CombatContext.Instance?.EventBattle?.EnemyLevel ?? 1;
-        int growthCount = Mathf.Max(0, enemyLevel - 1);
-        stats = new StatBlock(
-            hp: Mathf.Max(1, row.BaseMaxHp + row.LevelGrowthMaxHp * growthCount),
-            atk: Mathf.Max(0, row.BaseAtk + row.LevelGrowthAtk * growthCount),
-            def: Mathf.Max(0, row.BaseDef + row.LevelGrowthDef * growthCount),
-            luck: 0f,
-            speed: Mathf.Max(0, row.Speed),
-            criticalRate: Mathf.Max(0f, row.CriticalRate),
-            critMultiplier: 1.5f,
-            counterRate: Mathf.Max(0f, row.CounterRate),
-            avoidRate: Mathf.Max(0f, row.ReduceRate));
-        return true;
+        Debug.LogError(
+            $"[BossController] 소환체 데이터를 만들지 못해 소환을 중단합니다. zone={zoneId}, minion={minionEnemyId}, {error}", this);
+        return false;
     }
 
     /// <summary>스킬키에 매칭되는 모든 소환 엔트리를 실행한다. 반환=성공 소환 수. 점유/미설정은 조용히 스킵.</summary>
@@ -331,6 +317,27 @@ public sealed class BossController : MonoBehaviour
             Debug.LogWarning($"[BossController] 소환 0건 (빈 칸 없음/미설정): skill={skillKey}", this);
         }
         return count;
+    }
+
+    /// <summary>
+    /// 연출용 조회: 스킬 소환 엔트리 중 이 미니언이 지금 들어갈 수 있는 빈 칸의 월드 위치를 모은다.
+    /// 소환·상태 변경은 하지 않는다(실제 소환은 <see cref="TrySummonForSkill"/>).
+    /// </summary>
+    public void CollectEmptySkillSummonPositions(string minionEnemyId, List<Vector3> positions)
+    {
+        if (positions == null || _skillSummonEntries == null || string.IsNullOrWhiteSpace(minionEnemyId)) return;
+        EnemySpawner spawner = ResolveSpawner();
+        if (spawner == null) return;
+
+        string wanted = BattleScenarioUnitKey.Normalize(minionEnemyId);
+        var seen = new HashSet<int>();
+        for (int i = 0; i < _skillSummonEntries.Count; i++)
+        {
+            SkillSummonEntry e = _skillSummonEntries[i];
+            if (string.IsNullOrWhiteSpace(e.MinionEnemyId) || BattleScenarioUnitKey.Normalize(e.MinionEnemyId) != wanted) continue;
+            if (!seen.Add(e.GridNumber)) continue;
+            if (spawner.TryGetEmptyGridPosition(e.GridNumber, out Vector3 position)) positions.Add(position);
+        }
     }
 
     private EnemySpawner ResolveSpawner()

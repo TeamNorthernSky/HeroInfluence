@@ -12,6 +12,7 @@ public class FakeMouseCursor : MonoBehaviour
     private Image sourceImage;
     private bool imageWasEnabled;
     private Texture2D normalTexture;
+    private Texture2D unavailableTexture;
     private Texture2D[] arrows;
     private Vector2 normalHotspot;
     private int applied = int.MinValue;
@@ -44,6 +45,8 @@ public class FakeMouseCursor : MonoBehaviour
             arrows = new Texture2D[8];
             for (int i = 0; i < arrows.Length; i++) arrows[i] = CreateArrow(i);
         }
+        if (unavailableTexture == null && normalTexture != null)
+            unavailableTexture = CreateUnavailableCursor(normalTexture);
         applied = int.MinValue;
     }
     private void OnApplicationFocus(bool focus)
@@ -62,6 +65,9 @@ public class FakeMouseCursor : MonoBehaviour
         int index = direction.sqrMagnitude < .01f ? -1
             : ((Mathf.RoundToInt(Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg / 45f) % 8) + 8) % 8;
         Texture2D texture = index < 0 ? normalTexture : arrows[index];
+        if (index < 0 && ClickSelectionController.Active != null
+            && ClickSelectionController.Active.IsPointerOverUnreachableGround(JcPointerInput.ScreenPosition))
+            texture = unavailableTexture != null ? unavailableTexture : normalTexture;
         Vector2 hotspot = index < 0 ? normalHotspot : ArrowHotspot(index);
         var profile = JcPointerProfile.Current;
         float size = index < 0 ? profile.normalCursorSize : profile.scrollCursorSize;
@@ -89,6 +95,7 @@ public class FakeMouseCursor : MonoBehaviour
         ReleaseCursor();
         presentation.Dispose();
         if (normalTexture != null) Destroy(normalTexture);
+        if (unavailableTexture != null) Destroy(unavailableTexture);
         if (arrows != null) foreach (var texture in arrows) if (texture != null) Destroy(texture);
         Instance = null;
     }
@@ -119,6 +126,39 @@ public class FakeMouseCursor : MonoBehaviour
             name = name, filterMode = FilterMode.Bilinear,
             wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.HideAndDontSave
         };
+    }
+
+    // 기본 화살표와 클릭 기준점을 유지한 채 우하단에 금지 배지를 합성합니다. 생성은 한 번만 합니다.
+    public static Texture2D CreateUnavailableCursor(Texture2D source)
+    {
+        int width = source.width, height = source.height;
+        var pixels = source.GetPixels();
+        float aa = 1.5f / Mathf.Min(width, height);
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        {
+            Vector2 p = new Vector2((x + .5f) / width - .70f, (y + .5f) / height - .28f);
+            p /= 1.12f; // 금지 배지만 12% 확대하며 화살표와 클릭 기준점은 유지합니다.
+            float radius = p.magnitude;
+            float background = 1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.205f - aa, .205f + aa, radius));
+            if (background <= 0) continue;
+            float ring = Mathf.Abs(radius - .16f) - .025f;
+            Vector2 start = new Vector2(-.113f, .113f), end = -start;
+            Vector2 delta = end - start;
+            float t = Mathf.Clamp01(Vector2.Dot(p - start, delta) / delta.sqrMagnitude);
+            float slash = (p - (start + t * delta)).magnitude - .026f;
+            float red = 1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(-aa, aa, Mathf.Min(ring, slash)));
+            Color badge = Color.Lerp(Color.white, new Color(.95f, .04f, .06f, 1), red);
+            Color under = pixels[y * width + x];
+            float alpha = background + under.a * (1 - background);
+            Color composite = (badge * background + under * under.a * (1 - background)) / Mathf.Max(alpha, .00001f);
+            composite.a = alpha;
+            pixels[y * width + x] = composite;
+        }
+        var result = NewTexture(width, height, "JC Unavailable Cursor");
+        result.SetPixels(pixels);
+        result.Apply(false, false);
+        return result;
     }
     public static Vector2 ArrowHotspot(int direction)
     {

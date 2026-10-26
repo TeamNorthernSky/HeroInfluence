@@ -1,0 +1,8 @@
+{
+  "name": "UliaVfx.Yulia",
+  "rootNamespace": "UliaVfx",
+  "references": [
+    "UliaVfx.Shared"
+  ],
+  "autoReferenced": true
+}

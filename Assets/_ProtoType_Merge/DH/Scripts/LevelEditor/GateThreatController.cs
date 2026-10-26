@@ -126,6 +126,12 @@ public class GateThreatController : MonoBehaviour
         if (!Application.isPlaying)
             return;
 
+        if (HasLiveThreatEnemyConnectedToGate(gate))
+        {
+            gate.CloseGate(ResolveCurrentDay());
+            return;
+        }
+
         if (matchingGateAlreadyOpen)
             gate.SetOpen(true, ResolveCurrentDay(), true);
 
@@ -780,31 +786,33 @@ public class GateThreatController : MonoBehaviour
             spawnPoint.EventBattleKey);
     }
 
-    private void OpenGatesForZone(string zoneId)
-    {
-        int day = ResolveCurrentDay();
-        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
-        for (int i = 0; i < gates.Count; i++)
-        {
-            GateRuntimeController gate = gates[i];
-            if (gate != null && gate.ContainsZone(normalizedZoneId))
-                gate.OpenGate(day);
-        }
-    }
-
     private void RefreshGateOpenStateForZone(string zoneId)
     {
         string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
         if (string.IsNullOrWhiteSpace(normalizedZoneId))
             return;
 
-        if (!IsZoneClearedForGateOpen(normalizedZoneId))
-            return;
+        int day = ResolveCurrentDay();
+        for (int i = 0; i < gates.Count; i++)
+        {
+            GateRuntimeController gate = gates[i];
+            if (gate == null || !gate.ContainsZone(normalizedZoneId))
+                continue;
 
-        if (HasLiveThreatEnemyInZone(normalizedZoneId, string.Empty))
-            return;
+            if (HasLiveThreatEnemyConnectedToGate(gate))
+                gate.CloseGate(day);
+            // FirstZoneId owns this gate's unlock condition; either connected zone may block it.
+            else if (IsZoneClearedForGateOpen(gate.FirstZoneId))
+                gate.OpenGate(day);
+        }
+    }
 
-        OpenGatesForZone(normalizedZoneId);
+    private static bool HasLiveThreatEnemyConnectedToGate(GateRuntimeController gate)
+    {
+        // Read persisted enemies so scene registration does not depend on enemy spawn order.
+        return gate != null &&
+            (HasLiveThreatEnemyInZone(gate.FirstZoneId, string.Empty) ||
+             HasLiveThreatEnemyInZone(gate.SecondZoneId, string.Empty));
     }
 
     private bool IsZoneClearedForGateOpen(string zoneId)

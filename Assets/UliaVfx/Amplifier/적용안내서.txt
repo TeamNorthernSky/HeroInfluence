@@ -1,0 +1,70 @@
+﻿증폭기 실전 적용 묶음 — 2026-10-23
+
+기준: Unity 2022.3.62f3 / URP 14.0.12 / Visual Effect Graph 14.0.12
+이 묶음만 Import해도 증폭기 관련 프리팹과 예제 씬이 열립니다. 율리아 묶음과 공통 에셋 GUID가 같아 함께 Import해도 중복되지 않습니다.
+
+바로 적용할 프리팹
+Assets/UliaVfx/Amplifier/Prefabs/Amplifier_VFX_Rig.prefab
+Assets/UliaVfx/Amplifier/Prefabs/Ulia_Amplifier_SkillCast.prefab
+Assets/UliaVfx/Amplifier/Prefabs/Ulia_MutualDestruction_Trajectory.prefab
+전체 연출의 권장 진입점은 AmplifierVfxRig입니다. 아래 두 프리팹은 분리된 시전/궤적 효과를 직접 사용할 때 사용합니다.
+
+초기 연결 — 증폭기 한 대에 Rig 한 개
+var fx = Instantiate(amplifierRigPrefab);
+fx.Bind(coreAnchor, coreVisualObject, controlledCoreLights, battleCamera);
+coreAnchor: 코어의 월드 기준 Transform. coreVisualObject: 파괴 시 숨기고 복구할 실제 코어 오브젝트.
+코어 기준점은 시각 오브젝트와 분리된 자식 Transform으로 두어도 됩니다. controlledCoreLights는 이 증폭기가 소유한 빛만 지정합니다.
+상위 증폭기 전체나 VFX Rig 자신을 coreVisualObject로 지정하지 않습니다.
+씬 이름/유닛 이름/2010_Orb/Grid/전투 매니저 자동 검색은 사용하지 않습니다.
+
+기능 호출
+fx.SetIdle(true);                    // 코어 주위 대기 구체
+fx.PlayCast();                       // 큰 고속 회전 구체 + 코어 발광 + 종료 확산
+fx.PlayStorm(selectedColumnCenter);  // 한 열의 중심, 원본 top_down_lightning_line_Ulia_puple 하나
+fx.PlayTrajectory(worldOrigin,worldEnd,battleCamera);
+fx.PlayEnergySupply(onBurst);
+fx.BreakCore();
+fx.RecoverCore(onBurst);
+
+나락의 폭풍
+열 중심의 월드 바닥 위치를 전달합니다. 원본 번개 에셋의 크기와 비율을 유지하며, 위쪽 증폭기의 Rig에 호출합니다.
+
+공멸의 궤적
+worldOrigin은 번개가 시작되는 소환진 중심, worldEnd는 관통 방향을 정하는 끝점입니다. 높이까지 포함한 월드 위치를 전달합니다.
+아래쪽 증폭기의 Rig에 호출합니다. 카메라를 명시하면 해당 화면 밖까지 길이를 계산합니다.
+증폭기 충전 동안 웜홀이 발동하며 실제 SkillReleased 이벤트 프레임에 번개가 시작합니다. 승인된 원본 줄기/굵기와 0.1초 잔상을 유지합니다.
+SkillReleased는 해당 시각 연출의 발산 시점이며, 실제 피해 발생 여부와 대상 판정은 게임 코드가 결정합니다.
+
+파괴 / 흰 연기 / 복구
+BreakCore(): 굴렁쇠 폭발 재사용 → 코어 숨김 → 0.32초 후 흰 연기 → 느린 흰 연기 유지.
+연기 발생량: 최초 4, 유지 2. 무채색 흰색이며 상승 속도는 줄인 최종 값.
+IsBusy 동안 중복 파괴/복구 요청은 무시합니다. IsBroken은 해당 Rig의 표시 상태입니다.
+RecoverCore(callback): 연기 중단 → 코어 위치에서 에너지 응집 → 마지막 0.65초 코어 형성 → 2.7초 방출에 복구 완료 및 callback/CoreRecovered.
+복구 신호는 실제 게임의 2턴 경과 이벤트에서 호출합니다. 이 Rig는 턴을 계산하지 않습니다.
+
+율리아 방어막 연동 예 — 두 묶음을 사용하는 게임 코드에서 연결
+// 둘 다 파괴된 상태에서 하나가 복구되는 경우만:
+recoveringFx.RecoverCore(() => yuliaFx.ShowShieldPop());
+// 둘 다 파괴되었을 때:
+yuliaFx.BreakShield(frontWorldHitPoint);
+생존 증폭기 수와 피해 가능 상태는 게임 코드가 판정합니다. 위/아래 두 Rig는 서로를 검색하거나 자동 조작하지 않습니다.
+공급 연출을 RecoverCore에서 이미 재생하므로 복구 콜백에서는 ShowShieldPop만 호출합니다.
+
+수명 / 취소
+Stop(): 현재 시전/공급/연기와 이 Rig가 만든 효과를 정리합니다. 이미 파괴된 코어는 그대로 유지합니다.
+ResetVisualState(): Stop 후 원래 코어 크기·빛을 복원합니다. 풀 반납/디버그 초기화 시 사용합니다.
+코어 파괴 시 진행 중인 시전은 취소하여 파괴 후 뒤늦게 번개가 발사되지 않게 합니다.
+비활성화 시 재생을 중단합니다. 승인된 재생 타이밍은 unscaled time 기준입니다.
+Bind는 정상 초기 코어 상태에서 한 번 실행하여 기본 크기와 빛 값을 저장합니다.
+
+예제
+Assets/UliaVfx/Amplifier/Samples/Amplifier_IntegrationExample.unity
+임의 이름의 증폭기 두 대를 별도 Rig에 연결했습니다. 한 대의 파괴/복구가 다른 대에 영향을 주지 않습니다.
+실제 HP, 피해, 무적, 2턴 계산과 대상 선택은 게임 코드에서 처리합니다.
+
+폴더
+Prefabs: 바로 생성해 사용할 제어/조합 프리팹.
+SourceAssets: 원본 구체, 코어, 번개, 폭발, 연기 등의 VFX.
+Runtime: UliaVfx.Amplifier 어셈블리. 율리아 어셈블리에 의존하지 않음.
+Samples: 실제 연결 예제와 버튼 재생 씬.
+Shared: 공통 코드 및 필수 셰이더/메시/텍스처/머티리얼 등.

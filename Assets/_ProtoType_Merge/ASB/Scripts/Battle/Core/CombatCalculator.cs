@@ -61,7 +61,8 @@ namespace ASB.Work.Battle.Core
         public static void ResolveHitRolls(DamageContext context)
         {
             if (context == null) return;
-            if (context.IsCounterAttack)
+            // 피해 무효 대상은 0 피해라 경감·치명타를 굴리지 않는다.
+            if (context.IsCounterAttack || (context.Target != null && context.Target.IsDamageImmune))
             {
                 context.IsDamageReduced = false;
                 context.IsCritical = false;
@@ -98,6 +99,13 @@ namespace ASB.Work.Battle.Core
         /// <summary>피해를 계산하고 경감이 발동했는지 함께 반환한다. 경감 판정은 context.IsDamageReduced를 따른다.</summary>
         public static float CalculateDamage(DamageContext context, out bool damageReduced)
         {
+            // 피해 무효 대상(BattleCharactor.IsDamageImmune)은 최소 피해(2)도 없이 0. 예측·팝업·실제 적용이 모두 0으로 맞는다.
+            if (context.Target != null && context.Target.IsDamageImmune)
+            {
+                damageReduced = false;
+                return 0f;
+            }
+
             if (context.IsCounterAttack)
             {
                 damageReduced = false;

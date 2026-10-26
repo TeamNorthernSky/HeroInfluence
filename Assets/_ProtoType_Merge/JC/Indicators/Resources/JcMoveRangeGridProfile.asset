@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db12cb93f2874be88c6ac00560b98461, type: 3}
+  m_Name: JcMoveRangeGridProfile
+  m_EditorClassIdentifier: 
+  gridColor: {r: 0, g: 1, b: 0.019969702, a: 1}
+  gridOpacity: 0.181
+  gridEmissionIntensity: 6.5
+  gridWidth: 0.06
+  gridEdgeSoftness: 0.3
+  lineYOffset: 0.035
+  curtainHeight: 0.28
+  curtainOpacity: 0.403
+  curtainIntensity: 1.76
+  curtainSoftness: 2.29
+  uniformCurtainSize: 1
+  curtainScreenHeight: 0.012
+  curtainMaxHeight: 1.5
+  adaptToDayNight: 1
+  nightIntensityMultiplier: 0.2

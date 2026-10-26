@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35b9fc34110dfeb4d9a0b5772a25925d, type: 3}
+  m_Name: JC_BankBattleBackground
+  m_EditorClassIdentifier: 
+  visualPrefab: {fileID: 6650639044813744860, guid: 2ea8ab8a0ad65504d9fc6ec98d78303b,
+    type: 3}
+  zoneId: 1
+  battleKeys:
+  - BE002
+  - BE003
+  - BE004
+  tutorialKey: TUT_02
+  renderPipeline: {fileID: 11400000, guid: 7b7fd9122c28c4d15b667c7040e3b3fd, type: 2}
+  rendererIndex: 1

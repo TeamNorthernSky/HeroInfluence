@@ -1,0 +1,8 @@
+﻿분류,연출,권장프리팹,호출,필수입력
+증폭기,대기,Amplifier_VFX_Rig,SetIdle(true),Bind의 코어
+증폭기,시전,Amplifier_VFX_Rig,PlayCast(),코어
+증폭기,나락의 폭풍,Amplifier_VFX_Rig,PlayStorm(center),선택 열의 중심
+증폭기,공멸의 궤적,Amplifier_VFX_Rig,"PlayTrajectory(start,end,camera)",시작/방향 끝점/카메라
+증폭기,에너지 공급,Amplifier_VFX_Rig,PlayEnergySupply(callback),코어/방출 콜백
+증폭기,코어 폭발·흰 연기 유지,Amplifier_VFX_Rig,BreakCore(),코어 기준/표시 오브젝트/빛
+증폭기,코어 복구,Amplifier_VFX_Rig,RecoverCore(callback),복구 신호/완료 콜백

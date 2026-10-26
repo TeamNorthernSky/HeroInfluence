@@ -51,6 +51,7 @@ GameObject:
   - component: {fileID: 5131381144307677327}
   - component: {fileID: 2411088998492695956}
   - component: {fileID: 5288267017226968340}
+  - component: {fileID: 1912755412874654208}
   m_Layer: 9
   m_Name: Unit_VillanMadonna_40001
   m_TagString: Untagged
@@ -388,23 +389,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca493999d15aedd46933905c28985c31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stasisPhase: 3
   shieldPrefab: {fileID: 3730859483087561641, guid: 2c316560f42175b4491d5f5496ed7541,
+    type: 3}
+  productionVfxRigPrefab: {fileID: 4134257505806884997, guid: 832e060c1c3eb934daa00543c09e0bff,
     type: 3}
   shieldHeight: 0.9
   shieldWorldScale: 1.15
   shieldDismissSeconds: 0.3
-  hitStateName: Hit
-  freezeDelaySeconds: 0.2
-  enterSeconds: 1.6
-  shakeSeconds: 0.2
-  shakeAmplitude: 0.06
-  hideWhileStasis:
-  - {fileID: 8754070470665505159}
-  disableWhileStasis:
-  - {fileID: 2411088998492695956}
-  suppressEffectsWhileStasis:
-  - {fileID: 5624129214405423041, guid: 2d65ab9d6d5eee149b8607f812121a9d, type: 3}
+--- !u!114 &1912755412874654208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8180298766699557435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81aa00d9f68dce4883502c257cff48f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2091996203728570192
 PrefabInstance:
   m_ObjectHideFlags: 0

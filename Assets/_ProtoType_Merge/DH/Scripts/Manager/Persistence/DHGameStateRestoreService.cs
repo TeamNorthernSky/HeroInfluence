@@ -384,7 +384,8 @@ public static class DHGameStateRestoreService
             if (mainEvent == null)
                 continue;
 
-            mainEvent.gameObject.SetActive(!progressRepository.IsMainEventCompleted(mainEvent.EventKey));
+            mainEvent.gameObject.SetActive(mainEvent.WaitingForPostBattleChat ||
+                !progressRepository.IsMainEventCompleted(mainEvent.EventKey));
         }
     }
 
@@ -401,7 +402,8 @@ public static class DHGameStateRestoreService
             if (subEvent == null)
                 continue;
 
-            subEvent.gameObject.SetActive(!progressRepository.IsSubEventCompleted(subEvent.EventKey));
+            subEvent.gameObject.SetActive(subEvent.WaitingForPostBattleChat ||
+                !progressRepository.IsSubEventCompleted(subEvent.EventKey));
         }
     }
 

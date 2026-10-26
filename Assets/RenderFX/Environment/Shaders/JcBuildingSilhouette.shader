@@ -60,6 +60,7 @@ Shader "JC/Environment/Building Silhouette"
             // 카메라별 설정은 머티리얼 밖에서 받는다. 공유 에셋은 수정하지 않는다.
             float4 _JcBuildingTuning; // x: controller enabled, y: opacity, z: depth bias, w: outline width
             half4 _JcBuildingFill;
+            float _JcBuildingHighlight;
 
             struct Attributes
             {
@@ -82,9 +83,13 @@ Shader "JC/Environment/Building Silhouette"
                 output.eyeDepth = -TransformWorldToView(world).z;
                 return output;
             }
-            half4 Frag(Varyings input) : SV_Target
+            float4 Frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                // 강조 윤곽선의 형상은 파티/앞쪽 물체로 잘라내지 않는다.
+                // 최종 합성에서만 원본 카메라 깊이와 비교한다.
+                if (_JcBuildingHighlight > .5)
+                    return float4(1, rcp(max(input.eyeDepth, .0001)), 0, 0);
                 float2 uv = GetNormalizedScreenSpaceUV(input.positionCS);
                 float rawDepth = SampleSceneDepth(uv);
                 float sceneDepth = unity_OrthoParams.w > 0.5
@@ -114,66 +119,12 @@ Shader "JC/Environment/Building Silhouette"
             #pragma target 3.5
             #pragma vertex Vert
             #pragma fragment Frag
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
-            CBUFFER_START(UnityPerMaterial)
-                half4 _FillColor;
-                float _JcOcclusionAlpha;
-                float _DepthBias;
-                half4 _OutlineColor;
-                float _OutlineWidth;
-            CBUFFER_END
-            float4 _JcBuildingTuning;
-            half4 _JcBuildingFill;
-            half4 _JcBuildingOutline;
-            float4 _JcBuildingPixelSize;
-            float4 _JcBuildingOutlineSettings; // opacity, world width, width mode (0=world / 1=pixels)
-
-            half ReadMask(float2 uv)
-            {
-                return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv).r;
-            }
-
+            #include "JcBuildingOutlineComposite.hlsl"
             half4 Frag(Varyings input) : SV_Target
             {
-                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                float3 maskData = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord).rgb;
-                half mask = maskData.r;
-                if (mask <= 0.0001h) return 0;
-                half4 fill = _JcBuildingTuning.x > 0.5 ? _JcBuildingFill : _FillColor;
-                half4 outline = _JcBuildingTuning.x > 0.5 ? _JcBuildingOutline : _OutlineColor;
-                float width = _JcBuildingTuning.x > 0.5 ? _JcBuildingTuning.w : _OutlineWidth;
-                float fillOpacity = _JcBuildingTuning.x > 0.5 ? _JcBuildingTuning.y : maskData.g / mask;
-                fillOpacity = saturate(fillOpacity * fill.a);
-                float outlineOpacity = _JcBuildingTuning.x > 0.5 ? _JcBuildingOutlineSettings.x : fillOpacity;
-                if (_JcBuildingTuning.x > 0.5 && _JcBuildingOutlineSettings.z < 0.5)
-                {
-                    // 마스크 비율로 깊이를 복원하여 경계의 선형 필터 영향을 상쇄한다.
-                    float buildingDepth = mask / max(maskData.b, 0.000001);
-                    float distanceScale = _JcBuildingPixelSize.w > 0.5 ? 1.0 : buildingDepth;
-                    width = _JcBuildingOutlineSettings.y * _JcBuildingPixelSize.z / distanceScale;
-                }
-                half inner = mask;
-                if (width > 0.0)
-                {
-                    // 원형 이웃으로 마스크를 축소하여 경계 안쪽 띠를 얻는다.
-                    // 개별 메시의 노멀/깊이를 쓰지 않으므로 부품 경계가 다시 나타나지 않는다.
-                    float2 radius = _JcBuildingPixelSize.xy * width;
-                    [unroll] for (int i = 0; i < 16; i++)
-                    {
-                        float angle = i * (6.28318530718 / 16.0);
-                        float2 direction = float2(cos(angle), sin(angle));
-                        inner = min(inner, ReadMask(input.texcoord + direction * radius));
-                    }
-                }
-                half edge = saturate((mask - inner) / mask);
-                // 경계의 AA를 프리멀티플라이드 색으로 보간한 뒤 한 번만 합성한다.
-                // 채움 0 / 윤곽선 1도 가능하고, 두 알파가 같으면 기존 결과와 같다.
-                half fillWeight = (1 - edge) * fillOpacity;
-                half outlineWeight = edge * saturate(outlineOpacity);
-                half alpha = fillWeight + outlineWeight;
-                half3 color = (fill.rgb * fillWeight + outline.rgb * outlineWeight) / max(alpha, 0.0001h);
-                return half4(color, saturate(mask * alpha));
+                half4 result = ComposeOutline(input);
+                result.a *= JcOutlineVisibility(input.texcoord, _JcBuildingPixelSize.xy, _JcBuildingTuning.z);
+                return result;
             }
             ENDHLSL
         }
@@ -222,6 +173,60 @@ Shader "JC/Environment/Building Silhouette"
                 half mask = SAMPLE_TEXTURE2D_X(_JcShadowRemovalMask, sampler_LinearClamp, input.texcoord).r;
                 half4 surface = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
                 return half4(surface.rgb, mask * surface.a);
+            }
+            ENDHLSL
+        }
+        // 기존 패스 번호를 유지하고 강조선의 최종 AA만 추가한다.
+        Pass
+        {
+            Name "OutlineRaw"
+            Tags { "LightMode"="JcBuildingOutlineRaw" }
+            Cull Off
+            ZWrite Off
+            ZTest Always
+            Blend One Zero
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #include "JcBuildingOutlineComposite.hlsl"
+            half4 Frag(Varyings input) : SV_Target
+            {
+                half4 outlineSample = ComposeOutline(input);
+                return half4(outlineSample.rgb * outlineSample.a, outlineSample.a);
+            }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "OutlineAntialiasing"
+            Tags { "LightMode"="JcBuildingOutlineAntialiasing" }
+            Cull Off
+            ZWrite Off
+            ZTest Always
+            Blend One OneMinusSrcAlpha, Zero One
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
+            #include "JcBuildingOutlineVisibility.hlsl"
+            float _JcBuildingEdgeSmoothing;
+            float4 _JcBuildingPixelSize;
+            float4 _JcBuildingTuning;
+            half4 Frag(Varyings input) : SV_Target
+            {
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                // 화면의 선만 2차원 필터링한다. 흰색/녹색/투명 경계 모두 같은 폭으로 처리.
+                float2 d = _JcBuildingPixelSize.xy * _JcBuildingEdgeSmoothing * .5;
+                half4 outlineSample = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + d);
+                outlineSample += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord - d);
+                outlineSample += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(d.x, -d.y));
+                outlineSample += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(-d.x, d.y));
+                // AA 후에 가림 판정하여 블러가 앞쪽 파티 위로 새지 않게 한다.
+                return outlineSample * (.25h * JcOutlineVisibility(input.texcoord,
+                    max(d, _JcBuildingPixelSize.xy), _JcBuildingTuning.z));
             }
             ENDHLSL
         }
