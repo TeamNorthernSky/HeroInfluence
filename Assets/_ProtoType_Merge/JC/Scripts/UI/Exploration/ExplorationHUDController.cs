@@ -107,7 +107,7 @@ public class ExplorationHUDController : MonoBehaviour
 
     private void ApplyEnemyTurnUIState(bool enemyRunning)
     {
-        bool playerTurn = !enemyRunning;
+        bool playerTurn = !enemyRunning && (turnManager == null || turnManager.IsPlayerTurn);
         if (nextTurnButton != null) nextTurnButton.interactable = playerTurn;
         if (graphicRaycaster != null) graphicRaycaster.enabled = playerTurn;
     }
@@ -119,7 +119,7 @@ public class ExplorationHUDController : MonoBehaviour
     {
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
         if (turnManager == null) return;
-        if (turnManager.IsEnemyTurnRunning) return;
+        if (!turnManager.IsPlayerTurn) return;
         if (nextTurnButton != null) nextTurnButton.interactable = false;
         turnManager.EndPlayerTurn();
     }

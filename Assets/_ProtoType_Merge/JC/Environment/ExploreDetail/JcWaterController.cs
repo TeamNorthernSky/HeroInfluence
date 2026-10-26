@@ -219,7 +219,7 @@ namespace JC.EnvironmentDetail
                         var go=new GameObject("JC Water Reflection Camera"){hideFlags=HideFlags.HideAndDontSave};
                         view.camera=go.AddComponent<Camera>();view.camera.enabled=false;
                     }
-                    if(!view.valid || view.ticks++%Mathf.Clamp(settings.reflectionUpdateInterval,1,8)==0)
+                    if(!view.valid || JC.Environment.JcDayNightController.IsTransitioning || view.ticks++%Mathf.Clamp(settings.reflectionUpdateInterval,1,8)==0)
                         CaptureReflection(context,source,view);
                 }
                 SetReflection(renderer,view);
