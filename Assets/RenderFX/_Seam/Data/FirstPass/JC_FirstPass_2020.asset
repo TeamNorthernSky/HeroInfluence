@@ -43,7 +43,7 @@ MonoBehaviour:
   CustomImpactTimeoutSeconds: 5
   CustomImpactResolutionPolicy: 2
   CustomImpactSignalInstanceKey: 
-  ChainLightningEffectPrefab: {fileID: 6273042869431690215, guid: 71f5bab9970bef74384bdbbfe6147db9,
+  ChainLightningEffectPrefab: {fileID: 6273042869431690215, guid: 5808a2cb77477eb4d9e10987d0cbfbe9,
     type: 3}
   MovePrepare:
     Enabled: 1

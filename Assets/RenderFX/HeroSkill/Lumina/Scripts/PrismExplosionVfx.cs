@@ -31,6 +31,8 @@ namespace JC.VFX
         [SerializeField] private PrismExplosionVfx flightPartPrefab;
         [Tooltip("도착 시 생성하는 독립 폭발 부품입니다.")]
         [SerializeField] private FlareBombImpact impactPartPrefab;
+        [SerializeField] private bool waitForImpactSmoke;
+        [SerializeField, Min(0f)] private float impactFadeDuration;
         private PrismExplosionVfx flightPart;
         private IReadOnlyList<Transform> partTargets;
         private bool deferLaunch;
@@ -396,9 +398,31 @@ namespace JC.VFX
 
             // ③ 대폭발 + 전체 연기
             SetTrails(false, false);
-            if (_crystal != null) _crystal.gameObject.SetActive(false);
+            if (_crystal != null)
+            {
+                if (impactFadeDuration > 0f) StartCoroutine(FadeCrystalOnImpact());
+                else _crystal.gameObject.SetActive(false);
+            }
             var impact = impactPartPrefab != null ? Instantiate(impactPartPrefab, transform) : _impact;
             if (impact != null) { impact.PlaybackSpeed = PlaybackSpeed; impact.Play(center); }
+            if (waitForImpactSmoke && impact != null)
+            {
+                ParticleSystem impactSmoke = null;
+                foreach (var ps in impact.GetComponentsInChildren<ParticleSystem>(true))
+                    if (ps.name == "smoke") { impactSmoke = ps; break; }
+                // Wait for the actual smoke burst, including its authored start delay.
+                // The bounded fallback also handles a missing/disabled emission layer.
+                if (impactSmoke != null)
+                {
+                    float elapsed = 0f;
+                    float timeout = impactSmoke.main.startDelay.constantMax + .5f;
+                    while (impact.IsPlaying && impactSmoke.particleCount == 0 && elapsed < timeout)
+                    {
+                        elapsed += EffectDeltaTime;
+                        yield return null;
+                    }
+                }
+            }
             Impacted?.Invoke(center);
             if (_smoke != null)
             {
@@ -415,6 +439,19 @@ namespace JC.VFX
             _sequencing = false;
             IsPlaying = false;
             RaiseFinished();
+        }
+
+        private IEnumerator FadeCrystalOnImpact()
+        {
+            float elapsed = 0f;
+            while (elapsed < impactFadeDuration)
+            {
+                SetOpacity(_crystalRenderer, 1f - Mathf.SmoothStep(0f, 1f, elapsed / impactFadeDuration));
+                yield return null;
+                elapsed += EffectDeltaTime;
+            }
+            SetOpacity(_crystalRenderer, 0f);
+            if (_crystal != null) _crystal.gameObject.SetActive(false);
         }
 
         private void Update()

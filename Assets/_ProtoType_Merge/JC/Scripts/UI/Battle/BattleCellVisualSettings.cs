@@ -60,7 +60,7 @@ public class BattleCellVisualSettings : MonoBehaviour
     }
     private readonly Dictionary<Cell, Presentation> presentations = new Dictionary<Cell, Presentation>();
 
-    public void Apply(Cell cell, float alpha, BattleCellVisualState state = BattleCellVisualState.Hidden)
+    public void Apply(Cell cell, float alpha, BattleCellVisualState state = BattleCellVisualState.Hidden, BattleCellBorderConfiguration presentationOverride = null)
     {
         if (!isActiveAndEnabled || cell == null) return;
         if (!renderers.TryGetValue(cell, out var renderer))
@@ -74,7 +74,7 @@ public class BattleCellVisualSettings : MonoBehaviour
             renderers.TryGetValue(cell, out renderer);
         }
         if (renderer == null) return;
-        if (ApplyPrefab(cell, renderer, state, alpha)) return;
+        if (ApplyPrefab(cell, renderer, state, alpha, presentationOverride)) return;
         if (renderer.sharedMaterial == null || !renderer.sharedMaterial.HasProperty(BaseColor)) return;
         if (!originals.ContainsKey(renderer))
         {
@@ -113,7 +113,7 @@ public class BattleCellVisualSettings : MonoBehaviour
         }
     }
 
-    private bool ApplyPrefab(Cell cell, Renderer source, BattleCellVisualState state, float alpha)
+    private bool ApplyPrefab(Cell cell, Renderer source, BattleCellVisualState state, float alpha, BattleCellBorderConfiguration presentationOverride)
     {
         bool configured = currentTurnPrefab != null && selectablePrefab != null && confirmedAreaPrefab != null && unavailablePrefab != null;
         if (!configured)
@@ -132,7 +132,8 @@ public class BattleCellVisualSettings : MonoBehaviour
         }
         source.enabled = false;
         if (state == BattleCellVisualState.Hidden) presentation.motion.Reset();
-        float lift = profile != null && state != BattleCellVisualState.Hidden ? presentation.motion.Evaluate(state, profile.settings, Time.unscaledTimeAsDouble) : 0f;
+        var configuration = presentationOverride ?? (profile != null ? profile.settings : null);
+        float lift = configuration != null && state != BattleCellVisualState.Hidden ? presentation.motion.Evaluate(state, configuration, Time.unscaledTimeAsDouble) : 0f;
         var prefab = PrefabFor(state);
         if (prefab != null)
         {
@@ -158,7 +159,7 @@ public class BattleCellVisualSettings : MonoBehaviour
             if (visible)
             {
                 pair.Value.transform.localPosition = source.transform.localPosition + Vector3.up * lift;
-                if (profile != null) pair.Value.RenderProfile(profile.settings, state, alpha, Time.unscaledTime, source.transform.position.y);
+                if (configuration != null) pair.Value.RenderProfile(configuration, state, alpha, Time.unscaledTime, source.transform.position.y);
                 else pair.Value.Render(this, alpha, Time.unscaledTime);
             }
         }

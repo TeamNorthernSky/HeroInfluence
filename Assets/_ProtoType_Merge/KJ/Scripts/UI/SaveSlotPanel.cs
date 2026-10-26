@@ -60,6 +60,7 @@ public class SaveSlotPanel : MonoBehaviour
         tutorialCancleButton?.onClick.AddListener(OnTutorialCancle);
 
         tutorialPopup?.SetActive(false);
+        //gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -79,10 +80,6 @@ public class SaveSlotPanel : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        gameObject.SetActive(false);
-    }
 
     private void HandleModalStackChanged()
     {

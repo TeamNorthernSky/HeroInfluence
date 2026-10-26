@@ -80,6 +80,8 @@ namespace JC.BattleTesting
         void Style(RectTransform r,string[] names)
         {
             if(!names.Contains(r.name))return;var image=r.GetComponent<Image>();if(image==null)return;
+            // 선택 테두리는 실제 선택 상태의 순환광 재질과 스프라이트를 유지합니다.
+            if (r.name == "SelectedSkillFrame") return;
             bool outline=r.name=="SelectedOverlay"||r.name=="SelectedSkillFrame"||r.name=="SkillButtonFrame";
             image.sprite=outline?border:surface;image.type=Image.Type.Sliced;image.material=null;
             image.color=outline?new Color(.48f,.73f,.88f,.85f):r.name=="Background"?new Color(.045f,.065f,.095f,.92f):new Color(.1f,.14f,.19f,.92f);

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace JC.Tutorial
 {
     [DisallowMultipleComponent, DefaultExecutionOrder(100), AddComponentMenu("JC Tutorial/전투 안내")]
-    public sealed class JcTutorialBattleGuide : MonoBehaviour
+    public sealed partial class JcTutorialBattleGuide : MonoBehaviour
     {
         [Tooltip("기존 전투 튜토리얼의 단계별 활성 상태를 읽습니다.")]
         public TutorialBattleUI source;
@@ -49,7 +49,7 @@ namespace JC.Tutorial
             Resources.Load<JC.BattleTesting.JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(gameObject.scene);
         }
 
-        private void Update() { RefreshPresentation(); AdvanceResultNotice(Time.unscaledDeltaTime); }
+        private void Update() { if (guidedActive) { UpdateGuided(); return; } RefreshPresentation(); AdvanceResultNotice(Time.unscaledDeltaTime); }
         public void AdvanceResultNotice(float delta)
         {
             if (!noticeOpen || instructionStep >= 0) return;
@@ -58,13 +58,14 @@ namespace JC.Tutorial
         }
         public void DismissResult()
         {
+            if (guidedActive) return;
             if (!noticeOpen) return;
             if (instructionStep >= 0) instructionDismissPending = true;
             noticeOpen = false; releasePending = true;
             if (dim != null) dim.gameObject.SetActive(false);
             view.SetPanelSuppressed(true); view.SetVisible(false);
         }
-        private void LateUpdate() => ReleaseResultInput(Input.GetMouseButton(0));
+        private void LateUpdate() { if (guidedActive) { LateGuided(); return; } ReleaseResultInput(Input.GetMouseButton(0)); }
         public void ReleaseResultInput(bool held)
         {
             if (!releasePending || held) return;
@@ -123,6 +124,7 @@ namespace JC.Tutorial
         }
         public void RefreshPresentation()
         {
+            if (guidedActive) return;
             int active = -1;
             if (source != null && source.isActiveAndEnabled && stepTexts != null)
                 for (int i = 0; i < stepTexts.Length; i++)
@@ -139,6 +141,11 @@ namespace JC.Tutorial
                 }
             if (view == null) return;
             CacheLayout();
+            if (view.heading != null && active >= 0 && stepTexts[active] != null)
+            {
+                var text = stepTexts[active].GetComponent<TMP_Text>();
+                if (text != null) { view.heading.enableAutoSizing = false; view.heading.fontSize = text.fontSize; view.heading.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, text.fontSize * 1.5f); }
+            }
             foreach (var background in layoutPanel.GetComponentsInChildren<JcTutorialGraphic>(true)) background.SetOpaqueFill(active == 2);
             if (active != 2)
             {
@@ -193,6 +200,7 @@ namespace JC.Tutorial
         }
         private void OnDisable()
         {
+            EndGuided(false);
             instructionStep = -1; instructionDismissPending = false; noticeOpen = releasePending = false;
             UnlockInput();
             if (dim != null) dim.gameObject.SetActive(false);

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -30,7 +30,7 @@ public class SystemMenuController : MonoBehaviour
 
     private void Update()
     {
-        if (returningToTitle) return;
+        if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
         var sceneName = SceneManager.GetActiveScene().name;
         if (sceneName == TitleScene) return;
 
@@ -102,7 +102,7 @@ public class SystemMenuController : MonoBehaviour
 
     public void OnClickResume()
     {
-        if (returningToTitle) return;
+        if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
         if (_modal != null) _modal.SetActive(false);
         Time.timeScale = 1f;
     }
@@ -119,7 +119,7 @@ public class SystemMenuController : MonoBehaviour
 
     public void OnClickToTitle()
     {
-        if (returningToTitle) return;
+        if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
         returningToTitle = true;
         SceneManager.sceneLoaded += HandleTitleSceneLoaded;
         // Keep the pausing menu open during the fade. Closing it here would let

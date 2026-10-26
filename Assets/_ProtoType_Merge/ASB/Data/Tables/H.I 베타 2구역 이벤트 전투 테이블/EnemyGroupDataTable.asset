@@ -102,9 +102,9 @@ MonoBehaviour:
     EnemyGroupName: "\uBA54\uC778 4-2(\uB85C\uB2C8 \uBCF5\uADC0 / \uC9C0\uD718\uAD00
       \uBCF5\uADC0\xB7\uC0AC\uAE30 \uC0C1\uC2B9 UMT)"
     Enemy1: FV20002
-    Enemy1Slot: 2
+    Enemy1Slot: 4
     Enemy2: FV20003
-    Enemy2Slot: 4
+    Enemy2Slot: 2
     Enemy3: FV200052
     Enemy3Slot: 6
     Enemy4: 

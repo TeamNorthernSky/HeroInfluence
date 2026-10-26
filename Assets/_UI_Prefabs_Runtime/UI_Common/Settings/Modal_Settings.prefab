@@ -930,7 +930,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -953,7 +953,7 @@ MonoBehaviour:
   m_Interactable: 1
   m_TargetGraphic: {fileID: 6753720020250131141}
   toggleTransition: 1
-  graphic: {fileID: 2581064449805038701}
+  graphic: {fileID: 0}
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
@@ -971,6 +971,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf4423036dd392948a57db2f634349bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  checkboxImage: {fileID: 6753720020250131141}
+  checkedSprite: {fileID: 21300000, guid: d56b7459f15851943ae8c3a16fb62b08, type: 3}
+  uncheckedSprite: {fileID: 21300000, guid: 9374e7cfd78d7334f891e336caed14e7, type: 3}
 --- !u!1 &895290019349731352
 GameObject:
   m_ObjectHideFlags: 0
@@ -3060,16 +3063,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.15, g: 0.3, b: 0.5, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 9374e7cfd78d7334f891e336caed14e7, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -4946,7 +4949,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7476191704570511185
 RectTransform:
   m_ObjectHideFlags: 0

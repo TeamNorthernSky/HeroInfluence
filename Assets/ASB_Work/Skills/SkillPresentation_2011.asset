@@ -30,12 +30,18 @@ MonoBehaviour:
   HitSoundId: 0
   SfxVolume: 1
   EnableHitEffect: 1
-  HitEffectId: 98005
-  ScaleHitEffectWithBattleSpeed: 1
-  HitEffectAtTargetRoot: 1
+  HitEffectId: 98037
   HitEffectOffset: {x: 0, y: 0.8, z: 0}
+  HitEffectAtTargetRoot: 1
+  ScaleHitEffectWithBattleSpeed: 1
+  OverrideHitStop: 0
+  HitStop:
+    Enabled: 1
+    DurationSeconds: 0.08
+    CharacterSpeed: 0.05
+    EffectSpeed: 0.25
   ProjectileVisual:
-    Prefab: {fileID: 6564851316488231838, guid: 7e7010c1e1c5b214b9805af1af123eac,
+    Prefab: {fileID: 9091187844815821790, guid: 96a31a261acee53489fa952e9a832c01,
       type: 3}
     Speed: 6
     Trajectory: 1
@@ -44,6 +50,7 @@ MonoBehaviour:
     AccelerationMultiplier: 3
     TargetOffset: {x: 0, y: 0.8, z: 0}
     PreserveRootFlightTime: 1
+    SimultaneousArrivalSeconds: 0
     HideVisualOnArrival: 1
     TrailTime: 0.4
     TrackTarget: 0
@@ -61,6 +68,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx: []
   MovePrepare:
     Enabled: 0
     AnimationStateName: 
@@ -69,8 +77,11 @@ MonoBehaviour:
   Move:
     Enabled: 1
     UseUnitMovement: 0
+    ForceApproach: 0
+    ApproachEffectId: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -85,7 +96,7 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: cast
-        EffectIds: d47e0100
+        EffectIds: f47e0100
         SoundIds: 
         Operation: 0
         InstanceKey: charge
@@ -108,6 +119,7 @@ MonoBehaviour:
     Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   Post:
     Enabled: 0
     AnimationStateName: 

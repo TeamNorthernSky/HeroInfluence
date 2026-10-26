@@ -1354,6 +1354,7 @@ MonoBehaviour:
   button: {fileID: 111156015}
   battleFlowManager: {fileID: 621159268}
   confirmationPopup: {fileID: 0}
+  tutorialRestrictionPopup: {fileID: 0}
 --- !u!114 &111156019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7596,6 +7597,7 @@ MonoBehaviour:
   edgePadding: 12
   bottomPadding: 20
   minimumHeight: 322
+  outlineClearance: 12
 --- !u!1 &621159265
 GameObject:
   m_ObjectHideFlags: 0
@@ -7816,6 +7818,10 @@ MonoBehaviour:
   _enableCommonHitEffect: 1
   _commonHitEffect: {fileID: 0}
   _commonHitEffectOffset: {x: 0, y: 1.1, z: 0}
+  _enableEnhancedHitEffect: 1
+  _enhancedHitEffect: {fileID: 0}
+  _enableJusticeNormalHitEffect: 1
+  _justiceNormalHitEffect: {fileID: 0}
   _enableBodyFlash: 1
   _bodyFlashSeconds: 0.12
   _bodyFlashStrength: 1
@@ -26063,6 +26069,7 @@ MonoBehaviour:
   directionalLight: {fileID: 1348185594}
   applyOnStart: 1
   lightYawOffset: -90
+  timePreviewSettings: {fileID: 0}
 --- !u!1 &1672662679
 GameObject:
   m_ObjectHideFlags: 0
@@ -26907,7 +26914,7 @@ MonoBehaviour:
   frameBlackBulletTarget: 1
   rangedTargetFocusWeight: 0.65
   followLuminaProjectile: 1
-  projectileFocusSpeed: 24
+  projectileFocusSpeed: 10
   flareBombCastDelay: 0.35
   chainLightningCastDelay: 0.5
   chainLightningEndDelay: 0.4

@@ -110,7 +110,7 @@ MonoBehaviour:
   initialClaimState: 0
   enemyGroupKey: TUFEP002
   enemyLevel: 1
-  tutorialBattleKey: 
+  tutorialBattleKey: TUT_02
   tutorialZoneId: -1
   tutorialLobbySceneName: TutorialLobbyScene
   targetRenderers: []
