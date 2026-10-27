@@ -47,6 +47,7 @@ MonoBehaviour:
   productionExplosionPrefab: {fileID: 5749234427374420805, guid: 4b49031b85aa66f4ebd9098b9a3ab462,
     type: 3}
   dashArcLag: 0.35
+  summonRevealSeconds: 0.35
   summonBurstPeak: 1.22
   summonBurstRiseSeconds: 0.045
   summonBurstSettleSeconds: 0.115

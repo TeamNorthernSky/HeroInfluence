@@ -25,7 +25,11 @@ namespace ASB.Work.Battle.SkillExecution
             }
 
             string skillKey = skillData.skillKey;
-            result.OnPostExecution += _ => boss.TrySummonForSkill(skillKey);
+            result.OnPostExecution += _ =>
+            {
+                boss.TrySummonForSkill(skillKey);
+                HoopSummonCastEffect.NotifySummonCompleted(caster);
+            };
             return result;
         }
     }

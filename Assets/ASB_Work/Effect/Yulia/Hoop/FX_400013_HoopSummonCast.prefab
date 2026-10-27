@@ -60,8 +60,8 @@ MonoBehaviour:
   spinDegreesPerSecond: 1800
   splitTravelSeconds: 0.17
   ringMorphSeconds: 0.083
-  ringHoldSeconds: 0.25
+  ringHoldSeconds: 0.6
   ringFadeSeconds: 0.15
-  releaseTimeoutSeconds: 2
+  releaseTimeoutSeconds: 10
   gatherNativeBurstSeconds: 2.7
   expectedReleaseSeconds: 1.5
