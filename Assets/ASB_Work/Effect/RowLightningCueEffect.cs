@@ -54,6 +54,8 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
     [Header("율리아 납품 이펙트 (기존 Cue/대상 판정 유지)")]
     [SerializeField] private GameObject _nativeStormPrefab;
     [SerializeField] private UliaVfx.UliaSavedEffect _nativeTrajectoryPrefab;
+    [Tooltip("납품 나락의 폭풍 파티클 재생 속도. 1보다 크면 이펙트와 유지 시간이 함께 짧아진다.")]
+    [SerializeField, Min(0.1f)] private float _nativeStormPlaybackMultiplier = 1f;
     [Tooltip("시작 구체가 뜬 뒤 긋기 시작까지의 시간.")]
     [SerializeField, Min(0f)] private float _originLeadTime = 0.12f;
     [Tooltip("아크 위에 2020 볼트를 겹쳐 중심선과 외곽 광을 그린다. 아크는 가지와 불꽃으로 사용한다.")]
@@ -169,11 +171,13 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
             _nativeStormPrefab.transform.rotation, transform);
         strike.transform.localScale = _nativeStormPrefab.transform.localScale;
         ParticleSystem[] particles = strike.GetComponentsInChildren<ParticleSystem>(true);
+        float stormSpeed = Mathf.Max(0.1f, _nativeStormPlaybackMultiplier);
         foreach (ParticleSystem ps in particles)
         {
             ps.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
             var main = ps.main;
             main.loop = false;
+            main.simulationSpeed *= stormSpeed * _speed;
         }
 
         foreach (ParticleSystem ps in particles)
@@ -184,7 +188,7 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
         PresentationSfxEvents.PlayEffectImpact(ctx?.Presentation, 0);
         SpawnShocks(ctx);
         SustainStormHitAnimations(ctx?.Targets);
-        yield return Wait(2f);
+        yield return Wait(2f / stormSpeed);
         while (_shocks.Exists(shock => shock != null)) yield return null;
         _nativeStormPlaying = false;
         Destroy(gameObject);
