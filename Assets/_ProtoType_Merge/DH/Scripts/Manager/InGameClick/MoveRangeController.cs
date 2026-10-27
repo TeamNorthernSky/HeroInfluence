@@ -69,8 +69,9 @@ public class MoveRangeController : MonoBehaviour
 
     private readonly struct GridLineKey : System.IEquatable<GridLineKey>
     {
-        public GridLineKey(Vector2Int a, Vector2Int b)
+        public GridLineKey(Vector2Int a, Vector2Int b, float surfaceY)
         {
+            SurfaceY = surfaceY;
             if (a.x < b.x || (a.x == b.x && a.y <= b.y))
             {
                 A = a;
@@ -85,10 +86,11 @@ public class MoveRangeController : MonoBehaviour
 
         public Vector2Int A { get; }
         public Vector2Int B { get; }
+        public float SurfaceY { get; }
 
         public bool Equals(GridLineKey other)
         {
-            return A == other.A && B == other.B;
+            return A == other.A && B == other.B && SurfaceY.Equals(other.SurfaceY);
         }
 
         public override bool Equals(object obj)
@@ -100,7 +102,7 @@ public class MoveRangeController : MonoBehaviour
         {
             unchecked
             {
-                return (A.GetHashCode() * 397) ^ B.GetHashCode();
+                return ((A.GetHashCode() * 397) ^ B.GetHashCode()) * 397 ^ SurfaceY.GetHashCode();
             }
         }
     }
@@ -445,7 +447,9 @@ public class MoveRangeController : MonoBehaviour
     {
         Vector2Int from = grid + fromOffset;
         Vector2Int to = grid + toOffset;
-        GridLineKey key = new GridLineKey(from, to);
+        // 같은 평면 경계라도 단차가 있으면 각 셀 표면에 선을 남깁니다.
+        // 동일 높이의 공유 경계만 제거해야 순회 순서에 따라 상/하층 선이 사라지지 않습니다.
+        GridLineKey key = new GridLineKey(from, to, gridManager.GetCellSurfaceY(grid));
         if (!gridLineKeys.Add(key))
             return;
 
