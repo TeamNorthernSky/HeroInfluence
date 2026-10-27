@@ -48,9 +48,19 @@ public sealed class NamedEnemyBattleBehaviorKeyTests
         Assert.That(baseKey, Is.EqualTo(BehaviorKey));
     }
 
+    [TestCase("FV20007")]
+    [TestCase("20007")]
+    public void Rules_HostageShield_UsesShieldBehaviorAndBaseSkills(string unitKey)
+    {
+        Assert.That(TryGetBaseUnitKey(unitKey, out string baseKey), Is.True);
+        Assert.That(baseKey, Is.EqualTo("20003"));
+        MethodInfo usesBaseSkills = FindType("EnemyBaseUnitRules")
+            .GetMethod("UsesBaseSkillTemplates", BindingFlags.Static | BindingFlags.Public);
+        Assert.That(usesBaseSkills.Invoke(null, new object[] { unitKey }), Is.EqualTo(true));
+    }
+
     [TestCase("20005")]
     [TestCase("20006")]
-    [TestCase("20007")]
     [TestCase("10002")]
     [TestCase(null)]
     public void Rules_OtherKeys_AreNotMapped(string unitKey)

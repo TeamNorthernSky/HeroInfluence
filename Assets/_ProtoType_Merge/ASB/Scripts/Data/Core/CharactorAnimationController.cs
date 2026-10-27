@@ -21,6 +21,8 @@ public class CharactorAnimationController : MonoBehaviour
     private const float IdleSpeedVariation = 0.15f;
 
     [SerializeField] private Animator _animator;
+    [Tooltip("굴렁쇠·증폭기처럼 Animator 없이 코드로 외형을 움직이는 유닛이면 켠다. 켜면 Animator가 없어도 경고하지 않는다.")]
+    [SerializeField] private bool _animatorOptional;
     private BattleCharactor _battleCharactor;
     private float _idleStartNormalizedTime;
     private float _idleStateLengthSeconds = 1f;
@@ -794,9 +796,12 @@ public class CharactorAnimationController : MonoBehaviour
 
         if (_animator == null)
         {
-            Debug.LogWarning(
-                $"[CharactorAnimationController] Animator not found on '{name}' or its children.",
-                this);
+            if (!_animatorOptional)
+            {
+                Debug.LogWarning(
+                    $"[CharactorAnimationController] Animator not found on '{name}' or its children.",
+                    this);
+            }
             return;
         }
 

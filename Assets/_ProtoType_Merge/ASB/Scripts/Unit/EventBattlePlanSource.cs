@@ -100,7 +100,21 @@ public static class EventBattlePlanSource
                 return false;
             }
 
-            units.Add(CreateUnit(normalizedUnitKey, resolvedSlot, safeLevel, source));
+            if (!TryCreateUnit(catalog, zoneId, normalizedUnitKey, resolvedSlot, safeLevel, source,
+                    out CombatEventBattleUnitData builtUnit, out string skillError))
+            {
+                if (failFast)
+                {
+                    error = skillError;
+                    units.Clear();
+                    return false;
+                }
+
+                Debug.LogWarning($"[EventBattlePlanSource] {skillError}");
+                continue;
+            }
+
+            units.Add(builtUnit);
         }
 
         if (units.Count == 0)
@@ -148,7 +162,36 @@ public static class EventBattlePlanSource
             return false;
         }
 
-        unit = CreateUnit(normalizedUnitKey, slot, Mathf.Max(1, enemyLevel), source);
+        return TryCreateUnit(catalog, zoneId, normalizedUnitKey, slot, Mathf.Max(1, enemyLevel), source,
+            out unit, out error);
+    }
+
+    private static bool TryCreateUnit(
+        EventScriptCatalog catalog,
+        int zoneId,
+        string unitKey,
+        int slot,
+        int level,
+        DHEventBattleUnitTemplate source,
+        out CombatEventBattleUnitData unit,
+        out string error)
+    {
+        unit = null;
+        error = string.Empty;
+        DHEventBattleUnitTemplate skillSource = source;
+
+        if (EnemyBaseUnitRules.UsesBaseSkillTemplates(unitKey))
+        {
+            if (!EnemyBaseUnitRules.TryGetBaseUnitKey(unitKey, out string baseUnitKey) ||
+                !catalog.TryGetBattleEnemyUnitTemplate(zoneId, baseUnitKey, out skillSource) ||
+                skillSource == null || skillSource.Skills == null || skillSource.Skills.Count == 0)
+            {
+                error = $"Base unit skills were not found. Zone={zoneId}, UnitKey={unitKey}, BaseUnitKey={baseUnitKey}";
+                return false;
+            }
+        }
+
+        unit = CreateUnit(unitKey, slot, level, source, skillSource);
         return true;
     }
 
@@ -156,11 +199,12 @@ public static class EventBattlePlanSource
         string unitKey,
         int slot,
         int level,
-        DHEventBattleUnitTemplate source)
+        DHEventBattleUnitTemplate source,
+        DHEventBattleUnitTemplate skillSource)
     {
         CombatEventBattleUnitData unit = new CombatEventBattleUnitData(unitKey, slot, level, source);
         ApplyLevelGrowth(unit, source, level);
-        PopulateEventBattleSkills(unit, source);
+        PopulateEventBattleSkills(unit, skillSource);
         return unit;
     }
 
@@ -201,7 +245,14 @@ public static class EventBattlePlanSource
         };
 
         if (definition.ThreatEnemyUnitKeys != null)
-            hostageConfig.ThreatEnemyUnitKeys.AddRange(definition.ThreatEnemyUnitKeys);
+        {
+            foreach (string unitKey in definition.ThreatEnemyUnitKeys)
+            {
+                // 20007은 20003의 전투 동작을 사용하므로 독자적인 인질 위협 행동을 실행하지 않는다.
+                if (!EnemyBaseUnitRules.UsesBaseSkillTemplates(unitKey))
+                    hostageConfig.ThreatEnemyUnitKeys.Add(unitKey);
+            }
+        }
 
         float initialHpRatio = Mathf.Clamp01(definition.InitialHpRatio);
         if (definition.Hostages != null)

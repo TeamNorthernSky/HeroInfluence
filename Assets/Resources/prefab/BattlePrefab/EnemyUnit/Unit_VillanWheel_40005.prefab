@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4884995062464786067}
   - component: {fileID: 3014261047815789851}
   - component: {fileID: 3410763731249974844}
+  - component: {fileID: 6337556338092441076}
   m_Layer: 9
   m_Name: Unit_VillanWheel_40005
   m_TagString: Untagged
@@ -22,6 +23,20 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &6337556338092441076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3045985214085865056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b41c0d2ba7643a341a1fe20c15a303df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animator: {fileID: 0}
+  _animatorOptional: 1
 --- !u!4 &6245412054740452164
 Transform:
   m_ObjectHideFlags: 0

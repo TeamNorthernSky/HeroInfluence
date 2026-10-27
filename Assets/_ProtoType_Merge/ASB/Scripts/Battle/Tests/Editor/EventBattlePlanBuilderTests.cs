@@ -25,6 +25,8 @@ public sealed class EventBattlePlanBuilderTests
     // DHScene_3 DataStorage의 2구역 이벤트 전투 유닛 테이블(굴렁쇠 소환 데이터 출처).
     private const string BetaZone2UnitTablePath =
         "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I 베타 2구역 이벤트 전투 테이블/EnemyUnit1SectorDataTable.asset";
+    private const string BetaZone1UnitTablePath =
+        "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I 베타 1구역 이벤트 전투 테이블/EnemyUnit1SectorDataTable.asset";
     // 같은 구역의 이벤트 전투 그룹 테이블(율리아 보스전 BE490 출처).
     private const string BetaZone2GroupTablePath =
         "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I 베타 2구역 이벤트 전투 테이블/EnemyGroupDataTable.asset";
@@ -157,6 +159,49 @@ public sealed class EventBattlePlanBuilderTests
             Assert.That(GetMember(dash, "skillKey"), Is.EqualTo("40005_1"), "실행·연출 레지스트리의 숫자 키.");
             Assert.That(GetMember(dash, "description"), Is.Not.Empty, "툴팁이 읽는 설명이 비면 안 된다.");
             Assert.That(GetMember(dash, "boundary"), Is.EquivalentTo(new[] { 3, 7 }), "행 전체 피해 범위는 [3,7]이다.");
+        }
+        finally
+        {
+            SetCatalogInstance(previous);
+            UnityEngine.Object.DestroyImmediate(host);
+        }
+    }
+
+    [TestCase(1, BetaZone1UnitTablePath)]
+    [TestCase(2, BetaZone2UnitTablePath)]
+    public void TryBuildEventUnitEntry_20007KeepsStatsAndUses20003Skills(int zoneId, string unitTablePath)
+    {
+        object previous = GetCatalogInstance();
+        var host = new GameObject("EventScriptCatalog_Test");
+        try
+        {
+            CreateCatalogFixture(host, zoneId, unitTablePath);
+
+            Assert.That(InvokeTryBuildEventUnitEntry(zoneId, "FV20007", 1, out object variant, out string error),
+                Is.True, error);
+            Assert.That(InvokeTryBuildEventUnitEntry(zoneId, "FV20003", 1, out object baseUnit, out error),
+                Is.True, error);
+
+            object variantData = GetMember(variant, "Data");
+            object baseData = GetMember(baseUnit, "Data");
+            Assert.That(GetMember(variantData, "Index"), Is.EqualTo("20007"));
+            Assert.That(GetMember(GetMember(variantData, "baseStats"), "HP"), Is.EqualTo(12f));
+            Assert.That(GetMember(GetMember(baseData, "baseStats"), "HP"), Is.EqualTo(7f));
+            Assert.That(GetMember(variantData, "UnitAI"), Is.EqualTo("20003"));
+            Assert.That(GetMember(variant, "PrefabKey"), Is.EqualTo("20003"));
+            Assert.That(GetMember(variant, "BattleBehaviorKey"), Is.EqualTo("20003"));
+
+            var skills = (IList)GetMember(variant, "ExplicitSkills");
+            var baseSkills = (IList)GetMember(baseUnit, "ExplicitSkills");
+            Assert.That(skills.Count, Is.EqualTo(2), "20007의 인질 위협 슬롯은 들어오지 않아야 합니다.");
+            for (int i = 0; i < 2; i++)
+            {
+                Assert.That(GetMember(skills[i], "skillIndex"), Is.EqualTo(200031 + i));
+                Assert.That(GetMember(skills[i], "skillKey"), Is.EqualTo($"20003_{i + 1}"));
+                foreach (string field in new[] { "skillName", "description", "classSkillEffect", "skillValue", "skillSubValue" })
+                    Assert.That(GetMember(skills[i], field), Is.EqualTo(GetMember(baseSkills[i], field)), field);
+                Assert.That(skills[i], Is.Not.SameAs(baseSkills[i]));
+            }
         }
         finally
         {

@@ -63,3 +63,7 @@ MonoBehaviour:
     prefab: {fileID: 1491268391175235409, guid: a6b0fd11a13f4304096025c18b3f4045,
       type: 3}
     additionalUnitKeys: []
+  - unitKey: 40005
+    prefab: {fileID: 3045985214085865056, guid: 550ec7be5afc05f41a79133d3a8824af,
+      type: 3}
+    additionalUnitKeys: []
