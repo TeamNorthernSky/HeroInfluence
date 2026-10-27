@@ -43,6 +43,7 @@ public class SubEventObject : MonoBehaviour
     private void OnDisable()
     {
         subEventRegistry?.Unregister(this);
+        MoveRangeController.NotifyOccupancyChanged();
         UnsubscribeEventBattleRequested();
         DHEventEffectRuntimeManager.Instance?.ClearActiveSubEventSource(EventKey);
     }

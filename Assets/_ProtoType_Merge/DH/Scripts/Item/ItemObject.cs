@@ -33,6 +33,7 @@ public class ItemObject : MonoBehaviour, IGridItemObject
     private void OnDisable()
     {
         itemRegistry?.Unregister(this);
+        MoveRangeController.NotifyOccupancyChanged();
     }
 
     public void ApplyInitialAmount(int nextAmount)

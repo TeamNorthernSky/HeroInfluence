@@ -50,6 +50,14 @@ public class MoveRangeController : MonoBehaviour
     private Coroutine pendingDelayedRefreshCoroutine;
     private bool isMoverMoving;
     private bool movementRefreshRequested;
+    private bool occupancyRefreshRequested;
+    private static event System.Action OccupancyChanged;
+
+    public static void NotifyOccupancyChanged()
+    {
+        if (Application.isPlaying)
+            OccupancyChanged?.Invoke();
+    }
 
     public bool IsMoveRangeActive => true;
 
@@ -118,15 +126,18 @@ public class MoveRangeController : MonoBehaviour
             enabled = false;
             return;
         }
+        OccupancyChanged += HandleOccupancyChanged;
         RefreshForCurrentParty();
         RequestRefreshAfterSceneSetup();
     }
 
     private void OnDisable()
     {
+        OccupancyChanged -= HandleOccupancyChanged;
         StopAllCoroutines();
         pendingDelayedRefreshCoroutine = null;
         movementRefreshRequested = false;
+        occupancyRefreshRequested = false;
         BindMover(null);
         Hide();
     }
@@ -153,7 +164,9 @@ public class MoveRangeController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (movementRefreshRequested)
+        if (occupancyRefreshRequested)
+            RefreshForCurrentParty();
+        else if (movementRefreshRequested)
             RefreshForMover(currentMover);
         if (rangeVisible && (renderedWidth != EffectiveWidth || renderedYOffset != lineYOffset))
             RenderRange();
@@ -239,6 +252,7 @@ public class MoveRangeController : MonoBehaviour
     public void RefreshForMover(PartyGridMover mover)
     {
         movementRefreshRequested = false;
+        occupancyRefreshRequested = false;
         BindMover(mover);
         isMoverMoving = mover != null && mover.IsMoving;
 
@@ -259,7 +273,9 @@ public class MoveRangeController : MonoBehaviour
     public bool AllowsCell(Vector2Int grid)
     {
         // Input may query the range before this frame's LateUpdate.
-        if (movementRefreshRequested)
+        if (occupancyRefreshRequested)
+            RefreshForCurrentParty();
+        else if (movementRefreshRequested)
             RefreshForMover(currentMover);
         return !IsMoveRangeActive || reachableCells.Contains(grid);
     }
@@ -307,6 +323,12 @@ public class MoveRangeController : MonoBehaviour
         movementRefreshRequested = true;
         if (currentMover != null && currentMover.IsMoving)
             Hide();
+    }
+
+    private void HandleOccupancyChanged()
+    {
+        // Coalesce removals/replacements and rebuild only after registry updates have finished.
+        occupancyRefreshRequested = true;
     }
 
     private void HandleMoverMoveCompleted()

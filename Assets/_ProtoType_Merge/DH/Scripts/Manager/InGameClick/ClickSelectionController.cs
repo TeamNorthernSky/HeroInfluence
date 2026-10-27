@@ -36,6 +36,8 @@ public class ClickSelectionController : MonoBehaviour
     private MoveCommandPreviewController moveCommandPreviewController;
     private Coroutine pendingMoveRangeRefreshCoroutine;
     private RaycastHit[] pointerHits = new RaycastHit[64];
+    private readonly System.Collections.Generic.List<Vector2Int> hoverInteractionCells =
+        new System.Collections.Generic.List<Vector2Int>(32);
     private readonly System.Collections.Generic.List<RaycastResult> hoverUIHits = new System.Collections.Generic.List<RaycastResult>();
     private PointerEventData hoverPointer;
     private EventSystem hoverEventSystem;
@@ -227,19 +229,31 @@ public class ClickSelectionController : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(screenPosition);
         int count = CollectPointerHits(ray);
         if (!TryGetClosestLandHit(count, out RaycastHit landHit)) return false;
+        Component interactionTarget = null;
+        float interactionDistance = float.PositiveInfinity;
         for (int i = 0; i < count; i++)
         {
             Transform hit = pointerHits[i].transform;
             if (hit == null || pointerHits[i].distance > landHit.distance + 0.01f) continue;
             if (partySelectionController.IsSelectionTarget(hit)
-                || (moveCommandPreviewController != null && moveCommandPreviewController.IsConfirmableMarker(hit))
-                || IsInteractionHit(hit)) return false;
+                || (moveCommandPreviewController != null && moveCommandPreviewController.IsConfirmableMarker(hit)))
+                return false;
+
+            Component target = GetInteractionHoverTarget(hit);
+            if (target != null && pointerHits[i].distance < interactionDistance)
+            {
+                interactionTarget = target;
+                interactionDistance = pointerHits[i].distance;
+            }
         }
 
+        if (interactionTarget != null)
+            return !CanReachHoveredInteraction(interactionTarget, mover);
+
         Vector2Int cell = gridManager.WorldToGrid(landHit.point);
-        // 건물은 지면 클릭 시에도 접근 지점으로 변환되므로 단순 범위 판정에서 제외합니다.
-        if (gridManager.HasInteractionTarget(cell)
-            || gridManager.HasTutorialBuilding(cell)) return false;
+        interactionTarget = GetInteractionHoverTargetAtCell(cell);
+        if (interactionTarget != null)
+            return !CanReachHoveredInteraction(interactionTarget, mover);
         return !moveRangeController.AllowsCell(cell);
     }
 
@@ -261,19 +275,74 @@ public class ClickSelectionController : MonoBehaviour
         return false;
     }
 
-    private static bool IsInteractionHit(Transform hit)
+    private static Component GetInteractionHoverTarget(Transform hit)
     {
-        return hit.GetComponentInParent<IGridItemObject>() != null
-            || hit.GetComponentInParent<IGridEnemyObject>() != null
-            || hit.GetComponentInParent<Outpost>() != null
-            || hit.GetComponentInParent<HeroUnionUnit>() != null
-            || hit.GetComponentInParent<VillainUnionBase>() != null
-            || hit.GetComponentInParent<TutorialBuildingObject>() != null
-            || hit.GetComponentInParent<TutorialOutpostObject>() != null
-            || hit.GetComponentInParent<MapEventObject>() != null
-            || hit.GetComponentInParent<WorldEventObject>() != null
-            || hit.GetComponentInParent<MainEventObject>() != null
-            || hit.GetComponentInParent<SubEventObject>() != null;
+        return hit.GetComponentInParent<IGridItemObject>() as Component
+            ?? hit.GetComponentInParent<IGridEnemyObject>() as Component
+            ?? (Component)hit.GetComponentInParent<Outpost>()
+            ?? hit.GetComponentInParent<HeroUnionUnit>()
+            ?? (Component)hit.GetComponentInParent<VillainUnionBase>()
+            ?? hit.GetComponentInParent<TutorialBuildingObject>()
+            ?? (Component)hit.GetComponentInParent<TutorialOutpostObject>()
+            ?? hit.GetComponentInParent<MapEventObject>()
+            ?? (Component)hit.GetComponentInParent<WorldEventObject>()
+            ?? hit.GetComponentInParent<MainEventObject>()
+            ?? (Component)hit.GetComponentInParent<SubEventObject>();
+    }
+
+    private Component GetInteractionHoverTargetAtCell(Vector2Int cell)
+    {
+        if (gridManager.TryGetGridItemObjectAtGrid(cell, out IGridItemObject item)) return item as Component;
+        if (gridManager.TryGetGridEnemyObjectAtGrid(cell, out IGridEnemyObject enemy)) return enemy as Component;
+        if (gridManager.TryGetOutpostObjectAtGrid(cell, out Outpost outpost)) return outpost;
+        if (gridManager.TryGetHeroUnionObjectAtGrid(cell, out HeroUnionUnit heroUnion)) return heroUnion;
+        if (gridManager.TryGetVillainUnionBaseAtGrid(cell, out VillainUnionBase villainUnion)) return villainUnion;
+        if (gridManager.TryGetTutorialBuildingObjectAtGrid(cell, out TutorialBuildingObject building)) return building;
+        if (gridManager.TryGetEventObjectAtGrid(cell, out MapEventObject mapEvent)) return mapEvent;
+        if (gridManager.TryGetWorldEventObjectAtGrid(cell, out WorldEventObject worldEvent)) return worldEvent;
+        if (gridManager.TryGetMainEventObjectAtGrid(cell, out MainEventObject mainEvent)) return mainEvent;
+        if (gridManager.TryGetSubEventObjectAtGrid(cell, out SubEventObject subEvent)) return subEvent;
+        return null;
+    }
+
+    private bool CanReachHoveredInteraction(Component target, PartyGridMover mover)
+    {
+        hoverInteractionCells.Clear();
+        MultiGridOccupant occupant = target.GetComponent<MultiGridOccupant>();
+        if (target is IGridEnemyObject enemy)
+        {
+            enemy.GetInteractionCells(hoverInteractionCells);
+        }
+        else if (target is WorldEventObject && occupant != null)
+        {
+            hoverInteractionCells.AddRange(occupant.GetAdjacentOuterCells());
+        }
+        else if (occupant != null && (target is Outpost || target is HeroUnionUnit ||
+                 target is VillainUnionBase || target is TutorialBuildingObject || target is TutorialOutpostObject))
+        {
+            Vector2Int anchor = occupant.AnchorGrid;
+            for (int x = 0; x < occupant.Size.x; x++)
+                hoverInteractionCells.Add(new Vector2Int(anchor.x + x, anchor.y - 1));
+        }
+        else
+        {
+            Vector2Int origin = target is Outpost outpost
+                ? outpost.GetAnchorGrid(gridManager)
+                : gridManager.WorldToGrid(target.transform.position);
+            int radius = target is MainEventObject mainEvent ? mainEvent.InteractionRadius : 1;
+            for (int y = -radius; y <= radius; y++)
+                for (int x = -radius; x <= radius; x++)
+                    if (x != 0 || y != 0)
+                        hoverInteractionCells.Add(origin + new Vector2Int(x, y));
+        }
+
+        Vector2Int currentGrid = mover.GetCurrentGrid();
+        // Current-cell interaction needs no movement; other candidates use the cached BFS range.
+        for (int i = 0; i < hoverInteractionCells.Count; i++)
+            if (hoverInteractionCells[i] == currentGrid || moveRangeController.AllowsCell(hoverInteractionCells[i]))
+                return true;
+
+        return false;
     }
 
     private int CollectPointerHits(Ray ray)
