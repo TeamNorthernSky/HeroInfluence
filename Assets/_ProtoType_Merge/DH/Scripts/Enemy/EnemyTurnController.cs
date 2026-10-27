@@ -42,6 +42,7 @@ public class EnemyTurnController : MonoBehaviour
 
     public IEnumerator ExecuteEnemyTurn()
     {
+        yield return GateCameraFocusController.WaitForIdle();
         interruptedByCombat = false;
 
         if (DHGameEndState.IsEnding)
@@ -106,6 +107,8 @@ public class EnemyTurnController : MonoBehaviour
 
     private IEnumerator ProcessEnemy(EnemyGridMover enemy, int movePoints)
     {
+        yield return GateCameraFocusController.WaitForIdle();
+        if (DHGameEndState.IsEnding) yield break;
         if (enemy == null || enemy.IsStatic || movePoints < 0)
             yield break;
 

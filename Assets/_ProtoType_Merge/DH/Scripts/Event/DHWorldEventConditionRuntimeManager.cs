@@ -102,7 +102,7 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
     {
         yield return null;
 
-        while (CanCheckConditions && IsChatRunning())
+        while (CanCheckConditions && (IsChatRunning() || GateCameraFocusController.IsBusy))
             yield return null;
 
         checkQueued = false;
@@ -118,7 +118,7 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
         if (!CanCheckConditions)
             return false;
 
-        if (IsChatRunning())
+        if (IsChatRunning() || GateCameraFocusController.IsBusy)
         {
             RequestCheck();
             return false;

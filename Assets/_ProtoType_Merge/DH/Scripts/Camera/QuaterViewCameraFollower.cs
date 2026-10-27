@@ -93,16 +93,94 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private float eventFocusElapsed;
     private Vector3 eventFocusStart, eventFocusEnd;
     private Quaternion eventFocusStartRotation, eventFocusEndRotation;
+    private bool temporaryFocusActive;
+    private Vector3 temporaryStartPosition, temporaryPanOffset, temporaryFollowAnchor, temporaryFollowVelocity;
+    private Quaternion temporaryStartRotation;
+    private bool temporaryHadFollowAnchor, temporaryInputLocked;
 
     public bool IsExternalInputLocked => externalInputLocked;
     public bool IsEventZoomApplied => eventZoomApplied;
     public bool IsEventFocusMoving => eventFocusMoving;
+    public bool IsTemporaryFocusActive => temporaryFocusActive;
     public event System.Action<bool> EventZoomChanged;
     public bool IsManualNavigationLocked => externalInputLocked || IsFollowTargetPartyMoving();
 
     public void SetFollowTarget(Transform target)
     {
         followTarget = target;
+    }
+
+    public System.Collections.IEnumerator PlayTemporaryFocus(Vector3 focus, float moveSeconds,
+        float holdSeconds, float returnSeconds, System.Action onFocused, System.Func<bool> shouldCancel)
+    {
+        if (temporaryFocusActive || externalFocusLocked || eventFocusMoving)
+            yield break;
+
+        temporaryStartPosition = transform.position;
+        temporaryStartRotation = transform.rotation;
+        temporaryPanOffset = panOffset;
+        temporaryFollowAnchor = smoothedFollowAnchor;
+        temporaryFollowVelocity = followVelocity;
+        temporaryHadFollowAnchor = hasSmoothedFollowAnchor;
+        temporaryInputLocked = externalInputLocked;
+        temporaryFocusActive = true;
+        SetExternalInputLocked(true);
+
+        try
+        {
+            Vector3 destination = new Vector3(focus.x, transform.position.y, focus.z + positionOffset.z);
+            transform.position = destination;
+            ResolveMapBoundsReferences();
+            if (clampToMapBounds && gridManager != null && TryGetMapWorldBounds(out Rect bounds))
+            {
+                Plane plane = new Plane(Vector3.up, new Vector3(0f, gridManager.GetLandSurfaceY(), 0f));
+                if (TryGetViewportGroundRect(plane, out Rect viewport))
+                    transform.position += new Vector3(
+                        CalculateAxisCorrection(viewport.xMin, viewport.xMax, bounds.xMin, bounds.xMax), 0f,
+                        CalculateAxisCorrection(viewport.yMin, viewport.yMax, bounds.yMin, bounds.yMax));
+            }
+            destination = transform.position;
+            transform.position = temporaryStartPosition;
+            yield return MoveTemporaryFocus(destination, moveSeconds, shouldCancel);
+            if (!temporaryFocusActive || shouldCancel()) yield break;
+
+            onFocused?.Invoke();
+            for (float elapsed = 0f; elapsed < holdSeconds && temporaryFocusActive && !shouldCancel(); elapsed += Time.unscaledDeltaTime)
+                yield return null;
+            if (!temporaryFocusActive || shouldCancel()) yield break;
+
+            yield return MoveTemporaryFocus(temporaryStartPosition, returnSeconds, shouldCancel);
+        }
+        finally
+        {
+            CancelTemporaryFocus();
+        }
+    }
+
+    private System.Collections.IEnumerator MoveTemporaryFocus(Vector3 destination, float duration,
+        System.Func<bool> shouldCancel)
+    {
+        Vector3 start = transform.position;
+        for (float elapsed = 0f; elapsed < duration && temporaryFocusActive && !shouldCancel(); elapsed += Time.unscaledDeltaTime)
+        {
+            float t = Mathf.Clamp01(elapsed / duration);
+            transform.position = Vector3.Lerp(start, destination, t * t * (3f - 2f * t));
+            yield return null;
+        }
+        if (temporaryFocusActive && !shouldCancel()) transform.position = destination;
+    }
+
+    public void CancelTemporaryFocus()
+    {
+        if (!temporaryFocusActive) return;
+        transform.SetPositionAndRotation(temporaryStartPosition, temporaryStartRotation);
+        panOffset = temporaryPanOffset;
+        smoothedFollowAnchor = temporaryFollowAnchor;
+        followVelocity = temporaryFollowVelocity;
+        hasSmoothedFollowAnchor = temporaryHadFollowAnchor;
+        edgeScrollVelocity = Vector3.zero;
+        externalInputLocked = temporaryInputLocked;
+        temporaryFocusActive = false;
     }
 
     public void SetFollowEnabled(bool enabled)
@@ -330,6 +408,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void OnDisable()
     {
+        CancelTemporaryFocus();
         RestoreEventZoom();
         eventFocusMoving = false;
         edgeScrollVelocity = Vector3.zero;
@@ -341,6 +420,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (temporaryFocusActive) return;
         if (eventFocusMoving)
         {
             eventFocusElapsed += Time.unscaledDeltaTime;
