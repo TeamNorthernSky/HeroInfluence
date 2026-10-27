@@ -43,7 +43,6 @@ namespace UliaVfx
         public bool rush;
         public bool autoRush;
         public float waitBeforeRush = 2.5f;
-        [SerializeField] private string status;
 
         private Transform boss, hand;
         private Animator animator;
@@ -57,8 +56,6 @@ namespace UliaVfx
         private PlayableGraph graph;
         private AnimationMixerPlayable mixer;
         private AnimationClipPlayable[] motions;
-        private bool ready;
-        private float hoverTime;
         private Vector3[] home;
 
         public void Play(Transform unit,Animator actorAnimator,Transform handSocket,Vector3[] destinations,float height,System.Action<GameObject[]> completed){
@@ -73,7 +70,7 @@ namespace UliaVfx
             CreateMotionGraph();StartCoroutine(CastAndSummon());
         }
         public void Stop(){
-            StopAllCoroutines();ready=false;orbiting=false;
+            StopAllCoroutines();orbiting=false;
             if(effects){effects.SetActive(false);Destroy(effects);}if(graph.IsValid())graph.Destroy();
             onSummoned=null;
         }
@@ -301,11 +298,9 @@ namespace UliaVfx
 
         private IEnumerator CastAndSummon()
         {
-            status = "Ready / F9 to replay";
             if (idleOrb) idleOrb.SetActive(true);
             yield return new WaitForSecondsRealtime(leadIn);
             if (idleOrb) idleOrb.SetActive(false);
-            status = "Original casting motion at 1x / rapid energy expansion";
             SetMotion(0);
             StartTileGather();
             charge = Spawn(castPrefab, hand.position, characterHeight * .08f, handRotation);
@@ -333,7 +328,6 @@ namespace UliaVfx
             charge.SetActive(false);
             var starts = splitOrbs.Select(o => o.transform.position).ToArray();
             var destinations = slots.Select(t => t + Vector3.up * .09f).ToArray();
-            status = "Three-way split / travelling to summon tiles";
             elapsed = 0;
             while (elapsed < splitTravelSeconds)
             {
@@ -351,7 +345,6 @@ namespace UliaVfx
             energyCore.SetActive(false);
             SetMotion(1);
             var portals = destinations.Select(GroundPortal).ToArray();
-            status = "Energy settles / transforms into ground circles";
             elapsed = 0;
             while (elapsed < portalMorphSeconds)
             {
@@ -370,7 +363,6 @@ namespace UliaVfx
             elapsed = 0;
             if (summonGatherPrefab)
             {
-                status = "Energy release / instant full orbs with outward punch";
                 foreach (var ps in summonReleaseSystems) if (ps) ps.Play(false);
                 orbs = home.Select(BurstReadyOrb).ToArray();
                 Debug.Log("[Yulia summon burst] Full-size visible shells on release; no rise or gradual birth.");
@@ -388,7 +380,6 @@ namespace UliaVfx
             }
             else
             {
-                status = "Character-height orbs rising from summon circles";
                 orbs = destinations.Select(p => EnergyOrb(p, .015f, false)).ToArray();
                 elapsed = 0;
                 while (elapsed < riseSeconds)
@@ -413,25 +404,16 @@ namespace UliaVfx
             }
             foreach (var portal in portals) portal.SetActive(false);
             if (idleOrb) idleOrb.SetActive(true);
-            ready = true;
-            hoverTime = 0;
-            status = "Summon complete / F9 replay / F10 rush";
             Debug.Log("[Yulia cast preview v3] Original clips at 1x; casting=" + (startMotion.length + maintainMotion.length) + "s; effects settled=" + (startMotion.length + maintainMotion.length + portalFadeSeconds) + "s. Character height=" + characterHeight + ", orb diameter=" + (orbScale * 5.3f) + ", portal diameter=" + portalScale);
             if(orbs!=null){
                 var born=orbs;orbs=null;foreach(var orb in born)orb.transform.SetParent(null,true);
                 var callback=onSummoned;onSummoned=null;callback?.Invoke(born);
             }
             if(graph.IsValid())graph.Destroy();
-            if (false)
-            {
-                yield return new WaitForSecondsRealtime(waitBeforeRush);
-                if (ready) { ready = false; yield return Rush(); }
-            }
         }
 
         private IEnumerator Rush()
         {
-            status = "Orb rush preview";
             var from = orbs.Select(o => o.transform.position).ToArray();
             Vector3 direction = Vector3.back;
             var trails = orbs.Select(o => Spawn(rushPrefab, o.transform.position, .24f, Quaternion.LookRotation(direction))).ToArray();
@@ -449,7 +431,6 @@ namespace UliaVfx
             }
             foreach (var o in orbs) o.SetActive(false);
             foreach (var t in trails) t.SetActive(false);
-            status = "Rush complete / F9 to replay";
         }
 
         private void CreateBarrier()

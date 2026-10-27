@@ -7,13 +7,13 @@ using UnityEngine;
 /// 자동 전투 컨트롤러.
 /// 플레이어 턴에 클래스 스킬 슬롯의 스킬과 무기 스킬 중 랜덤 액션/타겟을 선택해 BattleManager로 실행합니다.
 /// InputHandler.IsAutoBattleActive 플래그로 수동 입력을 차단합니다.
-/// UI에서 OnAutoBattleToggleRequested 이벤트를 발생시켜 자동 전투를 제어합니다.
+/// UI에서 IsAutoBattle 속성을 직접 설정해 자동 전투를 제어합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public class AutoBattleController : MonoBehaviour
 {
-    /// <summary>UI 버튼 등 외부에서 자동 전투 토글을 요청할 때 발생시킵니다.</summary>
-    public static event Action<bool> OnAutoBattleToggleRequested;
+    // 미사용 이벤트 경로 보존: UI는 IsAutoBattle 속성을 직접 설정한다.
+    // public static event Action<bool> OnAutoBattleToggleRequested;
 
     [SerializeField] private BattleFlowManager flowManager;
     [SerializeField] private BattleManager battleManager;
@@ -67,7 +67,7 @@ public class AutoBattleController : MonoBehaviour
         if (flowManager != null)
             flowManager.OnTurnStarted += OnTurnStarted;
 
-        OnAutoBattleToggleRequested += HandleToggleRequest;
+        // OnAutoBattleToggleRequested += HandleToggleRequest;
         IsAutoBattle = BattleRuntimeSettings.IsAutoBattle;
     }
 
@@ -76,16 +76,18 @@ public class AutoBattleController : MonoBehaviour
         if (flowManager != null)
             flowManager.OnTurnStarted -= OnTurnStarted;
 
-        OnAutoBattleToggleRequested -= HandleToggleRequest;
+        // OnAutoBattleToggleRequested -= HandleToggleRequest;
 
         if (inputHandler != null)
             inputHandler.IsAutoBattleActive = false;
     }
 
+    /* 이벤트 경로를 다시 사용할 때 함께 복원한다.
     private void HandleToggleRequest(bool enable)
     {
         IsAutoBattle = enable;
     }
+    */
 
     [ContextMenu("자동 전투 ON")]
     private void DebugEnableAutoBattle() => IsAutoBattle = true;

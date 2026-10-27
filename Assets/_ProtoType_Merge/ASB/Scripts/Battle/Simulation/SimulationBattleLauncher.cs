@@ -99,16 +99,17 @@ public sealed class SimulationBattleLauncher : MonoBehaviour
         string enemyGroupKey = string.IsNullOrWhiteSpace(config.enemyGroupKey)
             ? string.Empty
             : config.enemyGroupKey.Trim();
-        if (!SimulationUnitFactory.ValidateEnemyGroup(enemyGroupKey, out string enemyError))
+        int enemyLevel = Mathf.Clamp(config.enemyLevel, 1, SimulationUnitFactory.MaxSimulationLevel);
+        int eventZoneId = Mathf.Max(0, config.eventZoneId);
+        if (!SimulationUnitFactory.ValidateEnemy(enemyGroupKey, eventZoneId, enemyLevel, out string enemyError))
         {
             error = enemyError;
             return false;
         }
 
-        int enemyLevel = Mathf.Clamp(config.enemyLevel, 1, SimulationUnitFactory.MaxSimulationLevel);
         string partyId = "SIM_" + Guid.NewGuid().ToString("N");
 
-        if (!context.BeginSimulation(partyId, runtimeAllies, enemyGroupKey, enemyLevel, ReturnSceneName))
+        if (!context.BeginSimulation(partyId, runtimeAllies, enemyGroupKey, enemyLevel, ReturnSceneName, eventZoneId))
         {
             context.ClearSimulation();
             error = "CombatContext.BeginSimulation이 실패했습니다.";

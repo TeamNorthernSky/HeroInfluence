@@ -838,6 +838,12 @@ public class EnemySpawner : MonoBehaviour
     public void ScheduleCorpseRemoval(BattleCharactor bc, int gridNumber)
     {
         if (bc == null || bc.IsPlayer) return;   // 플레이어 방어(정상적으론 적만 구독)
+        // 율리아 시체는 보스 사망 연출이 유지·퇴장 시점을 직접 관리한다.
+        if (bc.TryGetComponent(out YuliaStasisVfx yuliaDeath) && yuliaDeath.isActiveAndEnabled)
+        {
+            DisableCorpseInteraction(bc.gameObject);
+            return;
+        }
         StartCoroutine(RemoveCorpseAfter(bc, gridNumber, _corpseRemovalDelay));
     }
 

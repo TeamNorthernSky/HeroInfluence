@@ -86,7 +86,7 @@ public class TurnManager : MonoBehaviour
 
     public void EndPlayerTurn()
     {
-        if (DHGameEndState.IsEnding || enemyTurnRunning || completingTurn || pendingEnemyTurnStartCoroutine != null)
+        if (DHGameEndState.IsEnding || GateCameraFocusController.IsBusy || enemyTurnRunning || completingTurn || pendingEnemyTurnStartCoroutine != null)
             return;
 
         ClearAutomaticEndTurn();

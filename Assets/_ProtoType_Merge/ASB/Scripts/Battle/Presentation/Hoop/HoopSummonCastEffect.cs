@@ -57,12 +57,12 @@ public sealed class HoopSummonCastEffect : MonoBehaviour, ISkillEffectBehaviour,
     [SerializeField, Min(.01f)] private float splitTravelSeconds = .17f;
     [Tooltip("도착한 에너지가 바닥 링으로 펴지는 시간. 시뮬레이션 0.083.")]
     [SerializeField, Min(.01f)] private float ringMorphSeconds = .083f;
-    [Tooltip("구체가 튄 뒤 링이 남아 있는 시간. 시뮬레이션 0.25.")]
-    [SerializeField, Min(0f)] private float ringHoldSeconds = .25f;
+    [Tooltip("굴렁쇠가 나타난 뒤 바닥 링이 함께 보이는 시간.")]
+    [SerializeField, Min(0f)] private float ringHoldSeconds = .6f;
     [Tooltip("링 소거 시간. 시뮬레이션 0.15.")]
     [SerializeField, Min(.01f)] private float ringFadeSeconds = .15f;
-    [Tooltip("링 완성 뒤 굴렁쇠 생성을 기다리는 최대 시간. 넘으면 링만 소거한다.")]
-    [SerializeField, Min(.1f)] private float releaseTimeoutSeconds = 2f;
+    [Tooltip("소환 완료 알림이 오지 않을 때 링을 정리하는 안전 시간.")]
+    [SerializeField, Min(.1f)] private float releaseTimeoutSeconds = 10f;
     [Tooltip("집결 원본의 방출 시각(초). 시뮬레이션 2.7.")]
     [SerializeField, Min(.1f)] private float gatherNativeBurstSeconds = 2.7f;
     [Tooltip("시전 시작부터 방출까지 예상 시간. 집결 입자 속도 = 원본 방출 시각 ÷ 이 값.")]
@@ -91,6 +91,8 @@ public sealed class HoopSummonCastEffect : MonoBehaviour, ISkillEffectBehaviour,
     private bool _orbiting;
     private bool _playing;
     private bool _splitRequested;
+    private BattleCharactor _caster;
+    private bool _summonCompleted;
     private int _openTiles;
 
     /// <summary>굴렁쇠 외형이 생길 때 호출: 이 칸으로 소환 에너지가 오는 중이면 등록하고 true(외형은 숨긴 채 기다린다).</summary>
@@ -111,17 +113,34 @@ public sealed class HoopSummonCastEffect : MonoBehaviour, ISkillEffectBehaviour,
         return false;
     }
 
+    /// <summary>시전 후 실제 소환이 끝났음을 알린다. 미소환 칸만 정리하고, 소환된 칸은 굴렁쇠가 보인 뒤 링을 접는다.</summary>
+    internal static void NotifySummonCompleted(BattleCharactor caster)
+    {
+        if (caster == null) return;
+        for (int i = Active.Count - 1; i >= 0; i--)
+        {
+            HoopSummonCastEffect effect = Active[i];
+            if (effect == null)
+            {
+                Active.RemoveAt(i);
+                continue;
+            }
+            if (effect._caster == caster) effect._summonCompleted = true;
+        }
+    }
+
     public void Play(SkillEffectContext ctx)
     {
         if (_playing) return;
         _playing = true;
+        _caster = ctx?.Caster;
 
         // held Cue라 손 소켓에 붙어 생성된다. 에너지는 월드에서 움직이므로 떼어 내고 손 위치만 따라간다.
         transform.SetParent(null, true);
         _hand = ctx?.SocketTransform;
         _energyCenter = ResolveEnergyCenter();
 
-        CollectTiles(ctx?.Caster);
+        CollectTiles(_caster);
         if (_tiles.Count == 0 || orbPrefab == null)
         {
             Destroy(gameObject);
@@ -268,11 +287,14 @@ public sealed class HoopSummonCastEffect : MonoBehaviour, ISkillEffectBehaviour,
     private IEnumerator RunTile(Tile tile)
     {
         float waited = 0f;
-        while (tile.Visual == null && waited < releaseTimeoutSeconds)
+        while (tile.Visual == null && !_summonCompleted && waited < releaseTimeoutSeconds)
         {
             waited += Dt();
             yield return null;
         }
+
+        // OnPostExecution에서 Instantiate한 유닛의 Start가 다음 프레임에 호출되므로 등록 기회를 준다.
+        if (_summonCompleted && tile.Visual == null) yield return null;
 
         if (tile.Visual != null)
         {

@@ -25,6 +25,9 @@ public sealed class EventBattlePlanBuilderTests
     // DHScene_3 DataStorage의 2구역 이벤트 전투 유닛 테이블(굴렁쇠 소환 데이터 출처).
     private const string BetaZone2UnitTablePath =
         "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I 베타 2구역 이벤트 전투 테이블/EnemyUnit1SectorDataTable.asset";
+    // 같은 구역의 이벤트 전투 그룹 테이블(율리아 보스전 BE490 출처).
+    private const string BetaZone2GroupTablePath =
+        "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I 베타 2구역 이벤트 전투 테이블/EnemyGroupDataTable.asset";
 
     [Test]
     public void GuardSkill_EventAndCatalogKeysResolveToSameHandler()
@@ -162,6 +165,84 @@ public sealed class EventBattlePlanBuilderTests
         }
     }
 
+    // 모의전투 율리아전은 4구역 카탈로그 대신 실게임과 같은 베타 2구역 이벤트 전투(BE490)를 키-빌드한다.
+    [Test]
+    public void SimulationValidateEnemy_Be490FromBetaZone2EventTable()
+    {
+        object previous = GetCatalogInstance();
+        var host = new GameObject("EventScriptCatalog_Test");
+        try
+        {
+            CreateCatalogFixture(host, 2, BetaZone2UnitTablePath, BetaZone2GroupTablePath);
+
+            bool success = InvokeSimulationValidateEnemy("BE490", 2, 2, out string error);
+
+            Assert.That(success, Is.True, error);
+        }
+        finally
+        {
+            SetCatalogInstance(previous);
+            UnityEngine.Object.DestroyImmediate(host);
+        }
+    }
+
+    [Test]
+    public void SimulationValidateEnemy_EventZoneWithEmptyKey_Fails()
+    {
+        bool success = InvokeSimulationValidateEnemy("  ", 2, 1, out string error);
+
+        Assert.That(success, Is.False);
+        Assert.That(string.IsNullOrEmpty(error), Is.False);
+    }
+
+    // 이벤트 구역이 있으면 이벤트 전투로 등록하되, 복귀·저장 생략을 위해 모의전투 표시는 유지해야 한다.
+    [Test]
+    public void BeginSimulation_WithEventZone_RegistersEventBattleAndKeepsSimulation()
+    {
+        var host = new GameObject("CombatContext_Test");
+        try
+        {
+            Component context = host.AddComponent(FindRuntimeType("CombatContext"));
+
+            bool begun = InvokeBeginSimulation(context, "BE490", 2, "BattleSimulationScene", 2);
+
+            Assert.That(begun, Is.True);
+            Assert.That(GetMember(context, "IsSimulation"), Is.EqualTo(true));
+            Assert.That(GetMember(context, "HasEventBattle"), Is.EqualTo(true));
+            Assert.That(GetMember(context, "CombatEnemy"), Is.Null, "이벤트 전투로 등록하면 일반 적 데이터는 비어야 한다.");
+            object eventBattle = GetMember(context, "EventBattle");
+            Assert.That(GetMember(eventBattle, "ZoneId"), Is.EqualTo(2));
+            Assert.That(GetMember(eventBattle, "BattleKey"), Is.EqualTo("BE490"));
+            Assert.That(GetMember(eventBattle, "EnemyLevel"), Is.EqualTo(2));
+            Assert.That(GetMember(context, "ReturnSceneName"), Is.EqualTo("BattleSimulationScene"));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host);
+        }
+    }
+
+    [Test]
+    public void BeginSimulation_WithoutEventZone_RegistersEnemyGroup()
+    {
+        var host = new GameObject("CombatContext_Test");
+        try
+        {
+            Component context = host.AddComponent(FindRuntimeType("CombatContext"));
+
+            bool begun = InvokeBeginSimulation(context, "A2FEP001", 1, "BattleSimulationScene", 0);
+
+            Assert.That(begun, Is.True);
+            Assert.That(GetMember(context, "IsSimulation"), Is.EqualTo(true));
+            Assert.That(GetMember(context, "HasEventBattle"), Is.EqualTo(false));
+            Assert.That(GetMember(GetMember(context, "CombatEnemy"), "EnemyGroupKey"), Is.EqualTo("A2FEP001"));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host);
+        }
+    }
+
     /// <summary>
     /// §9-1 동등성 스냅샷(UnitKey/슬롯/레벨, HP/ATK/DEF/경험치+전투스탯, PrefabKey/SourceUnitKey,
     /// 스킬 개수·순서·전체 필드 / BE002~BE005)는
@@ -247,8 +328,37 @@ public sealed class EventBattlePlanBuilderTests
         return success;
     }
 
+    private static bool InvokeSimulationValidateEnemy(
+        string enemyGroupKey, int eventZoneId, int enemyLevel, out string error)
+    {
+        MethodInfo method = FindRuntimeType("SimulationUnitFactory").GetMethod(
+            "ValidateEnemy", BindingFlags.Public | BindingFlags.Static);
+        Assert.That(method, Is.Not.Null, "SimulationUnitFactory.ValidateEnemy 를 찾지 못했습니다.");
+
+        object[] args = { enemyGroupKey, eventZoneId, enemyLevel, null };
+        bool success = (bool)method.Invoke(null, args);
+        error = args[3] as string ?? string.Empty;
+        return success;
+    }
+
+    // 아군 한 명(내용 없는 UnitPersistentData)으로 CombatContext.BeginSimulation을 호출한다.
+    private static bool InvokeBeginSimulation(
+        Component context, string enemyGroupKey, int enemyLevel, string returnScene, int eventZoneId)
+    {
+        Type allyType = FindRuntimeType("SimulationAllyRuntimeData");
+        object unitData = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(
+            FindRuntimeType("UnitPersistentData"));
+        object ally = Activator.CreateInstance(allyType, 900000001, unitData);
+        var allies = (IList)Activator.CreateInstance(typeof(System.Collections.Generic.List<>).MakeGenericType(allyType));
+        allies.Add(ally);
+
+        MethodInfo method = context.GetType().GetMethod("BeginSimulation", BindingFlags.Public | BindingFlags.Instance);
+        Assert.That(method, Is.Not.Null, "CombatContext.BeginSimulation 을 찾지 못했습니다.");
+        return (bool)method.Invoke(context, new object[] { "SIM_TEST", allies, enemyGroupKey, enemyLevel, returnScene, eventZoneId });
+    }
+
     // EditMode에서는 Awake가 돌지 않으므로 구역 하나만 채운 카탈로그를 만들고 Instance를 직접 지정한다.
-    private static void CreateCatalogFixture(GameObject host, int zoneId, string unitTablePath)
+    private static void CreateCatalogFixture(GameObject host, int zoneId, string unitTablePath, string groupTablePath = null)
     {
         var unitTable = AssetDatabase.LoadAssetAtPath<ScriptableObject>(unitTablePath);
         Assert.That(unitTable, Is.Not.Null, $"테이블 에셋을 찾지 못했습니다: {unitTablePath}");
@@ -258,6 +368,12 @@ public sealed class EventBattlePlanBuilderTests
         object zone = Activator.CreateInstance(zoneType);
         zoneType.GetField("zoneId").SetValue(zone, zoneId);
         zoneType.GetField("enemyBattleUnitTable").SetValue(zone, unitTable);
+        if (!string.IsNullOrEmpty(groupTablePath))
+        {
+            var groupTable = AssetDatabase.LoadAssetAtPath<ScriptableObject>(groupTablePath);
+            Assert.That(groupTable, Is.Not.Null, $"테이블 에셋을 찾지 못했습니다: {groupTablePath}");
+            zoneType.GetField("enemyBattleGroupTable").SetValue(zone, groupTable);
+        }
         var zones = (IList)CatalogType.GetField("zones", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(catalog);
         zones.Add(zone);
 

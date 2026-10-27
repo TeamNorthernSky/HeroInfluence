@@ -99,6 +99,42 @@ public static class SimulationUnitFactory
         return true;
     }
 
+    /// <summary>eventZoneId가 1 이상이면 이벤트 전투 키로, 아니면 일반 적 그룹으로 검사한다.</summary>
+    public static bool ValidateEnemy(string enemyGroupKey, int eventZoneId, int enemyLevel, out string error)
+    {
+        return eventZoneId > 0
+            ? ValidateEventBattle(eventZoneId, enemyGroupKey, enemyLevel, out error)
+            : ValidateEnemyGroup(enemyGroupKey, out error);
+    }
+
+    /// <summary>
+    /// 전투 씬과 같은 이벤트 전투 키-빌드를 미리 돌려 본다(구역 테이블·시나리오 검증 포함, 결과 플랜은 버린다).
+    /// 프리팹은 실게임 이벤트 전투처럼 전투 씬 EnemySpawner가 최종 확인한다.
+    /// </summary>
+    public static bool ValidateEventBattle(int zoneId, string battleKey, int enemyLevel, out string error)
+    {
+        string key = string.IsNullOrWhiteSpace(battleKey) ? string.Empty : battleKey.Trim();
+        if (string.IsNullOrEmpty(key))
+        {
+            error = "Event battle key is empty.";
+            return false;
+        }
+
+        if (!EnemySpawnPlanBuilder.TryBuildFromEventBattleKey(zoneId, key, enemyLevel, out EnemySpawnPlan plan, out error))
+        {
+            error = $"Event battle could not be built. Zone={zoneId}, Battle='{key}', {error}";
+            return false;
+        }
+
+        if (plan == null || plan.Count == 0)
+        {
+            error = $"Event battle has no enemies. Zone={zoneId}, Battle='{key}'";
+            return false;
+        }
+
+        return true;
+    }
+
     public static bool ValidateEnemyGroup(string enemyGroupKey, out string error)
     {
         error = string.Empty;

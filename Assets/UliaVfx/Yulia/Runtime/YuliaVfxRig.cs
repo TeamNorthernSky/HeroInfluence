@@ -19,7 +19,7 @@ namespace UliaVfx {
   public event Action<DespairRingVfx[]> Summoned;
   public event Action ShieldGenerated;
   Transform owned;GameObject idle;Coroutine generation;
-  void Awake(){if(shield){shield.playOnEnable=false;shield.previewKeys=false;}if(shieldHit)shieldHit.playOnEnable=false;}
+  void Awake(){if(shield)shield.playOnEnable=false;if(shieldHit)shieldHit.playOnEnable=false;}
   public void Bind(Transform actor,Animator animator,Transform hand,Transform center,float height,Camera camera=null){
    if(!actor||!animator||!hand||!center||height<=0)throw new ArgumentException("Assign actor, Animator, hand socket, shield center and positive character height.");
    unit=actor;actorAnimator=animator;handSocket=hand;shieldCenter=center;characterHeight=height;effectCamera=camera;shieldHit.effectCamera=camera;

@@ -197,7 +197,8 @@ namespace ASB.Work.EditorTools.Jig
         {
             if (SoundEnabled && f.SfxClip != null) PlayClip(f.SfxClip);
 
-            // 사운드 — 앵커 무관(2D). Held는 수집 단계에서 이미 제외됨.
+            // SoundIds 미리보기는 ID를 AudioClip으로 변환하는 경로가 없어 비활성화한다.
+            /*
             if (false)
             {
                 for (int i = 0; i < f.SoundIds.Count; i++)
@@ -206,6 +207,7 @@ namespace ASB.Work.EditorTools.Jig
                     if (clip != null) PlayClip(clip);
                 }
             }
+            */
 
             // 이펙트 — Caster/CasterSocket 앵커만(Target 계열은 스킵, 사운드만 재생됨).
             if (EffectEnabled && EffectRegistry != null && f.EffectIds != null && IsSpawnAnchor(f.Anchor))

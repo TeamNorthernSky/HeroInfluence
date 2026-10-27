@@ -63,7 +63,7 @@ MonoBehaviour:
   _lineCount: 2
   _lineSpacing: 0.25
   _endExtension: 2.5
-  _startExtension: 0.5
+  _startExtension: 1
   _targetSideOnly: 1
   _height: 0.8
   _widthRatio: 0.6

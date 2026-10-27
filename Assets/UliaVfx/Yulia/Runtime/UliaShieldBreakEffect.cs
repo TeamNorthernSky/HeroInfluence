@@ -9,14 +9,11 @@ namespace UliaVfx
   public GameObject shieldPrefab, impactPrefab;
   public Shader holdShader, peelShader;
   public bool playOnEnable=true;
-  [Tooltip("Enable only in a recording preview, not in gameplay.")]
-  public bool previewKeys;
   public float diameter=2.473502f, leadIn=1.5f, peelSeconds=1.05f;
   public Vector3 localImpactDirection=Vector3.back;
   GameObject shieldRoot, effects;
   Material holdMaterial, shellMaterial, shardMaterial;
   readonly List<Mesh> meshes=new List<Mesh>();
-  bool busy;
   struct Shard { public Transform tr; public Vector3 start, normal, axis; public float trigger; }
   void OnEnable() { if(Application.isPlaying && playOnEnable && shieldPrefab && holdShader && peelShader) Replay(); }
   [ContextMenu("Replay Shield Disappearance")]
@@ -81,14 +78,9 @@ namespace UliaVfx
    renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
    renderer.receiveShadows=false;
   }
-  void Update() {
-   if(!previewKeys) return;
-   if(false) ShowHold();
-   if(false && !busy) Replay();
-  }
   public void Hide() { Clear(); }
   void Clear() {
-   StopAllCoroutines(); busy=false;
+   StopAllCoroutines();
    if(shieldRoot) { shieldRoot.SetActive(false); Destroy(shieldRoot); }
    if(effects) { effects.SetActive(false); Destroy(effects); }
    if(holdMaterial) Destroy(holdMaterial);
@@ -98,7 +90,6 @@ namespace UliaVfx
    meshes.Clear();
   }
   IEnumerator Sequence() {
-   busy=true;
    yield return new WaitForSecondsRealtime(leadIn);
    var root=shieldRoot.transform;
    var rim=root.Find("Soft_Purple_Shield_Rim");
@@ -165,7 +156,6 @@ namespace UliaVfx
    }
    effects.SetActive(false);
    root.gameObject.SetActive(false);
-   busy=false;
    Debug.Log("[Yulia saved shield break] Front impact, shell peel and 24 fragments completed.");
   }
   Mesh Patch(Vector3 n,float radius,float width) {

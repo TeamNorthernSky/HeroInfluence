@@ -18,7 +18,7 @@ using UnityEngine;
 /// 하나라도 부활하면 다시 나타난다. 율리아가 죽어도 줄어들며 사라진다.
 /// [2026-10-23 변경] 같은 조건(증폭기 하나라도 생존)의 피해 무효가 생겼다. 판정은 EncounterParticipantImmunity가 하고, 막은 그 상태를 보여 주는 연출이다.
 /// </para>
-/// 이 컴포넌트는 피해 규칙을 바꾸지 않는다.
+/// 전투 중 피해 규칙은 바꾸지 않는다. 율리아 사망 시에는 부속 유닛의 퇴장과 시체 연출을 조율한다.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(BattleCharactor))]
@@ -33,14 +33,30 @@ public sealed class YuliaStasisVfx : MonoBehaviour
     [Tooltip("증폭기 전멸·율리아 사망 시 막이 줄어들며 사라지는 시간(전투 배속 기준 초).")]
     [SerializeField, Min(0f)] private float shieldDismissSeconds = 0.3f;
 
+    [Header("Boss death presentation")]
+    [Tooltip("율리아가 쓰러진 뒤 증폭기와 굴렁쇠가 파괴되기까지의 짧은 간격(초).")]
+    [SerializeField, Min(0f)] private float companionBreakLeadSeconds = 0.25f;
+    [Tooltip("증폭기와 굴렁쇠의 사망 이펙트가 재생된 뒤 잔해를 정리하기까지의 시간(초).")]
+    [SerializeField, Min(0f)] private float companionBreakSeconds = 1.1f;
+    [Tooltip("Dead 애니메이션 종료 뒤 율리아 시체를 보여 주는 시간(초).")]
+    [SerializeField, Min(0f)] private float corpseHoldSeconds = 2f;
+    [Tooltip("율리아 시체가 작아지며 사라지는 시간(초).")]
+    [SerializeField, Min(0f)] private float corpseDisappearSeconds = 0.45f;
+    [Tooltip("Dead 애니메이션 상태를 확인할 수 없을 때 결과창이 막히지 않도록 하는 대기 상한(초).")]
+    [SerializeField, Min(0.1f)] private float deathAnimationTimeoutSeconds = 2.5f;
+
     private BattleCharactor _boss;
     private readonly List<BattleCharactor> _amplifiers = new List<BattleCharactor>();
     private GameObject _shield;
     private UliaVfx.YuliaVfxRig _productionShield;
     private bool _initialShieldGenerated;
     private bool _stasis;
+    private bool _deathPresentationStarted;
+    private bool _deathPresentationComplete;
 
     public bool IsInStasis => _stasis;
+    public bool IsDeathPresentationStarted => _deathPresentationStarted;
+    public bool IsDeathPresentationComplete => _deathPresentationComplete;
 
     public void PlayShieldHit(Vector3 attackerPosition)
     {
@@ -73,6 +89,7 @@ public sealed class YuliaStasisVfx : MonoBehaviour
     {
         _boss.OnDied -= HandleDied;
         UnbindAmplifiers();
+        if (_deathPresentationStarted) _deathPresentationComplete = true;
     }
 
     // 증폭기 사망(HP 0)·부활(HP 복귀)은 모두 OnHpChanged로 들어온다. 시체는 남아 있어 같은 오브젝트를 계속 본다.
@@ -176,10 +193,76 @@ public sealed class YuliaStasisVfx : MonoBehaviour
 
     private void HandleDied(BattleCharactor _)
     {
-        // 율리아 처치는 즉시 승리. 막을 정리한다.
+        if (_deathPresentationStarted) return;
+        // 승리 판정은 즉시 확정하고, 화면 전환만 사망 연출 완료까지 기다린다.
         _stasis = false;
         DismissCurrentShield();
         UnbindAmplifiers();
+        _deathPresentationStarted = true;
+        _deathPresentationComplete = false;
+        StartCoroutine(PlayDeathPresentation());
+    }
+
+    private IEnumerator PlayDeathPresentation()
+    {
+        // 이미 쓰러져 시체로 남은 증폭기도 포함한다. 다른 전투 씬의 유닛은 건드리지 않는다.
+        var companions = new List<BattleCharactor>();
+        foreach (BattleCharactor unit in FindObjectsByType<BattleCharactor>(FindObjectsSortMode.None))
+        {
+            if (unit == null || unit == _boss || unit.IsPlayer || unit.gameObject.scene != gameObject.scene)
+                continue;
+            if (unit.TemplateIndex != "40002" && unit.TemplateIndex != "40003" && unit.TemplateIndex != "40005")
+                continue;
+
+            companions.Add(unit);
+        }
+
+        if (companionBreakLeadSeconds > 0f) yield return new WaitForSeconds(companionBreakLeadSeconds);
+
+        foreach (BattleCharactor unit in companions)
+        {
+            if (unit == null) continue;
+            if (unit.IsDead) continue;
+            // 일반 사망 경로를 사용해야 증폭기 연기와 굴렁쇠 파괴 이펙트가 재생된다.
+            unit.CanBeIncapacitated = false;
+            unit.TakeDamage(Mathf.Max(1f, unit.CurrentHp));
+        }
+
+        if (companionBreakSeconds > 0f) yield return new WaitForSeconds(companionBreakSeconds);
+
+        BattleFlowManager flow = FindFirstObjectByType<BattleFlowManager>();
+        foreach (BattleCharactor unit in companions)
+        {
+            if (unit == null) continue;
+            flow?.RemoveUnit(unit, refreshQueue: false);
+            Destroy(unit.gameObject);
+        }
+
+        // 죽음 포즈가 끝나기 전에 시체가 사라지지 않도록 기다리되, 누락된 클립은 상한으로 처리한다.
+        float animationWait = 0f;
+        while (_boss != null && animationWait < deathAnimationTimeoutSeconds)
+        {
+            CharactorAnimationController animation = _boss.Anim;
+            if (animation == null || (animation.IsInState("Dead") && animation.IsStateNearEnd("Dead", 0.95f)))
+                break;
+            animationWait += Time.deltaTime;
+            yield return null;
+        }
+
+        if (corpseHoldSeconds > 0f) yield return new WaitForSeconds(corpseHoldSeconds);
+
+        Vector3 originalScale = transform.localScale;
+        for (float t = 0f; t < corpseDisappearSeconds; t += Time.deltaTime)
+        {
+            float progress = Mathf.Clamp01(t / corpseDisappearSeconds);
+            transform.localScale = originalScale * DismissScale(progress);
+            yield return null;
+        }
+
+        // 루트는 결과 화면 전환까지 유지해 승리 조건의 사망 참조와 대기 신호를 보존한다.
+        transform.localScale = Vector3.zero;
+        _deathPresentationComplete = true;
+        gameObject.SetActive(false);
     }
 
     private void DismissCurrentShield()

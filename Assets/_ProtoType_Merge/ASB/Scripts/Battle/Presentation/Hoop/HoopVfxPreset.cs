@@ -80,6 +80,8 @@ public sealed class HoopVfxPreset : ScriptableObject
     [Range(0f, 1f)] public float dashArcLag = .35f;
 
     [Header("Summon Burst (율리아 소환 연출로 나타날 때, HoopSummonCastEffect)")]
+    [Tooltip("소환 에너지가 방출될 때 작은 구체에서 원래 크기로 나타나는 시간(전투 배속 기준 초).")]
+    [Min(.05f)] public float summonRevealSeconds = .35f;
     [Tooltip("소환 순간 구체가 튀는 최대 크기 배율. 시뮬레이션 1.22.")]
     [Range(1f, 1.5f)] public float summonBurstPeak = 1.22f;
     [Tooltip("최대 크기까지 커지는 시간(전투 배속 기준 초). 시뮬레이션 0.045.")]

@@ -24,6 +24,81 @@ public sealed class YuliaBossVictoryPlayModeTests
     }
 
     [UnityTest]
+    public IEnumerator BossDeathPresentation_BreaksCompanionsBeforeHidingCorpse()
+    {
+        Type flowType = FindRuntimeType("BattleFlowManager");
+        Type unitType = FindRuntimeType("BattleCharactor");
+        Type presentationType = FindRuntimeType("YuliaStasisVfx");
+        Type spawnerType = FindRuntimeType("EnemySpawner");
+        GameObject flowObject = new GameObject("YuliaDeathFlow");
+        GameObject spawnerObject = new GameObject("YuliaDeathSpawner");
+        GameObject playerObject = new GameObject("YuliaDeathPlayer");
+        GameObject bossObject = new GameObject("YuliaDeathBoss");
+        GameObject amplifierObject = new GameObject("YuliaDeathAmplifier");
+        GameObject secondAmplifierObject = new GameObject("YuliaDeathSecondAmplifier");
+        GameObject wheelObject = new GameObject("YuliaDeathWheel");
+        try
+        {
+            RegisterContext(eventBattle: false);
+            Component flow = flowObject.AddComponent(flowType);
+            Component spawner = spawnerObject.AddComponent(spawnerType);
+            Component player = CreateUnit(playerObject, unitType, true, "10001");
+            Component boss = CreateUnit(bossObject, unitType, false, "40001");
+            BoxCollider bossCollider = bossObject.AddComponent<BoxCollider>();
+            Component amplifier = CreateUnit(amplifierObject, unitType, false, "40002");
+            Component secondAmplifier = CreateUnit(secondAmplifierObject, unitType, false, "40003");
+            Component wheel = CreateUnit(wheelObject, unitType, false, "40005");
+            Component presentation = bossObject.AddComponent(presentationType);
+            presentationType.GetField("companionBreakLeadSeconds", InstanceMembers).SetValue(presentation, 0.05f);
+            presentationType.GetField("companionBreakSeconds", InstanceMembers).SetValue(presentation, 0.1f);
+            presentationType.GetField("deathAnimationTimeoutSeconds", InstanceMembers).SetValue(presentation, 0.1f);
+            presentationType.GetField("corpseHoldSeconds", InstanceMembers).SetValue(presentation, 0.15f);
+            presentationType.GetField("corpseDisappearSeconds", InstanceMembers).SetValue(presentation, 0.05f);
+            InitializeFlow(flow, flowType, unitType, player, boss, amplifier, secondAmplifier, wheel);
+
+            unitType.GetMethod("TakeDamage").Invoke(boss, new object[] { 1000f });
+            spawnerType.GetMethod("ScheduleCorpseRemoval").Invoke(spawner, new object[] { boss, 0 });
+            Assert.That((bool)presentationType.GetProperty("IsDeathPresentationStarted").GetValue(presentation), Is.True);
+            Assert.That((bool)presentationType.GetProperty("IsDeathPresentationComplete").GetValue(presentation), Is.False);
+            Assert.That(bossObject.activeSelf, Is.True, "굴렁쇠와 증폭기 파괴 중에는 율리아 시체가 남아야 한다.");
+            Assert.That(bossCollider.enabled, Is.False, "시체를 유지하는 동안 상호작용은 막아야 한다.");
+            Assert.That((bool)unitType.GetProperty("IsDead").GetValue(amplifier), Is.False,
+                "율리아의 사망이 먼저 보인 뒤 증폭기가 파괴되어야 한다.");
+
+            float companionDeadline = Time.realtimeSinceStartup + 1f;
+            while (!(bool)unitType.GetProperty("IsDead").GetValue(wheel)
+                && Time.realtimeSinceStartup < companionDeadline)
+                yield return null;
+
+            Assert.That((bool)unitType.GetProperty("IsDead").GetValue(amplifier), Is.True);
+            Assert.That((bool)unitType.GetProperty("IsDead").GetValue(secondAmplifier), Is.True);
+            Assert.That((bool)unitType.GetProperty("IsDead").GetValue(wheel), Is.True);
+
+            float deadline = Time.realtimeSinceStartup + 3f;
+            while (!(bool)presentationType.GetProperty("IsDeathPresentationComplete").GetValue(presentation)
+                && Time.realtimeSinceStartup < deadline)
+                yield return null;
+
+            Assert.That((bool)presentationType.GetProperty("IsDeathPresentationComplete").GetValue(presentation), Is.True);
+            Assert.That(amplifierObject == null, Is.True, "증폭기 시체도 제거되어야 한다.");
+            Assert.That(secondAmplifierObject == null, Is.True, "두 번째 증폭기 시체도 제거되어야 한다.");
+            Assert.That(wheelObject == null, Is.True, "굴렁쇠도 제거되어야 한다.");
+            Assert.That(bossObject.activeSelf, Is.False, "마지막에 율리아 시체가 사라져야 한다.");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(flowObject);
+            UnityEngine.Object.DestroyImmediate(spawnerObject);
+            UnityEngine.Object.DestroyImmediate(playerObject);
+            UnityEngine.Object.DestroyImmediate(bossObject);
+            UnityEngine.Object.DestroyImmediate(amplifierObject);
+            UnityEngine.Object.DestroyImmediate(secondAmplifierObject);
+            UnityEngine.Object.DestroyImmediate(wheelObject);
+            ClearContext();
+        }
+    }
+
+    [UnityTest]
     public IEnumerator DeadBossStateWinsEvenWhenDeathNotificationWasMissed()
     {
         Type flowType = FindRuntimeType("BattleFlowManager");

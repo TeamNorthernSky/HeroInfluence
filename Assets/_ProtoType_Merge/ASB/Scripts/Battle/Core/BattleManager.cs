@@ -19,8 +19,8 @@ public class BattleManager : MonoBehaviour
     public event Action<string> OnActionExecuted;
     public event Action<SkillResolutionContext> OnSkillResolved;
 
-    /// <summary>UI 등 외부에서 배속 변경을 요청할 때 발생시킵니다. AutoBattleController.OnAutoBattleToggleRequested와 동일한 패턴.</summary>
-    public static event Action<float> OnBattleSpeedChangeRequested;
+    // 미사용 이벤트 경로 보존: UI는 ChangeBattleSpeed를 직접 호출한다.
+    // public static event Action<float> OnBattleSpeedChangeRequested;
 
     internal const int ClassSkillEffect_Damage = 0;
     internal const int ClassSkillEffect_Heal = 1;
@@ -121,7 +121,7 @@ public class BattleManager : MonoBehaviour
             battleFlowManager = FindObjectOfType<BattleFlowManager>();
         }
 
-        OnBattleSpeedChangeRequested += ChangeBattleSpeed;
+        // OnBattleSpeedChangeRequested += ChangeBattleSpeed;
         ChangeBattleSpeed(BattleRuntimeSettings.BattleSpeed);
     }
 
@@ -224,7 +224,7 @@ public class BattleManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        OnBattleSpeedChangeRequested -= ChangeBattleSpeed;
+        // OnBattleSpeedChangeRequested -= ChangeBattleSpeed;
 
         if (Instance == this)
         {

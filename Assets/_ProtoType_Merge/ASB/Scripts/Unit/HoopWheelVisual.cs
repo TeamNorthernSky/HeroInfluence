@@ -28,6 +28,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
     private const float WheelHeight = .72f;
     private const float WheelFloorClearance = .2f;
     private const float SummonDropDistance = .7f;
+    private const float SummonRevealStartScale = .15f;
     private const float SpinDegreesPerSecond = 35f;
     private const float SummonRevealTimeoutSeconds = 4f;
     private const float PortalLift = .02f;
@@ -131,7 +132,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
         }
     }
 
-    /// <summary>율리아 소환 연출이 이 칸의 에너지를 터뜨린 순간: 대기 높이에서 바로 나타나 한 번 튄다.</summary>
+    /// <summary>율리아 소환 에너지가 터지면 작은 구체에서 서서히 드러난 뒤 한 번 튄다.</summary>
     internal void RevealFromSummon()
     {
         if (!_awaitingSummonReveal) return;
@@ -139,8 +140,12 @@ public sealed class HoopWheelVisual : MonoBehaviour
         if (!_built || _deadVisual || owner == null || owner.IsDead) return;
 
         _spawnElapsed = preset.summonSeconds;   // 솟아오르기 없이 대기 높이에서 시작
+        float y = _wheelHeight + Mathf.Sin(_spawnElapsed * Mathf.PI * 2f / preset.hoverPeriodSeconds) * preset.hoverHeight;
+        if (preset.wheelVisualPrefab != null) y = Mathf.Max(y, preset.wheelVisualRadius + WheelFloorClearance);
+        _wheel.localPosition = Vector3.up * y; // 첫 프레임에 아래 위치에서 대기 높이로 튀지 않게 한다.
+        _wheel.localScale = Vector3.one * SummonRevealStartScale;
         _wheel.gameObject.SetActive(true);
-        // 연속 방출이 차오르길 기다리지 않도록 GPU 입자를 미리 1초 진행한다(시뮬레이션 BurstReadyOrb).
+        // 소량만 미리 채우고 이후 입자는 자연스럽게 쌓이게 한다. 1초치를 한 프레임에 시뮬레이션하지 않는다.
         _wheel.GetComponentsInChildren(true, _flashEffects);
         for (int i = 0; i < _flashEffects.Count; i++)
         {
@@ -148,14 +153,24 @@ public sealed class HoopWheelVisual : MonoBehaviour
             if (effect == null || !effect.enabled) continue;
             effect.Reinit();
             effect.Play();
-            effect.Simulate(1f / 60f, 60);
+            effect.Simulate(1f / 60f, 12);
         }
         UnitSfxProfile.Play(owner, UnitSfxEvent.Summon);
         if (isActiveAndEnabled) _summonBurst = StartCoroutine(SummonBurst());
+        else _wheel.localScale = Vector3.one;
     }
 
     private IEnumerator SummonBurst()
     {
+        float reveal = Mathf.Max(.01f, preset.summonRevealSeconds);
+        for (float t = 0f; t < reveal; t += Time.deltaTime * BattleSpeed())
+        {
+            float p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / reveal));
+            _wheel.localScale = Vector3.one * Mathf.Lerp(SummonRevealStartScale, 1f, p);
+            yield return null;
+        }
+
+        _wheel.localScale = Vector3.one;
         float rise = preset.summonBurstRiseSeconds;
         float settle = preset.summonBurstSettleSeconds;
         for (float t = 0f; t < rise + settle; t += Time.deltaTime * BattleSpeed())

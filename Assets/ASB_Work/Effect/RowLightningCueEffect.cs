@@ -119,6 +119,9 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
     private MaterialPropertyBlock _mpb;
     private float _speed = 1f;
     private float _halfWidth = -1f;   // < 0 = 머티리얼 값 유지
+    private bool _nativeStormPlaying;
+
+    private void OnDisable() => _nativeStormPlaying = false;
 
     public void Play(SkillEffectContext ctx)
     {
@@ -161,6 +164,7 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
 
     private IEnumerator RunNativeStorm(SkillEffectContext ctx, Vector3 center)
     {
+        _nativeStormPlaying = true;
         GameObject strike = Instantiate(_nativeStormPrefab, center + Vector3.up * 0.02f,
             _nativeStormPrefab.transform.rotation, transform);
         strike.transform.localScale = _nativeStormPrefab.transform.localScale;
@@ -179,9 +183,59 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
 
         PresentationSfxEvents.PlayEffectImpact(ctx?.Presentation, 0);
         SpawnShocks(ctx);
+        SustainStormHitAnimations(ctx?.Targets);
         yield return Wait(2f);
         while (_shocks.Exists(shock => shock != null)) yield return null;
+        _nativeStormPlaying = false;
         Destroy(gameObject);
+    }
+
+    // 첫 피해의 Hit/넉백은 전투 파이프라인이 한 번만 실행한다. 이후에는 폭풍이 살아 있는 동안
+    // Animator의 Hit 포즈만 이어 붙여 피해·피격음·넉백을 다시 발생시키지 않는다.
+    private void SustainStormHitAnimations(IReadOnlyList<BattleCharactor> targets)
+    {
+        if (targets == null) return;
+        var seen = new HashSet<BattleCharactor>();
+        for (int i = 0; i < targets.Count; i++)
+        {
+            BattleCharactor target = targets[i];
+            if (target != null && seen.Add(target)) StartCoroutine(SustainStormHitAnimation(target));
+        }
+    }
+
+    private IEnumerator SustainStormHitAnimation(BattleCharactor target)
+    {
+        // storm_lines와 Impact 마커가 같은 시각이다. 마커 실행 순서와 무관하게 실제 Hit 진입을 기다린다.
+        float waited = 0f;
+        while (_nativeStormPlaying && target != null && !target.IsDead && waited < .25f)
+        {
+            CharactorAnimationController controller = target.Anim;
+            Animator animator = controller != null ? controller.Animator : null;
+            if (animator != null && animator.isActiveAndEnabled && IsHitPlayingOrEntering(animator)) break;
+            waited += Time.deltaTime * _speed;
+            yield return null;
+        }
+
+        while (_nativeStormPlaying && target != null && !target.IsDead)
+        {
+            CharactorAnimationController controller = target.Anim;
+            Animator animator = controller != null ? controller.Animator : null;
+            if (animator == null || !animator.isActiveAndEnabled || !IsHitPlayingOrEntering(animator)) yield break;
+
+            AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
+            bool replay = animator.IsInTransition(0)
+                ? current.IsName("Hit") && animator.GetNextAnimatorStateInfo(0).IsName("Idle")
+                : current.IsName("Hit") && current.normalizedTime >= .85f;
+            if (replay) controller.PlayState("Hit", .03f);
+            yield return null;
+        }
+        // 마지막 Hit 클립은 자연스럽게 끝난다. 다른 동작이나 사망 애니메이션은 덮어쓰지 않는다.
+    }
+
+    private static bool IsHitPlayingOrEntering(Animator animator)
+    {
+        return animator.GetCurrentAnimatorStateInfo(0).IsName("Hit")
+            || (animator.IsInTransition(0) && animator.GetNextAnimatorStateInfo(0).IsName("Hit"));
     }
 
     private IEnumerator RunNativeTrajectory(SkillEffectContext ctx, Vector3 start, Vector3 end)

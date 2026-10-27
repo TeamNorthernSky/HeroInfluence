@@ -169,6 +169,7 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
         if (turnManager == null || !turnManager.isActiveAndEnabled || !turnManager.IsPlayerTurn ||
             turnManager.gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene() ||
             DHGameStateRestoreService.IsRestoring ||
+            GateCameraFocusController.IsBusy ||
             JC.Environment.JcDayNightController.IsTransitioning ||
             (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) ||
             (ChatManager.Instance != null && ChatManager.Instance.IsRunning) || ChatModalController.IsOpen ||

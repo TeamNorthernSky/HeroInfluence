@@ -22,7 +22,7 @@ MonoBehaviour:
     Enemy3: FV20002
     Enemy3Slot: 3
     Enemy4: FV20003
-    Enemy4Slot: 1
+    Enemy4Slot: 2
     Enemy5: FV200053
     Enemy5Slot: 5
     Enemy6: 
@@ -38,7 +38,7 @@ MonoBehaviour:
     Enemy3: FV20002
     Enemy3Slot: 3
     Enemy4: FV20003
-    Enemy4Slot: 1
+    Enemy4Slot: 2
     Enemy5: FV200053
     Enemy5Slot: 5
     Enemy6: 
@@ -54,7 +54,7 @@ MonoBehaviour:
     Enemy3: FV20002
     Enemy3Slot: 3
     Enemy4: FV20003
-    Enemy4Slot: 1
+    Enemy4Slot: 2
     Enemy5: FV200053
     Enemy5Slot: 5
     Enemy6: 
@@ -163,10 +163,10 @@ MonoBehaviour:
     Enemy1Slot: 1
     Enemy2: FV20001
     Enemy2Slot: 2
-    Enemy3: FV20007
-    Enemy3Slot: 5
-    Enemy4: 
-    Enemy4Slot: 0
+    Enemy3: FV20001
+    Enemy3Slot: 3
+    Enemy4: FV20007
+    Enemy4Slot: 5
     Enemy5: 
     Enemy5Slot: 0
     Enemy6: 

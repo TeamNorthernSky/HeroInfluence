@@ -20,7 +20,7 @@ namespace UliaVfx {
    ClearFill();var root=FindRestingRoot();if(!root)return;
    foreach(var source in root.GetComponentsInChildren<ParticleSystemRenderer>(true)){
     if(source.name!="shield_add"&&source.name!="shield_AB")continue;
-    var mesh=new Mesh();mesh.name="Preserved_Purple_Shield_Fill";source.BakeMesh(mesh,effectCamera?effectCamera:Camera.main,true);mesh.MarkDynamic();
+    var mesh=new Mesh();mesh.name="Preserved_Purple_Shield_Fill";source.BakeMesh(mesh,effectCamera?effectCamera:Camera.main,ParticleSystemBakeMeshOptions.BakeRotationAndScale);mesh.MarkDynamic();
     var go=new GameObject(source.name+"_DeformingFill");go.transform.SetParent(source.transform,false);
     go.AddComponent<MeshFilter>().sharedMesh=mesh;
     var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=source.sharedMaterials;
@@ -50,7 +50,7 @@ namespace UliaVfx {
   IEnumerator AutoHit(){yield return new WaitForSecondsRealtime(1);Hit(transform.position+Vector3.back*barrier.diameter*.5f);}
   public void ShowShield(){
    StopAllCoroutines();pulse=null;if(impact){impact.SetActive(false);Destroy(impact);}if(overlay)Destroy(overlay);if(reaction)Destroy(reaction);
-   ClearFill();barrier.playOnEnable=false;barrier.previewKeys=false;barrier.ShowHold();
+   ClearFill();barrier.playOnEnable=false;barrier.ShowHold();
    overlay=GameObject.CreatePrimitive(PrimitiveType.Sphere);overlay.name="Shield_Contact_Flash_And_Surface_Wave";overlay.transform.SetParent(transform,false);overlay.transform.localScale=Vector3.one*(barrier.diameter);overlay.GetComponent<Collider>().enabled=false;
    reaction=new Material(reactionShader);reaction.SetColor("_Color",new Color(.56f,.1f,1,.8f));var r=overlay.GetComponent<Renderer>();r.sharedMaterial=reaction;r.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;r.receiveShadows=false;overlay.SetActive(false);shieldMaintained=true;stage="Shield maintained";
   }
