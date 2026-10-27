@@ -66,7 +66,7 @@ namespace JC.Environment {
   bool Busy()=>PlayerInteractionBusy() || ModalManager.HasAny || ChatModalController.IsOpen ||
    (ChatManager.Instance!=null && ChatManager.Instance.IsRunning) ||
    (DHWorldEventRuntimeManager.Instance!=null && DHWorldEventRuntimeManager.Instance.IsRunning) ||
-   (DHWorldEventConditionRuntimeManager.Instance!=null && DHWorldEventConditionRuntimeManager.Instance.IsCheckPending) ||
+   // 턴 진행 중 예약된 조건 검사는 다음 플레이어 턴에 실행합니다. 예약 자체를 기다리면 교착됩니다.
    (SceneFadeController.Instance!=null && SceneFadeController.Instance.IsTransitioning);
   bool PlayerInteractionBusy(){var registry=FindFirstObjectByType<PartyRegistry>();var party=registry!=null?registry.PlayerParty:null;var runtime=party!=null?party.GetComponent<PartyRuntime>():null;return party!=null && (party.IsMoving || (runtime!=null && runtime.IsInputLocked));}
   public IEnumerator Transition(int fromTurn,int toTurn){
