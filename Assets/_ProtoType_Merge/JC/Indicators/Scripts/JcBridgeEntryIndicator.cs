@@ -18,14 +18,20 @@ namespace JC.Indicators
         private BattleCellBorderVisual borderPrefab;
         [SerializeField, Tooltip("기존 전투 테두리 프로필입니다. 실행 중 사본의 크기만 탐사 셀에 맞춥니다.")]
         private BattleCellBorderProfile borderProfile;
-        [SerializeField, Tooltip("전투 셀의 기존 투명 채움 재질입니다. 흰 화살표에도 같은 셰이더를 사용합니다.")]
-        private Material arrowMaterial;
-        [SerializeField, Range(.1f, 1f), Tooltip("원래 화살표 묶음 대비 배율입니다. 0.8은 승인된 80% 크기로 안쪽 테두리와 여백을 둡니다.")]
-        private float arrowScale = .8f;
+        [SerializeField, Range(.1f, 1f), Tooltip("원래 화살표 묶음 대비 배율입니다. 기본 0.88이며 안쪽 테두리와 여백을 유지합니다.")]
+        private float arrowScale = .88f;
         [SerializeField, Min(.3f), Tooltip("흰 화살표 세 개가 왼쪽부터 밝아지는 한 주기의 시간(초)입니다.")]
         private float cycleSeconds = 1.2f;
         [SerializeField, Range(0, 1), Tooltip("점멸 사이에도 보이는 흰 화살표의 최소 불투명도입니다.")]
         private float idleAlpha = .16f;
+        [SerializeField, Tooltip("다리 진입 테두리의 보라색입니다. 전투용 원본에는 영향을 주지 않습니다.")]
+        private Color borderColor = new Color(.68f, .2f, 1f, 1f);
+        [SerializeField, Min(0), Tooltip("흰 화살표의 발광 강도입니다. 1을 넘으면 HDR 발광으로 표시합니다.")]
+        private float arrowIntensity = 2f;
+        [SerializeField, Min(0), Tooltip("보라 테두리의 발광 강도입니다.")]
+        private float borderIntensity = 1.5f;
+        [SerializeField, Range(0, 1), Tooltip("밤의 발광 강도 배율입니다. 기존 낮밤 환경 밝기에 따라 부드럽게 보정합니다.")]
+        private float nightIntensityMultiplier = .2f;
 
         private sealed class CellView
         {
@@ -43,6 +49,7 @@ namespace JC.Indicators
         private BattleCellBorderConfiguration configuration;
         private MaterialPropertyBlock arrowProperties;
         private Mesh arrowMesh;
+        private Material overlayBorderMaterial, overlayArrowMaterial;
         private float nextRefresh;
         private float configuredSize = -1;
         private float configuredArrowScale = -1;
@@ -69,7 +76,7 @@ namespace JC.Indicators
             ResolveGates();
             cells.Clear();
             if (sourceGate != null) sourceGate.CollectTeleportCells(cells);
-            if (grid == null || borderPrefab == null || borderProfile == null || arrowMaterial == null)
+            if (grid == null || borderPrefab == null || borderProfile == null)
             {
                 ClearViews();
                 return;
@@ -159,6 +166,11 @@ namespace JC.Indicators
             configuration.bobAmplitude = 0;
             configuredSize = grid.CellSize; configuredArrowScale = arrowScale;
             arrowMesh = BuildArrowMesh();
+            var shader = Resources.Load<Shader>("JcBridgeOverlay");
+            if (shader == null) { ClearViews(); return; }
+            overlayBorderMaterial = new Material(shader) { name = "다리 테두리 전용", hideFlags = HideFlags.HideAndDontSave, renderQueue = 4000 };
+            overlayArrowMaterial = new Material(shader) { name = "다리 화살표 전용", hideFlags = HideFlags.HideAndDontSave, renderQueue = 4001 };
+            overlayArrowMaterial.SetFloat("_VolumeShade", 1);
             foreach (var cell in cells)
             {
                 var view = new CellView { cell = cell, root = new GameObject("다리 진입 " + cell) };
@@ -166,12 +178,19 @@ namespace JC.Indicators
                 view.root.transform.SetParent(transform, false);
                 view.border = Instantiate(borderPrefab, view.root.transform);
                 view.border.SetDriven(true);
+                foreach (var renderer in view.border.GetComponentsInChildren<MeshRenderer>(true))
+                {
+                    renderer.sharedMaterial = overlayBorderMaterial;
+                    renderer.shadowCastingMode = ShadowCastingMode.Off;
+                    renderer.receiveShadows = false;
+                    renderer.allowOcclusionWhenDynamic = false;
+                }
                 view.border.transform.localPosition = Vector3.zero;
                 view.border.transform.localRotation = Quaternion.identity;
                 view.border.transform.localScale = Vector3.one;
                 float interiorSize = grid.CellSize - 2 * (shape.padding + shape.outerWidth + shape.mainWidth + shape.innerWidth);
-                // 커스텀 테두리가 두꺼워져도 화살표 묶음이 안쪽 영역의 80%를 넘지 않습니다.
-                float scale = Mathf.Min(arrowScale, Mathf.Max(.01f, interiorSize * .8f / (grid.CellSize * .56f)));
+                // 커스텀 테두리가 두꺼워져도 화살표 묶음이 안쪽 영역의 86%를 넘지 않습니다.
+                float scale = Mathf.Min(arrowScale, Mathf.Max(.01f, interiorSize * .86f / (grid.CellSize * .56f)));
                 for (int i = 0; i < 3; i++)
                 {
                     var arrow = new GameObject("흰 화살표 " + (i + 1));
@@ -180,7 +199,8 @@ namespace JC.Indicators
                     arrow.transform.localScale = Vector3.one * (grid.CellSize * scale);
                     arrow.AddComponent<MeshFilter>().sharedMesh = arrowMesh;
                     var renderer = arrow.AddComponent<MeshRenderer>();
-                    renderer.sharedMaterial = arrowMaterial;
+                    renderer.sharedMaterial = overlayArrowMaterial;
+                    renderer.allowOcclusionWhenDynamic = false;
                     renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = false;
                     view.arrows[i] = renderer;
                 }
@@ -191,6 +211,13 @@ namespace JC.Indicators
         private void Render(float clock)
         {
             if (configuration == null || grid == null) return;
+            configuration.currentTurn.mainColor = borderColor;
+            configuration.currentTurn.outlineColor = Color.Lerp(borderColor, Color.white, .3f);
+            configuration.currentTurn.fillColor = new Color(borderColor.r, borderColor.g, borderColor.b, configuration.currentTurn.fillColor.a);
+            overlayBorderMaterial.SetFloat("_Intensity", Mathf.Max(0, borderIntensity));
+            overlayArrowMaterial.SetFloat("_Intensity", Mathf.Max(0, arrowIntensity));
+            overlayBorderMaterial.SetFloat("_NightIntensityMultiplier", nightIntensityMultiplier);
+            overlayArrowMaterial.SetFloat("_NightIntensityMultiplier", nightIntensityMultiplier);
             if (arrowProperties == null) arrowProperties = new MaterialPropertyBlock();
             foreach (var view in views)
             {
@@ -217,12 +244,33 @@ namespace JC.Indicators
         private static Mesh BuildArrowMesh()
         {
             var mesh = new Mesh { name = "다리 흰 화살촉", hideFlags = HideFlags.HideAndDontSave };
-            mesh.vertices = new[] {
-                new Vector3(-.09f,0,.18f), new Vector3(.03f,0,0), new Vector3(-.09f,0,-.18f),
-                new Vector3(-.03f,0,-.18f), new Vector3(.09f,0,0), new Vector3(-.03f,0,.18f)
+            var outline = new[] {
+                new Vector3(-.09f,0,.18f), new Vector3(.018f,0,0), new Vector3(-.09f,0,-.18f),
+                new Vector3(-.018f,0,-.18f), new Vector3(.09f,0,0), new Vector3(-.018f,0,.18f)
             };
-            mesh.triangles = new[] { 0,1,5, 1,4,5, 1,2,3, 1,3,4 };
-            mesh.normals = new[] { Vector3.up,Vector3.up,Vector3.up,Vector3.up,Vector3.up,Vector3.up };
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+            void Triangle(Vector3 a, Vector3 b, Vector3 c)
+            {
+                int start = vertices.Count; vertices.Add(a); vertices.Add(b); vertices.Add(c);
+                triangles.Add(start); triangles.Add(start + 1); triangles.Add(start + 2);
+            }
+            Vector3 Top(int i) => outline[i] * .78f + Vector3.up * .065f;
+            Vector3 Rim(int i) => outline[i] + Vector3.up * .03f;
+            int[] top = { 0,1,5, 1,4,5, 1,2,3, 1,3,4 };
+            for (int i = 0; i < top.Length; i += 3)
+            {
+                Triangle(Top(top[i + 2]), Top(top[i + 1]), Top(top[i]));
+                Triangle(outline[top[i]], outline[top[i + 1]], outline[top[i + 2]]);
+            }
+            for (int i = 0; i < outline.Length; i++)
+            {
+                int j = (i + 1) % outline.Length;
+                Triangle(outline[i], Rim(i), Rim(j)); Triangle(outline[i], Rim(j), outline[j]);
+                Triangle(Rim(i), Top(i), Top(j)); Triangle(Rim(i), Top(j), Rim(j));
+            }
+            mesh.SetVertices(vertices); mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
             mesh.RecalculateBounds(); return mesh;
         }
 
@@ -236,6 +284,9 @@ namespace JC.Indicators
             views.Clear();
             if (arrowMesh != null) { if (Application.isPlaying) Destroy(arrowMesh); else DestroyImmediate(arrowMesh); }
             arrowMesh = null; configuration = null; configuredSize = -1;
+            if (overlayBorderMaterial != null) { if (Application.isPlaying) Destroy(overlayBorderMaterial); else DestroyImmediate(overlayBorderMaterial); }
+            if (overlayArrowMaterial != null) { if (Application.isPlaying) Destroy(overlayArrowMaterial); else DestroyImmediate(overlayArrowMaterial); }
+            overlayBorderMaterial = null; overlayArrowMaterial = null;
         }
 
         private void OnDisable() { ClearViews(); }

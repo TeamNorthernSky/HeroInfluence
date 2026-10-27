@@ -45916,7 +45916,7 @@ MonoBehaviour:
     type: 3}
   borderProfile: {fileID: 11400000, guid: 0a5f67c2e4abeaf4c981a714a00a9a3b, type: 2}
   arrowMaterial: {fileID: 2100000, guid: a9b4f9ebd7fcf704bae17917fc1b6ad5, type: 2}
-  arrowScale: 0.8
+  arrowScale: 0.88
   cycleSeconds: 1.2
   idleAlpha: 0.16
 --- !u!1 &418329331
