@@ -8,9 +8,12 @@ namespace JC.Tutorial
     public sealed class JcTutorialExitTransition : MonoBehaviour
     {
         private static JcTutorialExitTransition active;
+        public static bool IsActive => active != null;
         public static void Begin(string destination = "DHScene_3")
         {
             if (active != null) return;
+            if (!Application.CanStreamedLevelBeLoaded(destination))
+            { Debug.LogError("Tutorial exit destination is unavailable: " + destination); return; }
             var host = new GameObject("Tutorial Exit Transition");
             DontDestroyOnLoad(host); active = host.AddComponent<JcTutorialExitTransition>();
             active.StartCoroutine(active.Transition(destination));
@@ -27,6 +30,19 @@ namespace JC.Tutorial
         private IEnumerator Transition(string destination)
         {
             ModalManager.Register(gameObject);
+            // 진행 상태 초기화 전에 씬 소유 작업을 중단해 완료 콜백의 재진입을 막습니다.
+            var sourceScene = SceneManager.GetActiveScene();
+            foreach (var root in sourceScene.GetRootGameObjects())
+            {
+                foreach (var ui in root.GetComponentsInChildren<TutorialExploreUIController>(true))
+                { ui.StopAllCoroutines(); ui.HideTutorial(); ui.enabled = false; }
+                foreach (var turns in root.GetComponentsInChildren<TutorialTurnManager>(true))
+                { turns.StopAllCoroutines(); turns.enabled = false; }
+                foreach (var mover in root.GetComponentsInChildren<PartyGridMover>(true))
+                { mover.StopMovement(); mover.StopAllCoroutines(); mover.enabled = false; }
+            }
+            JC.Environment.JcDayNightController.CancelForScene(sourceScene);
+            AudioManager.Instance?.StopLoopingSfx("Explore_Move");
             HideTutorialPresentation();
             var fade = SceneFadeController.Instance;
             if (fade == null)
@@ -36,6 +52,7 @@ namespace JC.Tutorial
                 DontDestroyOnLoad(host); fade = host.AddComponent<SceneFadeController>();
             }
             yield return fade.FadeOut(.35f);
+            CombatContext.Instance?.ClearTutorial();
             TutorialProgressRepository.ClearProgress();
             TutorialCatalog.DestroyAllTutorialCatalogs();
             ReleaseIncompleteExplorationCatalogs();

@@ -40,6 +40,7 @@ namespace JC.BattleTesting
             ApplyTopRightButtons(scene);
             var all=scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<RectTransform>(true)).ToArray();
             string Path(Transform t)=>t.parent==null?t.name:Path(t.parent)+"/"+t.name;
+            var presentation = BattlePresentationController.FindInScene(scene);
             var map=all.GroupBy(r=>Path(r)).ToDictionary(g=>g.Key,g=>g.First());
             foreach(var item in JsonUtility.FromJson<Data>(layoutJson).items)
             {
@@ -53,7 +54,13 @@ namespace JC.BattleTesting
                 // 턴 순서는 각 전투씬에서 확정한 세로 배치를 사용합니다.
                 // 과거 HUD JSON의 상단 가로형 위치/크기로 루트와 슬롯을 덮어쓰지 않습니다.
                 if (r.GetComponentInParent<TurnOrderUI>(true) != null) continue;
-                if(item.rect){r.anchorMin=item.anchorMin;r.anchorMax=item.anchorMax;r.pivot=item.pivot;r.anchoredPosition=item.position;r.sizeDelta=item.size;}
+                if(item.rect)
+                {
+                    r.anchorMin=item.anchorMin;r.anchorMax=item.anchorMax;r.pivot=item.pivot;r.sizeDelta=item.size;
+                    if (presentation != null && presentation.skillPanel == r)
+                        presentation.ApplySkillPanelLayoutPosition(item.position);
+                    else r.anchoredPosition=item.position;
+                }
                 var text=r.GetComponent<TMP_Text>();
                 if(text!=null&&item.fontSize>0){text.fontSize=item.fontSize;text.enableAutoSizing=true;text.fontSizeMax=item.fontSize;text.fontSizeMin=Mathf.Max(15,item.fontSize-4);}
             }

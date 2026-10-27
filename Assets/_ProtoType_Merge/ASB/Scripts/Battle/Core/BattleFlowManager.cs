@@ -96,7 +96,7 @@ public class BattleFlowManager : MonoBehaviour
     public BattleManager BattleManager => battleManager;
     public int RoundIndex => roundIndex;
     public bool IsFlowBlocked => flowLocks.Count > 0;
-    public bool IsTurnPresentationPending => turnPresentationPending || (turnBanner != null && turnBanner.BlocksInput);
+    public bool IsTurnPresentationPending => JC.BattleTesting.JcBattleHudEntryGate.IsPending(gameObject.scene) || turnPresentationPending || (turnBanner != null && turnBanner.BlocksInput);
     public bool IsEndingBattle => ShouldEndBattle();
     public bool IsBattleEnded => battleEnded;
 
@@ -110,6 +110,8 @@ public class BattleFlowManager : MonoBehaviour
                               playerActionClaimed && !playerActionResolved));
 
     public event Action<int, BattleCharactor> OnTurnStarted;
+    // 초기 HUD 바인딩 전용. 행동·AI·튜토리얼 시작 이벤트와 분리합니다.
+    public event Action<int, BattleCharactor> OnEntryUiPrepared;
     public event Action<TurnResolutionContext> OnTurnResolved;
     public event Action<BattleResult> OnBattleEnded;
     public event Action<BattleCharactor> OnParticipantRegistered;
@@ -572,7 +574,7 @@ public class BattleFlowManager : MonoBehaviour
             if (turnInterludes.Count > 0) yield return PresentTurnInterludes();
 
             // 건너뛰는 순번도 표시하되, 기존 OnTurnStarted는 행동 가능한 유닛에만 발행한다.
-            if (turnBanner != null) yield return PresentTurnIntro(unit);
+            if (turnBanner != null && !JC.BattleTesting.JcBattleHudEntryGate.IsPending(gameObject.scene)) yield return PresentTurnIntro(unit);
             if (turnBanner != null && ShouldEndBattle())
             {
                 PublishTurnResolved(unit, wasSkipped: true);
@@ -606,6 +608,12 @@ public class BattleFlowManager : MonoBehaviour
             // (이전에는 상태이상 처리 전에 발행돼, 기절한 유닛으로 자동전투가 행동하는 문제가 있었다.)
             playerActionResolved = false;
             playerActionClaimed = false;
+            if (JC.BattleTesting.JcBattleHudEntryGate.IsPending(gameObject.scene))
+            {
+                OnEntryUiPrepared?.Invoke(roundIndex, CurrentUnit);
+                yield return JC.BattleTesting.JcBattleHudEntryGate.RevealForFirstUnit(this);
+                if (ShouldEndBattle()) break;
+            }
             OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
 
             yield return WaitForFlowGateOrBattleEnd();

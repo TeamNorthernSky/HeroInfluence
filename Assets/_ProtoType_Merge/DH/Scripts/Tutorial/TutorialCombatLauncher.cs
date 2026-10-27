@@ -80,6 +80,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         int tutorialZoneId,
         string nextReturnSceneName)
     {
+        if (JC.Tutorial.JcTutorialExitTransition.IsActive) return false;
         string groupKey = string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
         if (string.IsNullOrEmpty(groupKey))
         {
@@ -143,6 +144,8 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             return false;
         }
 
+        // 도착 콜백 안에서 배경 캡처/씬 전환이 시작되어도 이동 반복음은 즉시 종료합니다.
+        AudioManager.Instance?.StopLoopingSfx("Explore_Move");
         JC.BattleTesting.JcArnoldBattlePresentation.PrepareCameraOnly(sceneName);
         LoadBattleScene(sceneName);
         return true;
