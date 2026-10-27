@@ -385,6 +385,11 @@ namespace ASB.Work.Battle.Sequence
             if (_existingInstance != null)
                 return _existingInstance.transform.position;
 
+            // Heal flight starts at the same two-hand center as its charge orb.
+            if ((_skillIndex == 4010 || _skillIndex == 4011)
+                && JC.VFX.ChargeOrbVfx.TryGetHandsCenter(_actor.GetComponentInChildren<Animator>(), out Vector3 handsCenter))
+                return handsCenter;
+
             Transform origin = ResolveOrigin(_actor);
             return origin != null ? origin.position : _actor.transform.position;
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using JC.BattleTesting;
@@ -98,6 +98,13 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     private JC.VFX.SolarPrismVfx luminaSolarPrism;
     private JC.VFX.PrismExplosionVfx luminaPrismExplosion;
     private BattleCharactor nekoLightTarget;
+    private bool focusNekoBarrage;
+    private JC.VFX.TaoBarrageVfx nekoBarrageEffect;
+    private Bounds nekoBarrageBounds;
+    private JC.VFX.PawForYouVfx nekoFallingPaw;
+    private bool focusNekoHeal;
+    private readonly List<Transform> nekoHealProjectiles = new List<Transform>();
+    private readonly List<BattleCharactor> nekoHealTargets = new List<BattleCharactor>();
     private JC.VFX.JcVfxPartSequence nekoPawSequence;
     private Coroutine nekoPawFocusRoutine;
     private readonly Dictionary<BattleCharactor, IDisposable> enemyImmortality = new Dictionary<BattleCharactor, IDisposable>();
@@ -128,6 +135,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightStarted += HandleProjectileStarted;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightFinished += HandleProjectileFinished;
         UnitEffectPresenter.EffectSpawned += HandleSkillEffectSpawned;
+        BattleVisualDirector.HealPresented += HandleHealPresented;
         if (flow != null) flow.OnParticipantRegistered += ProtectEnemy;
     }
 
@@ -188,6 +196,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     private void LateUpdate()
     {
         if (!attackZoomActive || !followAttackFocus || previewCamera == null || attackFocusActor == null) return;
+        nekoHealProjectiles.RemoveAll(projectile => projectile == null);
         Vector3 direction = AttackFocusPosition - previewCamera.transform.position;
         if (direction.sqrMagnitude > .001f)
         {
@@ -198,7 +207,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
                 : Quaternion.Slerp(previewCamera.transform.rotation, targetRotation,
                     1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
         }
-        if (frameRangedPair && attackFocusTarget != null)
+        if (focusNekoBarrage || (frameRangedPair && attackFocusTarget != null) || (focusNekoHeal && (nekoHealProjectiles.Count > 0 || nekoHealTargets.Count > 0)))
         {
             float neededFov = Mathf.Max(attackZoomBaseFov,
                 RequiredPairFov(previewCamera.transform.position, previewCamera.transform.rotation));
@@ -211,8 +220,27 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     {
         get
         {
+            if (focusNekoHeal && nekoHealProjectiles.Count > 0)
+            {
+                Vector3 center = Vector3.zero;
+                int count = 0;
+                foreach (var projectile in nekoHealProjectiles)
+                    if (projectile != null) { center += projectile.position; count++; }
+                if (count > 0) return center / count;
+            }
+            if (focusNekoHeal && nekoHealTargets.Count > 0)
+            {
+                Vector3 center = Vector3.zero;
+                int count = 0;
+                foreach (var target in nekoHealTargets)
+                    if (target != null && !target.IsDead) { center += target.transform.position; count++; }
+                if (count > 0) return center / count + Vector3.up * attackFocusHeight;
+            }
             if (focusDebuffTarget && attackFocusTarget != null && !attackFocusTarget.IsDead)
                 return attackFocusTarget.transform.position + Vector3.up * attackFocusHeight;
+            if (focusNekoBarrage) return nekoBarrageBounds.center;
+            if (focusNekoLightTarget && nekoFallingPaw != null && nekoFallingPaw.IsPlaying)
+                return nekoFallingPaw.FallingFocusPosition;
             if (focusNekoLightTarget && nekoLightTarget != null)
                 return nekoLightTarget.transform.position + Vector3.up * attackFocusHeight;
             if (followLuminaProjectile)
@@ -246,6 +274,16 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         }
     }
 
+    private void HandleHealPresented(BattleVisualDirector source, ASB.Work.Battle.Core.BattleHitResult result)
+    {
+        if (!isActiveAndEnabled || !attackZoomActive || !focusNekoHeal || attackFocusActor == null ||
+            source == null || source.gameObject.scene != gameObject.scene || result?.Target == null ||
+            result.Target.IsDead || !result.Target.IsPlayer) return;
+        int family = HeroSkillRules.FamilyId(result.SkillIndex);
+        if (family != 4010 && family != 4030) return;
+        if (!nekoHealTargets.Contains(result.Target)) nekoHealTargets.Add(result.Target);
+    }
+
     private void HandleSkillEffectSpawned(SkillEffectContext context, GameObject instance, string cueName)
     {
         if (!attackZoomActive || context == null || context.Caster != attackFocusActor ||
@@ -259,6 +297,12 @@ public sealed class BattlePresentationPreview : MonoBehaviour
             context.PrimaryTarget != null && !context.PrimaryTarget.IsPlayer)
         {
             ClearNekoPawSequence();
+            nekoFallingPaw = instance.GetComponentInChildren<JC.VFX.PawForYouVfx>(true);
+            if (nekoFallingPaw != null && nekoFallingPaw.IsFallingPaw)
+            {
+                nekoLightTarget = context.PrimaryTarget;
+                return;
+            }
             nekoPawSequence = instance.GetComponentInChildren<JC.VFX.JcVfxPartSequence>(true);
             if (nekoPawSequence != null && nekoPawSequence.TryGetTargetPartDelay(out float targetDelay))
             {
@@ -267,9 +311,54 @@ public sealed class BattlePresentationPreview : MonoBehaviour
             }
             else nekoLightTarget = context.PrimaryTarget;
         }
-        if (focusNekoLightTarget && family == 4040 && cueName == "fire" &&
-            context.PrimaryTarget != null && !context.PrimaryTarget.IsPlayer)
-            nekoLightTarget = context.PrimaryTarget;
+        if (focusNekoLightTarget && family == 4040 && cueName == "fire")
+            FrameNekoBarrage(context, instance);
+    }
+
+    private void FrameNekoBarrage(SkillEffectContext context, GameObject instance)
+    {
+        bool hasBounds = false;
+        Vector3 center = Vector3.zero;
+        int count = 0;
+        void Include(BattleCharactor unit)
+        {
+            if (unit == null || unit.IsDead || unit.IsPlayer == context.Caster.IsPlayer ||
+                unit.gameObject.scene != context.Caster.gameObject.scene) return;
+            Bounds unitBounds = new Bounds(unit.transform.position + Vector3.up * 1.1f,
+                new Vector3(1.5f, 2.2f, 1.5f));
+            if (!hasBounds) { nekoBarrageBounds = unitBounds; hasBounds = true; }
+            else nekoBarrageBounds.Encapsulate(unitBounds);
+            center += unit.transform.position;
+            count++;
+        }
+        if (context.Targets != null)
+            foreach (var unit in context.Targets) Include(unit);
+        if (!hasBounds)
+            foreach (var unit in FindObjectsOfType<BattleCharactor>()) Include(unit);
+        if (!hasBounds) return;
+        var barrage = instance.GetComponent<JC.VFX.TaoBarrageVfx>();
+        nekoBarrageEffect = barrage;
+        Vector3 top = barrage != null ? barrage.LightOrigin : center / count + Vector3.up * 7f;
+        nekoBarrageBounds.Encapsulate(new Bounds(top, Vector3.one * 2f));
+        focusNekoBarrage = true;
+        nekoLightTarget = null;
+    }
+
+    private float RequiredNekoBarrageFov(Vector3 cameraPosition)
+    {
+        Quaternion inverse = Quaternion.Inverse(Quaternion.LookRotation(nekoBarrageBounds.center - cameraPosition));
+        float tangent = 0f;
+        Vector3 min = nekoBarrageBounds.min, max = nekoBarrageBounds.max;
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 point = new Vector3((i & 1) == 0 ? min.x : max.x,
+                (i & 2) == 0 ? min.y : max.y, (i & 4) == 0 ? min.z : max.z);
+            Vector3 local = inverse * (point - cameraPosition);
+            float depth = Mathf.Max(.1f, local.z);
+            tangent = Mathf.Max(tangent, Mathf.Abs(local.y) / depth,
+                Mathf.Abs(local.x) / (depth * Mathf.Max(.1f, previewCamera.aspect)));
+        }
+        return Mathf.Clamp(2f * Mathf.Atan(tangent / .8f) * Mathf.Rad2Deg, 1f, 110f);
     }
 
     private void ClearNekoPawSequence()
@@ -297,6 +386,12 @@ public sealed class BattlePresentationPreview : MonoBehaviour
 
     private void HandleProjectileStarted(BattleCharactor actor, Transform projectile)
     {
+        if (attackZoomActive && focusNekoHeal && actor == attackFocusActor && projectile != null &&
+            projectile.GetComponent<JC.VFX.NekoHealPawProjectile>() != null)
+        {
+            if (!nekoHealProjectiles.Contains(projectile)) nekoHealProjectiles.Add(projectile);
+            return;
+        }
         if (!attackZoomActive || !followLuminaProjectile || actor != attackFocusActor || actor.PresentationIndex != "10002") return;
         luminaProjectile = projectile;
         projectileFocusPoint = projectile.position;
@@ -305,6 +400,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
 
     private void HandleProjectileFinished(BattleCharactor actor, Transform projectile, Vector3 point, bool arrived)
     {
+        if (nekoHealProjectiles.Remove(projectile)) return;
         if (projectile != luminaProjectile) return;
         luminaProjectile = null;
         projectileFocusPoint = point;
@@ -338,15 +434,27 @@ public sealed class BattlePresentationPreview : MonoBehaviour
 
     private float RequiredPairFov(Vector3 cameraPosition, Quaternion cameraRotation)
     {
+        if (focusNekoBarrage) return RequiredNekoBarrageFov(cameraPosition);
         float tangent = 0f;
         Quaternion inverse = Quaternion.Inverse(cameraRotation);
-        for (int unitIndex = 0; unitIndex < 2; unitIndex++)
+        bool frameHealProjectiles = focusNekoHeal && nekoHealProjectiles.Count > 0;
+        bool frameHealedUnits = focusNekoHeal && nekoHealTargets.Count > 0;
+        int unitCount = frameHealProjectiles ? nekoHealProjectiles.Count : frameHealedUnits ? nekoHealTargets.Count : 2;
+        for (int unitIndex = 0; unitIndex < unitCount; unitIndex++)
         {
-            var unit = unitIndex == 0 ? attackFocusActor : attackFocusTarget;
-            if (unit == null) continue;
+            Transform focus;
+            if (frameHealProjectiles) focus = nekoHealProjectiles[unitIndex];
+            else
+            {
+                var unit = frameHealedUnits ? nekoHealTargets[unitIndex]
+                    : unitIndex == 0 ? attackFocusActor : attackFocusTarget;
+                focus = unit != null ? unit.transform : null;
+            }
+            if (focus == null) continue;
             for (int i = 0; i < 2; i++)
             {
-                Vector3 local = inverse * (unit.transform.position + Vector3.up * (i == 0 ? 0f : 2.2f) - cameraPosition);
+                float height = frameHealProjectiles ? (i == 0 ? -.55f : .55f) : (i == 0 ? 0f : 2.2f);
+                Vector3 local = inverse * (focus.position + Vector3.up * height - cameraPosition);
                 float depth = Mathf.Max(.1f, local.z);
                 float vertical = (Mathf.Abs(local.y) + .25f) / depth;
                 float horizontal = (Mathf.Abs(local.x) + .6f) / (depth * Mathf.Max(.1f, previewCamera.aspect));
@@ -505,9 +613,20 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     public System.Collections.IEnumerator RunAttackWithZoom(BattleCharactor actor, BattleCharactor target,
         SkillData skill, System.Collections.IEnumerator attack)
     {
+        // Immortal preview targets must still lose HP on every cast so damage-based heals can repeat.
+        if (enemiesCannotDie && actor != null && actor.IsPlayer && battle != null)
+            foreach (var enemy in battle.EnemyBattleCharactors)
+                if (enemy != null && !enemy.IsDead)
+                    enemy.SetHp(enemy.MaxHp);
+
         bool shouldFocusDebuffTarget = skill != null && skill.skillKey == "HCS005" &&
             target != null && !target.IsDead;
-        if ((useTurnCamera && !shouldFocusDebuffTarget) || !useAttackZoom || previewCamera == null ||
+        int family = skill != null ? HeroSkillRules.FamilyId(skill.skillIndex) : 0;
+        bool shouldFocusNekoHeal = actor != null && actor.PresentationIndex == "10004" &&
+            (family == 4010 || family == 4030);
+        bool shouldFocusNekoPaw = actor != null && actor.PresentationIndex == "10004" && family == 4020;
+        bool shouldFocusNekoBarrage = actor != null && actor.PresentationIndex == "10004" && family == 4040;
+        if ((useTurnCamera && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage) || !useAttackZoom || previewCamera == null ||
             actor == null || attackZoomAmount <= 0f || attackZoomActive)
         {
             yield return ShowSkillSpeech(actor, skill);
@@ -523,6 +642,14 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         attackFocusActor = actor;
         attackFocusTarget = target;
         focusDebuffTarget = shouldFocusDebuffTarget;
+        focusNekoHeal = shouldFocusNekoHeal;
+        nekoLightTarget = null;
+        focusNekoBarrage = false;
+        nekoBarrageEffect = null;
+        nekoBarrageBounds = default;
+        nekoFallingPaw = null;
+        nekoHealProjectiles.Clear();
+        nekoHealTargets.Clear();
         frameRangedPair = !focusDebuffTarget && target != null && skill != null &&
             ((frameEnemyRangedTarget && !actor.IsPlayer && target.IsPlayer &&
                 !BattleManager.IsMeleeSkillRange(actor, skill)) ||
@@ -547,8 +674,12 @@ public sealed class BattlePresentationPreview : MonoBehaviour
             yield return ShowSkillSpeech(actor, skill);
             yield return WaitForLuminaCast(actor, skill);
             yield return attack;
-            followAttackFocus = false;
+            if (shouldFocusNekoBarrage)
+                while (nekoBarrageEffect != null && nekoBarrageEffect.IsPlaying) yield return null;
+            if (!focusNekoHeal) followAttackFocus = false;
             yield return WaitAfterSkill(actor, skill);
+            followAttackFocus = false;
+            focusNekoBarrage = false;
             yield return AnimateAttackZoom(attackCameraPosition, corner, attackCameraRotation,
                 attackCameraFov, attackCameraOrthoSize, attackZoomOutSeconds, false);
         }
@@ -611,12 +742,19 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         attackFocusActor = null;
         attackFocusTarget = null;
         focusDebuffTarget = false;
+        focusNekoHeal = false;
+        nekoHealProjectiles.Clear();
+        nekoHealTargets.Clear();
         frameRangedPair = false;
         luminaProjectile = null;
         luminaLightning = null;
         luminaSolarPrism = null;
         luminaPrismExplosion = null;
         nekoLightTarget = null;
+        focusNekoBarrage = false;
+        nekoBarrageEffect = null;
+        nekoBarrageBounds = default;
+        nekoFallingPaw = null;
         ClearNekoPawSequence();
         projectileFocusLatched = false;
     }
@@ -675,6 +813,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     private void OnDestroy()
     {
         UnitEffectPresenter.EffectSpawned -= HandleSkillEffectSpawned;
+        BattleVisualDirector.HealPresented -= HandleHealPresented;
         if (flow != null) flow.OnParticipantRegistered -= ProtectEnemy;
         foreach (var handle in enemyImmortality.Values) handle.Dispose();
         enemyImmortality.Clear();

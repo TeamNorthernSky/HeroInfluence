@@ -1807,19 +1807,37 @@ public sealed partial class SkillPresentationDirector
         float durationBattleSeconds, System.Func<bool> abort)
     {
         if (director == null) yield break;
-        // ★director.Pause()로 실제로 동결한다. 루트 속도 0(SetSpeed)은 애니 출력만 멈추고 director.time은
-        //   계속 흘러 재생이 끝나버리므로(정지가 안 됨) hold에 쓸 수 없다.
-        director.Pause();
-
-        float elapsedBattle = 0f;
-        while (elapsedBattle < durationBattleSeconds)
+        // Pause는 AnimatorController에 포즈를 돌려줘 유지 중에도 Idle 등이 섞인다.
+        // 그래프 출력을 유지한 채 속도와 시간 모두 고정해야 손과 차징 위치가 함께 멈춘다.
+        double holdTime = director.time;
+        PlayableGraph graph = director.playableGraph;
+        int rootCount = graph.IsValid() ? graph.GetRootPlayableCount() : 0;
+        var previousSpeeds = new double[rootCount];
+        for (int i = 0; i < rootCount; i++)
         {
-            if (director == null || director.playableAsset == null) yield break;
-            if (abort != null && abort()) break;
-            elapsedBattle += Time.deltaTime * Mathf.Max(0.01f, _battle.CurrentBattleSpeed);
-            yield return null;
+            var root = graph.GetRootPlayable(i);
+            previousSpeeds[i] = root.GetSpeed();
+            root.SetSpeed(0d);
         }
-        if (director != null && director.playableAsset != null) director.Resume();
+        try
+        {
+            float elapsedBattle = 0f;
+            while (elapsedBattle < durationBattleSeconds)
+            {
+                if (director == null || director.playableAsset == null) yield break;
+                if (abort != null && abort()) break;
+                director.time = holdTime;
+                director.Evaluate();
+                elapsedBattle += Time.deltaTime * Mathf.Max(0.01f, _battle.CurrentBattleSpeed);
+                yield return null;
+            }
+        }
+        finally
+        {
+            if (graph.IsValid())
+                for (int i = 0; i < Mathf.Min(rootCount, graph.GetRootPlayableCount()); i++)
+                    graph.GetRootPlayable(i).SetSpeed(previousSpeeds[i]);
+        }
     }
 
     /// <summary>

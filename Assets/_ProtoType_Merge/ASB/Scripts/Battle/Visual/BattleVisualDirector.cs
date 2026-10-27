@@ -36,16 +36,16 @@ public class BattleVisualDirector : MonoBehaviour
     [SerializeField] private bool _reactToPreventedDamage;
     [Header("공통 피격 이펙트")]
     [InspectorName("공통 피격 이펙트 사용"), SerializeField] private bool _enableCommonHitEffect = true;
-    [Tooltip("비어 있으면 BattleEffects/HCFX_Hit_01_NoStar를 공통으로 사용합니다.")]
+    [Tooltip("비어 있으면 BattleEffects/FX_Common_Hit_Basic를 공통으로 사용합니다.")]
     [SerializeField] private GameObject _commonHitEffect;
     [SerializeField] private Vector3 _commonHitEffectOffset = new Vector3(0f, 1.1f, 0f);
     [Tooltip("저스티스 강화판 스킬의 명중에만 추가 피격 이펙트를 겹칩니다.")]
     [InspectorName("저스티스 강화 피격 이펙트 사용")]
     [SerializeField] private bool _enableEnhancedHitEffect = true;
-    [Tooltip("비어 있으면 BattleEffects/HCFX_Hit_03_Enhanced를 사용합니다.")]
+    [Tooltip("비어 있으면 BattleEffects/FX_Justice_Hit_Enhanced를 사용합니다.")]
     [SerializeField] private GameObject _enhancedHitEffect;
     [InspectorName("저스티스 일반 피격 이펙트 사용"), SerializeField] private bool _enableJusticeNormalHitEffect = true;
-    [Tooltip("비어 있으면 색상을 수정한 BattleEffects/HCFX_Hit_03_Justice_Normal 사본을 사용합니다.")]
+    [Tooltip("비어 있으면 색상을 수정한 BattleEffects/FX_Justice_Hit_Basic 사본을 사용합니다.")]
     [SerializeField] private GameObject _justiceNormalHitEffect;
 
     private void PlayJusticeHitEffect(BattleHitResult result)
@@ -56,14 +56,14 @@ public class BattleVisualDirector : MonoBehaviour
         {
             if (!_enableEnhancedHitEffect) return;
             if (_enhancedHitEffect == null)
-                _enhancedHitEffect = Resources.Load<GameObject>("BattleEffects/HCFX_Hit_03_Enhanced");
+                _enhancedHitEffect = Resources.Load<GameObject>("BattleEffects/FX_Justice_Hit_Enhanced");
             prefab = _enhancedHitEffect;
         }
         else
         {
             if (!_enableJusticeNormalHitEffect) return;
             if (_justiceNormalHitEffect == null)
-                _justiceNormalHitEffect = Resources.Load<GameObject>("BattleEffects/HCFX_Hit_03_Justice_Normal");
+                _justiceNormalHitEffect = Resources.Load<GameObject>("BattleEffects/FX_Justice_Hit_Basic");
             prefab = _justiceNormalHitEffect;
         }
         if (prefab == null) return;
@@ -141,7 +141,7 @@ public class BattleVisualDirector : MonoBehaviour
     {
         if (!_enableCommonHitEffect || target == null) return;
         if (_commonHitEffect == null)
-            _commonHitEffect = Resources.Load<GameObject>("BattleEffects/HCFX_Hit_01_NoStar");
+            _commonHitEffect = Resources.Load<GameObject>("BattleEffects/FX_Common_Hit_Basic");
         if (_commonHitEffect == null) return;
         var instance = Instantiate(_commonHitEffect, target.transform.position + _commonHitEffectOffset, Quaternion.identity);
         PlaceSharedHitBehindSkills(instance);
@@ -459,6 +459,8 @@ public class BattleVisualDirector : MonoBehaviour
         // Legacy ASB SoundManager was removed. Battle audio should route through the shared audio layer later.
     }
 
+    public static event Action<BattleVisualDirector, BattleHitResult> HealPresented;
+
     public void ShowDamagePopup(BattleHitResult result)
     {
         if (result == null || result.Target == null)
@@ -466,6 +468,7 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
+        if (result.IsHeal && !result.IsMiss) HealPresented?.Invoke(this, result);
         _popupPresenter?.Show(result);
     }
 
