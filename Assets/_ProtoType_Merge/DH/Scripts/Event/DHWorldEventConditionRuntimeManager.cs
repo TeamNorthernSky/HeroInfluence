@@ -73,6 +73,7 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
 
     private void OnDisable()
     {
+        CancelPendingChecks();
         Unsubscribe();
     }
 
@@ -102,7 +103,8 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
     {
         yield return null;
 
-        while (CanCheckConditions && IsChatRunning())
+        // 예약은 유지하되 입력을 받을 수 있는 탐사 시점에만 검사합니다.
+        while (CanCheckConditions && !CanPresentConditionEvent())
             yield return null;
 
         checkQueued = false;
@@ -118,7 +120,7 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
         if (!CanCheckConditions)
             return false;
 
-        if (IsChatRunning())
+        if (!CanPresentConditionEvent())
         {
             RequestCheck();
             return false;
@@ -161,9 +163,29 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
         return false;
     }
 
-    private static bool IsChatRunning()
+    private bool CanPresentConditionEvent()
     {
-        return ChatManager.Instance != null && ChatManager.Instance.IsRunning;
+        ResolveReferences();
+        if (turnManager == null || !turnManager.isActiveAndEnabled || !turnManager.IsPlayerTurn ||
+            turnManager.gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene() ||
+            DHGameStateRestoreService.IsRestoring ||
+            JC.Environment.JcDayNightController.IsTransitioning ||
+            (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) ||
+            (ChatManager.Instance != null && ChatManager.Instance.IsRunning) || ChatModalController.IsOpen ||
+            ModalManager.HasAny ||
+            (DHWorldEventRuntimeManager.Instance != null && DHWorldEventRuntimeManager.Instance.IsRunning))
+            return false;
+
+        CombatContext context = CombatContext.Instance;
+        if (context != null && (context.Result != CombatResult.None || context.HasEventBattle ||
+            context.CombatParty != null || context.CombatEnemy != null))
+            return false;
+
+        PartyGridMover party = ResolvePlayerParty();
+        PartyRuntime runtime = party != null ? party.GetComponent<PartyRuntime>() : null;
+        // 전투 복귀 대기 중의 IsTurnResolving은 월드 클릭만 막습니다.
+        // 여기서 함께 기다리면 이벤트 종료를 기다리는 적 턴 재개와 교착됩니다.
+        return party != null && !party.IsMoving && (runtime == null || !runtime.IsInputLocked);
     }
 
     private void Subscribe()
