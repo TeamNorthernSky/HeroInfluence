@@ -1,0 +1,106 @@
+using UnityEngine;
+using UnityEditor;
+
+namespace JC.VFX
+{
+    [CustomEditor(typeof(PawBeamPreset))]
+    public class PawBeamPresetEditor : Editor
+    {
+        // ★분할 프리팹(PawSpawn/Warp/Beam ×B·G)이 실사용 — 통짜 2종만 있던 죽은 목록을 교정(260805).
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs";
+        static readonly string[] PrefabPaths =
+        {
+            "Assets/RenderFX/_Archive/HeroSkill/Nekoming/PawForYou/Prefabs/FX_Nekoming_PawForYou_PawSpawn.prefab",  DIR + "/PawSpawn_Gold.prefab",
+            "Assets/RenderFX/_Archive/HeroSkill/Nekoming/PawForYou/Prefabs/FX_Nekoming_PawForYou_PawWarp.prefab",   DIR + "/PawWarp_Gold.prefab",
+            "Assets/RenderFX/_Archive/HeroSkill/Nekoming/PawForYou/Prefabs/FX_Nekoming_PawForYou_PawBeam.prefab",   DIR + "/PawBeam_Gold.prefab",
+            "Assets/RenderFX/_Archive/HeroSkill/Nekoming/PawForYou/Prefabs/FX_Nekoming_PawForYou_PawBeam_Miss.prefab", DIR + "/PawBeam_Gold_Miss.prefab",
+            "Assets/RenderFX/_Archive/HeroSkill/Nekoming/PawForYou/Prefabs/FX_Nekoming_PawForYou_Full.prefab", "Assets/RenderFX/_Archive/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/FX_Nekoming_PawForYou_Mistake.prefab",
+        };
+
+        // 따름 잠금 대상 = 색·밝기를 제외한 전부(위치·폭·단면·노이즈·캡)
+        static readonly string[] TransformProps =
+        {
+            "startSocketName","startOffset","width",
+            "coreWidth","glowFalloff","edgeSoft",
+            "noiseScale","noiseScroll","noiseAmount","pulseAmp","pulseFreq",
+            "capSoftStart","capSoftEnd","frontSoft",
+        };
+
+        public override void OnInspectorGUI()
+        {
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.PawBeam.Fold", TransformProps);
+            var p = (PawBeamPreset)target;
+            EditorGUILayout.Space();
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","이 프리셋을 참조하는 대상 프리팹에 현재 값을 확정합니다."), GUILayout.Height(30))) Apply(p);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","대상 프리팹의 값을 현재 프리셋으로 읽습니다. 프리셋 파일 저장은 별도입니다."), GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
+            }
+            EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 PawBeam(수직 빔/워프 스트릭)에 반영.\n단면/노이즈/캡 항목은 프리셋+livePreview로만 구동됩니다.", MessageType.Info);
+        }
+
+        static readonly string[] Floats = { "width", "intensity" };
+        static readonly string[] Colors = { "coreColor", "glowColor", "hitFlashColor" };
+
+        static bool UsesPreset(Component c, Object presetAsset)
+            => new SerializedObject(c).FindProperty("preset")?.objectReferenceValue == presetAsset;
+
+        void Apply(PawBeamPreset p)
+        {
+            int applied = 0;
+            foreach (var path in JcPresetPartTargets.Paths(p, PrefabPaths))
+            {
+                if (HeroEffectPaths.Load<GameObject>(path) == null) continue;
+                var root = PrefabUtility.LoadPrefabContents(path);
+                bool dirty = false;
+                foreach (var pb in root.GetComponentsInChildren<PawBeam>(true))
+                {
+                    if (!UsesPreset(pb, p)) continue;
+                    var so = new SerializedObject(pb);
+                    var pso = new SerializedObject(p);
+                    foreach (var f in Floats) CopyFloat(pso, so, f);
+                    foreach (var c in Colors) so.FindProperty(c).colorValue = pso.FindProperty(c).colorValue;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    dirty = true;
+                    applied++;
+                }
+                if (dirty) PrefabUtility.SaveAsPrefabAsset(root, path);
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+            if (applied == 0) Debug.LogError("[PawBeamPreset] 이 에셋을 참조하는 PawBeam 없음");
+            else Debug.Log($"[PawBeamPreset] 프리팹에 적용 완료 ({applied}곳)");
+        }
+
+        void Capture(PawBeamPreset p)
+        {
+            foreach (var path in JcPresetPartTargets.Paths(p, PrefabPaths))
+            {
+                var root = HeroEffectPaths.Load<GameObject>(path);
+                if (root == null) continue;
+                foreach (var pb in root.GetComponentsInChildren<PawBeam>(true))
+                {
+                    if (!UsesPreset(pb, p)) continue;
+                    Undo.RecordObject(p, "Capture Paw Beam");
+                    var so = new SerializedObject(pb);
+                    var pso = new SerializedObject(p);
+                    foreach (var f in Floats) CopyFloat(so, pso, f);
+                    foreach (var c in Colors) pso.FindProperty(c).colorValue = so.FindProperty(c).colorValue;
+                    pso.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(p);
+                    Debug.Log("[PawBeamPreset] 현재값 캡처 완료");
+                    return;
+                }
+            }
+            Debug.LogError("[PawBeamPreset] 이 에셋을 참조하는 PawBeam 없음");
+        }
+
+        static void CopyFloat(SerializedObject from, SerializedObject to, string name)
+        {
+            var pf = from.FindProperty(name);
+            var pt = to.FindProperty(name);
+            if (pf == null || pt == null) return;
+            pt.floatValue = pf.floatValue;
+        }
+    }
+}

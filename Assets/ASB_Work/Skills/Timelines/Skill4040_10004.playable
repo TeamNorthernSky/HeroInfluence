@@ -10,12 +10,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 1.0460333417773247
   _kind: 0
   _cueName: fire
   _cueId: ce9cf84756cf47a5a4e943b958c37ae6
+  _targetSlot: 0
+--- !u!114 &-8733704940622399490
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.001
+  _kind: 0
+  _cueName: tao_circle
+  _cueId: 1639151597b94144bc3e06b89e102721
   _targetSlot: 0
 --- !u!114 &-8187205110161100742
 MonoBehaviour:
@@ -28,7 +45,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2a16748d9461eae46a725db9776d5390, type: 3}
   m_Name: Markers
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
@@ -45,6 +62,7 @@ MonoBehaviour:
     - {fileID: 1948569164945263814}
     - {fileID: -9096420387903586370}
     - {fileID: -6843811276188787251}
+    - {fileID: -8733704940622399490}
 --- !u!114 &-7998189615673480041
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -55,8 +73,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62dd47085fb715741b7d8a4ee9f474fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 1.3660667029261588
   _sectionId: Attack
   _boundary: 1
@@ -71,7 +89,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
   m_Name: Sound
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
@@ -97,8 +115,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 1.0460333417773247
   _kind: 1
   _cueName: 
@@ -114,8 +132,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 0.01
   _sfxKey: Battle_PreSkill01
   _durationSeconds: 0
@@ -130,7 +148,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
   m_Name: Speed
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
@@ -154,7 +172,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bfda56da833e2384a9677cd3c976a436, type: 3}
   m_Name: Skill4040_10004
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Version: 0
   m_Tracks:
   - {fileID: 5565768523639875732}
@@ -176,8 +194,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 0.08
   _sfxKey: Battle_Revive
   _durationSeconds: 0
@@ -192,7 +210,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: FP_Supporter_ClassSkill_4
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Clip: {fileID: 7400000, guid: b9563a04026bf004ba34deebc78a882c, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
@@ -213,8 +231,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 1.046
   _sfxKey: Battle_Beam
   _durationSeconds: 0
@@ -228,8 +246,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 0
   _kind: 0
   _cueName: revive
@@ -246,7 +264,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: Attack02_MagicWand
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Clip: {fileID: 1827226128182048838, guid: 19c3be7ecb52baa459ae67d30fdf2e99, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
@@ -268,7 +286,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d21dcc2386d650c4597f3633c75a1f98, type: 3}
   m_Name: Animation
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
@@ -315,7 +333,25 @@ MonoBehaviour:
       m_RotationOrder: 4
     m_MixOutCurve:
       serializedVersion: 2
-      m_Curve: []
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -342,7 +378,25 @@ MonoBehaviour:
     m_BlendOutDuration: -1
     m_MixInCurve:
       serializedVersion: 2
-      m_Curve: []
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -548,8 +602,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62dd47085fb715741b7d8a4ee9f474fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 0
   _sectionId: Attack
   _boundary: 0
@@ -564,7 +618,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: Attack02_MagicWand
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Clip: {fileID: 1827226128182048838, guid: 19c3be7ecb52baa459ae67d30fdf2e99, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
@@ -586,7 +640,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: Attack02_MagicWand
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_Clip: {fileID: 1827226128182048838, guid: 19c3be7ecb52baa459ae67d30fdf2e99, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}

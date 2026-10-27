@@ -20,3 +20,5 @@ MonoBehaviour:
   pillarLife: 0.55
   color: {r: 0.475, g: 0.865, b: 1, a: 1}
   intensity: 2
+  starConeDeg: 34
+  starRate: 160

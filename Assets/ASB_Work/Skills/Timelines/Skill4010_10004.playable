@@ -27,6 +27,7 @@ MonoBehaviour:
     - {fileID: 8805310852894515479}
     - {fileID: -3065461118570564205}
     - {fileID: 8692715500762995306}
+    - {fileID: 7630003714249927984}
 --- !u!114 &-5561925640937586708
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -87,8 +88,8 @@ MonoBehaviour:
     m_Duration: 0.3333333432674408
     m_TimeScale: 1
     m_ParentTrack: {fileID: -1899683583494816714}
-    m_EaseInDuration: 0
-    m_EaseOutDuration: 0
+    m_EaseInDuration: 0.08
+    m_EaseOutDuration: 0.08
     m_BlendInDuration: -1
     m_BlendOutDuration: -1
     m_MixInCurve:
@@ -179,9 +180,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: FP_Supporter_ClassSkill_1
+  m_Name: Neko Heal Stationary Charge
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: 3b4d256e96c8e7b4bb13f6429bf2cf36, type: 2}
+  m_Clip: {fileID: 7400000, guid: 5e0f6ca9c63563a4bb1727a619b8c019, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -294,6 +295,20 @@ MonoBehaviour:
   m_Time: 0.033
   _sfxKey: Battle_Create
   _durationSeconds: 0
+--- !u!114 &7630003714249927984
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9f0b70f2822b1439a1f6b75599521f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.12
+  _durationSeconds: 0.5
 --- !u!114 &8692715500762995306
 MonoBehaviour:
   m_ObjectHideFlags: 1
