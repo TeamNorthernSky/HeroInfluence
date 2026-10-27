@@ -36,7 +36,7 @@ public class GateLifecycleController : MonoBehaviour
         ResolveReferences();
         SubscribeTurnManager();
         RegisterSceneGates();
-        EvaluateOpenGates(ResolveCurrentDay());
+        EvaluateOpenGates(ResolveCurrentDay(), false);
     }
 
     private void OnDisable()
@@ -83,7 +83,7 @@ public class GateLifecycleController : MonoBehaviour
             return;
 
         gates.Add(gate);
-        EvaluateGate(gate, ResolveCurrentDay());
+        EvaluateGate(gate, ResolveCurrentDay(), false);
     }
 
     public void UnregisterGate(GateRuntimeController gate)
@@ -105,7 +105,7 @@ public class GateLifecycleController : MonoBehaviour
         EvaluateOpenGates(day);
     }
 
-    private void EvaluateOpenGates(int day)
+    private void EvaluateOpenGates(int day, bool presentChange = true)
     {
         for (int i = gates.Count - 1; i >= 0; i--)
         {
@@ -116,11 +116,11 @@ public class GateLifecycleController : MonoBehaviour
                 continue;
             }
 
-            EvaluateGate(gate, day);
+            EvaluateGate(gate, day, presentChange);
         }
     }
 
-    private void EvaluateGate(GateRuntimeController gate, int day)
+    private void EvaluateGate(GateRuntimeController gate, int day, bool presentChange = true)
     {
         if (gate == null || !gate.IsOpen)
             return;
@@ -140,7 +140,7 @@ public class GateLifecycleController : MonoBehaviour
         if (elapsedTurns < OpenDurationTurns)
             return;
 
-        gate.CloseGate(day);
+        gate.CloseGate(day, presentChange);
     }
 
     private static bool HasConnectedActiveThreat(MapProgressRepository repository, GateRuntimeController gate)

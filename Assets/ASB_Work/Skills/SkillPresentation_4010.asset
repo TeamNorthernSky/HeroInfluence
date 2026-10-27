@@ -32,7 +32,7 @@ MonoBehaviour:
   EnableHitEffect: 1
   HitEffectId: 98019
   ProjectileVisual:
-    Prefab: {fileID: 7726389985300732922, guid: a0c933e6062621e49b09f12052dfa234,
+    Prefab: {fileID: 7726389985300732922, guid: 5e20caca018848e4d9d5c2837cbc78fc,
       type: 3}
     Speed: 7
     Trajectory: 1
@@ -85,7 +85,7 @@ MonoBehaviour:
         EffectIds: e27e0100
         SoundIds: 
         Operation: 0
-        InstanceKey: 
+        InstanceKey: neko_heal_charge
         Anchor: 1
         Socket: 11
         Timing: 0

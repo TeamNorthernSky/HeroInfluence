@@ -62,6 +62,9 @@ namespace YT.Preview
             }
             // 실제 전투의 스폰/스탯 설정은 그대로 사용하고 턴 진행만 멈춥니다.
             flow.StopBattleLoop();
+            // 프리뷰는 첫 턴 진입까지 진행하지 않으므로 진입 UI 숨김도 함께 해제합니다.
+            var entryGate = JC.BattleTesting.JcBattleHudEntryGate.Find(gameObject.scene);
+            if (entryGate != null) entryGate.gameObject.SetActive(false);
             flowLock = flow.AcquireFlowLock(this, "YT skill preview");
             yield return null;
             foreach (var unit in flow.Participants.Where(u => u != null))

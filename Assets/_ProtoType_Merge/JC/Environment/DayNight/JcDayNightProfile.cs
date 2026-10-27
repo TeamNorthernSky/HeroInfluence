@@ -59,10 +59,37 @@ namespace JC.Environment {
   public Key Evaluate(double totalHours){
    float h=(float)(totalHours%24);if(h<0)h+=24;
    if(keys==null||keys.Length<2) return K(h,38,110,1.15f,Color.white,1);
-   Key a=keys[0],b=keys[keys.Length-1];
-   for(int i=1;i<keys.Length;i++)if(h<=keys[i].hour){a=keys[i-1];b=keys[i];break;}
-   float t=Mathf.SmoothStep(0,1,Mathf.InverseLerp(a.hour,b.hour,h));
-   return K(h,Mathf.Lerp(a.elevation,b.elevation,t),Mathf.LerpAngle(a.azimuth,b.azimuth,t),Mathf.Lerp(a.intensity,b.intensity,t),Color.Lerp(a.lightColor,b.lightColor,t),Mathf.Lerp(a.daylight,b.daylight,t));
+   int segment=keys.Length-2;
+   for(int i=1;i<keys.Length;i++)if(h<=keys[i].hour){segment=i-1;break;}
+   Key a=keys[segment],b=keys[segment+1];
+   float progress=Mathf.InverseLerp(a.hour,b.hour,h);
+   float t=Mathf.SmoothStep(0,1,progress);
+   return K(h,InterpolateMotion(segment,progress,false),InterpolateMotion(segment,progress,true),Mathf.Lerp(a.intensity,b.intensity,t),Color.Lerp(a.lightColor,b.lightColor,t),Mathf.Lerp(a.daylight,b.daylight,t));
+  }
+  // 시간 키 경계에서 속도를 공유합니다. 고도의 극점에서는 높이 변화만 반전하고 방위는 계속 진행합니다.
+  float InterpolateMotion(int segment,float t,bool azimuth){
+   Key a=keys[segment],b=keys[segment+1];
+   if(keys.Length<3)return azimuth?Mathf.LerpAngle(a.azimuth,b.azimuth,t):Mathf.Lerp(a.elevation,b.elevation,t);
+   Key previous=keys[segment>0?segment-1:keys.Length-2];
+   Key next=keys[segment+2<keys.Length?segment+2:1];
+   float span=Mathf.Max(.001f,b.hour-a.hour);
+   float before=a.hour-previous.hour;if(before<=0)before+=24;
+   float after=next.hour-b.hour;if(after<=0)after+=24;
+   before=Mathf.Max(.001f,before);after=Mathf.Max(.001f,after);
+   float value=azimuth?a.azimuth:a.elevation;
+   float delta=azimuth?Mathf.DeltaAngle(a.azimuth,b.azimuth):b.elevation-a.elevation;
+   float left=(azimuth?Mathf.DeltaAngle(previous.azimuth,a.azimuth):a.elevation-previous.elevation)/before;
+   float middle=delta/span;
+   float right=(azimuth?Mathf.DeltaAngle(b.azimuth,next.azimuth):next.elevation-b.elevation)/after;
+   float m0=MotionSlope(left,middle,before,span)*span;
+   float m1=MotionSlope(middle,right,span,after)*span;
+   float t2=t*t,t3=t2*t;
+   return value+(-2*t3+3*t2)*delta+(t3-2*t2+t)*m0+(t3-t2)*m1;
+  }
+  static float MotionSlope(float left,float right,float before,float after){
+   if(left*right<=0)return 0;
+   float w0=2*after+before,w1=after+2*before;
+   return (w0+w1)/(w0/left+w1/right);
   }
  }
 }

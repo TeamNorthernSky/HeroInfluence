@@ -12,20 +12,20 @@ public sealed class VisualEffectGraphEffectTests
 
     private static readonly string[] LoopCuePrefabPaths =
     {
-        "Assets/ASB_Work/Effect/Yulia/Boss/FX_400010_YuliaCastCharge.prefab",
-        "Assets/ASB_Work/Effect/Yulia/Amplifier/FX_400020_AmplifierCastCharge.prefab"
+        "Assets/RenderFX/EnemySkill/Yulia/Boss/FX_Yulia_400010_CastCharge.prefab",
+        "Assets/RenderFX/EnemySkill/Yulia/Amplifier/FX_Yulia_400020_AmplifierCastCharge.prefab"
     };
 
     private static readonly string[] PersistentPrefabPaths =
     {
-        "Assets/ASB_Work/Effect/Yulia/Amplifier/FX_AmplifierIdleElectric.prefab",
-        "Assets/ASB_Work/Effect/Yulia/Boss/FX_YuliaIdleHandOrb.prefab"
+        "Assets/RenderFX/EnemySkill/Yulia/Amplifier/FX_Yulia_AmplifierIdleElectric.prefab",
+        "Assets/RenderFX/EnemySkill/Yulia/Boss/FX_Yulia_IdleHandOrb.prefab"
     };
 
     private static readonly string[] OneShotPrefabPaths =
     {
-        "Assets/ASB_Work/Effect/Yulia/Boss/FX_400019_YuliaLightningHit.prefab",
-        "Assets/ASB_Work/Effect/Yulia/Hoop/FX_HoopSummonPortal.prefab"
+        "Assets/RenderFX/EnemySkill/Yulia/Boss/FX_Yulia_400019_LightningHit.prefab",
+        "Assets/RenderFX/EnemySkill/Yulia/Hoop/FX_Yulia_HoopSummonPortal.prefab"
     };
 
     private static readonly string[] YuliaLightningSkills = { "400011", "400012", "400023", "400033" };

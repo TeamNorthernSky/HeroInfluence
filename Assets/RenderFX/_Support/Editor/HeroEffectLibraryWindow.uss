@@ -1,0 +1,25 @@
+.library { flex-grow: 1; padding: 12px; }
+.title { font-size: 18px; -unity-font-style: bold; margin-bottom: 5px; }
+.subtitle { white-space: normal; margin-bottom: 12px; }
+.toolbar { flex-direction: row; margin-bottom: 10px; }
+.hero-tabs { flex-grow: 1; flex-direction: row; }
+.hero-tabs Button { min-width: 92px; min-height: 28px; margin-right: 4px; }
+.hero-tabs .selected { background-color: rgb(49, 102, 154); color: white; }
+.content { flex-grow: 1; }
+.skill-card { margin-bottom: 12px; padding: 10px; background-color: rgba(110, 110, 110, 0.12); border-radius: 5px; }
+.skill-header { flex-direction: row; align-items: center; margin-bottom: 7px; }
+.skill-header Label { flex-grow: 1; font-size: 14px; -unity-font-style: bold; }
+.variants { flex-direction: row; }
+.variant { flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0; margin-right: 8px; }
+.variant-title { -unity-font-style: bold; margin-bottom: 5px; }
+.asset-row { min-width: 0; margin-bottom: 9px; }
+.asset-row > Label { white-space: normal; margin-bottom: 3px; }
+.asset-controls { flex-direction: row; align-items: center; min-width: 0; }
+.asset-controls ObjectField { flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 0; }
+.asset-controls .unity-base-field__input { min-width: 0; }
+.asset-controls Button { min-width: 38px; flex-shrink: 0; }
+.variant-difference > Label { color: rgb(255, 211, 121); -unity-font-style: bold; }
+.section-tabs { flex-direction: row; margin-bottom: 12px; }
+.section-tabs Button { min-width: 130px; min-height: 28px; margin-right: 6px; }
+.section-tabs .selected { background-color: rgb(49, 102, 154); color: white; }
+.variant Foldout { margin-top: 6px; }

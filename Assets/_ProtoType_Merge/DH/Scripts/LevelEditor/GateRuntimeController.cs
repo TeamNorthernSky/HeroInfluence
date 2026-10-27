@@ -15,6 +15,7 @@ public class GateRuntimeController : MonoBehaviour
     private bool registeredThreat;
     private bool registeredTeleport;
     private bool registeredLifecycle;
+    private bool visualChangePending;
 
     public string GateId => NormalizeId(gateId);
     public string FirstZoneId => NormalizeId(firstZoneId);
@@ -170,28 +171,25 @@ public class GateRuntimeController : MonoBehaviour
         return true;
     }
 
-    public void OpenGate(int day)
+    public void OpenGate(int day, bool presentChange = true)
     {
-        SetOpen(true, day, true);
+        SetOpen(true, day, true, presentChange);
     }
 
-    public void CloseGate(int day)
+    public void CloseGate(int day, bool presentChange = true)
     {
-        SetOpen(false, day, true);
+        SetOpen(false, day, true, presentChange);
     }
 
-    public void SetOpen(bool nextOpen, int day, bool saveProgress)
+    public void SetOpen(bool nextOpen, int day, bool saveProgress, bool presentChange = false)
     {
         bool wasOpen = isOpen;
         isOpen = nextOpen;
 
-        // Closed gates show their visual blockers; open gates hide them and unregister movement blockers.
-        for (int i = 0; i < gateVisualObjects.Count; i++)
-        {
-            GameObject blocker = gateVisualObjects[i];
-            if (blocker != null)
-                blocker.SetActive(!isOpen);
-        }
+        if (wasOpen != isOpen && presentChange && GateCameraFocusController.TryQueue(this))
+            visualChangePending = true;
+        else if (!visualChangePending || !presentChange)
+            ApplyPendingVisualState();
 
         if (wasOpen != isOpen || blockerCells.Count > 0)
         {
@@ -201,11 +199,32 @@ public class GateRuntimeController : MonoBehaviour
                 RegisterCurrentGateBlockers();
         }
 
+        if (wasOpen != isOpen)
+            MoveRangeController.NotifyOccupancyChanged();
+
         if (!saveProgress)
             return;
 
         MapProgressRepository repository = MapProgressRepository.Instance;
         repository?.SetGateState(GateId, isOpen, Mathf.Max(1, day));
+    }
+
+    public void ApplyPendingVisualState()
+    {
+        visualChangePending = false;
+        for (int i = 0; i < gateVisualObjects.Count; i++)
+            if (gateVisualObjects[i] != null)
+                gateVisualObjects[i].SetActive(!isOpen);
+    }
+
+    public Vector3 GetFocusWorldPosition()
+    {
+        GridManager grid = ResolveGridManager();
+        if (grid == null || blockerCells.Count == 0) return transform.position;
+        Vector3 center = Vector3.zero;
+        for (int i = 0; i < blockerCells.Count; i++)
+            center += grid.GridToWorldCenter(blockerCells[i]);
+        return center / blockerCells.Count;
     }
 
     private void ApplyProgressOrInitialState()

@@ -7645,6 +7645,7 @@ MonoBehaviour:
   tutorialBattleKeyOverride: 
   tutorialZoneIdOverride: -1
   battleUIManager: {fileID: 1283565776}
+  resultPanelDelay: 1
   returnSceneName: DHScene_3
   returnDelay: 0.5
   fadeOutDuration: 1
@@ -11448,6 +11449,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   profile: {fileID: 11400000, guid: 042fb1cf82d10fc44b21df91941a27e5, type: 2}
   targetRoot: {fileID: 0}
+  distributeVariants: 0
+  variantSeed: 260926
+  fixedVariants: []
 --- !u!4 &843482389
 Transform:
   m_ObjectHideFlags: 0
@@ -13294,6 +13298,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: 103e81596830fe54fabf20cab343cca1, type: 2}
   profile: {fileID: 11400000, guid: 53b47e92c19c93349a3a85f66e89c258, type: 2}
+  variantId: 
   parts:
   - hue: 90
     lightness: 1
@@ -13379,6 +13384,8 @@ MonoBehaviour:
   showOriginal: 0
   highlightedPart: -1
   searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!1 &901010452
 GameObject:
   m_ObjectHideFlags: 0
@@ -22620,6 +22627,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: daed6ab618224a941afa62308e8d812e, type: 2}
   profile: {fileID: 11400000, guid: 8c0cbb688b562914095246d97f85adb9, type: 2}
+  variantId: 
   parts:
   - hue: 90
     lightness: 1
@@ -22700,6 +22708,8 @@ MonoBehaviour:
   showOriginal: 0
   highlightedPart: -1
   searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!1 &1492584527
 GameObject:
   m_ObjectHideFlags: 0
@@ -26762,6 +26772,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: 74dd580aa3246ac46bb211a4c0a15441, type: 2}
   profile: {fileID: 11400000, guid: 1b6b1e12e942ed44b8f671a98578adda, type: 2}
+  variantId: 
   parts:
   - hue: 90
     lightness: 1
@@ -26837,6 +26848,8 @@ MonoBehaviour:
   showOriginal: 0
   highlightedPart: -1
   searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!1 &1719896255
 GameObject:
   m_ObjectHideFlags: 0
@@ -30254,6 +30267,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: 0492afafc28d43347b17c91250ded7bf, type: 2}
   profile: {fileID: 11400000, guid: 7e576e23d0235974e8e4b2046de6f221, type: 2}
+  variantId: 
   parts:
   - hue: 90
     lightness: 1
@@ -30329,6 +30343,8 @@ MonoBehaviour:
   showOriginal: 0
   highlightedPart: -1
   searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!1 &1926818295
 GameObject:
   m_ObjectHideFlags: 0

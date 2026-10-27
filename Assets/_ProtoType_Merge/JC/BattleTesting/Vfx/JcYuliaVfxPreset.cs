@@ -3,7 +3,7 @@ using UnityEngine;
 namespace JC.BattleTesting.Vfx
 {
     // [본게임 공유 주의 / 2026-10-13] 이 설정 클래스는 JC 테스트용이지만 아래 재질 3개는 본게임도 사용합니다.
-    // ASB_Work/Effect/Hoop/HoopVfxPreset.asset이 JC_YuliaEnergy.mat, JC_YuliaSmoke.mat,
+    // RenderFX/EnemySkill/Yulia/Presets/Hoop/HoopVfxPreset.asset이 JC_YuliaEnergy.mat, JC_YuliaSmoke.mat,
     // JC_DespairWheelFrame.mat을 직접 참조합니다. 앞의 두 재질은 JcYuliaEnergy.shader도 공유합니다.
     // 테스트 폴더 정리 시 이 4개 자산과 .meta를 삭제하지 마십시오. 재질 수정은 본게임 굴렁쇠에도 반영됩니다.
     // 양쪽 프리셋의 색·시간 값은 별개이며 자동 동기화되지 않습니다. 현재 공유 유지, 1차 완성 후 리팩토링 검토.

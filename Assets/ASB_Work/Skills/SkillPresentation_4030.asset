@@ -32,7 +32,7 @@ MonoBehaviour:
   EnableHitEffect: 1
   HitEffectId: 98025
   ProjectileVisual:
-    Prefab: {fileID: 8360249971204413469, guid: b16b4b2e84d919c418054d48939e7ccd,
+    Prefab: {fileID: 8360249971204413469, guid: 9dedbda391901f04bab82d86be07a106,
       type: 3}
     Speed: 7
     Trajectory: 1

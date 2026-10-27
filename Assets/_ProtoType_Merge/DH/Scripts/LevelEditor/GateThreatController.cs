@@ -128,15 +128,15 @@ public class GateThreatController : MonoBehaviour
 
         if (HasLiveThreatEnemyConnectedToGate(gate))
         {
-            gate.CloseGate(ResolveCurrentDay());
+            gate.CloseGate(ResolveCurrentDay(), false);
             return;
         }
 
         if (matchingGateAlreadyOpen)
             gate.SetOpen(true, ResolveCurrentDay(), true);
 
-        RefreshGateOpenStateForZone(gate.FirstZoneId);
-        RefreshGateOpenStateForZone(gate.SecondZoneId);
+        RefreshGateOpenStateForZone(gate.FirstZoneId, false);
+        RefreshGateOpenStateForZone(gate.SecondZoneId, false);
     }
 
     public void UnregisterGate(GateRuntimeController gate)
@@ -620,6 +620,8 @@ public class GateThreatController : MonoBehaviour
             gateBlockerDeferredThreatZones.Remove(normalizedZoneId);
             repository.ClearZoneThreatSpawnPending(normalizedZoneId);
             repository.SetZoneThreatEnemy(normalizedZoneId, placementKey);
+            yield return GateCameraFocusController.WaitForIdle();
+            if (DHGameEndState.IsEnding) yield break;
             bool chatClosed = false;
             // Spawn chat is optional; when present, enemy movement waits until the modal closes.
             if (TryShowSpawnChat(spawnPoint, placementKey, () => chatClosed = true))
@@ -786,7 +788,7 @@ public class GateThreatController : MonoBehaviour
             spawnPoint.EventBattleKey);
     }
 
-    private void RefreshGateOpenStateForZone(string zoneId)
+    private void RefreshGateOpenStateForZone(string zoneId, bool presentChange = true)
     {
         string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
         if (string.IsNullOrWhiteSpace(normalizedZoneId))
@@ -800,10 +802,10 @@ public class GateThreatController : MonoBehaviour
                 continue;
 
             if (HasLiveThreatEnemyConnectedToGate(gate))
-                gate.CloseGate(day);
+                gate.CloseGate(day, presentChange);
             // FirstZoneId owns this gate's unlock condition; either connected zone may block it.
             else if (IsZoneClearedForGateOpen(gate.FirstZoneId))
-                gate.OpenGate(day);
+                gate.OpenGate(day, presentChange);
         }
     }
 

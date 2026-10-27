@@ -86,7 +86,7 @@ public class TurnManager : MonoBehaviour
 
     public void EndPlayerTurn()
     {
-        if (DHGameEndState.IsEnding || enemyTurnRunning || completingTurn || pendingEnemyTurnStartCoroutine != null)
+        if (DHGameEndState.IsEnding || GateCameraFocusController.IsBusy || enemyTurnRunning || completingTurn || pendingEnemyTurnStartCoroutine != null)
             return;
 
         ClearAutomaticEndTurn();
@@ -247,11 +247,17 @@ public class TurnManager : MonoBehaviour
 
     private IEnumerator StartEnemyTurnAfterPendingThreats()
     {
+        while (HasOpenExplorationPresentation())
+            yield return null;
+
         if (gateThreatController == null)
             gateThreatController = FindFirstObjectByType<GateThreatController>();
 
         if (gateThreatController != null)
             yield return gateThreatController.ResolvePendingThreatsBeforeEnemyTurn();
+
+        while (HasOpenExplorationPresentation())
+            yield return null;
 
         pendingEnemyTurnStartCoroutine = null;
         StartEnemyTurn();
@@ -395,8 +401,11 @@ public class TurnManager : MonoBehaviour
         while (CombatContext.Instance != null && CombatContext.Instance.Result != CombatResult.None)
             yield return null;
 
-        // Chat logic can finish before reward confirmation and the modal's exit animation.
-        while ((ChatManager.Instance != null && ChatManager.Instance.IsRunning) || ChatModalController.IsOpen)
+        // 전투 보상으로 열린 조건 이벤트와 연쇄 검사까지 끝난 뒤 HUD를 잠급니다.
+        DHWorldEventConditionRuntimeManager.Instance?.RequestCheck();
+        yield return null;
+        while (HasOpenExplorationPresentation() ||
+            (DHWorldEventConditionRuntimeManager.Instance != null && DHWorldEventConditionRuntimeManager.Instance.IsCheckPending))
             yield return null;
 
         if (DHGameEndState.IsEnding || enemyTurnRunning)
@@ -416,6 +425,14 @@ public class TurnManager : MonoBehaviour
         EnemyTurnStateChanged?.Invoke(true);
         UpdateTurnStateText("Enemy Turn");
         StartCoroutine(RunEnemyTurn());
+    }
+
+    private static bool HasOpenExplorationPresentation()
+    {
+        return (ChatManager.Instance != null && ChatManager.Instance.IsRunning) || ChatModalController.IsOpen ||
+            ModalManager.HasAny ||
+            (DHWorldEventRuntimeManager.Instance != null && DHWorldEventRuntimeManager.Instance.IsRunning) ||
+            (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning);
     }
 
     private IEnumerator CaptureInitialTurnStartSnapshotAfterSceneReady()

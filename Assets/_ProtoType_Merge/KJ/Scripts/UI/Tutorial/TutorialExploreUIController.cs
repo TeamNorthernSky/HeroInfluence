@@ -72,7 +72,12 @@ public sealed class TutorialExploreUIController : MonoBehaviour
 
         if (repository == null || repository.LastCombatResult != CombatResult.Victory ||
             repository.IsMessageSeen(PublicityIntroSeenKey)) yield break;
-        if (!IsShowing) BeginPublicityIntroduction();
+        if (!IsShowing)
+        {
+            // 첫 전투 복귀 시 높이 보정을 먼저 끝내고 홍보 튜토리얼을 시작합니다.
+            if (publicityEntryGuide != null) yield return publicityEntryGuide.PrepareFirstVictoryCamera();
+            BeginPublicityIntroduction();
+        }
         victoryReturnContext = null;
     }
 
@@ -87,6 +92,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
 
     private void RefreshPublicityEntry(bool pointerHeld, bool clicked)
     {
+        if (TutorialExploreSceneSkip.IsConfirmationOpen) return;
         if (entryStage == EntryStage.None || Time.frameCount == entryOpenedFrame) return;
         if (entryAwaitingRelease)
         {
@@ -97,7 +103,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         }
         if (entryStage == EntryStage.Introduction &&
             ModalManager.Top == publicityEntryGuide.explanationShield &&
-            JcPointerInput.CanControl && JcPointerInput.Inside && clicked)
+            JcPointerInput.CanControl && JcPointerInput.Inside && clicked && !TutorialExploreSceneSkip.PointerOverSkipButton)
         {
             entryStage = EntryStage.Button;
             entryAwaitingRelease = true;

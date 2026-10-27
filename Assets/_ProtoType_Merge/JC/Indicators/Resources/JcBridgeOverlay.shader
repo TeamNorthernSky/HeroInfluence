@@ -2,6 +2,7 @@ Shader "JC/Indicators/Bridge Overlay"
 {
     Properties
     {
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("Depth Test", Float) = 4
         _Intensity ("Emission Intensity", Float) = 1
         _VolumeShade ("Arrow Face Contrast", Float) = 0
         _NightIntensityMultiplier ("Night Intensity Multiplier", Float) = 0.2
@@ -28,13 +29,13 @@ Shader "JC/Indicators/Bridge Overlay"
     }
     SubShader
     {
-        Tags { "RenderPipeline"="UniversalPipeline" "Queue"="Overlay" "RenderType"="Transparent" }
+        Tags { "RenderPipeline"="UniversalPipeline" "Queue"="Transparent" "RenderType"="Transparent" }
         Pass
         {
             Tags { "LightMode"="UniversalForward" }
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
-            ZTest Always
+            ZTest [_ZTest]
             Cull [_Cull]
             HLSLPROGRAM
             #pragma vertex vert

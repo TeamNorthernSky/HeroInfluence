@@ -10,7 +10,7 @@ using UnityEngine;
 public sealed class YuliaBattleVfxTests
 {
     private const BindingFlags AnyStatic = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-    private const string HoopPresetPath = "Assets/ASB_Work/Effect/Hoop/HoopVfxPreset.asset";
+    private const string HoopPresetPath = "Assets/RenderFX/EnemySkill/Yulia/Presets/Hoop/HoopVfxPreset.asset";
     private const string AmplifierModelPath = "Assets/Resources/prefab/CommonPrefab/EnemyUnit/CommonModel_VillanAmplifier.prefab";
     private const string MadonnaUnitPath = "Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanMadonna_40001.prefab";
 
@@ -157,8 +157,8 @@ public sealed class YuliaBattleVfxTests
     // ----- 2026-10-19 미적용 항목 보완(Y01·Y05·Y06·Y07·Y10·Y11·A04) -----
 
     private const string WheelUnitPath = "Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanWheel_40005.prefab";
-    private const string RowLightningPath = "Assets/ASB_Work/Effect/Yulia/Boss/FX_400011_RowLightning.prefab";
-    private const string RowBeamPath = "Assets/ASB_Work/Effect/Yulia/Boss/FX_400012_RowBeam.prefab";
+    private const string RowLightningPath = "Assets/RenderFX/EnemySkill/Yulia/Boss/FX_Yulia_400011_RowLightning.prefab";
+    private const string RowBeamPath = "Assets/RenderFX/EnemySkill/Yulia/Boss/FX_Yulia_400012_RowBeam.prefab";
 
     [Test]
     public void Stasis_ShieldShrinksAwayOnDeath()
@@ -307,7 +307,7 @@ public sealed class YuliaBattleVfxTests
         Assert.That(At(0.16f), Is.EqualTo(1f).Within(0.0001f), "0.16초에 원래 크기로 돌아온다.");
     }
 
-    [TestCase("Assets/ASB_Work/Effect/EffectRegistry.asset")]
+    [TestCase("Assets/RenderFX/_Seam/Data/Legacy/Legacy_EffectRegistry.asset")]
     [TestCase("Assets/RenderFX/_Seam/Data/Merged/JC_Merged_EffectRegistry.asset")]
     public void HoopSummonCast_WiredToYuliaSummonChargeCue(string registryPath)
     {

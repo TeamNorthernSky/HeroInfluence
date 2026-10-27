@@ -32,6 +32,13 @@ namespace JC.Indicators
         private float borderIntensity = 1.5f;
         [SerializeField, Range(0, 1), Tooltip("밤의 발광 강도 배율입니다. 기존 낮밤 환경 밝기에 따라 부드럽게 보정합니다.")]
         private float nightIntensityMultiplier = .2f;
+        [Header("입구 기둥 반투명")]
+        [SerializeField, Range(0, 1), Tooltip("워프 활성화 시 입구의 화면 아래쪽(남쪽) 기둥 불투명도입니다. 0은 투명, 1은 불투명입니다. 플레이 중 즉시 조절할 수 있습니다.")]
+        private float entrancePillarOpacity = .35f;
+        [SerializeField, Min(0), Tooltip("기둥이 반투명해지거나 원래대로 돌아오는 시간(초)입니다.")]
+        private float pillarFadeSeconds = .25f;
+        private JcBridgePillarFade pillarFade;
+        private bool warpAvailable;
 
         private sealed class CellView
         {
@@ -50,6 +57,7 @@ namespace JC.Indicators
         private MaterialPropertyBlock arrowProperties;
         private Mesh arrowMesh;
         private Material overlayBorderMaterial, overlayArrowMaterial;
+        private Material northBorderMaterial, northArrowMaterial;
         private float nextRefresh;
         private float configuredSize = -1;
         private float configuredArrowScale = -1;
@@ -64,6 +72,7 @@ namespace JC.Indicators
                 nextRefresh = Time.unscaledTime + .2f;
             }
             Render(Time.unscaledTime);
+            if (pillarFade != null) pillarFade.Tick(warpAvailable ? entrancePillarOpacity : 1, pillarFadeSeconds, Time.unscaledDeltaTime);
         }
 
         /// <summary>게이트 재생성·로드 후에도 기존 실제 상태로 표시를 다시 구성합니다.</summary>
@@ -78,6 +87,7 @@ namespace JC.Indicators
             if (sourceGate != null) sourceGate.CollectTeleportCells(cells);
             if (grid == null || borderPrefab == null || borderProfile == null)
             {
+                warpAvailable = false;
                 ClearViews();
                 return;
             }
@@ -86,6 +96,7 @@ namespace JC.Indicators
                 || !Mathf.Approximately(configuredArrowScale, arrowScale);
             for (int i = 0; !rebuild && i < cells.Count; i++) rebuild = views[i].cell != cells[i];
             if (rebuild) BuildViews();
+            warpAvailable = false;
             for (int i = 0; i < views.Count; i++)
             {
                 bool available = sourceGate != null && sourceGate.isActiveAndEnabled && sourceGate.IsOpen
@@ -93,6 +104,14 @@ namespace JC.Indicators
                     && destinationGate.TryGetTeleportCellByIndex(i, out var target)
                     && grid.CanOccupyCell(target, party != null ? party.transform : null, true);
                 views[i].root.SetActive(available);
+                warpAvailable |= available;
+            }
+            if (pillarFade != null && !pillarFade.IsValid) { pillarFade.Dispose(); pillarFade = null; }
+            if (warpAvailable && pillarFade == null && cells.Count > 0)
+            {
+                var focus = Vector3.zero;
+                foreach (var cell in cells) focus += grid.GridToWorldCenter(cell);
+                pillarFade = JcBridgePillarFade.TryCreate(gameObject.scene, focus / cells.Count, grid.CellSize);
             }
             Render(Time.unscaledTime);
         }
@@ -168,11 +187,23 @@ namespace JC.Indicators
             arrowMesh = BuildArrowMesh();
             var shader = Resources.Load<Shader>("JcBridgeOverlay");
             if (shader == null) { ClearViews(); return; }
-            overlayBorderMaterial = new Material(shader) { name = "다리 테두리 전용", hideFlags = HideFlags.HideAndDontSave, renderQueue = 4000 };
-            overlayArrowMaterial = new Material(shader) { name = "다리 화살표 전용", hideFlags = HideFlags.HideAndDontSave, renderQueue = 4001 };
+            overlayBorderMaterial = new Material(shader) { name = "다리 테두리 전용", hideFlags = HideFlags.HideAndDontSave, renderQueue = 3000 };
+            overlayArrowMaterial = new Material(shader) { name = "다리 화살표 전용", hideFlags = HideFlags.HideAndDontSave, renderQueue = 3001 };
             overlayArrowMaterial.SetFloat("_VolumeShade", 1);
+            northBorderMaterial = new Material(overlayBorderMaterial) { name = "북쪽 입구 · 최상단 테두리", renderQueue = 4000 };
+            northArrowMaterial = new Material(overlayArrowMaterial) { name = "북쪽 입구 · 최상단 화살표", renderQueue = 4001 };
+            northBorderMaterial.SetFloat("_ZTest", (float)CompareFunction.Always);
+            northArrowMaterial.SetFloat("_ZTest", (float)CompareFunction.Always);
+            float minZ = float.PositiveInfinity, maxZ = float.NegativeInfinity;
             foreach (var cell in cells)
             {
+                float z = grid.GridToWorldCenter(cell).z;
+                minZ = Mathf.Min(minZ, z); maxZ = Mathf.Max(maxZ, z);
+            }
+            foreach (var cell in cells)
+            {
+                // 화면 위쪽(+Z) 표시는 기둥 위에, 아래쪽 표시는 반투명 기둥 뒤에 합성합니다.
+                bool north = grid.GridToWorldCenter(cell).z > (minZ + maxZ) * .5f + .001f;
                 var view = new CellView { cell = cell, root = new GameObject("다리 진입 " + cell) };
                 view.root.hideFlags = HideFlags.DontSave;
                 view.root.transform.SetParent(transform, false);
@@ -180,7 +211,7 @@ namespace JC.Indicators
                 view.border.SetDriven(true);
                 foreach (var renderer in view.border.GetComponentsInChildren<MeshRenderer>(true))
                 {
-                    renderer.sharedMaterial = overlayBorderMaterial;
+                    renderer.sharedMaterial = north ? northBorderMaterial : overlayBorderMaterial;
                     renderer.shadowCastingMode = ShadowCastingMode.Off;
                     renderer.receiveShadows = false;
                     renderer.allowOcclusionWhenDynamic = false;
@@ -199,7 +230,7 @@ namespace JC.Indicators
                     arrow.transform.localScale = Vector3.one * (grid.CellSize * scale);
                     arrow.AddComponent<MeshFilter>().sharedMesh = arrowMesh;
                     var renderer = arrow.AddComponent<MeshRenderer>();
-                    renderer.sharedMaterial = overlayArrowMaterial;
+                    renderer.sharedMaterial = north ? northArrowMaterial : overlayArrowMaterial;
                     renderer.allowOcclusionWhenDynamic = false;
                     renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = false;
                     view.arrows[i] = renderer;
@@ -218,6 +249,10 @@ namespace JC.Indicators
             overlayArrowMaterial.SetFloat("_Intensity", Mathf.Max(0, arrowIntensity));
             overlayBorderMaterial.SetFloat("_NightIntensityMultiplier", nightIntensityMultiplier);
             overlayArrowMaterial.SetFloat("_NightIntensityMultiplier", nightIntensityMultiplier);
+            northBorderMaterial.SetFloat("_Intensity", Mathf.Max(0, borderIntensity));
+            northArrowMaterial.SetFloat("_Intensity", Mathf.Max(0, arrowIntensity));
+            northBorderMaterial.SetFloat("_NightIntensityMultiplier", nightIntensityMultiplier);
+            northArrowMaterial.SetFloat("_NightIntensityMultiplier", nightIntensityMultiplier);
             if (arrowProperties == null) arrowProperties = new MaterialPropertyBlock();
             foreach (var view in views)
             {
@@ -287,8 +322,11 @@ namespace JC.Indicators
             if (overlayBorderMaterial != null) { if (Application.isPlaying) Destroy(overlayBorderMaterial); else DestroyImmediate(overlayBorderMaterial); }
             if (overlayArrowMaterial != null) { if (Application.isPlaying) Destroy(overlayArrowMaterial); else DestroyImmediate(overlayArrowMaterial); }
             overlayBorderMaterial = null; overlayArrowMaterial = null;
+            if (northBorderMaterial != null) { if (Application.isPlaying) Destroy(northBorderMaterial); else DestroyImmediate(northBorderMaterial); }
+            if (northArrowMaterial != null) { if (Application.isPlaying) Destroy(northArrowMaterial); else DestroyImmediate(northArrowMaterial); }
+            northBorderMaterial = null; northArrowMaterial = null;
         }
 
-        private void OnDisable() { ClearViews(); }
+        private void OnDisable() { ClearViews(); warpAvailable = false; pillarFade?.Dispose(); pillarFade = null; }
     }
 }

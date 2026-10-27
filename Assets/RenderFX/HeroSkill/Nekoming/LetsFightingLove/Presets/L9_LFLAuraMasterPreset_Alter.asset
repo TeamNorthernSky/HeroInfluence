@@ -17,4 +17,4 @@ MonoBehaviour:
   rootEuler: {x: 0, y: 0, z: 0}
   duration: 2
   fadeInTime: 0.2
-  fadeOutTime: 0.2
+  fadeOutTime: 0.6

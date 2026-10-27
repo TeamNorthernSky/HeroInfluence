@@ -85,6 +85,16 @@ MonoBehaviour:
         Timing: 0
         Time: 0
         CueId: 3736132049c24e54a37f405f18515b46
+      - CueName: tao_circle
+        EffectIds: fe7e0100
+        SoundIds:
+        Operation: 0
+        InstanceKey:
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 1639151597b94144bc3e06b89e102721
     - AnimationStateName: Base Layer.WeaponSkill_3
       BlendInSeconds: 0.1
       AdvanceOnEvent: 0
