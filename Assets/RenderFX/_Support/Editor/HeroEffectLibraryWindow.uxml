@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="library">
+        <ui:Label text="현재 사용 중인 히어로 이펙트" class="title" />
+        <ui:Label text="실제 전투 카탈로그의 연결을 직접 표시합니다. 파일을 선택하거나 열어서 수정하세요." class="subtitle" />
+        <ui:VisualElement class="toolbar">
+            <ui:VisualElement name="heroTabs" class="hero-tabs" />
+            <ui:Button name="refresh" text="연결 새로 읽기" />
+            <ui:Button name="archive" text="구버전 보관함" />
+        </ui:VisualElement>
+        <ui:ScrollView name="content" class="content" />
+    </ui:VisualElement>
+</ui:UXML>
