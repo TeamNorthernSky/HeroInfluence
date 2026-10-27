@@ -73,6 +73,7 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
     {
         ClearInteractionOverlay();
         enemyRegistry?.Unregister(this);
+        MoveRangeController.NotifyOccupancyChanged();
         combatStarting = false;
     }
 

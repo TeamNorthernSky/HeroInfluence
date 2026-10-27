@@ -53,6 +53,7 @@ public class MainEventObject : MonoBehaviour
     private void OnDisable()
     {
         mainEventRegistry?.Unregister(this);
+        MoveRangeController.NotifyOccupancyChanged();
     }
 
     private void OnDestroy()
