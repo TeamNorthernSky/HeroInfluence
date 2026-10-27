@@ -137,6 +137,7 @@ MonoBehaviour:
     - {fileID: 6990468190937330304}
     - {fileID: -525002156093431563}
     - {fileID: 1016292317399520857}
+    - {fileID: 4128793010200210001}
 --- !u!114 &-5894006144118059355
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -358,3 +359,17 @@ MonoBehaviour:
   m_Time: 0.7333333333333333
   _sfxKey: Battle_LongHit01
   _durationSeconds: 0
+--- !u!114 &4128793010200210001
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac4e4235e4b14553911ace01352d190d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.7333333333333333
+  _strength: 1
