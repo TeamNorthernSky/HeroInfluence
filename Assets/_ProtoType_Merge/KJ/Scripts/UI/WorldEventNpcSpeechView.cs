@@ -21,10 +21,20 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
     private GameObject screenDialogue;
     private TMP_Text screenMessage;
     private DialogueBubblePopEffect screenPop;
+    private QuarterViewCameraFollower eventCamera;
+    private bool waitingForCamera;
     private static WorldEventNpcSpeechView dialogueOwner;
 
     private void OnEnable() { initialized = false; Refresh(); }
     private void LateUpdate() { Refresh(); }
+
+    internal static QuarterViewCameraFollower ResolveEventCamera()
+    {
+        var camera = Camera.main;
+        if (camera != null && camera.TryGetComponent(out QuarterViewCameraFollower follower))
+            return follower;
+        return FindFirstObjectByType<QuarterViewCameraFollower>();
+    }
 
     private bool EnsureScreenDialogue()
     {
@@ -42,6 +52,7 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
 
     private void OnDisable()
     {
+        waitingForCamera = false;
         HideScreenDialogue();
     }
 
@@ -65,7 +76,12 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
             answerPanel = FindFirstObjectByType<WorldEventNpcPanelSelector>(FindObjectsInactive.Include);
         if (initialized && lastId == id && lastCatalog == catalog && ReferenceEquals(lastRequest, request) &&
             lastAnswerPanel == answerPanel &&
-            (request == null || (answerPanel != null && screenMessage != null))) return;
+            (request == null || (answerPanel != null && (screenMessage != null || waitingForCamera))))
+        {
+            // Only retry the pending speech; rebuilding the choices would restart their entrance.
+            if (waitingForCamera) RefreshScreenDialogue(request != null, request != null ? request.MessageText : string.Empty);
+            return;
+        }
         if (answerPanel != null && (lastId != id || request == null))
             answerPanel.HideForEventId(lastId);
         initialized = catalog != null;
@@ -94,17 +110,24 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
         if (Application.isPlaying)
         {
             if (dialogueBubble != null) dialogueBubble.SetActive(false);
-            if (interacting && EnsureScreenDialogue())
-            {
-                bool restart = dialogueOwner != this || screenMessage.text != text;
-                bool wasActive = screenDialogue.activeSelf;
-                dialogueOwner = this;
-                screenMessage.text = text;
-                screenDialogue.SetActive(true);
-                if (wasActive && restart) screenPop?.Play();
-            }
-            else HideScreenDialogue();
+            RefreshScreenDialogue(interacting, text);
         }
         else if (dialogueBubble != null) dialogueBubble.SetActive(interacting);
+    }
+
+    private void RefreshScreenDialogue(bool interacting, string text)
+    {
+        if (interacting && eventCamera == null) eventCamera = ResolveEventCamera();
+        waitingForCamera = interacting && eventCamera != null && eventCamera.IsEventFocusMoving;
+        if (interacting && !waitingForCamera && EnsureScreenDialogue())
+        {
+            bool restart = dialogueOwner != this || screenMessage.text != text;
+            bool wasActive = screenDialogue.activeSelf;
+            dialogueOwner = this;
+            screenMessage.text = text;
+            screenDialogue.SetActive(true);
+            if (wasActive && restart) screenPop?.Play();
+        }
+        else HideScreenDialogue();
     }
 }

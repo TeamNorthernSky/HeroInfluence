@@ -23,6 +23,7 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
 
     private void Update()
     {
+        UpdateHoverHighlight();
         if (DHGameEndState.IsEnding || entering)
             return;
 
@@ -52,6 +53,25 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
             return;
 
         entering = outpost.TryEnterTutorialLobbyScene();
+    }
+
+    private void UpdateHoverHighlight()
+    {
+        JcBuildingSilhouetteFeature.ClearHoverHighlight(this);
+        if (entering || DHGameEndState.IsEnding || WorldInputGate.IsBlocked ||
+            ExplorationModalEvents.MapEventModalActive ||
+            gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene()) return;
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+        if (outpost == null || outpost.CurrentClaimState != TutorialOutpostClaimState.HeroClaimed) return;
+        if (worldCamera == null) worldCamera = Camera.main;
+        if (worldCamera == null || !BuildingEntryPointer.TryHit(worldCamera, rayDistance, out var hit)) return;
+        if (hit.collider == null || hit.collider.GetComponentInParent<TutorialOutpostObject>() != outpost) return;
+        var registry = Object.FindFirstObjectByType<PartyRegistry>();
+        var party = registry != null && registry.PlayerParty != null
+            ? registry.PlayerParty : Object.FindFirstObjectByType<PartyGridMover>();
+        if (party == null || !party.gameObject.activeInHierarchy || DefeatedPartyReturnController.IsPartyWaiting(party)) return;
+        if (!outpost.IsInteractionCell(party.GetCurrentGrid())) return;
+        JcBuildingSilhouetteFeature.SetHoverHighlight(this, transform);
     }
 
     private bool TryHitThisOutpost()
@@ -85,5 +105,5 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
         lastClickTime = now;
         return false;
     }
-    private void OnDisable() { lastClickTime = -1f; entering = false; }
+    private void OnDisable() { JcBuildingSilhouetteFeature.ClearHoverHighlight(this); lastClickTime = -1f; entering = false; }
 }

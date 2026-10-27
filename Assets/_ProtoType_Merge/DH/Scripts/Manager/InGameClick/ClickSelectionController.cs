@@ -35,6 +35,15 @@ public class ClickSelectionController : MonoBehaviour
     private PartySelectionController partySelectionController;
     private MoveCommandPreviewController moveCommandPreviewController;
     private Coroutine pendingMoveRangeRefreshCoroutine;
+    private RaycastHit[] pointerHits = new RaycastHit[64];
+    private readonly System.Collections.Generic.List<Vector2Int> hoverInteractionCells =
+        new System.Collections.Generic.List<Vector2Int>(32);
+    private readonly System.Collections.Generic.List<RaycastResult> hoverUIHits = new System.Collections.Generic.List<RaycastResult>();
+    private PointerEventData hoverPointer;
+    private EventSystem hoverEventSystem;
+    public static ClickSelectionController Active { get; private set; }
+
+    private void OnEnable() => Active = this;
 
     private void Start()
     {
@@ -72,6 +81,7 @@ public class ClickSelectionController : MonoBehaviour
 
     private void OnDisable()
     {
+        if (Active == this) Active = null;
         moveCommandPreviewController?.HideGuidance();
     }
 
@@ -203,6 +213,147 @@ public class ClickSelectionController : MonoBehaviour
             && !DefeatedPartyReturnController.IsPartyWaiting(mover);
     }
 
+    /// <summary>표시 전용 조회입니다. 경로 미리보기·선택·이동 명령을 실행하지 않습니다.</summary>
+    public bool IsPointerOverUnreachableGround(Vector2 screenPosition)
+    {
+        PartyGridMover mover = partySelectionController?.ActiveMover;
+        if (!isActiveAndEnabled || WorldInputGate.IsBlocked || SceneFadeController.HideCursorDuringTransition
+            || ExplorationModalEvents.MapEventModalActive || DHGameEndState.IsEnding
+            || mainCamera == null || gridManager == null || moveRangeController == null
+            || !moveRangeController.isActiveAndEnabled || !IsMoverUsable(mover)
+            || mover.IsMoving || IsPartyInputLocked(mover)
+            || (turnManager != null && turnManager.IsEnemyTurnRunning)
+            || IsPointerOverUI(screenPosition))
+            return false;
+
+        Ray ray = mainCamera.ScreenPointToRay(screenPosition);
+        int count = CollectPointerHits(ray);
+        if (!TryGetClosestLandHit(count, out RaycastHit landHit)) return false;
+        Component interactionTarget = null;
+        float interactionDistance = float.PositiveInfinity;
+        for (int i = 0; i < count; i++)
+        {
+            Transform hit = pointerHits[i].transform;
+            if (hit == null || pointerHits[i].distance > landHit.distance + 0.01f) continue;
+            if (partySelectionController.IsSelectionTarget(hit)
+                || (moveCommandPreviewController != null && moveCommandPreviewController.IsConfirmableMarker(hit)))
+                return false;
+
+            Component target = GetInteractionHoverTarget(hit);
+            if (target != null && pointerHits[i].distance < interactionDistance)
+            {
+                interactionTarget = target;
+                interactionDistance = pointerHits[i].distance;
+            }
+        }
+
+        if (interactionTarget != null)
+            return !CanReachHoveredInteraction(interactionTarget, mover);
+
+        Vector2Int cell = gridManager.WorldToGrid(landHit.point);
+        interactionTarget = GetInteractionHoverTargetAtCell(cell);
+        if (interactionTarget != null)
+            return !CanReachHoveredInteraction(interactionTarget, mover);
+        return !moveRangeController.AllowsCell(cell);
+    }
+
+    private bool IsPointerOverUI(Vector2 screenPosition)
+    {
+        var system = EventSystem.current;
+        if (system == null) return false;
+        if (hoverEventSystem != system || hoverPointer == null)
+        {
+            hoverEventSystem = system;
+            hoverPointer = new PointerEventData(system);
+        }
+        hoverPointer.Reset();
+        hoverPointer.position = screenPosition;
+        hoverUIHits.Clear();
+        system.RaycastAll(hoverPointer, hoverUIHits);
+        foreach (var hit in hoverUIHits)
+            if (hit.module is UnityEngine.UI.GraphicRaycaster) return true;
+        return false;
+    }
+
+    private static Component GetInteractionHoverTarget(Transform hit)
+    {
+        return hit.GetComponentInParent<IGridItemObject>() as Component
+            ?? hit.GetComponentInParent<IGridEnemyObject>() as Component
+            ?? (Component)hit.GetComponentInParent<Outpost>()
+            ?? hit.GetComponentInParent<HeroUnionUnit>()
+            ?? (Component)hit.GetComponentInParent<VillainUnionBase>()
+            ?? hit.GetComponentInParent<TutorialBuildingObject>()
+            ?? (Component)hit.GetComponentInParent<TutorialOutpostObject>()
+            ?? hit.GetComponentInParent<MapEventObject>()
+            ?? (Component)hit.GetComponentInParent<WorldEventObject>()
+            ?? hit.GetComponentInParent<MainEventObject>()
+            ?? (Component)hit.GetComponentInParent<SubEventObject>();
+    }
+
+    private Component GetInteractionHoverTargetAtCell(Vector2Int cell)
+    {
+        if (gridManager.TryGetGridItemObjectAtGrid(cell, out IGridItemObject item)) return item as Component;
+        if (gridManager.TryGetGridEnemyObjectAtGrid(cell, out IGridEnemyObject enemy)) return enemy as Component;
+        if (gridManager.TryGetOutpostObjectAtGrid(cell, out Outpost outpost)) return outpost;
+        if (gridManager.TryGetHeroUnionObjectAtGrid(cell, out HeroUnionUnit heroUnion)) return heroUnion;
+        if (gridManager.TryGetVillainUnionBaseAtGrid(cell, out VillainUnionBase villainUnion)) return villainUnion;
+        if (gridManager.TryGetTutorialBuildingObjectAtGrid(cell, out TutorialBuildingObject building)) return building;
+        if (gridManager.TryGetEventObjectAtGrid(cell, out MapEventObject mapEvent)) return mapEvent;
+        if (gridManager.TryGetWorldEventObjectAtGrid(cell, out WorldEventObject worldEvent)) return worldEvent;
+        if (gridManager.TryGetMainEventObjectAtGrid(cell, out MainEventObject mainEvent)) return mainEvent;
+        if (gridManager.TryGetSubEventObjectAtGrid(cell, out SubEventObject subEvent)) return subEvent;
+        return null;
+    }
+
+    private bool CanReachHoveredInteraction(Component target, PartyGridMover mover)
+    {
+        hoverInteractionCells.Clear();
+        MultiGridOccupant occupant = target.GetComponent<MultiGridOccupant>();
+        if (target is IGridEnemyObject enemy)
+        {
+            enemy.GetInteractionCells(hoverInteractionCells);
+        }
+        else if (target is WorldEventObject && occupant != null)
+        {
+            hoverInteractionCells.AddRange(occupant.GetAdjacentOuterCells());
+        }
+        else if (occupant != null && (target is Outpost || target is HeroUnionUnit ||
+                 target is VillainUnionBase || target is TutorialBuildingObject || target is TutorialOutpostObject))
+        {
+            Vector2Int anchor = occupant.AnchorGrid;
+            for (int x = 0; x < occupant.Size.x; x++)
+                hoverInteractionCells.Add(new Vector2Int(anchor.x + x, anchor.y - 1));
+        }
+        else
+        {
+            Vector2Int origin = target is Outpost outpost
+                ? outpost.GetAnchorGrid(gridManager)
+                : gridManager.WorldToGrid(target.transform.position);
+            int radius = target is MainEventObject mainEvent ? mainEvent.InteractionRadius : 1;
+            for (int y = -radius; y <= radius; y++)
+                for (int x = -radius; x <= radius; x++)
+                    if (x != 0 || y != 0)
+                        hoverInteractionCells.Add(origin + new Vector2Int(x, y));
+        }
+
+        Vector2Int currentGrid = mover.GetCurrentGrid();
+        // Current-cell interaction needs no movement; other candidates use the cached BFS range.
+        for (int i = 0; i < hoverInteractionCells.Count; i++)
+            if (hoverInteractionCells[i] == currentGrid || moveRangeController.AllowsCell(hoverInteractionCells[i]))
+                return true;
+
+        return false;
+    }
+
+    private int CollectPointerHits(Ray ray)
+    {
+        int count;
+        // 평소에는 버퍼를 재사용하고, 충돌체가 많은 곳에서만 확장해 판정 누락을 방지합니다.
+        while ((count = Physics.RaycastNonAlloc(ray, pointerHits, rayDistance)) == pointerHits.Length)
+            System.Array.Resize(ref pointerHits, pointerHits.Length * 2);
+        return count;
+    }
+
     private static bool IsPartyInputLocked(PartyGridMover mover)
     {
         if (mover == null)
@@ -217,6 +368,9 @@ public class ClickSelectionController : MonoBehaviour
     }
 
     private bool TryGetClosestLandHit(Ray ray, out RaycastHit landHit)
+        => TryGetClosestLandHit(CollectPointerHits(ray), out landHit);
+
+    private bool TryGetClosestLandHit(int hitCount, out RaycastHit landHit)
     {
         landHit = default;
         Transform groundTransform = gridManager.GroundRaycastTransform;
@@ -226,11 +380,11 @@ public class ClickSelectionController : MonoBehaviour
         float bestDist = float.PositiveInfinity;
         bool found = false;
 
-        var hits = Physics.RaycastAll(ray, rayDistance, landLayerMask);
-        for (int i = 0; i < hits.Length; i++)
+        for (int i = 0; i < hitCount; i++)
         {
-            var h = hits[i];
+            var h = pointerHits[i];
             var t = h.transform;
+            if ((landLayerMask.value & (1 << h.collider.gameObject.layer)) == 0) continue;
             if (marker != null && (t == marker || t.IsChildOf(marker)))
                 continue;
 

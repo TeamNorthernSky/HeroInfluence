@@ -79,6 +79,7 @@ public sealed class WorldEventObject : MonoBehaviour
     private void OnDisable()
     {
         worldEventRegistry?.Unregister(this);
+        MoveRangeController.NotifyOccupancyChanged();
         StopNpcVisualRetry();
         RestoreInteractionFacing();
         RestorePartyFacing();

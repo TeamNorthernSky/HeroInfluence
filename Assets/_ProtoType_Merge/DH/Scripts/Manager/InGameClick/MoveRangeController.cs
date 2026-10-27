@@ -9,11 +9,28 @@ public class MoveRangeController : MonoBehaviour
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private Transform lineRoot;
 
-    [Header("Line Renderer")]
-    [SerializeField] private Material lineMaterial;
-    [SerializeField] private Color lineColor = new Color(1f, 1f, 1f, 0.9f);
-    [SerializeField, Min(0.005f)] private float lineWidth = 0.05f;
-    [SerializeField] private float lineYOffset = 0.035f;
+    private JcMoveRangeGridProfile gridProfile;
+    // 씬의 복제값이나 시작 시 복사본을 사용하지 않아 씬 전환과 실시간 편집이 일치합니다.
+    public JcMoveRangeGridProfile GridProfile
+    {
+        get
+        {
+            if (gridProfile == null)
+                gridProfile = Resources.Load<JcMoveRangeGridProfile>(JcMoveRangeGridProfile.ResourceName);
+            return gridProfile;
+        }
+    }
+
+    private Color gridColor => GridProfile.gridColor;
+    private float gridOpacity => GridProfile.gridOpacity;
+    private float gridEmissionIntensity => GridProfile.gridEmissionIntensity;
+    private float gridWidth => GridProfile.gridWidth;
+    private float gridEdgeSoftness => GridProfile.gridEdgeSoftness;
+    private float lineYOffset => GridProfile.lineYOffset;
+    private float curtainHeight => GridProfile.curtainHeight;
+    private float curtainOpacity => GridProfile.curtainOpacity;
+    private float curtainIntensity => GridProfile.curtainIntensity;
+    private float curtainSoftness => GridProfile.curtainSoftness;
 
     [Header("Search Guard")]
     [SerializeField, Min(16)] private int maxSearchCells = 1000;
@@ -23,15 +40,24 @@ public class MoveRangeController : MonoBehaviour
     private readonly HashSet<Vector2Int> blockedCells = new HashSet<Vector2Int>();
     private readonly Queue<Vector2Int> frontier = new Queue<Vector2Int>();
     private readonly Dictionary<Vector2Int, int> costs = new Dictionary<Vector2Int, int>();
-    private readonly List<LineRenderer> linePool = new List<LineRenderer>();
+    private JcMoveGridMesh gridMesh;
+    private float renderedWidth, renderedYOffset;
+    private bool rangeVisible;
     private readonly List<GridLineSegment> gridLineSegments = new List<GridLineSegment>();
     private readonly HashSet<GridLineKey> gridLineKeys = new HashSet<GridLineKey>();
 
     private PartyGridMover currentMover;
-    private Material runtimeDefaultLineMaterial;
     private Coroutine pendingDelayedRefreshCoroutine;
     private bool isMoverMoving;
     private bool movementRefreshRequested;
+    private bool occupancyRefreshRequested;
+    private static event System.Action OccupancyChanged;
+
+    public static void NotifyOccupancyChanged()
+    {
+        if (Application.isPlaying)
+            OccupancyChanged?.Invoke();
+    }
 
     public bool IsMoveRangeActive => true;
 
@@ -51,8 +77,9 @@ public class MoveRangeController : MonoBehaviour
 
     private readonly struct GridLineKey : System.IEquatable<GridLineKey>
     {
-        public GridLineKey(Vector2Int a, Vector2Int b)
+        public GridLineKey(Vector2Int a, Vector2Int b, float surfaceY)
         {
+            SurfaceY = surfaceY;
             if (a.x < b.x || (a.x == b.x && a.y <= b.y))
             {
                 A = a;
@@ -67,10 +94,11 @@ public class MoveRangeController : MonoBehaviour
 
         public Vector2Int A { get; }
         public Vector2Int B { get; }
+        public float SurfaceY { get; }
 
         public bool Equals(GridLineKey other)
         {
-            return A == other.A && B == other.B;
+            return A == other.A && B == other.B && SurfaceY.Equals(other.SurfaceY);
         }
 
         public override bool Equals(object obj)
@@ -82,7 +110,7 @@ public class MoveRangeController : MonoBehaviour
         {
             unchecked
             {
-                return (A.GetHashCode() * 397) ^ B.GetHashCode();
+                return ((A.GetHashCode() * 397) ^ B.GetHashCode()) * 397 ^ SurfaceY.GetHashCode();
             }
         }
     }
@@ -94,15 +122,24 @@ public class MoveRangeController : MonoBehaviour
 
     private void OnEnable()
     {
+        if (GridProfile == null)
+        {
+            Debug.LogError("공통 이동범위 그리드 프로필을 찾을 수 없습니다: " + JcMoveRangeGridProfile.ResourceName, this);
+            enabled = false;
+            return;
+        }
+        OccupancyChanged += HandleOccupancyChanged;
         RefreshForCurrentParty();
         RequestRefreshAfterSceneSetup();
     }
 
     private void OnDisable()
     {
+        OccupancyChanged -= HandleOccupancyChanged;
         StopAllCoroutines();
         pendingDelayedRefreshCoroutine = null;
         movementRefreshRequested = false;
+        occupancyRefreshRequested = false;
         BindMover(null);
         Hide();
     }
@@ -129,8 +166,30 @@ public class MoveRangeController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (movementRefreshRequested)
+        if (occupancyRefreshRequested)
+            RefreshForCurrentParty();
+        else if (movementRefreshRequested)
             RefreshForMover(currentMover);
+        if (rangeVisible && (renderedWidth != EffectiveWidth || renderedYOffset != lineYOffset))
+            RenderRange();
+        UpdateGridAppearance();
+    }
+
+    private float EffectiveWidth => Mathf.Clamp(gridWidth, 0.001f,
+        Mathf.Max(0.001f, (gridManager != null ? gridManager.CellSize : 1f) * 0.25f));
+
+    private void OnDestroy()
+    {
+        gridMesh?.Dispose();
+        gridMesh = null;
+    }
+
+    private void UpdateGridAppearance()
+    {
+        if (gridMesh == null) return;
+        gridMesh.SetAppearance(gridColor, gridOpacity, gridEmissionIntensity, gridEdgeSoftness);
+        gridMesh.SetViewCompensation(GridProfile);
+        gridMesh.SetCurtain(curtainHeight, curtainOpacity, curtainIntensity, curtainSoftness);
     }
 
     public void RefreshForCurrentParty()
@@ -195,6 +254,7 @@ public class MoveRangeController : MonoBehaviour
     public void RefreshForMover(PartyGridMover mover)
     {
         movementRefreshRequested = false;
+        occupancyRefreshRequested = false;
         BindMover(mover);
         isMoverMoving = mover != null && mover.IsMoving;
 
@@ -215,18 +275,17 @@ public class MoveRangeController : MonoBehaviour
     public bool AllowsCell(Vector2Int grid)
     {
         // Input may query the range before this frame's LateUpdate.
-        if (movementRefreshRequested)
+        if (occupancyRefreshRequested)
+            RefreshForCurrentParty();
+        else if (movementRefreshRequested)
             RefreshForMover(currentMover);
         return !IsMoveRangeActive || reachableCells.Contains(grid);
     }
 
     public void Hide()
     {
-        for (int i = 0; i < linePool.Count; i++)
-        {
-            if (linePool[i] != null)
-                linePool[i].gameObject.SetActive(false);
-        }
+        rangeVisible = false;
+        gridMesh?.Hide();
     }
 
     public void ClearRange()
@@ -266,6 +325,12 @@ public class MoveRangeController : MonoBehaviour
         movementRefreshRequested = true;
         if (currentMover != null && currentMover.IsMoving)
             Hide();
+    }
+
+    private void HandleOccupancyChanged()
+    {
+        // Coalesce removals/replacements and rebuild only after registry updates have finished.
+        occupancyRefreshRequested = true;
     }
 
     private void HandleMoverMoveCompleted()
@@ -367,22 +432,16 @@ public class MoveRangeController : MonoBehaviour
     private void RenderRange()
     {
         BuildGridLineSegments();
-
-        for (int i = 0; i < gridLineSegments.Count; i++)
-        {
-            LineRenderer line = GetLine(i);
-            GridLineSegment segment = gridLineSegments[i];
-            line.gameObject.SetActive(true);
-            line.positionCount = 2;
-            line.SetPosition(0, GridLinePointToWorld(segment.From, segment.OwnerGrid));
-            line.SetPosition(1, GridLinePointToWorld(segment.To, segment.OwnerGrid));
-        }
-
-        for (int i = gridLineSegments.Count; i < linePool.Count; i++)
-        {
-            if (linePool[i] != null)
-                linePool[i].gameObject.SetActive(false);
-        }
+        if (gridMesh == null) gridMesh = new JcMoveGridMesh(lineRoot != null ? lineRoot : transform);
+        renderedWidth = EffectiveWidth;
+        renderedYOffset = lineYOffset;
+        gridMesh.Begin(renderedWidth);
+        foreach (GridLineSegment segment in gridLineSegments)
+            gridMesh.AddSegment(GridLinePointToWorld(segment.From, segment.OwnerGrid),
+                GridLinePointToWorld(segment.To, segment.OwnerGrid));
+        UpdateGridAppearance();
+        gridMesh.End();
+        rangeVisible = gridLineSegments.Count > 0;
     }
 
     private void BuildGridLineSegments()
@@ -410,65 +469,23 @@ public class MoveRangeController : MonoBehaviour
     {
         Vector2Int from = grid + fromOffset;
         Vector2Int to = grid + toOffset;
-        GridLineKey key = new GridLineKey(from, to);
+        // 같은 평면 경계라도 단차가 있으면 각 셀 표면에 선을 남깁니다.
+        // 동일 높이의 공유 경계만 제거해야 순회 순서에 따라 상/하층 선이 사라지지 않습니다.
+        GridLineKey key = new GridLineKey(from, to, gridManager.GetCellSurfaceY(grid));
         if (!gridLineKeys.Add(key))
             return;
 
         gridLineSegments.Add(new GridLineSegment(from, to, grid));
     }
 
-    private LineRenderer GetLine(int index)
-    {
-        while (linePool.Count <= index)
-        {
-            GameObject lineObject = new GameObject("MoveRangeGridLine");
-            lineObject.transform.SetParent(lineRoot, false);
-            LineRenderer line = lineObject.AddComponent<LineRenderer>();
-            line.useWorldSpace = true;
-            line.loop = false;
-            line.positionCount = 0;
-            line.startWidth = lineWidth;
-            line.endWidth = lineWidth;
-            line.startColor = lineColor;
-            line.endColor = lineColor;
-            line.sharedMaterial = lineMaterial != null
-                ? lineMaterial
-                : GetDefaultLineMaterial();
-            linePool.Add(line);
-        }
-
-        LineRenderer result = linePool[index];
-        result.startWidth = lineWidth;
-        result.endWidth = lineWidth;
-        result.startColor = lineColor;
-        result.endColor = lineColor;
-        if (lineMaterial != null)
-            result.sharedMaterial = lineMaterial;
-        return result;
-    }
-
     private Vector3 GridLinePointToWorld(Vector2Int gridLinePoint, Vector2Int ownerGrid)
     {
         float cellSize = gridManager != null ? gridManager.CellSize : 1f;
-        Vector3 ownerCenter = gridManager.GridToWorldCenter(ownerGrid);
-        Vector3 world = new Vector3(
-            (gridLinePoint.x - ownerGrid.x - 0.5f) * cellSize,
-            0f,
-            (gridLinePoint.y - ownerGrid.y - 0.5f) * cellSize);
-
-        world += ownerCenter;
+        // 같은 격자 꼭짓점은 소유 셀과 무관하게 같은 계산을 사용해 교차점 중복을 방지합니다.
+        Vector3 world = gridManager.GridToWorldCenter(gridLinePoint)
+            - new Vector3(cellSize * 0.5f, 0f, cellSize * 0.5f);
         world.y = gridManager.GetCellSurfaceY(ownerGrid) + lineYOffset;
         return world;
     }
 
-    private Material GetDefaultLineMaterial()
-    {
-        if (runtimeDefaultLineMaterial == null)
-        {
-            Shader shader = Shader.Find("Sprites/Default");
-            runtimeDefaultLineMaterial = shader != null ? new Material(shader) : null;
-        }
-
-        return runtimeDefaultLineMaterial;
-    }
 }

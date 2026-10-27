@@ -40,6 +40,8 @@ Shader "JC/Environment/Calm Canal Water"
    #pragma multi_compile_fragment _ _SHADOWS_SOFT
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+   #include "../CloudShadows/JcCloudShadowCommon.hlsl"
+   float4 _JcDayNight;
    CBUFFER_START(UnityPerMaterial)
     float4 _EdgeVariation,_Transmission;
     half4 _BaseColor,_EdgeColor,_FakeHighlightColor;float4 _FakeHighlight;float4 _Surface,_WaveShade,_Specular,_DirectionalWave,_WaveBend;
@@ -186,6 +188,8 @@ Shader "JC/Environment/Calm Canal Water"
     half3 crest=saturate(lerp(color,_EdgeColor.rgb,.5)+half3(.08,.12,.14));
     color=lerp(color,color*.55,saturate(-shade)*_WaveShade.x);
     color=lerp(color,crest,saturate(shade)*_WaveShade.x);
+    float timeBrightness=lerp(1,_JcDayNight.w,_JcDayNight.x);
+    color*=timeBrightness;
     if(_Reflection.x>.001){
      float2 ripple=slope*3;
      half3 reflection=GlossyEnvironmentReflection(reflect(-view,normal),i.world,1-_Reflection.y,1);
@@ -220,7 +224,7 @@ Shader "JC/Environment/Calm Canal Water"
      float fakeLobe=WaterLightLobe(saturate(dot(normal,fakeHalf)),lerp(512,32,_FakeHighlight.y),variance,_Specular.z);
      float movingSurface=smoothstep(.015,.12,length(slope));
      float fakeVisibility=lerp(1,light.shadowAttenuation,_FakeHighlight.w);
-     color+=_FakeHighlightColor.rgb*(_FakeHighlight.x*fakeLobe*movingSurface*fakeVisibility);
+     color+=_FakeHighlightColor.rgb*(_FakeHighlight.x*fakeLobe*movingSurface*fakeVisibility*timeBrightness);
     }
     float2 screenUV=GetNormalizedScreenSpaceUV(i.positionCS);
     float depth=SampleSceneDepth(screenUV);
@@ -230,7 +234,7 @@ Shader "JC/Environment/Calm Canal Water"
     float3 below=ComputeWorldSpacePosition(screenUV,depth,UNITY_MATRIX_I_VP);
     float thickness=max(0,i.world.y-below.y);
     float alpha=1-(1-saturate(_Transmission.x))*exp(-thickness*max(0,_Transmission.y));
-    return half4(MixFog(color,i.fog),alpha);
+    return half4(MixFog(JcApplyCloud(color,i.world),i.fog),alpha);
    }
    ENDHLSL
   }

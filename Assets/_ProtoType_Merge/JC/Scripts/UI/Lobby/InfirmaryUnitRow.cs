@@ -60,7 +60,7 @@ public class InfirmaryUnitRow : MonoBehaviour
         if (costText != null)
         {
             int cost = infirmary != null ? (downed ? infirmary.GetReviveCost() : infirmary.GetHealCost()) : 0;
-            costText.text = $"{cost} 골드";
+            costText.text = cost >= 0 ? $"{cost} 골드" : "—";
         }
 
         bool actionable = infirmary != null && (downed ? infirmary.CanRevive(unitIndex) : infirmary.CanHeal(unitIndex));

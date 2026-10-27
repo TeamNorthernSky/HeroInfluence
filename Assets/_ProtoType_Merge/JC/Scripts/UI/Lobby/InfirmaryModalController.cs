@@ -107,7 +107,7 @@ public class InfirmaryModalController : MonoBehaviour
         var gm = GameManager.Instance;
         if (!gm.Infirmary.CanHeal(unitIndex)) return false;
         int cost = gm.Infirmary.GetHealCost();
-        if (!gm.Economy.Spend(ResourceType.Money, cost)) return false;
+        if (cost > 0 && !gm.Economy.Spend(ResourceType.Money, cost)) return false;
         if (!gm.Infirmary.TryHeal(unitIndex))
         {
             gm.Economy.Add(ResourceType.Money, cost); // 자원 유실 방지 롤백
@@ -183,6 +183,7 @@ public class InfirmaryModalController : MonoBehaviour
         int healAllTotal = 0;
         bool needsRecovery = false;
         int healCost = gm.Infirmary.GetHealCost();
+        bool healingConfigured = healCost >= 0 && gm.Infirmary.GetHealPercent() > 0;
 
         foreach (int idx in units)
         {
@@ -203,20 +204,21 @@ public class InfirmaryModalController : MonoBehaviour
             {
                 // 필요한 비용은 보유 자금과 무관하게 회복 대상 전체의 합계로 표시한다.
                 healableCount++;
-                healAllTotal += healCost;
+                if (healingConfigured) healAllTotal += healCost;
             }
         }
 
         bool unlocked = gm.Infirmary.IsUnlocked;
         bool visited = HQVisitState.Instance != null && HQVisitState.Instance.HasVisitingParty;
-        bool healAllAffordable = healableCount > 0 && gm.Economy.Has(ResourceType.Money, healAllTotal);
+        bool healAllAffordable = healingConfigured && healableCount > 0 && gm.Economy.Has(ResourceType.Money, healAllTotal);
         reviveAllMode = downedCount > 0;
         canHealAll = unlocked && visited && (reviveAllMode ? revivableCount > 0 : healAllAffordable);
 
         // 전원이 건강하면 비활성화한다. 다른 실행 제한의 안내는 기존 클릭 경로를 유지한다.
         if (btnHealAll != null) btnHealAll.interactable = needsRecovery;
         if (healAllDisabledOverlay != null) healAllDisabledOverlay.SetActive(!canHealAll);
-        if (totalCostText != null) totalCostText.text = $"{(reviveAllMode ? 0 : healAllTotal)} 골드";
+        if (totalCostText != null) totalCostText.text = !reviveAllMode && !healingConfigured
+            ? "—" : $"{(reviveAllMode ? 0 : healAllTotal)} 골드";
         if (btnHealAll != null)
             foreach (var label in btnHealAll.GetComponentsInChildren<TMP_Text>(true))
                 label.text = reviveAllMode ? "전체 부활" : "전체 회복";
@@ -230,6 +232,7 @@ public class InfirmaryModalController : MonoBehaviour
             // [KJ] 부활 가능한 유닛이 있으면 조치할 게 남은 것 → 안내 숨김(부활 후 회복까지 같은 턴에 가능).
             else if (reviveAllMode && revivableCount == 0) msg = "현재 부활 가능한 히어로 유닛이 없습니다.";
             else if (!reviveAllMode && healableCount == 0) msg = "회복 가능한 히어로 유닛이 없습니다.";
+            else if (!reviveAllMode && !healingConfigured) msg = "회복 정보를 확인할 수 없습니다.";
             else if (!reviveAllMode && !healAllAffordable) msg = "전체회복에 필요한 자금이 부족합니다.";
             unavailableMessage = msg;
         }

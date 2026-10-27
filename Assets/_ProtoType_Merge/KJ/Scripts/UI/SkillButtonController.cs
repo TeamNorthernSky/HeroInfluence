@@ -368,9 +368,15 @@ public class SkillButtonController : MonoBehaviour
             string text = string.Empty;
             if (skill != null)
             {
-                if (i == 0) text = skill.classSkillEffect switch { 0 => "공격", 1 => "회복", 2 => "부활", 3 => "버프", 4 => "디버프", _ => string.Empty };
+                if (i == 0) text = HeroSkillRules.IsFamily(skill, 4020) ? "공격/회복" : skill.classSkillEffect switch { 0 => "공격", 1 => "회복", 2 => "부활", 3 => "버프", 4 => "디버프", _ => string.Empty };
                 if (i == 1) text = skill.classSkillRange switch { 0 => "근거리", 1 => "원거리", _ => string.Empty };
                 if (i == 2) text = skill.classSkillTarget switch { 0 => "단수", 1 => "복수", 2 => "전체", _ => string.Empty };
+            }
+            // 24px 높이의 효과 태그에서 한글이 세로 여백 때문에 생략되지 않게 합니다.
+            if (i == 0)
+            {
+                var margin = label.margin;
+                label.margin = new Vector4(margin.x, 0f, margin.z, 0f);
             }
             label.text = text;
             label.transform.parent.gameObject.SetActive(!string.IsNullOrEmpty(text));

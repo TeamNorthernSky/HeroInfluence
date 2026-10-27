@@ -74,6 +74,7 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
     {
         GridChanged -= HandleGridChanged;
         enemyRegistry?.Unregister(this);
+        MoveRangeController.NotifyOccupancyChanged();
     }
 
     public Vector2Int GetCurrentGrid()

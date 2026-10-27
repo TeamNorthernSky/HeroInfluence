@@ -145,8 +145,8 @@ namespace JC.EnvironmentDetail.Editor
                     oldBackup.StartsWith(OutputPath + "/", StringComparison.Ordinal) && oldBackup.EndsWith("/Bake.asset", StringComparison.Ordinal))
                 {
                     string oldFolder = Path.GetDirectoryName(oldBackup).Replace('\\', '/');
-                    if (!catalog.scenes.Any(x => AssetDatabase.GetAssetPath(x.current).StartsWith(oldFolder + "/", StringComparison.Ordinal) ||
-                        (!string.IsNullOrEmpty(x.previousAssetPath) && x.previousAssetPath.StartsWith(oldFolder + "/", StringComparison.Ordinal))))
+                    if (!catalog.scenes.Any(x => ReferencesFolder(AssetDatabase.GetAssetPath(x.current), oldFolder) ||
+                        ReferencesFolder(x.previousAssetPath, oldFolder)))
                         AssetDatabase.DeleteAsset(oldFolder);
                 }
                 Debug.Log($"[JC Bake] 확정: {folder}, {watch.ElapsedMilliseconds}ms, 원본 입력 {bake.inputs.Length}. 씬은 저장하지 않았습니다.");
@@ -157,6 +157,14 @@ namespace JC.EnvironmentDetail.Editor
                 if (copy != null) Object.DestroyImmediate(copy);
                 if (!published) AssetDatabase.DeleteAsset(folder);
             }
+        }
+        // 통합용 베이크 기록은 다른 세대의 프리팹·메시를 참조할 수 있습니다.
+        static bool ReferencesFolder(string assetPath, string folder)
+        {
+            if (string.IsNullOrEmpty(assetPath)) return false;
+            string prefix = folder + "/";
+            return assetPath.StartsWith(prefix, StringComparison.Ordinal) ||
+                AssetDatabase.GetDependencies(assetPath, true).Any(path => path.StartsWith(prefix, StringComparison.Ordinal));
         }
         public static void RestorePrevious(JcExploreDetailOverlay overlay)
         {

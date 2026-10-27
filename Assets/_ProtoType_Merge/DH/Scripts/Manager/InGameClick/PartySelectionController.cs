@@ -75,6 +75,9 @@ public class PartySelectionController
         return true;
     }
 
+    public bool IsSelectionTarget(Transform hit)
+        => hit != null && CanSelectMover(hit.GetComponentInParent<PartyGridMover>());
+
     public void FocusActiveMover()
     {
         if (cameraFollower == null || activeMover == null)

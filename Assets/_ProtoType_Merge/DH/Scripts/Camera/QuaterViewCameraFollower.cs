@@ -96,6 +96,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public bool IsExternalInputLocked => externalInputLocked;
     public bool IsEventZoomApplied => eventZoomApplied;
+    public bool IsEventFocusMoving => eventFocusMoving;
     public event System.Action<bool> EventZoomChanged;
     public bool IsManualNavigationLocked => externalInputLocked || IsFollowTargetPartyMoving();
 
@@ -214,6 +215,11 @@ public class QuarterViewCameraFollower : MonoBehaviour
             eventZoomApplied = true;
             positionOffset = new Vector3(0f, 3f, -2.5f);
             fixedEulerAngles = new Vector3(40f, 0f, 0f);
+            ResolveMapBoundsReferences();
+            if (gridManager != null && TryGetMapWorldBounds(out Rect eventBounds))
+            {
+                AdjustEventFocusForMapPosition(eventBounds);
+            }
         }
         // Resolve the existing map boundary/zoom constraints at the destination.
         ApplyCameraPositionFromExternalFocus(true);
@@ -224,6 +230,16 @@ public class QuarterViewCameraFollower : MonoBehaviour
         returnToFollowAfterMove = returnToFollow;
         eventFocusMoving = true;
         if (!returnToFollow) EventZoomChanged?.Invoke(true);
+    }
+
+    private void AdjustEventFocusForMapPosition(Rect mapBounds)
+    {
+        // Keep the original framing below the map center, then blend both values
+        // together as the NPC approaches the upper Z edge.
+        float upperMapRatio = Mathf.InverseLerp(mapBounds.center.y, mapBounds.yMax,
+            externalFocusWorldPosition.z);
+        positionOffset.z = Mathf.Lerp(-2.5f, -1.5f, upperMapRatio);
+        fixedEulerAngles.x = Mathf.Lerp(40f, 55f, upperMapRatio);
     }
 
     public void LockExternalFocusTarget(Transform target, bool snapImmediately = true)

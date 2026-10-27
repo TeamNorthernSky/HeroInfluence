@@ -4219,8 +4219,8 @@ MonoBehaviour:
   atkCategoryTip: "\uACF5\uACA9\uB825\uC744 \uAC15\uD654\uD569\uB2C8\uB2E4."
   hpCategoryTip: "\uC0DD\uBA85\uB825\uC744 \uAC15\uD654\uD569\uB2C8\uB2E4."
   lockedStageTip: "\uD6C8\uB828\uC2E4 \uC5C5\uADF8\uB808\uC774\uB4DC \uD544\uC694"
-  cardNormalSprite: {fileID: 21300000, guid: 43453004d83ab2a4da7a7288bedc21b7, type: 3}
-  cardSelectedSprite: {fileID: 21300000, guid: c640b478b0e5bb845b04340c98d248b1, type: 3}
+  cardNormalSprite: {fileID: 21300000, guid: 5d4a31d82f469fc45b764e78a63076f2, type: 3}
+  cardSelectedSprite: {fileID: 21300000, guid: 21b84aaea2848374d9f27fc8e426e989, type: 3}
   gaugeEmptySprite: {fileID: 21300000, guid: ed527a1d56857cb40ab2831248cd2682, type: 2}
   gaugeFilledSprite: {fileID: 21300000, guid: c47b87d1defbf1f4ba276f348518d755, type: 2}
 --- !u!114 &5898859042809758225

@@ -50,6 +50,7 @@ public sealed class TutorialItemObject : MonoBehaviour, IGridItemObject
     private void OnDisable()
     {
         registry?.Unregister(this);
+        MoveRangeController.NotifyOccupancyChanged();
     }
 
     public float Collect()

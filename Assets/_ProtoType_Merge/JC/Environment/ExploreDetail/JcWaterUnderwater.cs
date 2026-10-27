@@ -139,7 +139,10 @@ namespace JC.EnvironmentDetail
         }
         public void Tick(JcWaterSettings settings,float time)
         {
+            float daylight=JC.Environment.JcDayNightController.WaterBrightness;
+            if(bedMaterial!=null)bedMaterial.SetColor("_BaseColor",settings.basinColor*new Color(daylight,daylight,daylight,1));
             if(capsule==null)return;
+            capsule.GetComponent<Renderer>().sharedMaterial.SetColor("_BaseColor",new Color(.025f*daylight,.065f*daylight,.075f*daylight,1));
             float length=Vector3.Distance(routeA,routeB),phase=.55f+time*Mathf.Max(0,settings.capsuleSpeed)*2/Mathf.Max(.01f,length);
             float u=.5f+.5f*Mathf.Sin(phase);
             capsule.transform.position=Vector3.Lerp(routeA,routeB,u)-Vector3.up*Mathf.Clamp(settings.capsuleDepth,.25f,.65f);

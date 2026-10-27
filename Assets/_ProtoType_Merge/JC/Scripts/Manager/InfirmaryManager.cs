@@ -7,7 +7,10 @@ using UnityEngine;
 // 3계층 규약: 자금은 UI가(Economy.Spend/Add), 데이터 쓰기·턴추적만 매니저.
 public class InfirmaryManager : MonoBehaviour
 {
-    [SerializeField] private int healPercent = 100;    // 항시 100%로 고정
+    // 기존 프리팹 데이터 보존용. 회복 비용/회복량은 협회 테이블에서 조회한다.
+    [Tooltip("호환용 보존. 실제 회복량은 AssociationResourceCatalog 사용")]
+    [SerializeField] private int healPercent = 100;
+    [Tooltip("호환용 보존. 실제 회복 비용은 AssociationResourceCatalog 사용")]
     [SerializeField] private int[] healCost    = { 1000, 800, 500 };  // 레벨↑ → 비용↓
     [SerializeField] private int[] reviveHpPercent = { 30, 40, 50 };
     [SerializeField] private int reviveCost  = 0;
@@ -23,12 +26,10 @@ public class InfirmaryManager : MonoBehaviour
     public int Level => hq != null ? hq.GetLevel(HQDepartment.Infirmary) : 0;
 
     private int LvIdx => Mathf.Clamp(Level - 1, 0, 2);
-    //public int GetHealPercent()   => IsUnlocked ? healPercent[LvIdx] : 0;
-    //public int GetHealCost()      => IsUnlocked ? healCost[LvIdx] : int.MaxValue;
-    //public int GetRevivePercent() => IsUnlocked ? reviveHpPercent[LvIdx] : 0;
-    //public int GetReviveCost()    => IsUnlocked ? reviveCost[LvIdx] : int.MaxValue;
-    public int GetHealPercent()   => healPercent;
-    public int GetHealCost()      =>  healCost[LvIdx];
+    public int GetHealPercent() => AssociationCosts.TryInfirmary(Level, out var row)
+        ? Mathf.RoundToInt(row.HpRecoveryFraction * 100f) : 0;
+    public int GetHealCost() => AssociationCosts.TryInfirmary(Level, out var row)
+        && AssociationCosts.TryMoney(row.Cost, out int money) ? money : -1;
     public int GetRevivePercent() =>  reviveHpPercent[LvIdx];
     public int GetReviveCost()    =>  reviveCost;
 
@@ -59,8 +60,10 @@ public class InfirmaryManager : MonoBehaviour
         if (!IsUnlocked || !VisitedHQ || HealedThisTurn(idx)) return false;
         if (!TryGetHp(idx, out float cur, out float max)) return false;
         if (cur <= 0f || cur >= max) return false;
+        int cost = GetHealCost();
+        if (cost < 0 || GetHealPercent() <= 0) return false;
         var eco = GameManager.Instance?.Economy;
-        return eco != null && eco.Has(ResourceType.Money, GetHealCost());
+        return eco != null && eco.Has(ResourceType.Money, cost);
     }
 
     public bool CanRevive(int idx)
@@ -74,8 +77,10 @@ public class InfirmaryManager : MonoBehaviour
 
     public bool TryHeal(int idx)
     {
+        int percent = GetHealPercent();
+        if (percent <= 0 || GetHealCost() < 0) return false;
         var repo = PersistentUnitRepository.Instance;
-        if (repo == null || !repo.HealUnitByPercent(idx, GetHealPercent(), false, out _)) return false;
+        if (repo == null || !repo.HealUnitByPercent(idx, percent, false, out _)) return false;
         healedThisTurn.Add(idx);
         OnStateChanged?.Invoke();
         return true;

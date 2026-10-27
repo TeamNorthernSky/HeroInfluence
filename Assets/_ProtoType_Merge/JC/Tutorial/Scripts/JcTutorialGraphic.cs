@@ -41,6 +41,8 @@ namespace JC.Tutorial
         public const float ArrowSweepPeriod = .9f;
         public const int ArrowSweepCount = 3;
         public float GlowWidth => glowWidth;
+        public float Radius => radius;
+        public void SetRadius(float value) { value = Mathf.Max(0, value); if(radius == value)return; radius=value; SetVerticesDirty(); }
 
         public void Configure(Shape value, Color fill, float rounding, float width)
         { shape = value; color = fill; radius = rounding; borderWidth = width; raycastTarget = false; SetVerticesDirty(); }
