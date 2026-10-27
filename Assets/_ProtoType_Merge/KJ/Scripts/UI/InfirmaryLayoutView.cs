@@ -46,6 +46,7 @@ public sealed class InfirmaryLayoutView : MonoBehaviour
         hpText.text = $"{Mathf.CeilToInt(current)}/{Mathf.CeilToInt(maximum)}";
         float after = Mathf.Clamp(current + maximum * Mathf.Max(0, downed ? revivePercent : healPercent) / 100f, 0f, maximum);
         recoveryText.text = (downed ? "부활 후 " : "회복 후 ") + $"<color=#50751C>{Mathf.CeilToInt(after)}/{Mathf.CeilToInt(maximum)}</color>";
-        costText.text = !downed && current >= maximum ? "-" : (downed ? reviveCost : healCost).ToString();
+        int cost = downed ? reviveCost : healCost;
+        costText.text = !downed && current >= maximum ? "-" : cost >= 0 ? cost.ToString() : "—";
     }
 }

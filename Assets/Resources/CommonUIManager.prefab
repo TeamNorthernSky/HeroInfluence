@@ -316,6 +316,11 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 433863913626846092, guid: f3320394e196a7a4baaf333f41b3e19c,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 660321896610539774, guid: f3320394e196a7a4baaf333f41b3e19c,
         type: 3}
       propertyPath: m_Sprite
@@ -352,6 +357,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 92
       objectReference: {fileID: 0}
+    - target: {fileID: 3369562091644017560, guid: f3320394e196a7a4baaf333f41b3e19c,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294967295
+      objectReference: {fileID: 0}
     - target: {fileID: 3438823638824112574, guid: f3320394e196a7a4baaf333f41b3e19c,
         type: 3}
       propertyPath: pausesGame
@@ -361,6 +371,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762335741076083384, guid: f3320394e196a7a4baaf333f41b3e19c,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294927872
       objectReference: {fileID: 0}
     - target: {fileID: 3776335914622015969, guid: f3320394e196a7a4baaf333f41b3e19c,
         type: 3}
@@ -513,6 +528,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6002690584747178245, guid: f3320394e196a7a4baaf333f41b3e19c,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6664339823379022588, guid: f3320394e196a7a4baaf333f41b3e19c,
         type: 3}
       propertyPath: m_fontColor.b
@@ -558,6 +578,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_RaycastTarget
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8646224374142642632, guid: f3320394e196a7a4baaf333f41b3e19c,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294967295
       objectReference: {fileID: 0}
     - target: {fileID: 8894957820079881431, guid: f3320394e196a7a4baaf333f41b3e19c,
         type: 3}

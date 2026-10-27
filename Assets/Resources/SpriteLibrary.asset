@@ -45,6 +45,12 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 3067d2c4de3e0a249a43e9ce0d1115ab, type: 3}
   - key: UI_Sprite/UI_TitleScene/GameStart/SubPopup/UI_button_yesOrNo(hover)
     sprite: {fileID: 21300000, guid: 8ac45a062ae553d41bec2d2d5e66995d, type: 3}
+  - key: UI_Sprite/UI_Chatting/UI_profile_NPC_boy
+    sprite: {fileID: 21300000, guid: b5947eff56790a14d8e41933a688ff21, type: 3}
+  - key: UI_Sprite/UI_Chatting/UI_profile_NPC_grandma
+    sprite: {fileID: 21300000, guid: fad83fe9757b8ba44b35321b5fb76b45, type: 3}
+  - key: Portrait_Enemy_Sprite/UI_profile_villian_zako
+    sprite: {fileID: 21300000, guid: ad18426806526f34f805cad667975cf6, type: 3}
   residentSprites:
   - {fileID: 21300000, guid: fdf6e8b97b1b0c042b27183d13a54094, type: 3}
   - {fileID: 21300000, guid: 737d454f310c07443aecef04eafc79fe, type: 3}

@@ -35,6 +35,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private static int resultConfirmedFrame = -1;
     private readonly Dictionary<Button, NpcPreview> previews = new Dictionary<Button, NpcPreview>();
     private Sprite choiceDeclineSprite;
+    private Sprite consumeDeclineSprite;
     private Coroutine choiceEntrance;
     private readonly List<ChoiceEntranceItem> entranceItems = new List<ChoiceEntranceItem>();
     private sealed class ChoiceEntranceItem
@@ -65,6 +66,11 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private IEnumerator SlideChoices()
     {
         // SpeechView updates the shared bubble in LateUpdate, after the request callback.
+        yield return null;
+        var camera = WorldEventNpcSpeechView.ResolveEventCamera();
+        while (camera != null && camera.IsEventFocusMoving)
+            yield return null;
+        // Give SpeechView a LateUpdate to activate the bubble after camera completion.
         yield return null;
         var bubble = transform.Find("NpcDialogue");
         var pop = bubble != null ? bubble.GetComponent<DialogueBubblePopEffect>() : null;
@@ -149,11 +155,12 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
 
     private void Update()
     {
-        if (current != null && current.EventType == DHWorldEventType.Choice &&
+        if (current != null && (current.EventType == DHWorldEventType.Choice || current.EventType == DHWorldEventType.Consume) &&
             current.IsWaitingFinalConfirm &&
             (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape)))
         {
-            OnChoiceCancel();
+            if (current.EventType == DHWorldEventType.Consume) OnDecline();
+            else OnChoiceCancel();
             return;
         }
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape)) && resultClickArea != null &&
@@ -315,6 +322,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         rewardProceed = rewardPanel.transform.Find("ProceedButton").GetComponent<Button>();
         choiceDecline = choicePanel.transform.Find("DeclineButton").GetComponent<Button>();
         choiceDeclineSprite = ((Image)choiceDecline.targetGraphic).sprite;
+        consumeDeclineSprite = ((Image)consumeDecline.targetGraphic).sprite;
         choiceButtons = new[] {
             choicePanel.transform.Find("Choice1Button").GetComponent<Button>(),
             choicePanel.transform.Find("Choice2Button").GetComponent<Button>() };
@@ -394,27 +402,35 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         SetQuestListHidden(!request.IsWaitingFinalConfirm && !choiceSubmitted);
         bool live = manager != null && ReferenceEquals(manager.CurrentRequest, request);
         bool confirm = request.IsWaitingFinalConfirm;
-        bool waitForClick = confirm && (request.EventType == DHWorldEventType.Consume ||
-            request.EventType == DHWorldEventType.Choice);
-        if (waitForClick && !ReferenceEquals(lastConfirmRequest, request))
+        bool waitForClick = confirm && request.EventType == DHWorldEventType.Choice;
+        bool blockConsumeBackground = confirm && request.EventType == DHWorldEventType.Consume;
+        if (confirm && !ReferenceEquals(lastConfirmRequest, request))
         {
             lastConfirmRequest = request;
             resultShownFrame = Time.frameCount;
         }
-        resultClickArea.gameObject.SetActive(waitForClick);
-        resultClickArea.interactable = live;
-        if (waitForClick)
+        resultClickArea.gameObject.SetActive(waitForClick || blockConsumeBackground);
+        resultClickArea.interactable = live && waitForClick;
+        if (waitForClick || blockConsumeBackground)
         {
             // Keep the full-screen confirmation receiver above the choice panel too.
             // Its background otherwise consumes clicks without confirming the result.
             resultClickArea.transform.SetAsLastSibling();
+            if (blockConsumeBackground) consumePanel.transform.SetAsLastSibling();
         }
         if (request.EventType == DHWorldEventType.Consume)
         {
+            var declineImage = consumeDecline.targetGraphic as Image;
+            var proceedImage = consumeProceed.targetGraphic as Image;
+            if (declineImage != null && proceedImage != null)
+            {
+                declineImage.sprite = confirm ? proceedImage.sprite : consumeDeclineSprite;
+                declineImage.overrideSprite = null;
+            }
             consumeProceed.gameObject.SetActive(!confirm);
             SetButton(consumeProceed, request.ProceedText, live && request.CanProceed);
-            consumeDecline.gameObject.SetActive(!confirm);
-            SetButton(consumeDecline, request.DeclineText, live);
+            consumeDecline.gameObject.SetActive(true);
+            SetButton(consumeDecline, confirm ? "확인" : request.DeclineText, live);
             ShowPreview(consumeProceed, request.PreviewEntries);
         }
         else if (request.EventType == DHWorldEventType.Reward)
@@ -753,7 +769,17 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         manager.ConfirmCurrentMessage();
     }
 
-    private void OnDecline() { if (CanSubmit(consumeDecline)) manager.SelectDecline(); }
+    private void OnDecline()
+    {
+        if (current != null && current.IsWaitingFinalConfirm)
+        {
+            if (Time.frameCount == resultShownFrame || !CanSubmit(consumeDecline)) return;
+            resultConfirmedFrame = Time.frameCount;
+            manager.ConfirmCurrentMessage();
+            return;
+        }
+        if (CanSubmit(consumeDecline)) manager.SelectDecline();
+    }
     private void OnChoiceCancel()
     {
         if (current != null && current.IsWaitingFinalConfirm)

@@ -12,22 +12,18 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class ChatBubbleView : MonoBehaviour
 {
-    private const string PortraitResourceFolder = "Portrait_Hero_Sprite/"; // Assets/Resources/Portrait_Hero_Sprite
-
     private const int TypePlayer = 1;    // 플레이어 — 우측
     private const int TypeNarration = 2; // 상황 설명 — 가운데
 
     public RectTransform EntranceRoot => messageText != null ? messageText.transform.parent as RectTransform : null;
 
     private string speakerName;
-    private string speakerProfile;
     private int speakerType;
     private LayoutElement compactRowLayout;
 
     public bool HasSameSpeaker(ChatBubbleView previous) => previous != null &&
         speakerType != TypeNarration && speakerType == previous.speakerType &&
-        !string.IsNullOrEmpty(speakerName) && speakerName == previous.speakerName &&
-        speakerProfile == previous.speakerProfile;
+        !string.IsNullOrEmpty(speakerName) && speakerName == previous.speakerName;
 
     public void HideRepeatedSpeaker()
     {
@@ -85,7 +81,6 @@ public class ChatBubbleView : MonoBehaviour
     [SerializeField] private GameObject portraitRoot;
     [Tooltip("실제 초상화 이미지. 화자 초상화가 없으면 기본 미선택 프로필을 표시.")]
     [SerializeField] private Image portraitImage;
-    [SerializeField] private Sprite[] characterPortraits = System.Array.Empty<Sprite>();
 
 
     [Header("말풍선 레이아웃")]
@@ -168,22 +163,20 @@ public class ChatBubbleView : MonoBehaviour
 
     /// <summary>
     /// 말풍선 채우기. type 0=좌(상대, 초상화 표시), 1=우(플레이어), 2=가운데(상황 설명).
-    /// profileKey=Char_Profile 리소스 키.
+    /// profileKey는 기존 호출부 호환용이며 초상화는 PortraitSheet의 Speaker 행으로 결정한다.
     /// </summary>
     public void Bind(string charName, string message, int type, string profileKey = null)
     {
         if (compactRowLayout != null) compactRowLayout.enabled = false;
         bool isPlayer = type == TypePlayer;
         bool isNarration = type == TypeNarration;
-        // 오른쪽 대사는 플레이어인 협회장의 이름과 초상화로 통일한다.
+        // 오른쪽 대사의 화자는 협회장이다. 이미지 연결은 다른 화자와 동일하게 CSV에서 읽는다.
         if (isPlayer)
         {
             charName = "협회장";
-            profileKey = "UI_Sprite/UI_Chatting/UI_profile_NPC_commander";
         }
 
         speakerName = (charName ?? string.Empty).Trim();
-        speakerProfile = (profileKey ?? string.Empty).Trim();
         speakerType = type;
 
         if (nameText != null)
@@ -215,80 +208,11 @@ public class ChatBubbleView : MonoBehaviour
                               : isPlayer ? playerBubbleColor
                               : otherBubbleColor;
 
-        BindPortrait(!isNarration, profileKey, charName);
+        BindPortrait(!isNarration, charName);
         ApplyBubbleLayout(isPlayer, isNarration);
     }
 
-    /// <summary>캐릭터 키를 영웅/적/NPC 초상화 리소스에서 찾는다.</summary>
-    private static Sprite LoadPortrait(string key)
-    {
-        if (key.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase)) key = key.Substring(0, key.Length - 4);
-        return Sprites.Load(key)
-            ?? Sprites.Load(PortraitResourceFolder + key)
-            ?? Sprites.Load("Portrait_Enemy_Sprite/" + key)
-            ?? Sprites.Load("UI_Sprite/UI_Chatting/" + key);
-    }
-
-    private static string NormalizeSpeaker(string name)
-        => string.IsNullOrWhiteSpace(name) ? string.Empty
-            : System.Text.RegularExpressions.Regex.Replace(name, @"\s+", "");
-
-    private Sprite CharacterPortrait(string fileName)
-    {
-        foreach (var portrait in characterPortraits)
-            if (portrait != null && string.Equals(portrait.name, fileName, System.StringComparison.OrdinalIgnoreCase))
-                return portrait;
-        return null;
-    }
-
-    private Sprite FromCharacterFolder(Sprite portrait)
-        => portrait != null ? CharacterPortrait(portrait.name) ?? portrait : null;
-
-    private Sprite ResolveSpeakerPortrait(string profileKey, string speaker)
-    {
-        string normalized = NormalizeSpeaker(speaker);
-        string fileName = null;
-        switch (normalized)
-        {
-            case "저스티스": fileName = "UI_profile_hero_fighter_Justice"; break;
-            case "네코밍": fileName = "UI_profile_hero_supporter_Necoming"; break;
-            case "블랙불릿": fileName = "UI_profile_hero_striker_BlackBullet"; break;
-            case "루미나": fileName = "UI_profile_hero_blaster_Lumina"; break;
-            case "협회장": fileName = "UI_profile_NPC_commander"; break;
-            case "소년": fileName = "UI_profile_NPC_boy"; break;
-        }
-        var namedPortrait = CharacterPortrait(fileName);
-        if (namedPortrait != null) return namedPortrait;
-        var speakerPortrait = Sprites.Portrait.Speaker(normalized);
-        if (speakerPortrait != null) return FromCharacterFolder(speakerPortrait);
-        var catalog = DHCsvTemplateCatalog.Instance;
-        if (normalized.Length == 0) return null;
-        if (catalog != null) foreach (var unit in catalog.GetAllPlayerUnitTemplates())
-        {
-            if (unit == null || NormalizeSpeaker(unit.UnitName) != normalized) continue;
-            var portrait = Sprites.Portrait.Hero(unit.UnitKey);
-            if (portrait != null && portrait != Sprites.Portrait.Unselected) return FromCharacterFolder(portrait);
-            break;
-        }
-        string heroKey;
-        switch (normalized)
-        {
-            case "저스티스": heroKey = "10005"; break;
-            case "네코밍": heroKey = "10004"; break;
-            case "블랙불릿": heroKey = "10003"; break;
-            case "루미나": heroKey = "10002"; break;
-            case "저스티스G": heroKey = "10001"; break;
-            default:
-                if (string.IsNullOrWhiteSpace(profileKey)) return null;
-                string key = profileKey.Trim().Replace('\\', '/');
-                string name = System.IO.Path.GetFileNameWithoutExtension(key);
-                return CharacterPortrait(name) ?? FromCharacterFolder(LoadPortrait(key));
-        }
-        var fallback = Sprites.Portrait.Hero(heroKey);
-        return fallback != Sprites.Portrait.Unselected ? FromCharacterFolder(fallback) : null;
-    }
-
-    private void BindPortrait(bool show, string profileKey, string speaker)
+    private void BindPortrait(bool show, string speaker)
     {
         if (portraitRoot == null) return;
 
@@ -297,9 +221,7 @@ public class ChatBubbleView : MonoBehaviour
         if (group != null) group.alpha = 1f;
         if (!show || portraitImage == null) return;
 
-        Sprite sprite = ResolveSpeakerPortrait(profileKey, speaker)
-            ?? CharacterPortrait("UI_profile_hero_unselected")
-            ?? Sprites.Load(PortraitResourceFolder + "UI_profile_hero_unselected");
+        Sprite sprite = Sprites.Portrait.Speaker(speaker) ?? Sprites.Portrait.Unselected;
 
         portraitImage.sprite = sprite;
         portraitImage.overrideSprite = null;

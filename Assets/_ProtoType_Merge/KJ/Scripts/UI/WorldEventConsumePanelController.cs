@@ -14,7 +14,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
     [SerializeField] private Sprite healthIcon;
     [SerializeField] private Sprite attackIcon;
     private static readonly Color NormalButtonColor = Color.white;
-    private static readonly Color NormalTextColor = new Color32(20, 70, 151, 255);
+    private static readonly Color NormalTextColor = Color.white;
     private static readonly Color SelectedButtonColor = new Color32(17, 72, 174, 255);
     private static readonly Color SelectedTextColor = Color.white;
     private static readonly Color NegativeAmountColor = new Color32(190, 29, 44, 255);
@@ -39,14 +39,16 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
     private DHWorldEventRuntimeManager manager;
     private DHWorldEventPresentationRequest currentRequest;
     private int selectionFrame = -1;
-    private Button resultClickArea;
+    private Vector2 proceedPosition;
+    private Vector2 confirmPosition;
+    private Image resultInputBlocker;
 
     private void Awake()
     {
         ResolveView();
         proceedButton.onClick.AddListener(OnProceed);
         declineButton.onClick.AddListener(OnDecline);
-        AddResultClickArea();
+        AddResultInputBlocker();
         manager = DHWorldEventRuntimeManager.EnsureInstance();
         manager.PresentationChanged += OnPresentationChanged;
         manager.PresentationClosed += OnPresentationClosed;
@@ -59,8 +61,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (resultClickArea != null)
-            Destroy(resultClickArea.gameObject);
+        if (resultInputBlocker != null) Destroy(resultInputBlocker.gameObject);
         if (manager == null)
             return;
 
@@ -73,12 +74,12 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         // ESC나 외부 모달 닫기 경로가 런타임 이벤트를 중간에 숨기지 못하게 한다.
         if (currentRequest != null && panelRoot != null && !panelRoot.activeSelf)
             panelRoot.SetActive(true);
-        UpdateResultClickArea();
+        UpdateResultInputBlocker();
     }
 
     private void OnDisable()
     {
-        if (resultClickArea != null) resultClickArea.gameObject.SetActive(false);
+        if (resultInputBlocker != null) resultInputBlocker.gameObject.SetActive(false);
     }
 
     private void OnResultClick()
@@ -101,7 +102,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         Render(request);
         panelRoot.transform.SetAsLastSibling();
         panelRoot.SetActive(true);
-        UpdateResultClickArea();
+        UpdateResultInputBlocker();
     }
 
     private void OnPresentationClosed(DHWorldEventPresentationRequest request)
@@ -111,7 +112,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
         currentRequest = null;
         panelRoot.SetActive(false);
-        UpdateResultClickArea();
+        UpdateResultInputBlocker();
     }
 
     private static bool IsConditionConsumeRequest(DHWorldEventPresentationRequest request)
@@ -128,16 +129,18 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
             ? "소비형 이벤트"
             : request.WorldEventName;
         messageText.text = request.IsWaitingFinalConfirm ? request.MessageText : request.DescriptionText;
-        proceedText.text = request.ProceedText;
+        proceedText.text = request.IsWaitingFinalConfirm ? "확인" : request.ProceedText;
         declineText.text = request.DeclineText;
 
         bool waiting = request.IsWaitingFinalConfirm;
+        declineButton.gameObject.SetActive(!waiting);
+        ((RectTransform)proceedButton.transform).anchoredPosition = waiting ? confirmPosition : proceedPosition;
         proceedButton.interactable = waiting || request.CanProceed;
         declineButton.interactable = true;
 
         bool accepted = request.Step == DHWorldEventPresentationStep.Accept;
         bool declined = request.Step == DHWorldEventPresentationStep.Cancel;
-        ApplyButtonState(proceedButton, proceedText, accepted);
+        ApplyButtonState(proceedButton, proceedText, !waiting && accepted);
         ApplyButtonState(declineButton, declineText, declined);
         RenderPreview(request.PreviewEntries);
     }
@@ -221,8 +224,14 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private void OnProceed()
     {
-        if (currentRequest == null || currentRequest.IsWaitingFinalConfirm)
+        if (currentRequest == null)
             return;
+
+        if (currentRequest.IsWaitingFinalConfirm)
+        {
+            OnResultClick();
+            return;
+        }
 
         selectionFrame = Time.frameCount;
         manager?.SelectProceed();
@@ -252,6 +261,8 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         declineButton = FindDirect<Button>("world_event_decline") ?? FindDirect<Button>("NoButton");
         proceedText = proceedButton.GetComponentInChildren<TMP_Text>(true);
         declineText = declineButton.GetComponentInChildren<TMP_Text>(true);
+        proceedPosition = ((RectTransform)proceedButton.transform).anchoredPosition;
+        confirmPosition = (proceedPosition + ((RectTransform)declineButton.transform).anchoredPosition) * 0.5f;
         costIcon = FindDirect<Image>("ResourceIcon");
         resultIcon = FindDirect<Image>("RewardIcon") ?? FindDirect<Image>("EffectIcon");
         messageText = FindDirect<TMP_Text>("world_event_description");
@@ -315,36 +326,33 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         return null;
     }
 
-    private void AddResultClickArea()
+    private void AddResultInputBlocker()
     {
-        var receiver = new GameObject("ConsumeResultClickArea", typeof(RectTransform), typeof(Image), typeof(Button));
-        receiver.layer = panelRoot.layer;
-        receiver.transform.SetParent(panelRoot.transform.parent, false);
-        var rect = (RectTransform)receiver.transform;
+        var blocker = new GameObject("ConsumeResultInputBlocker", typeof(RectTransform), typeof(Image));
+        blocker.layer = panelRoot.layer;
+        blocker.transform.SetParent(panelRoot.transform.parent, false);
+        var rect = (RectTransform)blocker.transform;
         rect.anchorMin = Vector2.zero;
         rect.anchorMax = Vector2.one;
         rect.offsetMin = rect.offsetMax = Vector2.zero;
-        var image = receiver.GetComponent<Image>();
-        image.color = Color.clear;
-        image.raycastTarget = true;
-        resultClickArea = receiver.GetComponent<Button>();
-        resultClickArea.targetGraphic = image;
-        resultClickArea.transition = Selectable.Transition.None;
-        resultClickArea.onClick.AddListener(OnResultClick);
-        receiver.SetActive(false);
+        resultInputBlocker = blocker.GetComponent<Image>();
+        resultInputBlocker.color = Color.clear;
+        resultInputBlocker.raycastTarget = true;
+        blocker.SetActive(false);
     }
 
-    private void UpdateResultClickArea()
+    private void UpdateResultInputBlocker()
     {
-        if (resultClickArea == null) return;
+        if (resultInputBlocker == null) return;
         bool waiting = currentRequest != null && currentRequest.IsWaitingFinalConfirm && panelRoot.activeInHierarchy;
-        resultClickArea.gameObject.SetActive(waiting);
-        if (waiting)
-        {
-            // The modal layer stretches across the screen; the message panel itself does not.
-            resultClickArea.transform.SetParent(panelRoot.transform.parent, false);
-            resultClickArea.transform.SetAsLastSibling();
-        }
+        resultInputBlocker.gameObject.SetActive(waiting);
+        if (!waiting) return;
+        // UIComposer can reparent the panel after Awake.
+        if (resultInputBlocker.transform.parent != panelRoot.transform.parent)
+            resultInputBlocker.transform.SetParent(panelRoot.transform.parent, false);
+        int panelIndex = panelRoot.transform.GetSiblingIndex();
+        int blockerIndex = resultInputBlocker.transform.GetSiblingIndex();
+        int desiredIndex = panelIndex - (blockerIndex < panelIndex ? 1 : 0);
+        if (blockerIndex != desiredIndex) resultInputBlocker.transform.SetSiblingIndex(desiredIndex);
     }
-
 }

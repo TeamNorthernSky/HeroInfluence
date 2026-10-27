@@ -28,20 +28,28 @@ public class TrainingManager : MonoBehaviour
     // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출
     public IReadOnlyList<TrainingEntry> Entries => entries;
 
-    // 단계별 수치 — 기획서(옛 트레이닝 'DB' 시트) 기준. [JC 260617] 인스펙터 편집 가능하도록 직렬화 필드로 전환
-    //   (기획자 확인 후 인스펙터에서 바로 수정). 트레이닝 레벨 L(0→1, 1→2, 2→3) 진행 시 인덱스 L 사용.
-    [Header("단계별 수치 (인스펙터 편집 — 레벨 1/2/3 도달 기준)")]
-    [Tooltip("공격력 강화 증가량 (레벨 1/2/3 도달 시 가산분)")]
+    // 기존 프리팹 데이터 보존용. 표시와 실제 강화 수치는 모두 협회 테이블에서 조회한다.
+    [Header("이전 단계별 수치 (호환용, 실제 수치는 협회 테이블 사용)")]
+    [Tooltip("호환용 보존. 실제 공격력 증가량은 AssociationResourceCatalog 사용")]
     [SerializeField] private float[] atkGainPerLevel = { 5f, 10f, 15f };
-    [Tooltip("체력 강화 증가량 (레벨 1/2/3 도달 시 가산분)")]
+    [Tooltip("호환용 보존. 실제 체력 증가량은 AssociationResourceCatalog 사용")]
     [SerializeField] private float[] hpGainPerLevel = { 5f, 10f, 15f };
     [Tooltip("이전 비용 데이터. 호환용 보존이며 실제 비용은 AssociationResourceCatalog 사용")]
     [SerializeField] private int[] costPerLevel = { 1000, 1200, 1400 };
     public const int MaxTrainingLevel = 3;
 
-    // 외부 읽기 접근(표시/툴팁용). 편집은 인스펙터에서.
-    public IReadOnlyList<float> AtkGainPerLevel => atkGainPerLevel;
-    public IReadOnlyList<float> HpGainPerLevel => hpGainPerLevel;
+    // 기존 표시/툴팁 API도 실제 강화와 동일한 테이블을 사용한다.
+    public IReadOnlyList<float> AtkGainPerLevel => GetGainsPerLevel(TrainingStat.Attack);
+    public IReadOnlyList<float> HpGainPerLevel => GetGainsPerLevel(TrainingStat.Health);
+
+    private static float[] GetGainsPerLevel(TrainingStat stat)
+    {
+        var gains = new float[MaxTrainingLevel];
+        for (int i = 0; i < gains.Length; i++)
+            if (AssociationCosts.TryTraining(stat, i + 1, out var row))
+                gains[i] = Mathf.Max(0, row.StatusAmountPerTraining);
+        return gains;
+    }
     public IReadOnlyList<int> CostPerLevel
     {
         get
@@ -102,6 +110,7 @@ public class TrainingManager : MonoBehaviour
         int level = GetLevel(unitIndex, stat);
         if (level >= GetMaxTrainableLevel()) return -1;
         return AssociationCosts.TryTraining(stat, level + 1, out var row)
+            && row.StatusAmountPerTraining > 0
             && AssociationCosts.TryMoney(row.Cost, out int money) ? money : -1;
     }
 
@@ -110,9 +119,8 @@ public class TrainingManager : MonoBehaviour
     {
         int level = GetLevel(unitIndex, stat);
         if (level >= GetMaxTrainableLevel()) return 0f;
-        var table = stat == TrainingStat.Attack ? atkGainPerLevel : hpGainPerLevel;
-        if (level >= table.Length) return 0f;
-        return table[level];
+        return AssociationCosts.TryTraining(stat, level + 1, out var row)
+            ? Mathf.Max(0, row.StatusAmountPerTraining) : 0f;
     }
 
     /// <summary>해당 영웅·스탯을 더 강화할 수 있는지(해금 + 부서 레벨 게이트). 자금 충족은 호출자 별도 확인.</summary>
