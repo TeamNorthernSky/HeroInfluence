@@ -90,6 +90,7 @@ public class SkillButtonController : MonoBehaviour
         if (battleFlowManager != null)
         {
             battleFlowManager.OnTurnStarted += OnTurnStarted;
+            battleFlowManager.OnEntryUiPrepared += OnTurnStarted;
             battleFlowManager.OnBattleEnded += OnBattleEnded;
         }
         if (inputHandler != null) inputHandler.SelectionChanged += SyncSelection;
@@ -109,6 +110,7 @@ public class SkillButtonController : MonoBehaviour
         if (battleFlowManager != null)
         {
             battleFlowManager.OnTurnStarted -= OnTurnStarted;
+            battleFlowManager.OnEntryUiPrepared -= OnTurnStarted;
             battleFlowManager.OnBattleEnded -= OnBattleEnded;
         }
         if (inputHandler != null) inputHandler.SelectionChanged -= SyncSelection;

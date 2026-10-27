@@ -384,6 +384,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
 
     private void Update()
     {
+        if (TutorialExploreSceneSkip.IsConfirmationOpen) return;
         if (current == null) return;
         if (awaitingRelease)
         {

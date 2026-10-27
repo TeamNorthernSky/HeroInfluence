@@ -22,6 +22,7 @@ public class TurnOrderUI : MonoBehaviour
     {
         if (flowManager == null) return;
         flowManager.OnTurnStarted += OnTurnStarted;
+        flowManager.OnEntryUiPrepared += OnTurnStarted;
         flowManager.OnBattleEnded += OnBattleEnded;
         Refresh();
     }
@@ -30,6 +31,7 @@ public class TurnOrderUI : MonoBehaviour
     {
         if (flowManager == null) return;
         flowManager.OnTurnStarted -= OnTurnStarted;
+        flowManager.OnEntryUiPrepared -= OnTurnStarted;
         flowManager.OnBattleEnded -= OnBattleEnded;
     }
 
