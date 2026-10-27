@@ -33,7 +33,7 @@ namespace JC.Environment {
   struct ProbeState {public ReflectionProbe probe;public ReflectionProbeMode mode;public Texture texture;}
   readonly List<ProbeState> probes=new List<ProbeState>();
   Canvas clockCanvas; TextMeshProUGUI clockText;
-  sealed class UILock {public CanvasGroup group;public bool added,interactable,blocks;public float alpha;}
+  sealed class UILock {public CanvasGroup group;public UIInputBlocker blocker;public bool added,interactable,blocks;public float alpha;}
   readonly List<UILock> locks=new List<UILock>();
   GameObject selection;
   public static JcDayNightController Ensure(Scene scene) {
@@ -147,13 +147,24 @@ namespace JC.Environment {
   }
   void LockGroup(GameObject go,float dim){
    if(locks.Exists(x=>x.group!=null && x.group.gameObject==go))return;
-   // 버튼 자체의 interactable은 수정하지 않아 게임 조건에 따른 비활성화를 유지합니다.
+   // 이동 UI와 공유하는 그룹은 원래 제어자에 연출 잠금을 합산합니다.
+   // 연출 도중 변경된 기본 잠금 상태를 종료 시 그대로 반영합니다.
    var g=go.GetComponent<CanvasGroup>();bool added=g==null;if(added)g=go.AddComponent<CanvasGroup>();
-   locks.Add(new UILock{group=g,added=added,alpha=g.alpha,interactable=g.interactable,blocks=g.blocksRaycasts});
-   g.interactable=false;g.blocksRaycasts=true;g.alpha*=dim;
+   UIInputBlocker blocker=null;
+   if(!added)foreach(var candidate in UnityEngine.Object.FindObjectsByType<UIInputBlocker>(FindObjectsInactive.Include,FindObjectsSortMode.None))
+    if(candidate.Controls(g)){blocker=candidate;break;}
+   locks.Add(new UILock{group=g,blocker=blocker,added=added,alpha=g.alpha,interactable=g.interactable,blocks=g.blocksRaycasts});
+   if(blocker!=null)blocker.SetAdditionalLock(this,true);
+   else {g.interactable=false;g.blocksRaycasts=true;}
+   g.alpha*=dim;
   }
   void UnlockUI(){
-   foreach(var state in locks)if(state.group!=null){if(state.added){state.group.interactable=true;state.group.alpha=1;DestroyObject(state.group);}else{state.group.interactable=state.interactable;state.group.blocksRaycasts=state.blocks;state.group.alpha=state.alpha;}}
+   foreach(var state in locks){
+    if(state.blocker!=null)state.blocker.SetAdditionalLock(this,false);
+    if(state.group==null)continue;
+    if(state.added){state.group.interactable=true;state.group.alpha=1;DestroyObject(state.group);}
+    else {if(state.blocker==null){state.group.interactable=state.interactable;state.group.blocksRaycasts=state.blocks;}state.group.alpha=state.alpha;}
+   }
    locks.Clear();
    if(EventSystem.current!=null && EventSystem.current.currentSelectedGameObject==null && selection!=null && selection.activeInHierarchy){var s=selection.GetComponent<Selectable>();if(s!=null && s.IsInteractable())EventSystem.current.SetSelectedGameObject(selection);}
    selection=null;
