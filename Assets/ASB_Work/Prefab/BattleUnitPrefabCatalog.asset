@@ -51,3 +51,15 @@ MonoBehaviour:
     prefab: {fileID: 6674627687946970983, guid: 680343b56597e224299873c4599a4174,
       type: 3}
     additionalUnitKeys: []
+  - unitKey: 40001
+    prefab: {fileID: 8180298766699557435, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+      type: 3}
+    additionalUnitKeys: []
+  - unitKey: 40002
+    prefab: {fileID: 1491268391175235409, guid: 993e04735adb0394883ce9fb6748eb57,
+      type: 3}
+    additionalUnitKeys: []
+  - unitKey: 40003
+    prefab: {fileID: 1491268391175235409, guid: a6b0fd11a13f4304096025c18b3f4045,
+      type: 3}
+    additionalUnitKeys: []

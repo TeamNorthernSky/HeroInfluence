@@ -15,6 +15,11 @@ public sealed class SimulationBattleConfig : ScriptableObject
     [Tooltip("적 그룹 키(EnemyGroupData.EnemyIndex). 커스텀 인스펙터 드롭다운으로 선택한다.")]
     public string enemyGroupKey = string.Empty;
 
+    [Min(0)]
+    [Tooltip("0이면 enemyGroupKey를 일반 적 그룹(DHCsvTemplateCatalog)으로 읽는다. " +
+             "1 이상이면 그 구역의 이벤트 전투 키(EventScriptCatalog)로 읽어, 실게임 이벤트 전투와 같은 경로로 스폰한다.")]
+    public int eventZoneId = 0;
+
     [Min(1)]
     [Tooltip("적 레벨.")]
     public int enemyLevel = 1;

@@ -38,4 +38,5 @@ MonoBehaviour:
     SkillIndex: 3010
     HpRatio: 1
   enemyGroupKey: BE490
+  eventZoneId: 2
   enemyLevel: 2

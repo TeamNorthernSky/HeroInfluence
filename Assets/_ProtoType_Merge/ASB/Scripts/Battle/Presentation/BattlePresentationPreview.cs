@@ -147,11 +147,13 @@ public sealed class BattlePresentationPreview : MonoBehaviour
             }
             if (allies.Count < 1 || allies.Count > 6)
                 throw new InvalidOperationException("활성 아군은 1~6명이어야 합니다.");
-            if (!SimulationUnitFactory.ValidateEnemyGroup(config.enemyGroupKey, out var enemyError))
+            int enemyLevel = Mathf.Clamp(config.enemyLevel, 1, SimulationUnitFactory.MaxSimulationLevel);
+            int eventZoneId = Mathf.Max(0, config.eventZoneId);
+            if (!SimulationUnitFactory.ValidateEnemy(config.enemyGroupKey, eventZoneId, enemyLevel, out var enemyError))
                 throw new InvalidOperationException(enemyError);
             var context = CombatContext.EnsureInstance();
             if (!context.BeginSimulation("PRESENTATION_PREVIEW", allies, config.enemyGroupKey,
-                    Mathf.Clamp(config.enemyLevel, 1, SimulationUnitFactory.MaxSimulationLevel), gameObject.scene.name))
+                    enemyLevel, gameObject.scene.name, eventZoneId))
                 throw new InvalidOperationException("모의 전투 초기화에 실패했습니다.");
             started = true;
             battle.enabled = true;

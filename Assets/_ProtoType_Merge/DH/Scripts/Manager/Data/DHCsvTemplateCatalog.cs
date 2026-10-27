@@ -17,12 +17,6 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     [SerializeField] private UnitGrowthExpDataTable unitGrowthExpDataTable;
     [SerializeField] private EnemyGroupDataTable    enemyGroupDataTable;
 
-    [Header("Sector 4 Battle Tables")]
-    [Tooltip("4구역 전투 적 유닛 테이블. 기본 적 테이블 다음에 기존 캐시에 병합됩니다.")]
-    [SerializeField] private EnemyUnit4SectorDataTable sector4EnemyUnitDataTable;
-    [Tooltip("4구역 전투 적 그룹 테이블. 기본 적 그룹 테이블 다음에 기존 캐시에 병합됩니다.")]
-    [SerializeField] private EnemyGroupDataTable sector4EnemyGroupDataTable;
-
     [Header("Settings")]
     [SerializeField] private bool loadOnAwake      = true;
     [SerializeField] private bool dontDestroyOnLoad = true;
@@ -641,29 +635,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             Debug.LogWarning("[DHCsvTemplateCatalog] enemyUnitInfoDataTable is not assigned.", this);
         }
 
-        // Sector 4 enemy units and embedded enemy skills. Generated table types are
-        // intentionally adapted explicitly instead of using reflection/dynamic.
-        if (sector4EnemyUnitDataTable != null)
-        {
-            for (int i = 0; i < sector4EnemyUnitDataTable.DataList.Count; i++)
-            {
-                EnemyUnit4SectorData src = sector4EnemyUnitDataTable.DataList[i];
-                DHEnemyUnitTemplate enemyUnit = ConvertEnemyUnitTemplate(src);
-                if (!TryCacheEnemyUnit(enemyUnit, "sector4EnemyUnitDataTable")) continue;
-
-                TryAddEnemySkill(src, slot: 1);
-                TryAddEnemySkill(src, slot: 2);
-                TryAddEnemySkill(src, slot: 3);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[DHCsvTemplateCatalog] sector4EnemyUnitDataTable is not assigned.", this);
-        }
-
-        // Enemy groups. Base data is authoritative; sector 4 rows are appended.
+        // Enemy groups. Sector 4 units/groups (Yulia boss) are read from the event battle zone tables (EventScriptCatalog).
         LoadEnemyGroupTable(enemyGroupDataTable, "enemyGroupDataTable");
-        LoadEnemyGroupTable(sector4EnemyGroupDataTable, "sector4EnemyGroupDataTable");
 
         // Class skills
         if (classSkillDataTable != null)
@@ -1005,35 +978,6 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 luck: 0f, speed: 0f));
     }
 
-    private static DHEnemyUnitTemplate ConvertEnemyUnitTemplate(EnemyUnit4SectorData src)
-    {
-        if (src == null) return null;
-        int enemyIndex = ExtractNumericId(src.EnemyIndex);
-        string enemyKey = enemyIndex > 0 ? enemyIndex.ToString() : (src.EnemyIndex ?? string.Empty).Trim();
-        return new DHEnemyUnitTemplate(
-            enemyKey,
-            enemyIndex,
-            src.EnemyName,
-            src.EnemyConcept,
-            src.UnitAI,
-            Mathf.RoundToInt(src.ExperiencePoint),
-            new StatBlock(
-                hp:             src.UnitMaxHP,
-                atk:            src.UnitATK,
-                def:            src.UnitDEF,
-                luck:           0f,
-                speed:          src.Speed,
-                criticalRate:   src.CriticalRate,
-                critMultiplier: 1.5f,
-                counterRate:    src.CounterRate,
-                avoidRate:      src.ReduceRate),
-            new StatBlock(
-                hp:  src.LevelGrowthMaxHP,
-                atk: src.LevelGrowthAtk,
-                def: src.LevelGrowthDef,
-                luck: 0f, speed: 0f));
-    }
-
     private static DHEnemyUnitTemplate ConvertEnemyUnitTemplate(EnemyData src)
     {
         if (src == null) return null;
@@ -1089,42 +1033,6 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                     src.EnemySkill2Target, src.EnemySkill2MultiTarget,
                     src.EnemySkill2_MultiTargetType, src.EnemySkill2_MultiTargetCount,
                     src.EnemySkill2Value, src.EnemySkill2SubValue);
-                break;
-        }
-    }
-
-    private void TryAddEnemySkill(EnemyUnit4SectorData src, int slot)
-    {
-        if (src == null) return;
-
-        switch (slot)
-        {
-            case 1:
-                TryAddEnemySkill(
-                    src.EnemyIndex, src.EnemyName, slot,
-                    src.EnemySkill1_Name, src.EnemySkill1_Description,
-                    src.EnemySkill1Effect, src.EnemySkill1Range, src.EnemySkill1RangeLine,
-                    src.EnemySkill1Target, src.EnemySkill1MultiTarget,
-                    src.EnemySkill1_MultiTargetType, src.EnemySkill1_MultiTargetCount,
-                    src.EnemySkill1Value, src.EnemySkill1SubValue);
-                break;
-            case 2:
-                TryAddEnemySkill(
-                    src.EnemyIndex, src.EnemyName, slot,
-                    src.EnemySkill2_Name, src.EnemySkill2_Description,
-                    src.EnemySkill2Effect, src.EnemySkill2Range, src.EnemySkill2RangeLine,
-                    src.EnemySkill2Target, src.EnemySkill2MultiTarget,
-                    src.EnemySkill2_MultiTargetType, src.EnemySkill2_MultiTargetCount,
-                    src.EnemySkill2Value, src.EnemySkill2SubValue);
-                break;
-            case 3:
-                TryAddEnemySkill(
-                    src.EnemyIndex, src.EnemyName, slot,
-                    src.EnemySkill3_Name, src.EnemySkill3_Description,
-                    src.EnemySkill3Effect, src.EnemySkill3Range, src.EnemySkill3RangeLine,
-                    src.EnemySkill3Target, src.EnemySkill3MultiTarget,
-                    src.EnemySkill3_MultiTargetType, src.EnemySkill3_MultiTargetCount,
-                    src.EnemySkill3Value, src.EnemySkill3SubValue);
                 break;
         }
     }

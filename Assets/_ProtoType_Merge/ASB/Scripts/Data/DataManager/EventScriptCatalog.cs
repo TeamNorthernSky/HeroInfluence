@@ -71,6 +71,8 @@ public class EventScriptCatalog : MonoBehaviour
     private bool isLoaded;
 
     public bool IsLoaded => isLoaded;
+    // 에디터 도구(모의 전투 설정 드롭다운 등)가 런타임 로드 없이 구역별 SO 참조를 읽기 위한 읽기 전용 목록.
+    public IReadOnlyList<EventScriptZone> Zones => zones;
 
     // ─────────────────────────────────────────────────────────
     // Unity 생명주기

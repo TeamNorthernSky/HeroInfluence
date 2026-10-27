@@ -239,12 +239,15 @@ public class CombatContext : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    // eventZoneId가 1 이상이면 enemyGroupKey를 그 구역의 이벤트 전투 키로 등록한다.
+    // 전투 씬은 HasEventBattle 경로(실게임 이벤트 전투와 같은 키-빌드)로 적을 만들고, 복귀·저장 생략은 IsSimulation을 따른다.
     public bool BeginSimulation(
         string partyId,
         System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> allies,
         string enemyGroupKey,
         int nextEnemyLevel,
-        string nextReturnSceneName)
+        string nextReturnSceneName,
+        int eventZoneId = 0)
     {
         Clear();
         if (string.IsNullOrWhiteSpace(partyId) ||
@@ -279,12 +282,19 @@ public class CombatContext : MonoBehaviour
         }
 
         RegisterCombatParty(simulationPartyId, unitIndices);
-        RegisterCombatEnemy(
-            "SIMULATION_ENEMY",
-            string.Empty,
-            enemyGroupKey.Trim(),
-            nextEnemyLevel,
-            CombatEnemySourceType.Simulation);
+        if (eventZoneId > 0)
+        {
+            RegisterEventBattle(new CombatEventBattleData(eventZoneId, enemyGroupKey.Trim(), 0, nextEnemyLevel));
+        }
+        else
+        {
+            RegisterCombatEnemy(
+                "SIMULATION_ENEMY",
+                string.Empty,
+                enemyGroupKey.Trim(),
+                nextEnemyLevel,
+                CombatEnemySourceType.Simulation);
+        }
         SetCombatResult(CombatResult.None);
         return true;
     }

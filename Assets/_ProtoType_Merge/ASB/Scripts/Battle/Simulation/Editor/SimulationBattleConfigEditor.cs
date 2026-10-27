@@ -17,6 +17,8 @@ internal static class SimCatalogEditorSource
     internal struct EnemyOption
     {
         public string Key;
+        // 0=일반 적 그룹(DHCsvTemplateCatalog), 1 이상=그 구역의 이벤트 전투 그룹(EventScriptCatalog).
+        public int ZoneId;
         public string Label;
     }
 
@@ -61,10 +63,54 @@ internal static class SimCatalogEditorSource
             result.Add(new EnemyOption
             {
                 Key = g.GroupKey,
+                ZoneId = 0,
                 Label = $"{g.GroupName} [{g.GroupKey}] · {members}명"
             });
         }
+
+        result.AddRange(LoadEventBattleGroups());
         return result;
+    }
+
+    // 이벤트 전투 그룹은 런타임 로드 없이 각 구역의 SO 테이블을 직접 읽는다(빈 키 행은 제외).
+    private static List<EnemyOption> LoadEventBattleGroups()
+    {
+        var result = new List<EnemyOption>();
+        EventScriptCatalog events = UnityEngine.Object.FindFirstObjectByType<EventScriptCatalog>(FindObjectsInactive.Include);
+        if (events == null || events.Zones == null)
+            return result;
+
+        foreach (EventScriptZone zone in events.Zones)
+        {
+            if (zone == null || zone.zoneId <= 0 || zone.enemyBattleGroupTable == null)
+                continue;
+
+            string zoneLabel = string.IsNullOrWhiteSpace(zone.zoneLabel) ? $"{zone.zoneId}구역" : zone.zoneLabel;
+            foreach (EnemyGroupData g in zone.enemyBattleGroupTable.DataList)
+            {
+                if (g == null || string.IsNullOrWhiteSpace(g.EnemyIndex))
+                    continue;
+                int members = CountMembers(g);
+                result.Add(new EnemyOption
+                {
+                    Key = g.EnemyIndex.Trim(),
+                    ZoneId = zone.zoneId,
+                    Label = $"[{zoneLabel} 이벤트] {g.EnemyGroupName} [{g.EnemyIndex.Trim()}] · {members}명"
+                });
+            }
+        }
+        return result;
+    }
+
+    private static int CountMembers(EnemyGroupData g)
+    {
+        int count = 0;
+        foreach (string unit in new[] { g.Enemy1, g.Enemy2, g.Enemy3, g.Enemy4, g.Enemy5, g.Enemy6 })
+        {
+            if (!string.IsNullOrWhiteSpace(unit))
+                count++;
+        }
+        return count;
     }
 }
 
@@ -182,20 +228,37 @@ public sealed class SimulationBattleConfigEditor : Editor
         EditorGUILayout.LabelField("적", EditorStyles.boldLabel);
 
         SerializedProperty groupProp = serializedObject.FindProperty("enemyGroupKey");
+        SerializedProperty zoneProp = serializedObject.FindProperty("eventZoneId");
         SerializedProperty levelProp = serializedObject.FindProperty("enemyLevel");
 
         if (enemyGroups.Count == 0)
         {
             EditorGUILayout.TextField("적 그룹 키", groupProp.stringValue);
+            zoneProp.intValue = Mathf.Max(0, EditorGUILayout.IntField(
+                new GUIContent("이벤트 구역", "0=일반 적 그룹, 1 이상=그 구역의 이벤트 전투 키"), zoneProp.intValue));
         }
         else
         {
-            int current = enemyGroups.FindIndex(e => e.Key == groupProp.stringValue);
+            // 목록에 없는 값(이벤트 카탈로그가 없는 씬을 연 상태 등)은 덮어쓰지 않고, 직접 고를 때만 바꾼다.
+            int current = FindEnemyOption(groupProp.stringValue, zoneProp.intValue);
+            int selected;
             if (current < 0)
-                current = 0;
-            int selected = EditorGUILayout.Popup("적 그룹", current, enemyLabels);
-            if (selected >= 0 && selected < enemyGroups.Count)
+            {
+                var labels = new string[enemyLabels.Length + 1];
+                labels[0] = $"(목록에 없음) {groupProp.stringValue} · 구역 {zoneProp.intValue}";
+                System.Array.Copy(enemyLabels, 0, labels, 1, enemyLabels.Length);
+                selected = EditorGUILayout.Popup("적 그룹", 0, labels) - 1;
+            }
+            else
+            {
+                selected = EditorGUILayout.Popup("적 그룹", current, enemyLabels);
+            }
+
+            if (selected >= 0 && selected != current && selected < enemyGroups.Count)
+            {
                 groupProp.stringValue = enemyGroups[selected].Key;
+                zoneProp.intValue = enemyGroups[selected].ZoneId;
+            }
         }
 
         levelProp.intValue = Mathf.Clamp(EditorGUILayout.IntField("적 레벨", levelProp.intValue), 1, SimulationUnitFactory.MaxSimulationLevel);
@@ -227,14 +290,21 @@ public sealed class SimulationBattleConfigEditor : Editor
         if (enabledCount > MaxAllies)
             messages.Add($"활성화된 아군이 {enabledCount}명입니다(최대 {MaxAllies}명).");
 
-        if (enemyGroups.Count > 0 && enemyGroups.FindIndex(e => e.Key == config.enemyGroupKey) < 0)
-            messages.Add($"적 그룹 키 '{config.enemyGroupKey}'가 테이블에 없습니다.");
+        if (enemyGroups.Count > 0 && FindEnemyOption(config.enemyGroupKey, config.eventZoneId) < 0)
+        {
+            messages.Add(config.eventZoneId > 0
+                ? $"{config.eventZoneId}구역 이벤트 전투 키 '{config.enemyGroupKey}'가 테이블에 없습니다."
+                : $"적 그룹 키 '{config.enemyGroupKey}'가 테이블에 없습니다.");
+        }
 
         if (messages.Count == 0)
             EditorGUILayout.HelpBox("검증 통과(보조). 프리팹 존재 여부는 Play 시 최종 확인됩니다.", MessageType.Info);
         else
             EditorGUILayout.HelpBox("확인 필요:\n- " + string.Join("\n- ", messages), MessageType.Warning);
     }
+
+    private int FindEnemyOption(string key, int zoneId)
+        => enemyGroups.FindIndex(e => e.Key == key && e.ZoneId == Mathf.Max(0, zoneId));
 
     private void AppendAlly(SerializedProperty alliesProp)
     {
