@@ -19,6 +19,7 @@ namespace JC.BattleTesting
         float originalFov, startFov, endFov, elapsed, createdAt;
         bool moving, entered, cameraOnly;
         JcBankBattleBackground bankSettings;
+        bool clearTutorialArenaTrees;
         public string Report => background == null ? string.Empty :
             background.TryGetComponent<JcDynamicBattleOutput>(out var output) ? output.Report : "은행 실내 배경";
 
@@ -126,6 +127,7 @@ namespace JC.BattleTesting
             }
             // 점령/본부 전투 또는 생성 실패에도 카메라와 UI는 독립적으로 적용합니다.
             bool tutorialOutdoor = cameraOnly && context != null && context.IsTutorial && context.TutorialBattleKey == "TUT_01";
+            bridge.clearTutorialArenaTrees = tutorialOutdoor;
             if (!tutorialOutdoor && (cameraOnly || !UsesExplorationBackground(context))) return;
             JcDynamicBattleSource source = null;
             GameObject output = null;
@@ -181,6 +183,7 @@ namespace JC.BattleTesting
                     root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
             if (background != null) background.SetActive(true);
+            if (clearTutorialArenaTrees) RemoveArenaTrees(scene);
             Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);
             battleCamera = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Camera>()).FirstOrDefault(c => c.CompareTag("MainCamera"));
             if (battleCamera == null) return;
@@ -202,8 +205,28 @@ namespace JC.BattleTesting
             else (view == 0 ? profile.viewA : profile.viewB).Resolve(center, out endPosition, out endRotation, out endFov);
             elapsed = 0; moving = true;
         }
+        // 배경 외곽의 가로수는 유지하고 첫 튜토리얼의 진형/중앙 통로에 들어온 나무 외형만 제외합니다.
+        internal static int RemoveArenaTrees(Scene scene)
+        {
+            int removed = 0;
+            foreach (var root in scene.GetRootGameObjects())
+            foreach (var renderer in root.GetComponentsInChildren<MeshRenderer>())
+            {
+                bool tree = false;
+                for (var t = renderer.transform; t != null; t = t.parent)
+                    if (t.name.StartsWith("Tree", StringComparison.OrdinalIgnoreCase)) { tree = true; break; }
+                var mesh = renderer.GetComponent<MeshFilter>();
+                tree |= mesh != null && mesh.sharedMesh != null && mesh.sharedMesh.name.StartsWith("Tree", StringComparison.OrdinalIgnoreCase);
+                var bounds = renderer.bounds;
+                if (!tree || !renderer.enabled || bounds.max.x < -6.5f || bounds.min.x > 6.5f || bounds.max.z < -19 || bounds.min.z > 19) continue;
+                renderer.enabled = false; removed++;
+            }
+            return removed;
+        }
         void Update()
         {
+            // sceneLoaded 이후 Start에서 생성된 외형까지 첫 Update에서 정리합니다.
+            if (entered && clearTutorialArenaTrees) { RemoveArenaTrees(gameObject.scene); clearTutorialArenaTrees = false; }
             if (!entered) { if (Time.realtimeSinceStartup - createdAt > 30) Destroy(gameObject); return; }
             if (Input.GetKeyDown(KeyCode.F6)) SelectView(0);
             if (Input.GetKeyDown(KeyCode.F7)) SelectView(1);

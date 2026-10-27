@@ -100,7 +100,7 @@ namespace JC.Tutorial
             hintCard.sizeDelta=new Vector2(scroll?350:click?330:240,94);
             Vector2 pos;
             if(scroll) {
-                pos=new Vector2(bounds.xMax-hintCard.rect.width*.5f-36,bounds.center.y+20);
+                pos=new Vector2(bounds.xMax-hintCard.rect.width*.5f-36,bounds.center.y+140);
                 var k=(RectTransform)hintKey.transform.parent; k.localPosition=new Vector2(pos.x+110,pos.y-85+(phase>.55f&&phase<.85f?-3:0));
                 HintLine(0,new Vector2(bounds.xMax-12,pos.y-90),new Vector2(bounds.xMax-12,pos.y+90),pulse);
                 HintLine(1,new Vector2(bounds.xMax-32,pos.y-8),new Vector2(bounds.xMax-20,pos.y),pulse);

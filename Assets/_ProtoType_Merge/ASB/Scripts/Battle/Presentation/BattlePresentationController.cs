@@ -87,6 +87,15 @@ public sealed class BattlePresentationController : MonoBehaviour
     private BattleFlowManager flow;
     private BattleTurnBanner turnBanner;
     private Vector2 panelHome;
+    private bool panelPositionInitialized;
+    private bool panelRequestedVisible;
+    private bool entryHudPresented;
+    public void PrepareEntryHud()
+    {
+        if (panelMotion != null) StopCoroutine(panelMotion);
+        panelMotion = null; panelRequestedVisible = true; entryHudPresented = true;
+        if (skillPanel != null) skillPanel.anchoredPosition = panelHome;
+    }
     private Coroutine panelMotion;
     private Vector2 panelDestination;
     private Coroutine cameraMotion;
@@ -152,6 +161,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         {
             panelHome = skillPanel.anchoredPosition;
             skillPanel.anchoredPosition = HiddenPanelPosition;
+            panelPositionInitialized = true;
         }
         flow = battle != null ? battle.GetComponent<BattleFlowManager>() : null;
         if (flow != null) flow.OnTurnStarted += HandleTurnStarted;
@@ -372,6 +382,7 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void HandleTurnStarted(int round, BattleCharactor actor)
     {
+        if (entryHudPresented) { entryHudPresented = false; return; }
         CancelTurnPresentation();
         if (cameraMotion != null)
         {
@@ -597,8 +608,25 @@ public sealed class BattlePresentationController : MonoBehaviour
         projectileFocusLatched = false;
     }
 
+    // 레이아웃은 표시 기준 위치만 전달합니다. 실제 위치는 현재 연출 상태가 소유합니다.
+    public void ApplySkillPanelLayoutPosition(Vector2 home)
+    {
+        if (skillPanel == null) return;
+        if (!panelPositionInitialized)
+        {
+            skillPanel.anchoredPosition = home;
+            return;
+        }
+        panelHome = home;
+        if (panelMotion != null) StopCoroutine(panelMotion);
+        panelMotion = null;
+        panelDestination = panelRequestedVisible ? panelHome : HiddenPanelPosition;
+        skillPanel.anchoredPosition = panelDestination;
+    }
+
     private void SetSkillPanelVisible(bool visible)
     {
+        panelRequestedVisible = visible;
         if (skillPanel == null) return;
         Vector2 destination = visible ? panelHome : HiddenPanelPosition;
         if (panelMotion != null && panelDestination == destination) return;

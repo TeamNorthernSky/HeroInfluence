@@ -50,6 +50,7 @@ public class HeroInfoPanel : MonoBehaviour
         if (flowManager != null)
         {
             flowManager.OnTurnStarted += OnTurnStarted;
+            flowManager.OnEntryUiPrepared += OnTurnStarted;
             OnTurnStarted(0, flowManager.CurrentUnit);
         }
     }
@@ -58,6 +59,7 @@ public class HeroInfoPanel : MonoBehaviour
     {
         if (flowManager != null)
             flowManager.OnTurnStarted -= OnTurnStarted;
+            flowManager.OnEntryUiPrepared -= OnTurnStarted;
         UnsubscribeUnit();
     }
 

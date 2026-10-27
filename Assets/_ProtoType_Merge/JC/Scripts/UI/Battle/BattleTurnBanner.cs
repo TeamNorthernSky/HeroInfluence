@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -97,7 +97,12 @@ public class BattleTurnBanner : MonoBehaviour
     public bool BlocksInput => showing || dismissedFrame == Time.frameCount;
     public event System.Action<bool> TurnBannerShown;
 
-    public IEnumerator ShowStart(BattleFlowManager flow) => Show(flow, false, true);
+    public IEnumerator ShowStart(BattleFlowManager flow)
+    {
+        if (JC.BattleTesting.JcBattleHudEntryGate.IsPending(gameObject.scene))
+            yield return JC.BattleTesting.JcBattleHudEntryGate.ShowStart(flow);
+        else yield return Show(flow, false, true);
+    }
     public IEnumerator ShowTurn(BattleFlowManager flow, bool isPlayer) => Show(flow, true, isPlayer);
 
     private IEnumerator Show(BattleFlowManager flow, bool isTurn, bool isPlayer)
