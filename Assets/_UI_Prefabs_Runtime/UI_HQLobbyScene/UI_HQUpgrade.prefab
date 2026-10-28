@@ -4878,7 +4878,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   background: {fileID: 169499632654161189}
   hoverOverlay: {fileID: 0}
-  normalSprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
+  normalSprite: {fileID: 21300000, guid: 80d9a0a984a422e4e9b13de7e56306cf, type: 3}
   hoverSprite: {fileID: 21300000, guid: c8a72e5c8c04e66449d5742a3f11cda2, type: 3}
   closedSprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
 --- !u!114 &5783680947136995854

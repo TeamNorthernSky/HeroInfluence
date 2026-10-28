@@ -390,7 +390,10 @@ public class LabModalController : MonoBehaviour
         if (requiredLabLevelText == null) return;
         bool levelTooLow = requiredLevel > 0 && currentLevel < requiredLevel;
         requiredLabLevelText.gameObject.SetActive(levelTooLow);
-        requiredLabLevelText.text = levelTooLow ? $"Lv.{requiredLevel}이 필요합니다" : "";
+        requiredLabLevelText.text = levelTooLow ? "부서 레벨이 부족합니다" : "";
+        requiredLabLevelText.fontStyle = FontStyles.Bold;
+        requiredLabLevelText.color = Color.red;
+
     }
 
     private void Refresh()
