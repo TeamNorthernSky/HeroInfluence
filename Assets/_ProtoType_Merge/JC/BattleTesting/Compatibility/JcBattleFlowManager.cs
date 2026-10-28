@@ -84,7 +84,10 @@ public class JcBattleFlowManager : MonoBehaviour
     {
         int index = participants.IndexOf(before);
         if (index < 0) throw new InvalidOperationException("교체 대상이 참가 목록에 없습니다.");
+        GuardLink.ExpireFromSource(before, participants);
+        before.RemoveStatusEffect(StatusEffectType.guarded);
         before.OnDied -= HandleUnitDied;
+        before.OnIncapacitated -= HandleUnitIncapacitated;
         participants[index] = after;
         SubscribeUnitDeathEvent(after);
         turnQueue = new Queue<BattleCharactor>(turnQueue.Select(u => u == before ? after : u));
@@ -172,6 +175,9 @@ public class JcBattleFlowManager : MonoBehaviour
         {
             participants.AddRange(initialParticipants.Where(u => u != null));
         }
+
+        foreach (BattleCharactor participant in participants)
+            participant.RemoveStatusEffect(StatusEffectType.guarded);
 
         SubscribeAllUnitDeathEvents();
         inputHandler?.BindUnitDeathEvents(participants);
@@ -402,7 +408,10 @@ public class JcBattleFlowManager : MonoBehaviour
     {
         if (unit == null) return;
 
+        GuardLink.ExpireFromSource(unit, participants);
+        unit.RemoveStatusEffect(StatusEffectType.guarded);
         unit.OnDied -= HandleUnitDied;
+        unit.OnIncapacitated -= HandleUnitIncapacitated;
         unit.ClearOccupiedCell();
         participants.Remove(unit);
         if (CurrentUnit == unit)
@@ -569,7 +578,7 @@ public class JcBattleFlowManager : MonoBehaviour
             if (unit == null) break;
             CurrentUnit = unit;
             playerActionClaimed = playerActionResolved = false;
-            unit.ClearGuard();
+            GuardLink.ExpireFromSource(unit, participants);
             inputHandler?.ClearSelectionState();
             if (turnBanner != null) yield return PresentTurnIntro(unit);
             unit.ProcessTurnStartStatusEffects();
@@ -907,6 +916,8 @@ public class JcBattleFlowManager : MonoBehaviour
 
         unit.OnDied -= HandleUnitDied;
         unit.OnDied += HandleUnitDied;
+        unit.OnIncapacitated -= HandleUnitIncapacitated;
+        unit.OnIncapacitated += HandleUnitIncapacitated;
     }
 
     // 원본 함수 대응: BattleFlowManager.UnsubscribeAllUnitDeathEvents (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Core/BattleFlowManager.cs)
@@ -922,6 +933,7 @@ public class JcBattleFlowManager : MonoBehaviour
             }
 
             unit.OnDied -= HandleUnitDied;
+            unit.OnIncapacitated -= HandleUnitIncapacitated;
         }
     }
 
@@ -930,11 +942,18 @@ public class JcBattleFlowManager : MonoBehaviour
     private void HandleUnitDied(BattleCharactor deadUnit)
     {
         if (deadUnit == null) return;
+        GuardLink.ExpireFromSource(deadUnit, participants);
         // JC 보완: 진행 중인 시전/반격이 끝나기 전에 CurrentUnit을 비우거나 승패를 확정하지 않습니다.
         if (ResultPolicy != null) return;
         if (CurrentUnit == deadUnit && !IsActionInProgress) CurrentUnit = null;
         if (!deadUnit.IsPlayer && IsInstantVictoryUnit(enemyGroupKey, deadUnit.TemplateIndex))
             RequestVictory("보스 처치");
+    }
+
+    private void HandleUnitIncapacitated(BattleCharactor unit)
+    {
+        if (unit == null) return;
+        GuardLink.ExpireFromSource(unit, participants);
     }
 
     /// <summary>

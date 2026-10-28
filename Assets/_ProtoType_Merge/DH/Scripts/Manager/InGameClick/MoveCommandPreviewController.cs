@@ -6,6 +6,26 @@ public class MoveCommandPreviewController
     private const int PreviewPathMaxVisitedNodes = 2000;
     private const int MaxApproachPathCandidateChecks = 3;
 
+    /// <summary>현재 목적지의 이동 불가 판정. 미리보기를 지우거나 새로 계산하면 초기화한다.</summary>
+    public bool IsDestinationUnreachable { get; private set; }
+
+    /// <summary>이동 불가 목적지를 클릭할 때마다 해당 파티를 전달한다. UI 매니저가 구독한다.</summary>
+    public event System.Action<PartyGridMover> DestinationUnreachable;
+
+    /// <summary>컨트롤러 인스턴스를 소유하지 않는 화면 매니저를 위한 공통 알림.</summary>
+    public static event System.Action<PartyGridMover> AnyDestinationUnreachable;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetNotifications() => AnyDestinationUnreachable = null;
+
+    public void NotifyDestinationUnreachable(PartyGridMover party)
+    {
+        if (party == null) return;
+        IsDestinationUnreachable = true;
+        DestinationUnreachable?.Invoke(party);
+        AnyDestinationUnreachable?.Invoke(party);
+    }
+
     private readonly GridManager gridManager;
     private readonly AStarPathfinder pathfinder;
     private readonly Transform marker;
@@ -165,6 +185,7 @@ public class MoveCommandPreviewController
 
     public void ClearPreview()
     {
+        IsDestinationUnreachable = false;
         HideGuidance();
         previewPath = null;
         movePath = null;
@@ -189,7 +210,11 @@ public class MoveCommandPreviewController
     }
 
     public void PreviewMoveToGrid(PartyGridMover activeMover, Vector2Int clickedGrid)
+        => PreviewMoveToGrid(activeMover, clickedGrid, true);
+
+    private void PreviewMoveToGrid(PartyGridMover activeMover, Vector2Int clickedGrid, bool notifyUnreachable)
     {
+        IsDestinationUnreachable = false;
         if (!CanPreviewForMover(activeMover) || gridManager == null || pathfinder == null || marker == null)
         {
             ClearPreview();
@@ -204,12 +229,14 @@ public class MoveCommandPreviewController
         if (!TryResolveDestinationGrid(activeMover, clickedGrid, out Vector2Int requestedDestinationGrid))
         {
             ClearPreview();
+            ReportUnreachable(activeMover, notifyUnreachable);
             return;
         }
 
         if (!gridManager.HasLevelGroundCell(requestedDestinationGrid))
         {
             ClearPreview();
+            ReportUnreachable(activeMover, notifyUnreachable);
             return;
         }
 
@@ -229,6 +256,7 @@ public class MoveCommandPreviewController
             && !moveRangeController.AllowsCell(requestedDestinationGrid))
         {
             ClearPreview();
+            ReportUnreachable(activeMover, notifyUnreachable);
             return;
         }
 
@@ -244,6 +272,7 @@ public class MoveCommandPreviewController
         if (path == null || path.Count == 0)
         {
             ClearPreview();
+            ReportUnreachable(activeMover, notifyUnreachable);
             return;
         }
 
@@ -285,6 +314,15 @@ public class MoveCommandPreviewController
             previewPath,
             gridManager,
             GetDisplayReachableSegmentCount(previewPath, GetPathMoveCost(movePath)));
+
+        if (!isDestinationFullyReachable)
+            ReportUnreachable(activeMover, notifyUnreachable);
+    }
+
+    private void ReportUnreachable(PartyGridMover party, bool notify)
+    {
+        IsDestinationUnreachable = true;
+        if (notify) NotifyDestinationUnreachable(party);
     }
 
     // [JC 추가 260511] 정지 후 path 재계산. markerGrid 그대로 두고 현재 mover 위치 기준으로 path만 다시 그림.
@@ -293,7 +331,7 @@ public class MoveCommandPreviewController
         if (!CanPreviewForMover(activeMover) || !hasMarkerGrid)
             return;
 
-        PreviewMoveToGrid(activeMover, markerGrid);
+        PreviewMoveToGrid(activeMover, markerGrid, false);
     }
 
     public bool TryConfirmMove(Ray ray, PartyGridMover activeMover)

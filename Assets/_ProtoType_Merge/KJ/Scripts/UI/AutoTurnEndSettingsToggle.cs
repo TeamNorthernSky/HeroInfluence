@@ -8,27 +8,30 @@ public sealed class AutoTurnEndSettingsToggle : MonoBehaviour
     [SerializeField] private Sprite checkedSprite;
     [SerializeField] private Sprite uncheckedSprite;
     private Toggle toggle;
+    private SettingsModalController settings;
 
     private void Awake()
     {
         toggle = GetComponent<Toggle>();
+        settings = GetComponentInParent<SettingsModalController>(true);
         toggle.onValueChanged.AddListener(SetAutoTurnEnd);
         Refresh();
     }
 
     private void OnEnable() { Refresh(); }
 
-    private void Refresh()
+    public void Refresh()
     {
         if (toggle == null) return;
         toggle.interactable = true;
-        toggle.SetIsOnWithoutNotify(GameSettings.AutoTurnEnd);
+        toggle.SetIsOnWithoutNotify(settings != null ? settings.PendingAutoTurnEnd : GameSettings.AutoTurnEnd);
         UpdateSprite(toggle.isOn);
     }
 
     private void SetAutoTurnEnd(bool enabled)
     {
-        GameSettings.ApplyAutoTurnEnd(enabled);
+        if (settings != null) settings.SetPendingAutoTurnEnd(enabled);
+        else GameSettings.ApplyAutoTurnEnd(enabled);
         UpdateSprite(enabled);
     }
 

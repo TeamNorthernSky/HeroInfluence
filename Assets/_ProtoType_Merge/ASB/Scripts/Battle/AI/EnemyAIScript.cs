@@ -65,6 +65,20 @@ namespace EnemyAI
                 actionType = EnemyActionType.WeaponSkill;
             }
 
+            if (SelectingTauntAttack)
+            {
+                SkillData current = actionType == EnemyActionType.WeaponSkill
+                    ? self.EquippedWeaponData?.ToSkillData() : selectedSkill;
+                if (!IsAttackSkill(current))
+                {
+                    selectedSkill = canUseSkill ? self.availableSkills?.FirstOrDefault(IsAttackSkill) : null;
+                    if (selectedSkill != null) actionType = EnemyActionType.ClassSkill;
+                    else if (self.EquippedWeaponData != null && IsAttackSkill(self.EquippedWeaponData.ToSkillData()))
+                        actionType = EnemyActionType.WeaponSkill;
+                    else return EnemyActionDecision.SkipTurn();
+                }
+            }
+
             // 2) 행동별 타겟팅 룰로 실제 후보군을 계산합니다.
             SkillData effectiveSkill = selectedSkill;
             if (actionType == EnemyActionType.WeaponSkill)
@@ -72,7 +86,7 @@ namespace EnemyAI
                 effectiveSkill = self.EquippedWeaponData.ToSkillData();
             }
 
-            List<BattleCharactor> skillValidTargets = TargetingHelper.GetValidTargetsForSkillData(self, effectiveSkill);
+            List<BattleCharactor> skillValidTargets = TargetingHelper.GetValidTargetsForEnemyAI(self, effectiveSkill, validTargets);
 
             // 3) 부모에서 처리된 강제 타겟/공통 필터(validTargets)와 교집합합니다.
             var finalCandidates = new List<BattleCharactor>();
@@ -173,7 +187,7 @@ namespace EnemyAI
             if (!canUseSkill) return EnemyActionDecision.SkipTurn();
             SkillData shot = self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == 200021);
             if (shot == null) return EnemyActionDecision.SkipTurn();
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, shot)
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, shot, validTargets)
                 .Where(t => validTargets.Contains(t)).ToList();
             BattleCharactor target = EnemyAiTargetRules.PickSameRowThenLowestHpOrNearest(self, candidates);
             return target == null ? EnemyActionDecision.SkipTurn()
@@ -198,7 +212,7 @@ namespace EnemyAI
             }
 
             // 아군(같은 편) 중 HP 30% 미만 대상 → 대신 맞기.
-            if (canUseSkill)
+            if (canUseSkill && !SelectingTauntAttack)
             {
                 BattleCharactor ward = FindLowHpAlly(self, 0.3f);
                 SkillData guardSkill = ResolveSkillBySlot(self, 2); // FV20003_2
@@ -211,7 +225,7 @@ namespace EnemyAI
             // 아니면 방패 치기: 가장 가까운 적, 동거리면 무작위.
             SkillData strike = ResolveSkillBySlot(self, 1);         // FV20003_1
             List<BattleCharactor> candidates = strike == null ? new List<BattleCharactor>()
-                : TargetingHelper.GetValidTargetsForSkillData(self, strike)
+                : TargetingHelper.GetValidTargetsForEnemyAI(self, strike, validTargets)
                     .Where(t => validTargets.Contains(t)).ToList();
             BattleCharactor target = EnemyAiTargetRules.PickNearest(self, candidates);
             if (!canUseSkill || strike == null || target == null)
@@ -265,9 +279,11 @@ namespace EnemyAI
             bool useWave = UnityEngine.Random.Range(0, 100) < 60;
             SkillData skill = useWave ? wave : combo;
             if (skill == null) skill = useWave ? combo : wave;
+            if (SelectingTauntAttack && !IsAttackSkill(skill))
+                skill = IsAttackSkill(useWave ? combo : wave) ? (useWave ? combo : wave) : null;
             if (skill == null) return EnemyActionDecision.SkipTurn();
 
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill)
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets)
                 .Where(t => validTargets.Contains(t)).ToList();
             // 연격 첫 타격은 전열 우선. 파동탄은 모든 유효 대상이 같은 확률이다.
             if (skill == combo)

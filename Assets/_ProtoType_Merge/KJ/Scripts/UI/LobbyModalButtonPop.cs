@@ -25,6 +25,7 @@ public sealed class LobbyModalButtonPop : MonoBehaviour
     public static void Close(GameObject modalRoot)
     {
         if (modalRoot == null) return;
+        if (!ModalPointerCloseGate.TryClose(modalRoot)) return;
         var effect = modalRoot.GetComponent<LobbyModalButtonPop>();
         if (effect != null && effect.isActiveAndEnabled && effect.hasSnapshot)
         {

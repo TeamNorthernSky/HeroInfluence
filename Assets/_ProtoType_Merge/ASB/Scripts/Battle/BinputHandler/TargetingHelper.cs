@@ -46,6 +46,22 @@ public static class TargetingHelper
 
     public static List<BattleCharactor> GetValidTargetsForSkillData(BattleCharactor actor, SkillData skill)
     {
+        return GetValidTargetsForSkillDataCore(actor, skill, null);
+    }
+
+    // 도발 후보를 행 우선순위보다 먼저 제한한다. 일반 공격과 플레이어 입력의 대상 판정은 그대로 둔다.
+    public static List<BattleCharactor> GetValidTargetsForEnemyAI(
+        BattleCharactor actor, SkillData skill, List<BattleCharactor> candidates)
+    {
+        BattleCharactor tauntSource = actor != null ? actor.GetTauntSource() : null;
+        bool tauntAttempt = tauntSource != null && candidates != null && candidates.Count == 1
+            && candidates[0] == tauntSource;
+        return GetValidTargetsForSkillDataCore(actor, skill, tauntAttempt ? candidates : null);
+    }
+
+    private static List<BattleCharactor> GetValidTargetsForSkillDataCore(
+        BattleCharactor actor, SkillData skill, List<BattleCharactor> candidateLimit)
+    {
         var result = new List<BattleCharactor>();
         if (actor == null || actor.IsDead || skill == null)
         {
@@ -77,6 +93,11 @@ public static class TargetingHelper
         {
             BattleCharactor unit = all[i];
             if (unit == null)
+            {
+                continue;
+            }
+
+            if (candidateLimit != null && !candidateLimit.Contains(unit))
             {
                 continue;
             }

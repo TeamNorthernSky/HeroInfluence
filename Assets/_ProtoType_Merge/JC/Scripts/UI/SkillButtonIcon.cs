@@ -42,7 +42,9 @@ public class SkillButtonIcon : MonoBehaviour
     {
         if (iconImage == null || unit == null || !unit.IsPlayer) return;
         Sprite sp = Resolve(unit);
-        if (sp != null) { iconImage.sprite = sp; iconImage.enabled = true; }
+        // 장착 정보나 리소스가 없으면 이전 캐릭터의 아이콘을 남기지 않습니다.
+        iconImage.sprite = sp;
+        iconImage.enabled = sp != null;
     }
 
     private Sprite Resolve(BattleCharactor unit)
@@ -66,7 +68,7 @@ public class SkillButtonIcon : MonoBehaviour
         int wIdx = unit.EquippedWeaponIndex > 0
             ? unit.EquippedWeaponIndex
             : (unit.SourceData != null ? unit.SourceData.CurrentWeaponIndex : 0);
-        int wl = (gm != null && gm.Workshop != null && uIdx > 0)
+        int wl = (!unit.UsesTutorialEquipment && gm != null && gm.Workshop != null && uIdx > 0)
             ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(wIdx))
             : 1;
         return Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl);

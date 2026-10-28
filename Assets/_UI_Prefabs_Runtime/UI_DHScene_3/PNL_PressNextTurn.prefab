@@ -149,6 +149,7 @@ GameObject:
   - component: {fileID: 7403331120730132914}
   - component: {fileID: 5742918380071451304}
   - component: {fileID: 1009837923489877903}
+  - component: {fileID: 3514872794235809598}
   m_Layer: 0
   m_Name: PNL_PressNextTurn
   m_TagString: Untagged
@@ -245,3 +246,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7eae17f08efe95f4faf838dd39cbd5d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3514872794235809598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3046258963059198080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c465db9b0b4132e458f75b676db6906d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nextTurnButton: {fileID: 0}

@@ -295,7 +295,9 @@ namespace ASB.Work.Battle.SkillExecution
         {
             foreach (var target in context.ResolvedTargets)
             {
-                float value = target == context.PrimaryTarget ? context.Skill.skillValue : context.Skill.skillSubValue;
+                float value = HeroSkillRules.IsFamily(context.Skill, 1030)
+                    ? (TargetingHelper.IsUnitInFixedBackRow(target) ? context.Skill.skillSubValue : context.Skill.skillValue)
+                    : (target == context.PrimaryTarget ? context.Skill.skillValue : context.Skill.skillSubValue);
                 result.AddDamage(SkillEffectHelper.ApplyStandardDamage(context.Caster, target, value,
                     context.Skill.skillIndex, context.Skill.classSkillRange));
             }

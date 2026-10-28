@@ -78,7 +78,10 @@ public sealed class StatusEffectManager
             return false;
         }
 
-        StatusEffectInstance existing = activeEffects.Find(x => x != null && x.effectType == effect.effectType);
+        // guarded는 시전마다 별도 1회 보호를 쌓는다. 목록의 삽입 순서가 소비 순서다.
+        StatusEffectInstance existing = effect.effectType == StatusEffectType.guarded
+            ? null
+            : activeEffects.Find(x => x != null && x.effectType == effect.effectType);
         if (existing != null)
         {
             existing.category = effect.category;
@@ -122,6 +125,16 @@ public sealed class StatusEffectManager
         bool removed = activeEffects.RemoveAll(x => x != null && x.effectType == effectType && x.source == source) > 0;
         if (removed) owner?.NotifyStatusEffectsChanged();
         return removed && RequiresStatRecalculation(effectType);
+    }
+
+    public bool RemoveGuardEffect(StatusEffectInstance effect)
+    {
+        if (effect == null || effect.effectType != StatusEffectType.guarded
+            || !activeEffects.Remove(effect))
+            return false;
+
+        owner?.NotifyStatusEffectsChanged();
+        return true;
     }
 
     public StatusEffectInstance GetStatusEffect(StatusEffectType effectType)

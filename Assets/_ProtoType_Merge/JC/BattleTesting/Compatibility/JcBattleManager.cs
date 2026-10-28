@@ -402,7 +402,7 @@ public class JcBattleManager : MonoBehaviour
             ctx.RedirectedFrom = ward;   // 원래 대상 B 기억(연출용)
             ctx.Target = guardian;       // 데미지·사망·카운터·이벤트가 A를 따라감
         }
-        guardian.ClearGuard();           // 1회 소비
+        ward.ConsumeGuardFrom(guardian); // 보호 버프 1개만 소비
     }
 
     // 원본 함수 대응: BattleManager.ApplySkillExecutionResultRoutine (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Core/BattleManager.cs)

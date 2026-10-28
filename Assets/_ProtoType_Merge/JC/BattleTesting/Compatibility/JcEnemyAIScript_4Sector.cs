@@ -174,7 +174,7 @@ namespace EnemyAI
             }
 
             var pool = new List<BattleCharactor>();
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets);
             if (candidates != null)
                 for (int i = 0; i < candidates.Count; i++)
                 {
@@ -275,7 +275,7 @@ namespace EnemyAI
             BattleCharactor self, List<BattleCharactor> validTargets, SkillData skill, bool allowValidTargetsFallback)
         {
             var pool = new List<BattleCharactor>();
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets);
             if (candidates != null)
             {
                 for (int i = 0; i < candidates.Count; i++)

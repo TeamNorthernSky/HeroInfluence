@@ -19,9 +19,12 @@ namespace JC.BattleTesting
         float originalFov, startFov, endFov, elapsed, createdAt;
         bool moving, entered, cameraOnly;
         JcBankBattleBackground bankSettings;
+        bool bossBackground;
         bool clearTutorialArenaTrees;
+        double lightingHour;
+        JC.Environment.JcDayNightProfile lightingProfile;
         public string Report => background == null ? string.Empty :
-            background.TryGetComponent<JcDynamicBattleOutput>(out var output) ? output.Report : "은행 실내 배경";
+            background.TryGetComponent<JcDynamicBattleOutput>(out var output) ? output.Report : bossBackground ? "보스 무대 배경" : "은행 실내 배경";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetState() { pending = null; fixedOrigin = null; fixedKey = null; fixedZone = 0; }
@@ -109,9 +112,20 @@ namespace JC.BattleTesting
             var bridge = owner.AddComponent<JcArnoldBattlePresentation>();
             bridge.profile = cameraProfile; bridge.destination = battleScene;
             bridge.cameraOnly = cameraOnly;
+            bridge.lightingHour=JC.Environment.JcDayNightController.CurrentHours;
+            bridge.lightingProfile=JC.Environment.JcDayNightController.CurrentProfile;
             bridge.createdAt = Time.realtimeSinceStartup; pending = bridge;
             SceneManager.sceneLoaded += bridge.Loaded;
 
+            var boss = JcBossBattleBackground.Load();
+            if (boss != null && boss.Matches(context) && boss.visualPrefab != null)
+            {
+                bridge.background = Instantiate(boss.visualPrefab, owner.transform, false);
+                bridge.background.GetComponentInChildren<JcBossCityTime>(true)?.SetHour(bridge.lightingHour);
+                bridge.bossBackground = true;
+                bridge.background.SetActive(false);
+                return;
+            }
             // 명시된 은행 전투만 실내로 교체합니다. 진형·판정·카메라는 공통 경로를 유지합니다.
             var bank = JcBankBattleBackground.Load();
             if (bank != null && bank.Matches(context))
@@ -182,6 +196,7 @@ namespace JC.BattleTesting
                     root.name.StartsWith("BGHouse", StringComparison.Ordinal) || root.name.StartsWith("BGStore", StringComparison.Ordinal) ||
                     root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
+            JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null||bossBackground);
             if (background != null) background.SetActive(true);
             if (clearTutorialArenaTrees) RemoveArenaTrees(scene);
             Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);

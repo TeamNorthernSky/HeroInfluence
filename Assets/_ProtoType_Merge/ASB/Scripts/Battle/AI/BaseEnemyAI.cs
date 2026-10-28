@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using ASB.Work.Battle.SkillExecution;
 
 namespace EnemyAI
 {
@@ -12,6 +13,28 @@ namespace EnemyAI
     public abstract class BaseEnemyAI : IEnemyAI
     {
         public abstract int Index { get; }
+        // 단일 AI 인스턴스의 도발 공격 우선 탐색 동안만 true다.
+        protected bool SelectingTauntAttack { get; private set; }
+
+        protected static bool IsAttackSkill(SkillData skill)
+        {
+            if (skill == null) return false;
+
+            // 표에 공격(0)으로 기재된 보호·소환 스킬은 실제 효과를 우선한다.
+            if (skill.skillIndex == 200032 || skill.skillIndex == 400013 || skill.skillIndex == 400041)
+                return false;
+            if (SkillExecutionRegistry.TryGetHandler(skill.skillKey, out ISkillEffectHandler handler))
+            {
+                if (handler is GuardSkillHandler || handler is SummonSkillHandler)
+                    return false;
+                // 피해와 상태이상을 함께 주는 스킬은 표의 효과 분류가 디버프여도 공격이다.
+                if (handler is TauntStrikeSkillHandler || handler is AoETauntStrikeSkillHandler
+                    || handler is BleeedSkillHandler || handler is TargetHealBanSkill
+                    || handler is HolyBulletHpRecoveryHandler)
+                    return true;
+            }
+            return skill.classSkillEffect == 0;
+        }
 
         public EnemyActionDecision DecideAction(BattleCharactor self, List<BattleCharactor> targets)
         {
@@ -37,25 +60,32 @@ namespace EnemyAI
 
             bool canUseSkill = true; // 추후 침묵/봉인 상태이상 추가 시 여기서 제어
 
-            // 도발은 '강제'가 아니라 '우선'이다.
-            // 하위 AI는 넘겨받은 목록을 GetValidTargetsForSkillData 결과와 교집합만 취하므로,
-            // 도발 시전자가 스킬 사거리 필터(예: FrontFirst = 전열만)에서 탈락하면 교집합이 공집합이 되어
-            // 턴이 그대로 날아갔다. 도발이 1턴 스턴처럼 동작하던 문제.
-            // 도발 대상으로 행동이 성립하지 않으면 도발을 포기하고 원래 목록으로 다시 시도한다.
+            // 도발자를 먼저 시도한다. 적 AI 대상 필터는 이 후보를 행 우선순위보다 먼저 적용한다.
+            // 스킬의 고유 조건 등으로 행동이 성립하지 않으면 원래 목록으로 다시 시도한다.
             BattleCharactor tauntTarget = GetTauntTarget(self, validTargets);
             if (tauntTarget != null)
             {
-                EnemyActionDecision tauntDecision =
-                    DetermineSpecificAction(self, new List<BattleCharactor> { tauntTarget }, canUseSkill);
+                EnemyActionDecision tauntDecision;
+                SelectingTauntAttack = true;
+                try
+                {
+                    tauntDecision = DetermineSpecificAction(self, new List<BattleCharactor> { tauntTarget }, canUseSkill);
+                }
+                finally
+                {
+                    SelectingTauntAttack = false;
+                }
 
-                if (tauntDecision != null && !tauntDecision.Skip)
+                SkillData attackSkill = tauntDecision?.ActionType == EnemyActionType.WeaponSkill
+                    ? self.EquippedWeaponData?.ToSkillData() : tauntDecision?.SelectedSkill;
+                if (tauntDecision != null && !tauntDecision.Skip
+                    && (tauntDecision.IsSelfAction || IsAttackSkill(attackSkill)))
                 {
                     return tauntDecision;
                 }
 
                 UnityEngine.Debug.LogWarning(
-                    $"[EnemyAI] {self.UnitName}: 도발 대상 {tauntTarget.UnitName}이 스킬 타겟 필터에서 탈락했다. " +
-                    "도발을 무시하고 다른 대상으로 폴백한다.");
+                    $"[EnemyAI] {self.UnitName}: 도발 대상 {tauntTarget.UnitName}으로 행동할 수 없어 다른 대상을 시도한다.");
             }
 
             return DetermineSpecificAction(self, validTargets, canUseSkill);

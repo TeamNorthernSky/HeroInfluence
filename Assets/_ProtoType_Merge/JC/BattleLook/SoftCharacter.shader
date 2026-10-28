@@ -44,6 +44,7 @@ Shader "JC/Battle/SoftCharacter"
    half4 _BaseColor,_EmissionColor,_KeyTint,_FillTint;
    float _Cutoff,_ShadeFloor,_Wrap,_ShadowStrength,_AlbedoLift,_RimStrength,_Saturation,_MoldingStrength,_MoldingSharpness,_HitFlash;
    CBUFFER_END
+   float4 _JcDayNight, _JcNightReadability;
    struct A{float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;};
    struct V{float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 normalWS:TEXCOORD1;float2 uv:TEXCOORD2;half fog:TEXCOORD3;};
    V vert(A i){V o;o.positionWS=TransformObjectToWorld(i.positionOS.xyz);o.positionCS=TransformWorldToHClip(o.positionWS);o.normalWS=TransformObjectToWorldNormal(i.normalOS);o.uv=TRANSFORM_TEX(i.uv,_BaseMap);o.fog=ComputeFogFactor(o.positionCS.z);return o;}
@@ -68,6 +69,7 @@ Shader "JC/Battle/SoftCharacter"
     float3 halfVector=normalize(normalize(_KeyDirection.xyz)+GetWorldSpaceNormalizeViewDir(i.positionWS));
     float highlight=pow(saturate(dot(n,halfVector)),max(4,_MoldingSharpness));
     color=color*(1-crease*_MoldingStrength*.4)+_KeyTint.rgb*highlight*_MoldingStrength*.22;
+    if(_JcDayNight.x>.5)color*=max(.01,_JcNightReadability.y);
     color+=SAMPLE_TEXTURE2D(_EmissionMap,sampler_EmissionMap,i.uv).rgb*_EmissionColor.rgb;
     color=lerp(color,half3(1,1,1),saturate(_HitFlash));
     return half4(MixFog(color,i.fog),albedo.a);

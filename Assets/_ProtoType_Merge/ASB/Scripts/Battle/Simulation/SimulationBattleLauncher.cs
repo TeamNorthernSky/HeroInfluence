@@ -132,6 +132,9 @@ public sealed class SimulationBattleLauncher : MonoBehaviour
         error = string.Empty;
         try
         {
+            var bossBackground = JC.BattleTesting.JcBossBattleBackground.Load();
+            if (bossBackground != null && bossBackground.Matches(CombatContext.Instance))
+                JC.BattleTesting.JcArnoldBattlePresentation.PrepareCameraOnly(BattleSceneName);
             if (GameSceneManager.Instance != null)
                 GameSceneManager.Instance.LoadScene(BattleSceneName);
             else
