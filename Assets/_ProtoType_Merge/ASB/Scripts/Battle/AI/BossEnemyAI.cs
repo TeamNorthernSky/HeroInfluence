@@ -80,7 +80,7 @@ namespace EnemyAI
 
         private static BattleCharactor PickTarget(BattleCharactor self, List<BattleCharactor> validTargets, SkillData skill)
         {
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets);
             BattleCharactor best = null;
             for (int i = 0; i < candidates.Count; i++)
             {
@@ -159,7 +159,7 @@ namespace EnemyAI
 
         private static BattleCharactor PickTarget(BattleCharactor self, List<BattleCharactor> validTargets, SkillData skill)
         {
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets);
             BattleCharactor best = null;
             for (int i = 0; i < candidates.Count; i++)
             {

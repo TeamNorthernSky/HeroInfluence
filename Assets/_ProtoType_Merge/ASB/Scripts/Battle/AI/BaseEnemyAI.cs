@@ -37,11 +37,8 @@ namespace EnemyAI
 
             bool canUseSkill = true; // 추후 침묵/봉인 상태이상 추가 시 여기서 제어
 
-            // 도발은 '강제'가 아니라 '우선'이다.
-            // 하위 AI는 넘겨받은 목록을 GetValidTargetsForSkillData 결과와 교집합만 취하므로,
-            // 도발 시전자가 스킬 사거리 필터(예: FrontFirst = 전열만)에서 탈락하면 교집합이 공집합이 되어
-            // 턴이 그대로 날아갔다. 도발이 1턴 스턴처럼 동작하던 문제.
-            // 도발 대상으로 행동이 성립하지 않으면 도발을 포기하고 원래 목록으로 다시 시도한다.
+            // 도발자를 먼저 시도한다. 적 AI 대상 필터는 이 후보를 행 우선순위보다 먼저 적용한다.
+            // 스킬의 고유 조건 등으로 행동이 성립하지 않으면 원래 목록으로 다시 시도한다.
             BattleCharactor tauntTarget = GetTauntTarget(self, validTargets);
             if (tauntTarget != null)
             {
@@ -54,8 +51,7 @@ namespace EnemyAI
                 }
 
                 UnityEngine.Debug.LogWarning(
-                    $"[EnemyAI] {self.UnitName}: 도발 대상 {tauntTarget.UnitName}이 스킬 타겟 필터에서 탈락했다. " +
-                    "도발을 무시하고 다른 대상으로 폴백한다.");
+                    $"[EnemyAI] {self.UnitName}: 도발 대상 {tauntTarget.UnitName}으로 행동할 수 없어 다른 대상을 시도한다.");
             }
 
             return DetermineSpecificAction(self, validTargets, canUseSkill);

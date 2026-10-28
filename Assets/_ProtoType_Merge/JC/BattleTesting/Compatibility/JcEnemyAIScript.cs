@@ -82,7 +82,7 @@ namespace EnemyAI
                 effectiveSkill = self.EquippedWeaponData.ToSkillData();
             }
 
-            List<BattleCharactor> skillValidTargets = TargetingHelper.GetValidTargetsForSkillData(self, effectiveSkill);
+            List<BattleCharactor> skillValidTargets = TargetingHelper.GetValidTargetsForEnemyAI(self, effectiveSkill, validTargets);
 
             // 3) 부모에서 처리된 강제 타겟/공통 필터(validTargets)와 교집합합니다.
             var finalCandidates = new List<BattleCharactor>();
@@ -200,7 +200,7 @@ namespace EnemyAI
                     return new List<BattleCharactor>();
                 }
 
-                List<BattleCharactor> skillTargets = TargetingHelper.GetValidTargetsForSkillData(self, skill);
+                List<BattleCharactor> skillTargets = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets);
                 return skillTargets.Intersect(validTargets).ToList();
             }
 

@@ -60,6 +60,25 @@ public sealed class SectorTwoEnemyAiTests
         Assert.That(Field<object>(Decide(20003, self, near, farLowHp), "Target"), Is.SameAs(near));
     }
 
+    [TestCase(20003, 200031)]
+    [TestCase(20002, 200021)]
+    public void TauntInBackRow_TakesPriorityOverFrontFirstTargeting(int enemyIndex, int skillIndex)
+    {
+        Component self = Unit("Enemy", false, 2, 0, 50);
+        object skill = AddSkill(self, skillIndex);
+        skill.GetType().GetField("classSkillRangeLine").SetValue(skill, 0);
+        Component front = Unit("Front", true, 1, 0, 50);
+        Component taunter = Unit("Taunter", true, 0, 1, 50);
+
+        FindType("ASB.Work.Battle.SkillExecution.SkillEffectHelper").GetMethod("SetTaunt")
+            .Invoke(null, new object[] { taunter, self, 1 });
+        Assert.That(Field<object>(Decide(enemyIndex, self, front, taunter), "Target"), Is.SameAs(taunter));
+
+        object tauntType = Enum.Parse(FindType("StatusEffectType"), "taunt");
+        self.GetType().GetMethod("RemoveStatusEffect").Invoke(self, new[] { tauntType });
+        Assert.That(Field<object>(Decide(enemyIndex, self, front, taunter), "Target"), Is.SameAs(front));
+    }
+
     [Test]
     public void ReinforcedSoldier_ComboPrefersFrontForFirstAndBackForSecond()
     {

@@ -53,7 +53,7 @@ namespace EnemyAI
 
             SkillData chargeSkill = ResolveSkillBySlot(self, 1);
             List<BattleCharactor> candidates = chargeSkill == null ? new List<BattleCharactor>()
-                : TargetingHelper.GetValidTargetsForSkillData(self, chargeSkill)
+                : TargetingHelper.GetValidTargetsForEnemyAI(self, chargeSkill, validTargets)
                     .Where(t => validTargets.Contains(t)).ToList();
             BattleCharactor target = SelectMostClustered(candidates);
             if (chargeSkill == null || target == null)
@@ -154,7 +154,7 @@ namespace EnemyAI
             }
 
             var pool = new List<BattleCharactor>();
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets);
             if (candidates != null)
                 for (int i = 0; i < candidates.Count; i++)
                 {
@@ -224,7 +224,7 @@ namespace EnemyAI
             BattleCharactor self, List<BattleCharactor> validTargets, SkillData skill)
         {
             var pool = new List<BattleCharactor>();
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets);
             if (candidates != null)
             {
                 for (int i = 0; i < candidates.Count; i++)
