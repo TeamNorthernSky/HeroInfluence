@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -113,10 +113,22 @@ namespace JC.BattleTesting
             runtimeUnits.Add(actor); unitSlots[actor] = entry.CombatSlot;
         }
 
+        [Tooltip("이 테스트 씬에서만 사용할 보스 배경입니다. 비우면 기존 공용 배경을 사용합니다.")]
+        public GameObject bossBackgroundOverride;
+        public GameObject ActiveEncounterBackground => encounterBackgroundInstance;
         private void ApplyEncounterBackground(JcEncounterBackground background)
         {
             RestoreEncounterBackground();
-            if(appliedPreset!=null&&appliedPreset.dynamicBackground)
+            var bossBackground = JcBossBattleBackground.Load();
+            if (bossBackgroundOverride != null && appliedPreset != null && !appliedPreset.IsEventBattle)
+            {
+                encounterBackgroundInstance = Instantiate(bossBackgroundOverride, transform, false);
+            }
+            else if (bossBackground != null && bossBackground.Matches(appliedPreset) && bossBackground.visualPrefab != null)
+            {
+                encounterBackgroundInstance = Instantiate(bossBackground.visualPrefab, transform, false);
+            }
+            else if(appliedPreset!=null&&appliedPreset.dynamicBackground)
             {
                 encounterBackgroundInstance=pendingDynamicBackground;pendingDynamicBackground=null;
                 if(encounterBackgroundInstance==null)throw new InvalidOperationException("동적 배경 준비 결과가 없습니다.");

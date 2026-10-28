@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c65d6a9bbe0e1a545b146f54e7797a8d, type: 3}
+  m_Name: JC_BossBattleBackground
+  m_EditorClassIdentifier: 
+  visualPrefab: {fileID: 729960545371821083, guid: a49c257236e5b684ca9862f57c375116,
+    type: 3}
+  zoneId: 2
+  battleKey: BE490
