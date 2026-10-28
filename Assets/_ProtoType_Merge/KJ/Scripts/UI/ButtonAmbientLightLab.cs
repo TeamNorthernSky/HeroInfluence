@@ -2,20 +2,25 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>Button-shaped ambient halo preview, independent of production UI.</summary>
+/// <summary>Button-shaped ambient halo, with an optional existing button target for production UI.</summary>
 public sealed class ButtonAmbientLightLab : MonoBehaviour
 {
     [SerializeField] private Sprite buttonSprite;
     [SerializeField] private TMP_FontAsset font;
     [SerializeField] private Shader ambientShader;
+    [Tooltip("공방처럼 기존 버튼에 적용할 때 연결합니다. 비어 있으면 EffectLab 샘플을 만듭니다.")]
+    [SerializeField] private Image targetButton;
     public Color lightColor = new Color(.2f, .65f, 1f, 1f);
     [Range(0f, 4f)] public float intensity = 1.5f;
     [Range(.02f, .15f)] public float spread = .08f;
     public bool breathe = true;
     private Material material;
+    private RawImage targetHalo;
+    private bool visible;
 
     private void Start()
     {
+        if (targetButton != null) { SetVisible(visible); return; }
         if (buttonSprite == null || ambientShader == null) return;
         Caption("버튼 효과 2 · Ambient Light", new Vector2(0, 330), 38);
         Caption("버튼 모양을 따라 바깥으로 부드럽게 퍼지는 빛", new Vector2(0, 260), 24);
@@ -43,6 +48,47 @@ public sealed class ButtonAmbientLightLab : MonoBehaviour
         Caption("색상 · 밝기 · 퍼지는 범위는 Inspector에서 조절", new Vector2(0, -260), 23);
     }
 
+    public void SetVisible(bool show)
+    {
+        visible = show;
+        if (targetButton == null || targetButton.sprite == null || ambientShader == null) return;
+        if (targetHalo == null)
+        {
+            var go = new GameObject("CoreSelectedAmbient", typeof(RectTransform), typeof(RawImage), typeof(LayoutElement));
+            go.layer = targetButton.gameObject.layer;
+            go.transform.SetParent(targetButton.transform.parent, false);
+            go.transform.SetSiblingIndex(targetButton.transform.GetSiblingIndex());
+            go.GetComponent<LayoutElement>().ignoreLayout = true;
+            targetHalo = go.GetComponent<RawImage>();
+            targetHalo.raycastTarget = false;
+            material = new Material(ambientShader);
+            targetHalo.material = material;
+        }
+        targetHalo.gameObject.SetActive(show && isActiveAndEnabled);
+        if (!show) return;
+        var sprite = targetButton.sprite;
+        targetHalo.texture = sprite.texture;
+        var spriteRect = sprite.textureRect;
+        material.SetVector("_SpriteRect", new Vector4(spriteRect.x / sprite.texture.width,
+            spriteRect.y / sprite.texture.height, spriteRect.width / sprite.texture.width, spriteRect.height / sprite.texture.height));
+        var target = targetButton.rectTransform;
+        var halo = targetHalo.rectTransform;
+        halo.anchorMin = target.anchorMin;
+        halo.anchorMax = target.anchorMax;
+        halo.pivot = target.pivot;
+        halo.localRotation = target.localRotation;
+        halo.localScale = target.localScale;
+        halo.sizeDelta = target.sizeDelta + target.rect.size * .6f;
+        halo.anchoredPosition = target.anchoredPosition + Vector2.Scale(target.rect.size * .6f, target.pivot - Vector2.one * .5f);
+        material.SetFloat("_Aspect", target.rect.width / Mathf.Max(1f, target.rect.height));
+        Update();
+    }
+
+    private void OnDisable()
+    {
+        if (targetHalo != null) targetHalo.gameObject.SetActive(false);
+    }
+
     private void Update()
     {
         if (material == null) return;
@@ -67,6 +113,15 @@ public sealed class ButtonAmbientLightLab : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (material != null) Destroy(material);
+        if (targetHalo != null)
+        {
+            if (Application.isPlaying) Destroy(targetHalo.gameObject);
+            else DestroyImmediate(targetHalo.gameObject);
+        }
+        if (material != null)
+        {
+            if (Application.isPlaying) Destroy(material);
+            else DestroyImmediate(material);
+        }
     }
 }

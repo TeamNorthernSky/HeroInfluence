@@ -13,7 +13,7 @@ Shader "HeroInfluence/UI/ButtonAmbientLight"
     {
         Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" }
         Cull Off Lighting Off ZWrite Off ZTest [unity_GUIZTestMode]
-        Blend SrcAlpha One
+        Blend SrcAlpha OneMinusSrcAlpha
         Pass
         {
             CGPROGRAM

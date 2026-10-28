@@ -22,6 +22,8 @@ public class SettingsModalController : MonoBehaviour
     [SerializeField] private TMP_Dropdown ResolutionDropdown;
     [SerializeField] private TMP_Dropdown ScreenModeDropdown;
 
+    public bool PendingAutoTurnEnd { get; private set; }
+
     private static readonly (int width, int height)[] Resolutions =
     {
         (1280, 720),
@@ -42,7 +44,69 @@ public class SettingsModalController : MonoBehaviour
         InitResolutionDropdown();
         InitScreenModeDropdown();
         InitVolumeSliders();
+        PendingAutoTurnEnd = GameSettings.AutoTurnEnd;
         CreateAutoTurnEndToggle();
+        BindApplyButton();
+    }
+
+    private void BindApplyButton()
+    {
+        // The authored Apply button used to call Close. Replace only that callback
+        // on this runtime instance, preserving the shared prefab and other actions.
+        foreach (var button in GetComponentsInChildren<Button>(true))
+        {
+            if (button.name != "Accept Button") continue;
+            for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
+            {
+                if (button.onClick.GetPersistentTarget(i) == this &&
+                    button.onClick.GetPersistentMethodName(i) == nameof(Close))
+                    button.onClick.SetPersistentListenerState(i, UnityEngine.Events.UnityEventCallState.Off);
+            }
+            button.onClick.AddListener(OnApplyButtonClicked);
+        }
+    }
+
+    private void OnEnable()
+    {
+        RefreshSavedValues();
+    }
+
+    private void OnDisable()
+    {
+        // Also handles Escape/outside-click paths that deactivate the modal directly.
+        GameSettings.LoadAndApplyAll();
+    }
+
+    private void RefreshSavedValues()
+    {
+        PendingAutoTurnEnd = GameSettings.AutoTurnEnd;
+        SetVolumeSlider(MasterVolume, GameSettings.MasterVolume);
+        SetVolumeSlider(BackGroundVolume, GameSettings.BGMVolume);
+        SetVolumeSlider(EffectVolume, GameSettings.EffectVolume);
+        if (ResolutionDropdown != null)
+            ResolutionDropdown.SetValueWithoutNotify(GameSettings.ResolutionIndex);
+        if (ScreenModeDropdown != null)
+            ScreenModeDropdown.SetValueWithoutNotify(GameSettings.IsFullScreen ? 1 : 0);
+        foreach (var view in GetComponentsInChildren<AutoTurnEndSettingsToggle>(true))
+            view.Refresh();
+    }
+
+    public void SetPendingAutoTurnEnd(bool enabled)
+    {
+        PendingAutoTurnEnd = enabled;
+    }
+
+    public void OnApplyButtonClicked()
+    {
+        if (MasterVolume != null) GameSettings.ApplyMasterVolume(MasterVolume.value);
+        if (BackGroundVolume != null) GameSettings.ApplyBGMVolume(BackGroundVolume.value);
+        if (EffectVolume != null) GameSettings.ApplyEffectVolume(EffectVolume.value);
+        if (ResolutionDropdown != null && ResolutionDropdown.value != GameSettings.ResolutionIndex)
+            GameSettings.ApplyResolution(ResolutionDropdown.value, Resolutions);
+        if (ScreenModeDropdown != null && (ScreenModeDropdown.value == 1) != GameSettings.IsFullScreen)
+            GameSettings.ApplyFullScreen(ScreenModeDropdown.value == 1);
+        GameSettings.ApplyAutoTurnEnd(PendingAutoTurnEnd);
+        Close();
     }
 
     private void CreateAutoTurnEndToggle()
@@ -112,7 +176,6 @@ public class SettingsModalController : MonoBehaviour
         ResolutionDropdown.AddOptions(options);
         ResolutionDropdown.value = GameSettings.ResolutionIndex;
         ResolutionDropdown.RefreshShownValue();
-        ResolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
     }
 
     private void InitScreenModeDropdown()
@@ -123,14 +186,22 @@ public class SettingsModalController : MonoBehaviour
         ScreenModeDropdown.AddOptions(new List<string> { "창 모드", "전체 화면" });
         ScreenModeDropdown.value = GameSettings.IsFullScreen ? 1 : 0;
         ScreenModeDropdown.RefreshShownValue();
-        ScreenModeDropdown.onValueChanged.AddListener(OnScreenModeChanged);
     }
 
     private void InitVolumeSliders()
     {
-        InitSlider(MasterVolume,     GameSettings.MasterVolume,  GameSettings.ApplyMasterVolume);
-        InitSlider(BackGroundVolume, GameSettings.BGMVolume,     GameSettings.ApplyBGMVolume);
-        InitSlider(EffectVolume,     GameSettings.EffectVolume,  GameSettings.ApplyEffectVolume);
+        InitSlider(MasterVolume, GameSettings.MasterVolume, v =>
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.SetMasterVolume(v);
+        });
+        InitSlider(BackGroundVolume, GameSettings.BGMVolume, v =>
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.SetBgmVolume(v);
+        });
+        InitSlider(EffectVolume, GameSettings.EffectVolume, v =>
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.SetSfxVolume(v);
+        });
     }
 
     private static void InitSlider(Slider slider, float savedValue, System.Action<float> onChanged)
@@ -164,16 +235,6 @@ public class SettingsModalController : MonoBehaviour
         });
     }
 
-    private void OnResolutionChanged(int index)
-    {
-        GameSettings.ApplyResolution(index, Resolutions);
-    }
-
-    private void OnScreenModeChanged(int index)
-    {
-        GameSettings.ApplyFullScreen(index == 1);
-    }
-
     // [KJ 260708] TitleScene "설정" 버튼 + 인게임 SystemMenu "Options" 버튼이 공용 호출.
     // gameObject.SetActive(true)를 가장 먼저 호출 — 최초 오픈 시 Awake가 동기 실행된 뒤
     // 아래 CurrentPanel 참조가 유효해짐을 보장한다.
@@ -192,12 +253,15 @@ public class SettingsModalController : MonoBehaviour
     public void OnDefaultButtonClicked()
     {
         const float defaultVolume = 1.0f;
-        GameSettings.ApplyMasterVolume(defaultVolume);
-        GameSettings.ApplyBGMVolume(defaultVolume);
-        GameSettings.ApplyEffectVolume(defaultVolume);
         SetVolumeSlider(MasterVolume, defaultVolume);
         SetVolumeSlider(BackGroundVolume, defaultVolume);
         SetVolumeSlider(EffectVolume, defaultVolume);
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetMasterVolume(defaultVolume);
+            AudioManager.Instance.SetBgmVolume(defaultVolume);
+            AudioManager.Instance.SetSfxVolume(defaultVolume);
+        }
     }
 
     private static void SetVolumeSlider(Slider slider, float value)
