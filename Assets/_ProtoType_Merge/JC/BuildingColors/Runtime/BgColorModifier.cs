@@ -22,6 +22,7 @@ namespace JC.BuildingColors
         readonly List<MeshTarget> meshTargets=new List<MeshTarget>();
         readonly List<Target> targets=new List<Target>();
         readonly List<RenderTexture> outputs=new List<RenderTexture>();
+        readonly JC.Environment.JcNightMaterialBindings nightMaterials=new JC.Environment.JcNightMaterialBindings();
         Material processor;
         int appliedHash=int.MinValue;
         double nextScan;
@@ -39,6 +40,7 @@ namespace JC.BuildingColors
         bool TargetMaterialChanged(){foreach(var t in targets){if(!t.renderer)return true;var materials=t.renderer.sharedMaterials;if(t.slot>=materials.Length||FindBinding(t.renderer,t.slot,materials[t.slot])!=t.binding||t.material!=definition.bindings[t.binding].material)return true;}return false;}
         int FindBinding(Renderer renderer,int slot,Material material)
         {
+            material=JC.Environment.JcNightMaterialBindings.Original(material);
             for(int i=0;i<definition.bindings.Length;i++)if(material==definition.bindings[i].material)return i;
             // DH의 가림 재질은 일시적인 표시 전환이다. 이미 연결된 슬롯의 색상 텍스처와 UV 메시를 유지한다.
             // 가림 재질을 사용하는 다른 건물은 새 대상으로 등록하지 않고, 실제 재질 교체는 기존대로 재탐색한다.
@@ -74,7 +76,7 @@ namespace JC.BuildingColors
                 foreach(var b in definition.meshes??Array.Empty<BgMeshBinding>())if(b.original&&b.separated&&(f.sharedMesh==b.original||f.sharedMesh==b.separated)){meshTargets.Add(new MeshTarget{filter=f,original=b.original,separated=b.separated});appliedHash=int.MinValue;break;}
             }
         }
-        void RestoreTargets(){foreach(var m in meshTargets)if(m.filter&&(m.filter.sharedMesh==m.separated||m.filter.sharedMesh==m.original))m.filter.sharedMesh=m.original;meshTargets.Clear();foreach(var t in targets)if(t.renderer&&t.slot<t.renderer.sharedMaterials.Length)t.renderer.SetPropertyBlock(t.previous==null||t.previous.isEmpty?null:t.previous,t.slot);targets.Clear();}
+        void RestoreTargets(){nightMaterials.Dispose();foreach(var m in meshTargets)if(m.filter&&(m.filter.sharedMesh==m.separated||m.filter.sharedMesh==m.original))m.filter.sharedMesh=m.original;meshTargets.Clear();foreach(var t in targets)if(t.renderer&&t.slot<t.renderer.sharedMaterials.Length)t.renderer.SetPropertyBlock(t.previous==null||t.previous.isEmpty?null:t.previous,t.slot);targets.Clear();}
         int Hash(){unchecked{int h=definition.GetInstanceID()*31+(showOriginal?1:0)+highlightedPart*71;foreach(var p in parts)h=(((h*31+p.hue.GetHashCode())*31+p.lightness.GetHashCode())*31+p.saturation.GetHashCode())*31+(p.ignoreSourceColorAndShading?1:0);return h;}}
         public void EnsureParts()
         {
@@ -91,6 +93,8 @@ namespace JC.BuildingColors
             if(!definition){Release();return;}
             if(definition.initial==null||definition.initial.Length==0||definition.initial.Length>BgColorDefinition.Capacity)return;
             EnsureParts();
+            if(showOriginal)nightMaterials.Dispose();
+            if(Application.isPlaying)foreach(var t in targets)if(!showOriginal)nightMaterials.Bind(t.renderer,t.slot,definition.bindings[t.binding].maskParts);
             int hash=Hash();if(hash==appliedHash)return;
             Status=null;
             if(!processor){if(!definition.recolorShader||!definition.recolorShader.isSupported){Status="색상 셰이더를 사용할 수 없습니다.";return;}processor=new Material(definition.recolorShader){hideFlags=HideFlags.HideAndDontSave};}
