@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class PartyInteractionController
 {
+    public static event Action<PartyGridMover, ResourceType> FieldResourceCollected;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetResourceCollected() => FieldResourceCollected = null;
+
     private readonly GridManager gridManager;
     private readonly CombatEncounterManager combatEncounterManager;
     private readonly CombatPromptService combatPromptService;
@@ -436,6 +441,10 @@ public class PartyInteractionController
         }
 
         float inputUnlockDelay = CollectItem(itemGrid, itemObject, ownerParty != null ? ownerParty.transform : null);
+        if (itemObject is ItemObject resource)
+            FieldResourceCollected?.Invoke(ownerParty, resource.resourceType);
+        else if (itemObject is TutorialItemObject tutorialResource)
+            FieldResourceCollected?.Invoke(ownerParty, tutorialResource.ResourceType);
         if (inputUnlockDelay > 0f)
             yield return new WaitForSeconds(inputUnlockDelay);
 

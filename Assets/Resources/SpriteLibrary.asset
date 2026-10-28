@@ -51,6 +51,8 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: fad83fe9757b8ba44b35321b5fb76b45, type: 3}
   - key: Portrait_Enemy_Sprite/UI_profile_villian_zako
     sprite: {fileID: 21300000, guid: ad18426806526f34f805cad667975cf6, type: 3}
+  - key: UI_Sprite/UI_Chatting/UI_profile_NPC_male
+    sprite: {fileID: 21300000, guid: 9bd16c4644e32f3478663a1815369f4e, type: 3}
   residentSprites:
   - {fileID: 21300000, guid: fdf6e8b97b1b0c042b27183d13a54094, type: 3}
   - {fileID: 21300000, guid: 737d454f310c07443aecef04eafc79fe, type: 3}
