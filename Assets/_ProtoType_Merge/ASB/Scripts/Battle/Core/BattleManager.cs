@@ -381,7 +381,7 @@ public class BattleManager : MonoBehaviour
             ctx.RedirectedFrom = ward;   // 원래 대상 B 기억(연출용)
             ctx.Target = guardian;       // 데미지·사망·카운터·이벤트가 A를 따라감
         }
-        ward.RemoveStatusEffect(StatusEffectType.guarded); // 재지정 시점에 1회 소비
+        ward.ConsumeGuardFrom(guardian); // 재지정 시점에 보호 버프 1개만 소비
     }
 
     public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null,

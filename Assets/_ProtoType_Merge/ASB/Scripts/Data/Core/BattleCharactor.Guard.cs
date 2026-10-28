@@ -1,17 +1,41 @@
 using System.Collections.Generic;
 
-// 대신 맞기 버프는 보호 대상에게 저장한다. source가 현재 보호자이며 버프 하나가 공격 1회를 뜻한다.
+// 대신 맞기 버프는 보호 대상에게 시전 순서대로 저장한다. source가 보호자이며 버프 하나가 공격 1회를 뜻한다.
 public partial class BattleCharactor
 {
     public BattleCharactor GuardSource
     {
         get
         {
-            StatusEffectInstance effect = Effects.GetStatusEffect(StatusEffectType.guarded);
-            BattleCharactor source = effect?.source;
-            return source != null && source != this && !source.IsDead && !source.IsIncapacitated
-                && !IsDead && !IsIncapacitated && source.IsPlayer == IsPlayer ? source : null;
+            if (IsDead || IsIncapacitated) return null;
+            foreach (StatusEffectInstance effect in ActiveStatusEffects)
+            {
+                if (effect == null || effect.effectType != StatusEffectType.guarded
+                    || effect.remainingTurns <= 0) continue;
+
+                BattleCharactor source = effect.source;
+                if (source != null && source != this && !source.IsDead && !source.IsIncapacitated
+                    && source.IsPlayer == IsPlayer)
+                    return source;
+            }
+
+            return null;
         }
+    }
+
+    public bool RemoveGuardEffect(StatusEffectInstance effect) => Effects.RemoveGuardEffect(effect);
+
+    public bool ConsumeGuardFrom(BattleCharactor source)
+    {
+        if (source == null) return false;
+        foreach (StatusEffectInstance effect in ActiveStatusEffects)
+        {
+            if (effect != null && effect.effectType == StatusEffectType.guarded
+                && effect.remainingTurns > 0 && effect.source == source)
+                return RemoveGuardEffect(effect);
+        }
+
+        return false;
     }
 
     public void RemoveGuardedFromSource(BattleCharactor source)
@@ -50,18 +74,29 @@ public static class GuardLink
     {
         if (ward == null || candidates == null) return null;
 
-        BattleCharactor source = ward.GuardSource;
-        if (source != null)
-        {
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                if (candidates[i] == source) return source;
-            }
-        }
+        if (ward.IsDead || ward.IsIncapacitated) return null;
 
-        // 사망·무력화·전투 이탈 등으로 보호자가 유효하지 않으면 표시도 즉시 정리한다.
-        if (ward.HasStatusEffect(StatusEffectType.guarded))
-            ward.RemoveStatusEffect(StatusEffectType.guarded);
+        // 앞에서부터 검사하여 오래된 유효 버프를 우선 사용한다. 무효 항목만 개별 제거한다.
+        for (int i = 0; i < ward.ActiveStatusEffects.Count;)
+        {
+            StatusEffectInstance effect = ward.ActiveStatusEffects[i];
+            if (effect == null || effect.effectType != StatusEffectType.guarded)
+            {
+                i++;
+                continue;
+            }
+
+            BattleCharactor source = effect.source;
+            bool valid = effect.remainingTurns > 0 && source != null && source != ward
+                && !source.IsDead && !source.IsIncapacitated && source.IsPlayer == ward.IsPlayer;
+            if (valid)
+            {
+                for (int j = 0; j < candidates.Count; j++)
+                    if (candidates[j] == source) return source;
+            }
+
+            ward.RemoveGuardEffect(effect);
+        }
         return null;
     }
 
