@@ -71375,19 +71375,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dc01e21d3ac7b44ea8dca3fe1e48ef9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  consumeNpcTableV16: {fileID: 11400000, guid: 1d326ab100248ee4191f3b7bb0717665, type: 2}
-  consumeConditionTableV16: {fileID: 11400000, guid: 41f636eaca8eccf4b9577848c18b257a,
+  consumeNpcTableV16: {fileID: 11400000, guid: 35a44669e0b70a448b73b858f5c78e84, type: 2}
+  consumeConditionTableV16: {fileID: 11400000, guid: d968f8c0e9e76b843b377a87f08f8aa0,
     type: 2}
-  consumeResultTable: {fileID: 11400000, guid: 419fe9eb3df41f74a8663c0c24e08863, type: 2}
-  rewardNpcTableV16: {fileID: 11400000, guid: 09ae271b7a630ea499711a170aa7e5cf, type: 2}
-  rewardConditionTableV16: {fileID: 11400000, guid: f656c3f4f3314894496ae28b225abea6,
+  consumeResultTable: {fileID: 11400000, guid: bbee4582cfc1c4345a44e29d9c362905, type: 2}
+  rewardNpcTableV16: {fileID: 11400000, guid: f0b582ed963ef34468449ccc8fb7bb29, type: 2}
+  rewardConditionTableV16: {fileID: 11400000, guid: 52e8b45cab5839143be77892c0c222ec,
     type: 2}
-  choiceNpcTableV16: {fileID: 11400000, guid: 89dc6f19ba9c26642ac803996950746c, type: 2}
-  choiceConditionTableV16: {fileID: 11400000, guid: 907a09c8bb09e33459acd39ddcf960b1,
+  choiceNpcTableV16: {fileID: 11400000, guid: 2ee93f13beb50484e98e404293181e57, type: 2}
+  choiceConditionTableV16: {fileID: 11400000, guid: 3ca38f409fffe2f4995fa5e909c6988c,
     type: 2}
-  choiceOptionTableV16: {fileID: 11400000, guid: 46c2402ad894c154189e33504d252e7c,
+  choiceOptionTableV16: {fileID: 11400000, guid: 69d28da1315143f4e824924d08eb67a2,
     type: 2}
-  choiceResultTableV16: {fileID: 11400000, guid: 54d1e1636c5d2284c8c81a92371e8128,
+  choiceResultTableV16: {fileID: 11400000, guid: d2eb32a820bc7b64e91a26b759ff5e16,
     type: 2}
   loadOnAwake: 1
   dontDestroyOnLoad: 1
