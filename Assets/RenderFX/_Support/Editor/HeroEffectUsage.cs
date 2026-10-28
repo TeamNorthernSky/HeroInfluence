@@ -61,7 +61,7 @@ public static class HeroEffectUsage
         if (data.EnableHitEffect) Add(registry != null ? registry.Get(data.HitEffectId) : null, "hit");
         var property = new SerializedObject(data).GetIterator();
         while (property.Next(true))
-            if (property.propertyType == SerializedPropertyType.Integer && property.name.EndsWith("EffectId") && property.intValue != 0)
+            if (property.propertyType == SerializedPropertyType.Integer && property.name != "HitEffectId" && property.name.EndsWith("EffectId") && property.intValue != 0)
                 Add(registry != null ? registry.Get(property.intValue) : null, property.name);
         Add(Resources.Load<GameObject>("BattleEffects/FX_Common_Hit_Basic"), "common_hit");
         if (skillIndex / 1000 == 1)
