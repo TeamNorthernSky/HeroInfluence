@@ -14,6 +14,18 @@ namespace JC.Environment {
   [Tooltip("중심 구간을 늘리는 배율입니다. 1이면 감속하지 않습니다."),Range(1,8)] public float twilightDurationMultiplier=3;
   [Tooltip("타임랩스 중 구름 이동 배율입니다. 게임 전체 속도는 바꾸지 않습니다."),Min(1)] public float cloudSpeedMultiplier=5;
   [Tooltip("전환 중 HUD의 밝기 비율입니다."),Range(.1f,1)] public float disabledUIAlpha=.45f;
+  [Header("야간 가독성과 창문")]
+  [Tooltip("밤 방향광 배율입니다. 낮에는 1로 돌아옵니다."),Min(1)] public float nightLightBoost=1.25f;
+  [Tooltip("밤 환경광 배율입니다. 낮에는 1로 돌아옵니다."),Min(1)] public float nightAmbientBoost=1.2f;
+  [Tooltip("야간 물체 환경광의 추가 배율입니다. 방향광·하늘·안개·반사에는 적용하지 않습니다."),Min(1)] public float nightObjectAmbientBoost=1.15f;
+  [Tooltip("은행 실내의 야간 물체 환경광 추가 배율입니다."),Min(1)] public float indoorNightObjectAmbientBoost=1.06f;
+  [Tooltip("필드 인간형 모델의 야간 알베도 발광 보정입니다."),Range(0,.5f)] public float humanoidNightFill=.16f;
+  [Tooltip("창문 점등 시각입니다. 18.5는 18:30입니다."),Range(0,24)] public float windowOnHour=18.5f;
+  [Tooltip("창문 소등 시각입니다. .5는 00:30입니다."),Range(0,24)] public float windowOffHour=.5f;
+  [Tooltip("시간 배속과 무관한 실제 화면의 점등·소등 보간 시간입니다."),Min(.01f)] public float windowFadeSeconds=.3f;
+  [Tooltip("점등 창문의 낮은 채도와 높은 명도 색상입니다."),ColorUsage(false,true)] public Color windowTint=new Color(1,.94f,.78f,1);
+  [Tooltip("점등 창문의 발광 강도입니다."),Min(0)] public float windowIntensity=1.1f;
+  public bool WindowsOn(double hours){float h=Mathf.Repeat((float)(hours%24),24),on=Mathf.Repeat(windowOnHour,24),off=Mathf.Repeat(windowOffHour,24);return on<off?h>=on&&h<off:h>=on||h<off;}
   [Header("환경 색상")]
   [Tooltip("낮/밤 하늘의 상부 색상입니다.")] public Color daySky=new Color(.30f,.52f,.78f), nightSky=new Color(.12f,.17f,.28f);
   [Tooltip("낮/밤 수평선 및 환경광의 기준 색상입니다.")] public Color dayHorizon=new Color(.72f,.80f,.88f), nightHorizon=new Color(.22f,.26f,.36f);

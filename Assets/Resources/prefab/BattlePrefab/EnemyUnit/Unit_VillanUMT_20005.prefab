@@ -253,7 +253,7 @@ MonoBehaviour:
   ipBarRect: {fileID: 5574242861437843627}
   ipCanvas: {fileID: 0}
   targetCamera: {fileID: 0}
-  anchorHeight: 1.95
+  anchorHeight: 3.2
   screenOffset: {x: 0, y: 24}
   screenWidth: 170
   showInfluence: 0

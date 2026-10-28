@@ -22,6 +22,16 @@ MonoBehaviour:
   twilightDurationMultiplier: 3
   cloudSpeedMultiplier: 5
   disabledUIAlpha: 0.45
+  nightLightBoost: 1.25
+  nightAmbientBoost: 1.2
+  nightObjectAmbientBoost: 1.15
+  indoorNightObjectAmbientBoost: 1.06
+  humanoidNightFill: 0.16
+  windowOnHour: 18.5
+  windowOffHour: 0.5
+  windowFadeSeconds: 0.3
+  windowTint: {r: 1, g: 0.94, b: 0.78, a: 1}
+  windowIntensity: 1.1
   daySky: {r: 0.3, g: 0.52, b: 0.78, a: 1}
   nightSky: {r: 0.12, g: 0.17, b: 0.28, a: 1}
   dayHorizon: {r: 0.72, g: 0.8, b: 0.88, a: 1}
