@@ -668,7 +668,8 @@ public class InteractionCellOverlayController : MonoBehaviour
 
     private static Material CreateOverlayMaterial(Color color)
     {
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+        Shader shader = Resources.Load<Shader>("JcNightLit");
+        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
         if (shader == null)
             shader = Shader.Find("Unlit/Color");
         if (shader == null)
@@ -680,6 +681,7 @@ public class InteractionCellOverlayController : MonoBehaviour
             renderQueue = (int)RenderQueue.Transparent
         };
 
+        if (material.HasProperty("_JcCombatOverlay")) material.SetFloat("_JcCombatOverlay", 1);
         material.SetColor("_Color", color);
         if (material.HasProperty("_BaseColor"))
             material.SetColor("_BaseColor", color);
