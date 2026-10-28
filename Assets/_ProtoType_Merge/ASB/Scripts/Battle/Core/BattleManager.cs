@@ -1117,6 +1117,20 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        if (classSkillRow.skillIndex == 200021 || classSkillRow.skillIndex == 200022)
+        {
+            Vector3 aim = target.transform.position;
+            if (classSkillRow.skillIndex == 200022 && ASB.Work.Battle.SkillExecution.SkillAreaPreviewHelper.TryGetAreaCells(
+                actor, target, classSkillRow, out var main, out var splash))
+            {
+                Vector3 sum = main != null ? main.transform.position : Vector3.zero;
+                int count = main != null ? 1 : 0;
+                if (splash != null) foreach (var cell in splash) if (cell != null) { sum += cell.transform.position; count++; }
+                if (count > 0) aim = sum / count;
+            }
+            Vector3 direction = aim - actor.transform.position; direction.y = 0f;
+            if (direction.sqrMagnitude > .001f) actor.transform.rotation = Quaternion.LookRotation(direction);
+        }
         bool tao = HeroSkillRules.IsFamily(classSkillRow, 4040);
         if (actor.SourceData != null && HeroSkillRules.IsCurrentHeroSkill(classSkillRow.skillIndex) &&
             !actor.availableSkills.Exists(s => s != null && s.skillIndex == classSkillRow.skillIndex && s.acquireLevel <= actor.Level))

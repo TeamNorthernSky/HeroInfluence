@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 541a9e4f815bea94d94b270889cd5075, type: 3}
   m_Name: JC_Merged_EffectRegistry
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   _entries:
   - Id: 1010
     Prefab: {fileID: 4718697377525663345, guid: a1266c1e0de3d1d488fa23d60aaf3e2a,
@@ -82,7 +82,8 @@ MonoBehaviour:
   - Id: 400019
     Prefab: {fileID: 701210666644524181, guid: 3880fcfd49f541c4c838e57010c27aa9, type: 3}
   - Id: 400013
-    Prefab: {fileID: 1300130013001300131, guid: e5c457a5f6a149899d603a10d7ed6e19, type: 3}
+    Prefab: {fileID: 1300130013001300131, guid: e5c457a5f6a149899d603a10d7ed6e19,
+      type: 3}
   - Id: 96002
     Prefab: {fileID: 6509714273369711234, guid: 78dffa79927760845b748f9ef1569fe8,
       type: 3}
@@ -353,3 +354,6 @@ MonoBehaviour:
       type: 3}
   - Id: 98047
     Prefab: {fileID: 751471882910008744, guid: c87a5ce0b26e880449fbb72543326ff5, type: 3}
+  - Id: 98501
+    Prefab: {fileID: 7464165298834103127, guid: 3916f7ff7c6f8c94da22a1a1ba54979f,
+      type: 3}

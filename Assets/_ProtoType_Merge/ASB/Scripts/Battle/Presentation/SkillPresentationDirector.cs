@@ -1115,6 +1115,18 @@ public sealed partial class SkillPresentationDirector
                         () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
                 }
 
+                if (presentation.SkillIndex == 200022 && director.time >= 1.45d && director.time < 1.6d)
+                {
+                    yield return FreezeForHoldRoutine(director, 8f,
+                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None ||
+                              !VillainDroneProjectileVfx.IsFiringFor(actor));
+                    if (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
+                    {
+                        // Begin the return motion as soon as the last bullet has been fired.
+                        director.time = 1.6d;
+                        director.Evaluate();
+                    }
+                }
                 float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
                 ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed *
                     (actor.Anim != null ? actor.Anim.HitStopSpeedMultiplier : 1f));
@@ -1644,6 +1656,17 @@ public sealed partial class SkillPresentationDirector
                         () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
                 }
 
+                if (presentation.SkillIndex == 200022 && director.time >= 1.45d && director.time < 1.6d)
+                {
+                    yield return FreezeForHoldRoutine(director, 8f,
+                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None ||
+                              !VillainDroneProjectileVfx.IsFiringFor(actor));
+                    if (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
+                    {
+                        director.time = 1.6d;
+                        director.Evaluate();
+                    }
+                }
                 float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
                 ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed *
                     (actor.Anim != null ? actor.Anim.HitStopSpeedMultiplier : 1f));

@@ -17,6 +17,7 @@ MonoBehaviour:
   AnimationRail: 0
   PresentationArchetype: 0
   SkillTimelines: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -24,17 +25,33 @@ MonoBehaviour:
   HitDelay: 0.25
   HitSoundId: 0
   SfxVolume: 1
-  EnableHitEffect: 1
-  HitEffectId: 0
+  EnableHitEffect: 0
+  HitEffectId: 98501
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
+  OverrideHitStop: 0
+  HitStop:
+    Enabled: 1
+    DurationSeconds: 0.08
+    CharacterSpeed: 0.05
+    EffectSpeed: 0.25
   ProjectileVisual:
-    Prefab: {fileID: 0}
-    Speed: 6
-    Trajectory: 1
+    Prefab: {fileID: 1192929450178106797, guid: af1900511d7bff846b18af85abb35034,
+      type: 3}
+    Speed: 32
+    Trajectory: 0
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
-    ImpactVisualLifetime: 0.3
+    ImpactVisualLifetime: 1.2
     ArrivalRadius: 0.2
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
@@ -65,9 +82,12 @@ MonoBehaviour:
     Cues: []
   Move:
     Enabled: 1
-    UseUnitMovement: 1
+    UseUnitMovement: 0
+    ForceApproach: 0
+    ApproachEffectId: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   AttackPrepare:
     Enabled: 1
     AnimationStateName: 
@@ -80,6 +100,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   Post:
     Enabled: 1
     AnimationStateName: 

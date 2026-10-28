@@ -15,6 +15,8 @@ namespace ASB.Work.Battle.Sequence
     public sealed class ProjectileImpactAction : BattleSequenceAction
     {
         public static event Action<BattleCharactor, Transform> FlightStarted;
+        public static event Action<BattleCharactor, Transform, Vector3> FlightDestinationResolved;
+        public static event Action<Transform, BattleCharactor> FlightTargetResolved;
         public static event Action<BattleCharactor, Transform, Vector3, bool> FlightFinished;
         private Transform cameraFlight;
         private readonly BattleCharactor _actor;
@@ -179,6 +181,8 @@ namespace ASB.Work.Battle.Sequence
             BeginCosmetics(trails, particles);
             hook?.OnLaunched();
             cameraFlight = tr;
+            FlightTargetResolved?.Invoke(tr, _target);
+            FlightDestinationResolved?.Invoke(_actor, tr, destination);
             FlightStarted?.Invoke(_actor, tr);
 
             IProjectileTrajectory trajectory = ProjectileTrajectoryFactory.Create(_visual.Trajectory);

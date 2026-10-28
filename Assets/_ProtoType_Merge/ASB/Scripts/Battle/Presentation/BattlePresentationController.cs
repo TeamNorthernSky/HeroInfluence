@@ -108,6 +108,7 @@ public sealed class BattlePresentationController : MonoBehaviour
     private float attackCameraFov, attackCameraOrthoSize;
     private BattleCharactor attackFocusActor;
     private BattleCharactor attackFocusTarget;
+    private readonly List<BattleCharactor> rifleBarrageUnits = new List<BattleCharactor>();
     private bool focusDebuffTarget;
     private bool frameRangedPair;
     private float attackZoomBaseFov;
@@ -207,6 +208,13 @@ public sealed class BattlePresentationController : MonoBehaviour
     {
         get
         {
+            if (rifleBarrageUnits.Count > 0)
+            {
+                var bounds = new Bounds(attackFocusActor.transform.position, Vector3.zero);
+                foreach (var unit in rifleBarrageUnits)
+                    if (unit != null) bounds.Encapsulate(unit.transform.position);
+                return bounds.center + Vector3.up * attackFocusHeight;
+            }
             if (focusNekoHeal && nekoHealProjectiles.Count > 0)
             {
                 Vector3 center = Vector3.zero;
@@ -427,14 +435,16 @@ public sealed class BattlePresentationController : MonoBehaviour
         Quaternion inverse = Quaternion.Inverse(cameraRotation);
         bool frameHealProjectiles = focusNekoHeal && nekoHealProjectiles.Count > 0;
         bool frameHealedUnits = focusNekoHeal && nekoHealTargets.Count > 0;
-        int unitCount = frameHealProjectiles ? nekoHealProjectiles.Count : frameHealedUnits ? nekoHealTargets.Count : 2;
+        int unitCount = rifleBarrageUnits.Count > 0 ? rifleBarrageUnits.Count
+            : frameHealProjectiles ? nekoHealProjectiles.Count : frameHealedUnits ? nekoHealTargets.Count : 2;
         for (int unitIndex = 0; unitIndex < unitCount; unitIndex++)
         {
             Transform focus;
             if (frameHealProjectiles) focus = nekoHealProjectiles[unitIndex];
             else
             {
-                var unit = frameHealedUnits ? nekoHealTargets[unitIndex]
+                var unit = rifleBarrageUnits.Count > 0 ? rifleBarrageUnits[unitIndex]
+                    : frameHealedUnits ? nekoHealTargets[unitIndex]
                     : unitIndex == 0 ? attackFocusActor : attackFocusTarget;
                 focus = unit != null ? unit.transform : null;
             }
@@ -607,7 +617,8 @@ public sealed class BattlePresentationController : MonoBehaviour
             (family == 4010 || family == 4030);
         bool shouldFocusNekoPaw = actor != null && actor.PresentationIndex == "10004" && family == 4020;
         bool shouldFocusNekoBarrage = actor != null && actor.PresentationIndex == "10004" && family == 4040;
-        if ((useTurnCamera && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage) || !useAttackZoom || previewCamera == null ||
+        bool shouldFrameRifleBarrage = actor != null && skill != null && skill.skillIndex == 200022;
+        if ((useTurnCamera && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage && !shouldFrameRifleBarrage) || !useAttackZoom || previewCamera == null ||
             actor == null || attackZoomAmount <= 0f || attackZoomActive)
         {
             yield return ShowSkillSpeech(actor, skill);
@@ -622,6 +633,11 @@ public sealed class BattlePresentationController : MonoBehaviour
         attackCameraOrthoSize = previewCamera.orthographicSize;
         attackFocusActor = actor;
         attackFocusTarget = target;
+        rifleBarrageUnits.Clear();
+        if (shouldFrameRifleBarrage)
+            foreach (var unit in FindObjectsOfType<BattleCharactor>())
+                if (unit.gameObject.scene == actor.gameObject.scene && !unit.IsDead)
+                    rifleBarrageUnits.Add(unit);
         focusDebuffTarget = shouldFocusDebuffTarget;
         focusNekoHeal = shouldFocusNekoHeal;
         nekoLightTarget = null;
@@ -635,6 +651,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             ((frameEnemyRangedTarget && !actor.IsPlayer && target.IsPlayer &&
                 !BattleManager.IsMeleeSkillRange(actor, skill)) ||
              (frameBlackBulletTarget && actor.IsPlayer && actor.PresentationIndex == "10003" && !target.IsPlayer));
+        if (shouldFrameRifleBarrage) frameRangedPair = true;
         attackZoomActive = true;
         try
         {
@@ -722,6 +739,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         followAttackFocus = false;
         attackFocusActor = null;
         attackFocusTarget = null;
+        rifleBarrageUnits.Clear();
         focusDebuffTarget = false;
         focusNekoHeal = false;
         nekoHealProjectiles.Clear();

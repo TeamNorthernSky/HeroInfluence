@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1192929450178106797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2262501753628045137}
+  - component: {fileID: 8161948041488034119}
+  m_Layer: 0
+  m_Name: FX_VillainDrone_SpreadProjectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2262501753628045137
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192929450178106797}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8161948041488034119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192929450178106797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e5c8e343eea67c4a8dddf4b2cdcec55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  muzzlePrefab: {fileID: 1525029902450385054, guid: a2ededb9b7c38624cb239f77887591e0,
+    type: 3}
+  projectilePrefab: {fileID: 4999344153515423595, guid: 0333b7b7ffd633240a30d21239e97afc,
+    type: 3}
+  impactPrefab: {fileID: 7464165298834103127, guid: 3916f7ff7c6f8c94da22a1a1ba54979f,
+    type: 3}
+  shotCount: 9
+  shotInterval: 0.045
+  hitSpread: {x: 1, y: 0.65}
+  projectileSpeed: 32
+  muzzleScale: 0.6
+  projectileScale: 0.6
+  impactScale: 0.18
+  projectileColor: {r: 1, g: 0.38, b: 0.06, a: 1}

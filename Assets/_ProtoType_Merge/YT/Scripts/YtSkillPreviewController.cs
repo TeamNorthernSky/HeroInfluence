@@ -26,6 +26,8 @@ namespace YT.Preview
         private static readonly KeyCode[] BasicKeys = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R };
         private static readonly KeyCode[] AlterKeys = { KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.F };
         private static readonly string[] HeroNames = { "저스티스", "루미나", "블랙불릿", "네코밍" };
+        private static readonly string[] EnemyNames = { "빌런 드론", "빌런 원거리병", "빌런 방패병" };
+        private Vector2 panelScroll;
         private sealed class State
         {
             public BattleCharactor unit;
@@ -130,6 +132,8 @@ namespace YT.Preview
                 if (Input.GetKeyDown(AlterKeys[i])) SelectSkill(i, true);
             }
             if (Input.GetKeyDown(KeyCode.Z)) SelectCoreSkill();
+            for (int i = 0; i < EnemyNames.Length; i++)
+                if (Input.GetKeyDown((KeyCode)((int)KeyCode.F9 + i))) SelectEnemy(20001 + i);
             if (Input.GetKeyDown(KeyCode.G)) ToggleAlly();
             if (Input.GetKeyDown(KeyCode.Space)) ReplayLast();
             if (pending != null && !IsPlaying)
@@ -144,7 +148,7 @@ namespace YT.Preview
         public bool SelectHero(int templateId)
         {
             if (!ready || IsPlaying) return false;
-            var unit = states.Select(s => s.unit).FirstOrDefault(u => u.IsPlayer && u.PresentationIndex == templateId.ToString());
+            var unit = states.Select(s => s.unit).FirstOrDefault(u => u != null && u.PresentationIndex == templateId.ToString());
             if (unit == null) return false;
             Actor = unit;
             pending = lastSkill = null;
@@ -155,11 +159,26 @@ namespace YT.Preview
             return true;
         }
 
+        public bool SelectEnemy(int templateId)
+        {
+            if (templateId < 20001 || templateId > 20003) return false;
+            return SelectHero(templateId);
+        }
+
+        private SkillData SkillForSlot(int slot, bool enhanced)
+        {
+            if (Actor == null || slot < 0 || slot > 3) return null;
+            if (!Actor.IsPlayer)
+                return enhanced ? null : Actor.availableSkills.Where(s => s != null)
+                    .GroupBy(s => s.skillIndex).Select(g => g.First()).OrderBy(s => s.skillIndex).Skip(slot).FirstOrDefault();
+            int id = HeroNumber(Actor) * 1000 + (slot + 1) * 10 + (enhanced ? 1 : 0);
+            return DHCsvTemplateCatalog.Instance.GetSkillTemplate(id);
+        }
+
         public bool SelectSkill(int slot, bool enhanced)
         {
             if (!ready || IsPlaying || Actor == null || slot < 0 || slot > 3) return false;
-            int id = HeroNumber(Actor) * 1000 + (slot + 1) * 10 + (enhanced ? 1 : 0);
-            var source = DHCsvTemplateCatalog.Instance.GetSkillTemplate(id);
+            var source = SkillForSlot(slot, enhanced);
             if (source == null) { message = "해당 스킬 데이터가 없습니다."; return false; }
             pending = Copy(source);
             message = SkillLabel(pending) + " → 대상 클릭";
@@ -169,7 +188,7 @@ namespace YT.Preview
 
         public bool SelectCoreSkill()
         {
-            if (!ready || IsPlaying || Actor == null) return false;
+            if (!ready || IsPlaying || Actor == null || !Actor.IsPlayer) return false;
             var skill = Actor.EquippedWeaponData?.ToSkillData();
             if (skill == null) { message = "장착한 코어 스킬이 없습니다."; return false; }
             pending = Copy(skill);
@@ -181,7 +200,19 @@ namespace YT.Preview
         private void ShowTargets()
         {
             ClearTargetDisplay();
-            Grid.Instance?.SetSelectableUnits(TargetingHelper.GetValidTargetsForSkillData(Actor, pending), Actor, pending);
+            var targets = IsGuardPreview ? states.Select(s => s.unit).Where(u => u != null && u != Actor &&
+                !u.IsDead && !u.IsIncapacitated && u.IsPlayer == Actor.IsPlayer).ToList()
+                : TargetingHelper.GetValidTargetsForSkillData(Actor, pending);
+            Grid.Instance?.SetSelectableUnits(targets, Actor, pending);
+        }
+
+        private bool IsGuardPreview => Actor != null && !Actor.IsPlayer && pending != null && pending.skillIndex == 200032;
+
+        private bool ResolvePreviewTarget(BattleCharactor unit, Cell cell, out BattleCharactor target)
+        {
+            if (!IsGuardPreview) return SkillActivationRules.TryResolveClick(Actor, pending, unit, cell, out target);
+            target = unit != null ? unit : cell != null ? cell.OccupyingUnit : null;
+            return target != null && target != Actor && !target.IsDead && !target.IsIncapacitated && target.IsPlayer == Actor.IsPlayer;
         }
 
         private void ClearTargetDisplay()
@@ -207,7 +238,7 @@ namespace YT.Preview
         public bool TryHover(BattleCharactor unit, Cell cell)
         {
             if (!ready || IsPlaying || pending == null || Actor == null ||
-                !SkillActivationRules.TryResolveClick(Actor, pending, unit, cell, out var target))
+                !ResolvePreviewTarget(unit, cell, out var target))
             {
                 Grid.Instance?.ClearPreviewHighlight();
                 return false;
@@ -241,7 +272,7 @@ namespace YT.Preview
         public bool TryClick(BattleCharactor unit, Cell cell)
         {
             if (!ready || IsPlaying || pending == null || Actor == null) return false;
-            if (!SkillActivationRules.TryResolveClick(Actor, pending, unit, cell, out var target)) return false;
+            if (!ResolvePreviewTarget(unit, cell, out var target)) return false;
             var skill = pending;
             pending = null;
             lastSkill = skill;
@@ -259,6 +290,7 @@ namespace YT.Preview
 
         private IEnumerator Cast(SkillData skill, BattleCharactor target)
         {
+            if (Actor != null && !Actor.IsPlayer) RestoreUnits();
             IsPlaying = true;
             LastCastSucceeded = false;
             Grid.Instance?.ClearSelectableCells();
@@ -307,6 +339,7 @@ namespace YT.Preview
             {
                 var unit = state.unit;
                 if (unit.IsDead) unit.Revive(1f);
+                if (state.minimumHp == null) state.minimumHp = unit.AddMinimumHpConstraint(1f, this);
                 foreach (var effect in unit.ActiveStatusEffects.ToArray())
                     if (effect != null) unit.RemoveStatusEffect(effect.effectType);
                 unit.HasUsedRevive = false;
@@ -333,6 +366,8 @@ namespace YT.Preview
         private static string SkillLabel(SkillData skill) => skill == null ? "없음" : skill.skillName;
         private static string HeroLabel(BattleCharactor unit)
         {
+            if (unit != null && !unit.IsPlayer && int.TryParse(unit.PresentationIndex, out int enemy))
+                return enemy >= 20001 && enemy <= 20003 ? EnemyNames[enemy - 20001] : unit.PresentationIndex;
             int index = unit != null ? HeroNumber(unit) - 1 : -1;
             return index >= 0 && index < HeroNames.Length ? HeroNames[index] : "준비 중";
         }
@@ -356,6 +391,7 @@ namespace YT.Preview
             GUI.color = previous;
             GUILayout.BeginArea(PanelRect, GUI.skin.box);
             GUILayout.Label("스킬 연출 프리뷰", titleStyle);
+            panelScroll = GUILayout.BeginScrollView(panelScroll);
             GUI.enabled = ready && !IsPlaying;
             GUILayout.BeginHorizontal();
             for (int i = 0; i < 4; i++)
@@ -369,21 +405,33 @@ namespace YT.Preview
                 GUI.backgroundColor = background;
             }
             GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            for (int i = 0; i < EnemyNames.Length; i++)
+            {
+                bool selected = Actor != null && Actor.PresentationIndex == (20001 + i).ToString();
+                Color background = GUI.backgroundColor;
+                if (selected) GUI.backgroundColor = new Color(1f, .5f, .3f);
+                if (GUILayout.Button("F" + (i + 9) + (selected ? " · 선택" : "") + "\n" + EnemyNames[i],
+                    selected ? selectedButtonStyle : buttonStyle, GUILayout.Height(40))) SelectEnemy(20001 + i);
+                GUI.backgroundColor = background;
+            }
+            GUILayout.EndHorizontal();
             GUI.enabled = true;
-            GUILayout.Label(Actor != null ? "선택 영웅: " + HeroLabel(Actor) : message, selectedHeroStyle);
-            GUILayout.Label("기본 스킬                        강화 스킬", labelStyle);
+            GUILayout.Label(Actor != null ? "선택 캐릭터: " + HeroLabel(Actor) : message, selectedHeroStyle);
+            bool enemySelected = Actor != null && !Actor.IsPlayer;
+            GUILayout.Label(enemySelected ? "적 보유 스킬 · 선택 후 대상 클릭\n공격은 영웅, 대신 맞기는 다른 적을 선택" : "기본 스킬                        강화 스킬", labelStyle);
             GUI.enabled = ready && !IsPlaying;
             for (int i = 0; i < 4; i++)
             {
-                int id = Actor != null ? HeroNumber(Actor) * 1000 + (i + 1) * 10 : 0;
-                var source = ready ? DHCsvTemplateCatalog.Instance.GetSkillTemplate(id) : null;
+                var source = ready ? SkillForSlot(i, false) : null;
+                if (enemySelected && source == null) continue;
                 string name = source != null ? source.skillName : (i + 1) + "번";
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button(BasicKeys[i] + "  " + name, buttonStyle, GUILayout.Height(34))) SelectSkill(i, false);
-                if (GUILayout.Button(AlterKeys[i] + "  " + name + "+", buttonStyle, GUILayout.Height(34))) SelectSkill(i, true);
+                if (!enemySelected && GUILayout.Button(AlterKeys[i] + "  " + name + "+", buttonStyle, GUILayout.Height(34))) SelectSkill(i, true);
                 GUILayout.EndHorizontal();
             }
-            if (GUILayout.Button("Z  코어 스킬", buttonStyle, GUILayout.Height(30))) SelectCoreSkill();
+            if (!enemySelected && GUILayout.Button("Z  코어 스킬", buttonStyle, GUILayout.Height(30))) SelectCoreSkill();
             if (GUILayout.Button("Space  직전 스킬 다시 재생", buttonStyle)) ReplayLast();
             GUI.enabled = ready;
             repeat = GUILayout.Toggle(repeat, "T  같은 대상에게 반복 재생");
@@ -392,6 +440,7 @@ namespace YT.Preview
             GUILayout.Label("G 아군 생존/사망 · Esc 선택 취소\nC 공격 줌 켜기/끄기 · F6/F7/F8 카메라\nTab 안내 숨기기 · Backspace 전체 초기화", labelStyle);
             GUI.enabled = true;
             if (GUILayout.Button("Backspace  전체 초기화", buttonStyle)) ReloadPreview();
+            GUILayout.EndScrollView();
             GUILayout.EndArea();
             DrawCursorAbovePanel();
         }
