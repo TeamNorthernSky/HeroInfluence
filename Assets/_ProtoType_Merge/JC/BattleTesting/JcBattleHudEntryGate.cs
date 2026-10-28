@@ -36,7 +36,9 @@ namespace JC.BattleTesting
         {
             if (flow == null || Find(scene) != null) return;
             JC.Environment.JcDayNightController.EnsureBattle(scene,JC.Environment.JcDayNightController.CurrentHours,
-                JC.Environment.JcDayNightController.CurrentProfile,JcBankBattleBackground.Load()?.Matches(CombatContext.Instance)==true);
+                JC.Environment.JcDayNightController.CurrentProfile,
+                JcBankBattleBackground.Load()?.Matches(CombatContext.Instance)==true ||
+                JcBossBattleBackground.Load()?.Matches(CombatContext.Instance)==true);
             var owner = new GameObject("JC_BattleHudEntryGate");
             SceneManager.MoveGameObjectToScene(owner, scene);
             var gate = owner.AddComponent<JcBattleHudEntryGate>(); gate.flow = flow;

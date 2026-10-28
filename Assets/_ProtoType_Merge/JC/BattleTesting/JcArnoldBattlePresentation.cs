@@ -121,7 +121,7 @@ namespace JC.BattleTesting
             if (boss != null && boss.Matches(context) && boss.visualPrefab != null)
             {
                 bridge.background = Instantiate(boss.visualPrefab, owner.transform, false);
-                bridge.background.GetComponentInChildren<JcBossCityTime>(true)?.SetHour(JcBossCityTime.CaptureHour());
+                bridge.background.GetComponentInChildren<JcBossCityTime>(true)?.SetHour(bridge.lightingHour);
                 bridge.bossBackground = true;
                 bridge.background.SetActive(false);
                 return;
@@ -196,7 +196,7 @@ namespace JC.BattleTesting
                     root.name.StartsWith("BGHouse", StringComparison.Ordinal) || root.name.StartsWith("BGStore", StringComparison.Ordinal) ||
                     root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
-            JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null);
+            JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null||bossBackground);
             if (background != null) background.SetActive(true);
             if (clearTutorialArenaTrees) RemoveArenaTrees(scene);
             Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);
