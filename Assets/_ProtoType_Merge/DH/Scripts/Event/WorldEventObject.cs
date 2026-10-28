@@ -474,7 +474,6 @@ public sealed class WorldEventObject : MonoBehaviour
         instance.hideFlags = hideFlags;
         instance.transform.localPosition = Vector3.zero;
         instance.transform.localRotation = Quaternion.Euler(0f, 180f + (int)placementRotation, 0f);
-        instance.transform.localScale = Vector3.one;
         return instance;
     }
 
