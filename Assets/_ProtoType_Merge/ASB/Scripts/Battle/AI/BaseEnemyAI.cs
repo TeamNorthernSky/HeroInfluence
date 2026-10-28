@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using ASB.Work.Battle.SkillExecution;
 
 namespace EnemyAI
 {
@@ -12,6 +13,28 @@ namespace EnemyAI
     public abstract class BaseEnemyAI : IEnemyAI
     {
         public abstract int Index { get; }
+        // 단일 AI 인스턴스의 도발 공격 우선 탐색 동안만 true다.
+        protected bool SelectingTauntAttack { get; private set; }
+
+        protected static bool IsAttackSkill(SkillData skill)
+        {
+            if (skill == null) return false;
+
+            // 표에 공격(0)으로 기재된 보호·소환 스킬은 실제 효과를 우선한다.
+            if (skill.skillIndex == 200032 || skill.skillIndex == 400013 || skill.skillIndex == 400041)
+                return false;
+            if (SkillExecutionRegistry.TryGetHandler(skill.skillKey, out ISkillEffectHandler handler))
+            {
+                if (handler is GuardSkillHandler || handler is SummonSkillHandler)
+                    return false;
+                // 피해와 상태이상을 함께 주는 스킬은 표의 효과 분류가 디버프여도 공격이다.
+                if (handler is TauntStrikeSkillHandler || handler is AoETauntStrikeSkillHandler
+                    || handler is BleeedSkillHandler || handler is TargetHealBanSkill
+                    || handler is HolyBulletHpRecoveryHandler)
+                    return true;
+            }
+            return skill.classSkillEffect == 0;
+        }
 
         public EnemyActionDecision DecideAction(BattleCharactor self, List<BattleCharactor> targets)
         {
@@ -42,10 +65,21 @@ namespace EnemyAI
             BattleCharactor tauntTarget = GetTauntTarget(self, validTargets);
             if (tauntTarget != null)
             {
-                EnemyActionDecision tauntDecision =
-                    DetermineSpecificAction(self, new List<BattleCharactor> { tauntTarget }, canUseSkill);
+                EnemyActionDecision tauntDecision;
+                SelectingTauntAttack = true;
+                try
+                {
+                    tauntDecision = DetermineSpecificAction(self, new List<BattleCharactor> { tauntTarget }, canUseSkill);
+                }
+                finally
+                {
+                    SelectingTauntAttack = false;
+                }
 
-                if (tauntDecision != null && !tauntDecision.Skip)
+                SkillData attackSkill = tauntDecision?.ActionType == EnemyActionType.WeaponSkill
+                    ? self.EquippedWeaponData?.ToSkillData() : tauntDecision?.SelectedSkill;
+                if (tauntDecision != null && !tauntDecision.Skip
+                    && (tauntDecision.IsSelfAction || IsAttackSkill(attackSkill)))
                 {
                     return tauntDecision;
                 }

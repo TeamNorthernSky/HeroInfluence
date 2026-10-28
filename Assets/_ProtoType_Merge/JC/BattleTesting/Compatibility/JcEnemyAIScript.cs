@@ -75,6 +75,20 @@ namespace EnemyAI
                 actionType = EnemyActionType.WeaponSkill;
             }
 
+            if (SelectingTauntAttack)
+            {
+                SkillData current = actionType == EnemyActionType.WeaponSkill
+                    ? self.EquippedWeaponData?.ToSkillData() : selectedSkill;
+                if (!IsAttackSkill(current))
+                {
+                    selectedSkill = canUseSkill ? self.availableSkills?.FirstOrDefault(IsAttackSkill) : null;
+                    if (selectedSkill != null) actionType = EnemyActionType.ClassSkill;
+                    else if (self.EquippedWeaponData != null && IsAttackSkill(self.EquippedWeaponData.ToSkillData()))
+                        actionType = EnemyActionType.WeaponSkill;
+                    else return EnemyActionDecision.SkipTurn();
+                }
+            }
+
             // 2) 행동별 타겟팅 룰로 실제 후보군을 계산합니다.
             SkillData effectiveSkill = selectedSkill;
             if (actionType == EnemyActionType.WeaponSkill)
@@ -195,7 +209,7 @@ namespace EnemyAI
 
             List<BattleCharactor> GetValidCandidates(SkillData skill)
             {
-                if (skill == null)
+                if (skill == null || (SelectingTauntAttack && !IsAttackSkill(skill)))
                 {
                     return new List<BattleCharactor>();
                 }
@@ -292,7 +306,7 @@ namespace EnemyAI
             }
 
             // 아군(같은 편) 중 HP 30% 미만 대상 → 대신 맞기.
-            if (canUseSkill)
+            if (canUseSkill && !SelectingTauntAttack)
             {
                 BattleCharactor ward = FindLowHpAlly(self, 0.3f);
                 SkillData guardSkill = ResolveSkillBySlot(self, 2); // FV20003_2

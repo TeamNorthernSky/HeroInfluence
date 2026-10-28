@@ -79,6 +79,78 @@ public sealed class SectorTwoEnemyAiTests
         Assert.That(Field<object>(Decide(enemyIndex, self, front, taunter), "Target"), Is.SameAs(front));
     }
 
+    [TestCase("BattleFlowManager", "EnemyAI.EnemyAIFactory")]
+    [TestCase("JcBattleFlowManager", "EnemyAI.JcEnemyAIFactory")]
+    public void TauntedShield_AttacksBeforeGuard_AndFallsBackWhenAttackMissing(string flowName, string factoryName)
+    {
+        GameObject flowGo = new GameObject("GuardFlow");
+        created.Add(flowGo);
+        Component flow = flowGo.AddComponent(FindType(flowName));
+        Component self = Unit("Shield", false, 2, 1, 50);
+        Component wounded = Unit("Wounded", false, 3, 0, 1);
+        Component taunter = Unit("Taunter", true, 0, 1, 50);
+        object stats = Activator.CreateInstance(FindType("StatBlock"));
+        SetField(stats, "HP", 100f);
+        SetField(wounded, "finalStats", stats);
+        IList participants = (IList)flow.GetType().GetField("participants", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(flow);
+        participants.Add(self);
+        participants.Add(wounded);
+        participants.Add(taunter);
+        object strike = AddSkill(self, 200031);
+        object guard = AddSkill(self, 200032); // 표의 effect=0이어도 보호 스킬이다.
+
+        object ai = FindType(factoryName).GetMethod("CreateAI", new[] { typeof(int) }).Invoke(null, new object[] { 20003 });
+        IList targets = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(FindType("BattleCharactor")));
+        targets.Add(taunter);
+        MethodInfo decide = ai.GetType().GetMethod("DecideAction");
+        object normal = decide.Invoke(ai, new object[] { self, targets });
+        Assert.That(Field<object>(normal, "SelectedSkill"), Is.SameAs(guard));
+        Assert.That(Field<object>(normal, "Target"), Is.SameAs(wounded));
+
+        FindType("ASB.Work.Battle.SkillExecution.SkillEffectHelper").GetMethod("SetTaunt")
+            .Invoke(null, new object[] { taunter, self, 1 });
+        object taunted = decide.Invoke(ai, new object[] { self, targets });
+        Assert.That(Field<object>(taunted, "SelectedSkill"), Is.SameAs(strike));
+        Assert.That(Field<object>(taunted, "Target"), Is.SameAs(taunter));
+
+        ((IList)self.GetType().GetField("availableSkills").GetValue(self)).Remove(strike);
+        object fallback = decide.Invoke(ai, new object[] { self, targets });
+        Assert.That(Field<object>(fallback, "SelectedSkill"), Is.SameAs(guard));
+        Assert.That(Field<object>(fallback, "Target"), Is.SameAs(wounded));
+    }
+
+    [Test]
+    public void TauntedDefaultAi_ChoosesAvailableAttackOverSelectedNonAttack()
+    {
+        Component self = Unit("Enemy", false, 2, 0, 50);
+        Component taunter = Unit("Taunter", true, 0, 0, 50);
+        object guard = AddSkill(self, 200032);
+        object attack = AddSkill(self, 200011);
+        self.GetType().GetProperty("SelectedSkillData").SetValue(self, guard);
+        FindType("ASB.Work.Battle.SkillExecution.SkillEffectHelper").GetMethod("SetTaunt")
+            .Invoke(null, new object[] { taunter, self, 1 });
+
+        object decision = Decide(20001, self, taunter);
+        Assert.That(Field<object>(decision, "SelectedSkill"), Is.SameAs(attack));
+        Assert.That(Field<object>(decision, "Target"), Is.SameAs(taunter));
+    }
+
+    [Test]
+    public void TauntAttackClassification_UsesSkillBehaviorForGuardAndDamageWithDebuff()
+    {
+        Type skillType = FindType("SkillData");
+        object guard = Activator.CreateInstance(skillType);
+        SetField(guard, "skillIndex", 200032);
+        SetField(guard, "classSkillEffect", 0);
+        object tauntStrike = Activator.CreateInstance(skillType);
+        SetField(tauntStrike, "skillKey", "HS1010");
+        SetField(tauntStrike, "classSkillEffect", 4);
+        MethodInfo isAttack = FindType("EnemyAI.BaseEnemyAI").GetMethod("IsAttackSkill", BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.That(isAttack.Invoke(null, new[] { guard }), Is.False);
+        Assert.That(isAttack.Invoke(null, new[] { tauntStrike }), Is.True);
+    }
+
     [Test]
     public void ReinforcedSoldier_ComboPrefersFrontForFirstAndBackForSecond()
     {
@@ -121,6 +193,46 @@ public sealed class SectorTwoEnemyAiTests
         IList withFront = (IList)getTargets.Invoke(null, new[] { caster, skill });
         Assert.That(withFront.Count, Is.EqualTo(1));
         Assert.That(withFront[0], Is.SameAs(front), "고정 전열이 있으면 전열만 선택한다.");
+    }
+
+    [TestCase("HS1030", 1030)]
+    [TestCase("HS1031", 1031)]
+    public void JusticeDash_UsesRowMultiplier_WhenBackIsPrimaryOrSplash(string key, int index)
+    {
+        Component caster = Unit("Caster", true, 1, 0, 50);
+        Component front = Unit("Front", false, 2, 0, 50);
+        Component back = Unit("Back", false, 3, 0, 50);
+        object skill = AddSkill(caster, index);
+        SetField(skill, "skillKey", key);
+        SetField(skill, "skillValue", 0.6f);
+        SetField(skill, "skillSubValue", 0.8f);
+
+        Type contextType = FindType("ASB.Work.Battle.SkillExecution.SkillExecutionContext");
+        object context = Activator.CreateInstance(contextType);
+        SetField(context, "Caster", caster);
+        SetField(context, "Skill", skill);
+        SetField(context, "PrimaryTarget", front);
+        IList targets = (IList)contextType.GetField("ResolvedTargets").GetValue(context);
+        targets.Add(front);
+        targets.Add(back);
+        Type resultType = FindType("ASB.Work.Battle.SkillExecution.SkillExecutionResult");
+        object result = resultType.GetMethod("SuccessResult", Type.EmptyTypes).Invoke(null, null);
+        Type handlerType = FindType("ASB.Work.Battle.SkillExecution.PiercingDashSkillHandler");
+        object handler = Activator.CreateInstance(handlerType);
+        MethodInfo apply = handlerType.GetMethod("ApplySkill", BindingFlags.Instance | BindingFlags.NonPublic);
+        apply.Invoke(handler, new[] { context, result });
+        IList hits = (IList)resultType.GetProperty("DamageContexts").GetValue(result);
+        Assert.That(Field<float>(hits[0], "SkillValue"), Is.EqualTo(0.6f));
+        Assert.That(Field<float>(hits[1], "SkillValue"), Is.EqualTo(0.8f));
+
+        targets.Clear();
+        targets.Add(back);
+        SetField(context, "PrimaryTarget", back);
+        result = resultType.GetMethod("SuccessResult", Type.EmptyTypes).Invoke(null, null);
+        apply.Invoke(handler, new[] { context, result });
+        hits = (IList)resultType.GetProperty("DamageContexts").GetValue(result);
+        Assert.That(hits.Count, Is.EqualTo(1));
+        Assert.That(Field<float>(hits[0], "SkillValue"), Is.EqualTo(0.8f));
     }
 
     [Test]

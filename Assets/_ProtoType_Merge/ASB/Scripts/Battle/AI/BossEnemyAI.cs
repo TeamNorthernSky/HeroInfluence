@@ -36,7 +36,8 @@ namespace EnemyAI
             if (canUseSkill && boss != null && boss.TryPeek(out BossSkillRequest req) && req != null)
             {
                 SkillData reqSkill = ResolveSkill(self, req.BossSkillIndex);
-                BattleCharactor reqTarget = reqSkill != null ? PickTarget(self, validTargets, reqSkill) : null;
+                BattleCharactor reqTarget = reqSkill != null && (!SelectingTauntAttack || IsAttackSkill(reqSkill))
+                    ? PickTarget(self, validTargets, reqSkill) : null;
                 if (reqSkill != null && reqTarget != null)
                 {
                     boss.Consume(out _); // non-Skip 반환 직전, 정확히 1회
@@ -48,7 +49,7 @@ namespace EnemyAI
             // (C) Tier A: 페이즈 = HP 읽기(부작용 없음) → 페이즈별 스킬 풀
             int phase = boss != null ? boss.ComputePhase() : 1;
             SkillData skill = PickSkillForPhase(self, phase, canUseSkill);
-            if (skill == null)
+            if (skill == null || (SelectingTauntAttack && !IsAttackSkill(skill)))
             {
                 return EnemyActionDecision.SkipTurn();
             }
@@ -136,7 +137,7 @@ namespace EnemyAI
             }
 
             SkillData skill = canUseSkill ? self.SelectedSkillData : null;
-            if (skill == null)
+            if (skill == null || (SelectingTauntAttack && !IsAttackSkill(skill)))
             {
                 return EnemyActionDecision.SkipTurn();
             }
