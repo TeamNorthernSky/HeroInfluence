@@ -111,7 +111,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
     }
 
     public System.Collections.IEnumerator PlayTemporaryFocus(Vector3 focus, float moveSeconds,
-        float holdSeconds, float returnSeconds, System.Action onFocused, System.Func<bool> shouldCancel)
+        float holdSeconds, float returnSeconds, System.Action onFocused, System.Func<bool> shouldCancel,
+        System.Func<bool> isPresentationBusy = null)
     {
         if (temporaryFocusActive || externalFocusLocked || eventFocusMoving)
             yield break;
@@ -145,6 +146,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
             if (!temporaryFocusActive || shouldCancel()) yield break;
 
             onFocused?.Invoke();
+            while (temporaryFocusActive && !shouldCancel() && isPresentationBusy != null && isPresentationBusy())
+                yield return null;
             for (float elapsed = 0f; elapsed < holdSeconds && temporaryFocusActive && !shouldCancel(); elapsed += Time.unscaledDeltaTime)
                 yield return null;
             if (!temporaryFocusActive || shouldCancel()) yield break;

@@ -17,9 +17,18 @@ public sealed class GateCameraFocusController : MonoBehaviour
         public readonly List<GateRuntimeController> Gates = new List<GateRuntimeController>();
         public bool Revealed;
 
-        public void Reveal()
+        public bool IsAnimating => Gates.Exists(gate => gate != null && gate.IsVisualAnimating);
+
+        public void Reveal(bool animate = false)
         {
             if (Revealed) return;
+            Revealed = true;
+            for (int i = 0; i < Gates.Count; i++)
+                if (Gates[i] != null) Gates[i].ApplyPendingVisualState(animate);
+        }
+
+        public void FinishImmediately()
+        {
             Revealed = true;
             for (int i = 0; i < Gates.Count; i++)
                 if (Gates[i] != null) Gates[i].ApplyPendingVisualState();
@@ -120,12 +129,13 @@ public sealed class GateCameraFocusController : MonoBehaviour
                 {
                     ownsCameraFocus = true;
                     yield return cameraFollower.PlayTemporaryFocus(focusGate.GetFocusWorldPosition(),
-                        moveDuration, holdDuration, returnDuration, current.Reveal,
+                        moveDuration, holdDuration, returnDuration, () => current.Reveal(true),
                         () => !isActiveAndEnabled || DHGameEndState.IsEnding ||
-                              SceneFadeController.HideCursorDuringTransition);
+                              SceneFadeController.HideCursorDuringTransition,
+                        () => current != null && current.IsAnimating);
                     ownsCameraFocus = false;
                 }
-                current.Reveal();
+                current.FinishImmediately();
                 current = null;
             }
         }
@@ -209,9 +219,9 @@ public sealed class GateCameraFocusController : MonoBehaviour
 
     private void FlushChanges()
     {
-        current?.Reveal();
+        current?.FinishImmediately();
         current = null;
-        while (pending.Count > 0) pending.Dequeue().Reveal();
+        while (pending.Count > 0) pending.Dequeue().FinishImmediately();
         queuedByKey.Clear();
     }
 }
