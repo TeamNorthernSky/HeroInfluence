@@ -188,8 +188,8 @@ public class GateRuntimeController : MonoBehaviour
 
         if (wasOpen != isOpen && presentChange && GateCameraFocusController.TryQueue(this))
             visualChangePending = true;
-        else if (!visualChangePending || !presentChange)
-            ApplyPendingVisualState();
+        else if ((wasOpen != isOpen && !visualChangePending) || !presentChange)
+            ApplyPendingVisualState(wasOpen != isOpen && presentChange);
 
         if (wasOpen != isOpen || blockerCells.Count > 0)
         {
@@ -209,12 +209,28 @@ public class GateRuntimeController : MonoBehaviour
         repository?.SetGateState(GateId, isOpen, Mathf.Max(1, day));
     }
 
-    public void ApplyPendingVisualState()
+    public bool IsVisualAnimating
+    {
+        get
+        {
+            for (int i = 0; i < gateVisualObjects.Count; i++)
+                if (gateVisualObjects[i] != null &&
+                    gateVisualObjects[i].TryGetComponent(out GateVisualController visual) && visual.IsAnimating)
+                    return true;
+            return false;
+        }
+    }
+
+    public void ApplyPendingVisualState(bool animate = false)
     {
         visualChangePending = false;
         for (int i = 0; i < gateVisualObjects.Count; i++)
             if (gateVisualObjects[i] != null)
-                gateVisualObjects[i].SetActive(!isOpen);
+            {
+                gateVisualObjects[i].SetActive(true);
+                if (gateVisualObjects[i].TryGetComponent(out GateVisualController visual))
+                    visual.SetOpen(isOpen, !animate);
+            }
     }
 
     public Vector3 GetFocusWorldPosition()
