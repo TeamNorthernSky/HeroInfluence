@@ -634,6 +634,7 @@ MonoBehaviour:
   - {x: 0, y: 0}
   - {x: 625, y: 240}
   - {x: 525, y: -140}
+  overviewOffsetX: -20
 --- !u!114 &269378206
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2684,6 +2685,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fb40f90ec8828d41988ce85f834f96f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  practiceLimitNotice: {fileID: 0}
+  limitNoticeDuration: 3
   heroKeys:
   - 10001
   - 10002
@@ -5496,6 +5499,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4418712407900619276, guid: d4d77c30b93f1264bb441026f1b6155e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4909246624876545727, guid: d4d77c30b93f1264bb441026f1b6155e,
         type: 3}

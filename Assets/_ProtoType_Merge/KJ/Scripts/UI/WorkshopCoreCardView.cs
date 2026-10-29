@@ -21,7 +21,7 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
     private Button button;
     private Image face;
     private Image hoverImage;
-    private Image orbitImage;
+    [SerializeField] private Image orbitImage;
     private Material hoverMaterial;
     private Material orbitMaterial;
     private bool equipped;
@@ -39,7 +39,7 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
             hoverMaterial = new Material(hoverTemplate);
             hoverImage = CreateOverlay("CoreHoverLight", hoverMaterial);
         }
-        if (orbitTemplate != null)
+        if (orbitTemplate != null && orbitImage != null)
         {
             orbitMaterial = new Material(orbitTemplate);
             orbitMaterial.SetFloat("_SelectedMotion", 1f);
@@ -49,7 +49,9 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
             if (!orbitMaterial.HasProperty("_SelectedSweepDuration"))
                 orbitMaterial.SetFloat("_SelectedSweepIntensity", 0f);
             orbitMaterial.SetFloat("_BloomIntensity", 0f);
-            orbitImage = CreateOverlay("CoreEquippedOrbit", orbitMaterial);
+            orbitImage.material = orbitMaterial;
+            orbitImage.raycastTarget = false;
+            orbitImage.gameObject.SetActive(equipped);
         }
     }
 
@@ -90,7 +92,7 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
         if (orbitImage != null)
         {
             orbitImage.gameObject.SetActive(equipped);
-            if (equipped)
+            if (equipped && orbitMaterial != null)
             {
                 orbitMaterial.SetFloat("_SelectedTime", Time.unscaledTime);
                 orbitMaterial.SetFloat("_OrbitPeriod", orbitPeriod);
@@ -128,5 +130,6 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
         this.equipped = equipped;
         if (background != null) background.sprite = equipped ? equippedSprite : normalSprite;
         if (equippedFrame != null) equippedFrame.gameObject.SetActive(equipped);
+        if (orbitImage != null) orbitImage.gameObject.SetActive(equipped);
     }
 }

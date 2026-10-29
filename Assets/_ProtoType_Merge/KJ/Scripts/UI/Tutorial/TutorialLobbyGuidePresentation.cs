@@ -27,6 +27,12 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
     private bool initialized;
     private Button shieldButton;
     private bool[] originalBackgroundEnabled;
+    private Canvas exitCanvas;
+    private GraphicRaycaster exitRaycaster;
+    private bool addedExitCanvas, addedExitRaycaster;
+    private bool exitOriginalOverride;
+    private bool exitOriginalCanvasEnabled, exitOriginalRaycasterEnabled, exitSortingActive;
+    private int exitOriginalOrder, exitOriginalLayer;
 
     private void Start()
     {
@@ -110,11 +116,61 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
         view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.DimmedExplanation);
         bool final = index == panels.Length - 1;
         if (continueButton != null) continueButton.gameObject.SetActive(!final);
-        if (inputShield != null) inputShield.SetActive(!final);
+        if (inputShield != null) inputShield.SetActive(true);
+        if (final) RaiseExitAboveShield();
+    }
+
+    private void RaiseExitAboveShield()
+    {
+        if (exitSortingActive || inputShield == null) return;
+        var exit = System.Array.Find(panels[panels.Length - 1].GetComponentsInChildren<Button>(true),
+            button => button.name == "BTN_HQLobby_Exit");
+        var shieldCanvas = inputShield.GetComponentInParent<Canvas>();
+        if (exit == null || shieldCanvas == null)
+        {
+            Debug.LogError("마지막 협회 안내의 나가기 버튼 또는 입력 차단 Canvas가 누락되었습니다.", this);
+            return;
+        }
+        if (exitCanvas == null)
+        {
+            exitCanvas = exit.GetComponent<Canvas>();
+            addedExitCanvas = exitCanvas == null;
+            if (addedExitCanvas) exitCanvas = exit.gameObject.AddComponent<Canvas>();
+            exitOriginalOverride = exitCanvas.overrideSorting;
+            exitOriginalOrder = exitCanvas.sortingOrder;
+            exitOriginalLayer = exitCanvas.sortingLayerID;
+            exitOriginalCanvasEnabled = !addedExitCanvas && exitCanvas.enabled;
+            exitRaycaster = exit.GetComponent<GraphicRaycaster>();
+            addedExitRaycaster = exitRaycaster == null;
+            if (addedExitRaycaster) exitRaycaster = exit.gameObject.AddComponent<GraphicRaycaster>();
+            exitOriginalRaycasterEnabled = !addedExitRaycaster && exitRaycaster.enabled;
+        }
+        exitCanvas.enabled = true;
+        exitCanvas.overrideSorting = true;
+        exitCanvas.sortingLayerID = shieldCanvas.sortingLayerID;
+        exitCanvas.sortingOrder = shieldCanvas.sortingOrder + 1;
+        exitRaycaster.enabled = true;
+        exitSortingActive = true;
+    }
+
+    private void RestoreExitSorting()
+    {
+        if (!exitSortingActive) return;
+        // Retain temporary components so a same-frame re-enable cannot reuse objects pending destruction.
+        if (exitRaycaster != null) exitRaycaster.enabled = exitOriginalRaycasterEnabled;
+        if (exitCanvas != null)
+        {
+            exitCanvas.overrideSorting = exitOriginalOverride;
+            exitCanvas.sortingOrder = exitOriginalOrder;
+            exitCanvas.sortingLayerID = exitOriginalLayer;
+            exitCanvas.enabled = exitOriginalCanvasEnabled;
+        }
+        exitSortingActive = false;
     }
 
     private void OnDisable()
     {
+        RestoreExitSorting();
         if (continueButton != null) continueButton.onClick.RemoveListener(Advance);
         if (shieldButton != null) shieldButton.onClick.RemoveListener(Advance);
         if (!initialized) return;
