@@ -585,25 +585,22 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         {
             WorldEventPlacementData placement = worldEventPlacements[i];
             Vector2Int grid = placement.GridPosition + offset;
-            if (Application.isPlaying && IsWorldEventCompleted(placement.WorldEventId))
+            if (Application.isPlaying && IsWorldEventCompleted(grid, placement.WorldEventId))
                 continue;
 
             WorldEventObject worldEvent = SpawnComponent(worldEventPrefab, grid, parent);
             if (worldEvent != null)
-                worldEvent.ApplyInitialData(placement.WorldEventId, placement.Rotation);
+                worldEvent.ApplyInitialData(placement.WorldEventId, placement.Rotation, grid);
         }
     }
 
-    private static bool IsWorldEventCompleted(string worldEventId)
+    private static bool IsWorldEventCompleted(Vector2Int grid, string worldEventId)
     {
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository == null)
             return false;
 
-        string normalizedId = MapProgressKey.NormalizeSegment(worldEventId);
-        string progressKey = string.IsNullOrWhiteSpace(normalizedId)
-            ? "world_event"
-            : $"world_event_{normalizedId}";
+        string progressKey = MapProgressKey.ForWorldEvent(grid, worldEventId);
         return repository.IsEventCompleted(progressKey);
     }
 
@@ -786,7 +783,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 continue;
             }
 
-            SpawnDecorativeObjectGameObject(prefab, placement.GridPosition + offset, parent);
+            SpawnDecorativeObjectGameObject(prefab, placement.GridPosition + offset, parent, placement.Rotation);
         }
     }
 
@@ -1001,7 +998,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         return instance;
     }
 
-    private GameObject SpawnDecorativeObjectGameObject(GameObject prefab, Vector2Int grid, Transform parent)
+    private GameObject SpawnDecorativeObjectGameObject(GameObject prefab, Vector2Int grid, Transform parent, DecorativeObjectRotation rotation)
     {
         if (prefab == null || !layoutData.IsInsideGrid(grid))
             return null;
@@ -1017,8 +1014,9 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
         Vector3 anchorWorldPosition = gridManager.GridToWorldCenter(grid);
         anchorWorldPosition.y = gridManager.GetCellSurfaceY(grid);
-        Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
-        return Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
+        Quaternion worldRotation = Quaternion.Euler(0f, (int)rotation, 0f) * prefab.transform.rotation;
+        Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition, worldRotation);
+        return Instantiate(prefab, worldPosition, worldRotation, parent);
     }
 
     private GameObject SpawnTutorialObjectGameObject(GameObject prefab, Vector2Int grid, Transform parent)

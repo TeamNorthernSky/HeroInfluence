@@ -129,19 +129,19 @@ MonoBehaviour:
   unitSlots:
   - unitTemplateKey: 10001
     visualObject: {fileID: 0}
-    localPosition: {x: 0, y: 0, z: 0}
+    localPosition: {x: 0, y: 0, z: 0.45}
     joinedAtStart: 1
   - unitTemplateKey: 10002
     visualObject: {fileID: 0}
-    localPosition: {x: 0, y: 0, z: 0.3}
+    localPosition: {x: 0, y: 0, z: -0.45}
     joinedAtStart: 0
   - unitTemplateKey: 10003
     visualObject: {fileID: 0}
-    localPosition: {x: -0.3, y: 0, z: 0}
+    localPosition: {x: -0.45, y: 0, z: 0}
     joinedAtStart: 0
   - unitTemplateKey: 10004
     visualObject: {fileID: 0}
-    localPosition: {x: 0.3, y: 0, z: 0}
+    localPosition: {x: 0.45, y: 0, z: 0}
     joinedAtStart: 0
   unitRoot: {fileID: 6656026663120106345}
   prefabRegistry: {fileID: 0}

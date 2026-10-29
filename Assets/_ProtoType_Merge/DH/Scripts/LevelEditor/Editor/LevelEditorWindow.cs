@@ -499,6 +499,7 @@ public class LevelEditorWindow : EditorWindow
 
     private void DrawDecorativeObjectSelector(SerializedObject serializedController)
     {
+        EditorGUILayout.PropertyField(serializedController.FindProperty("selectedDecorativeObjectRotation"), new GUIContent("Rotation"));
         SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedDecorativeObjectKey");
 
         LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
@@ -1503,7 +1504,8 @@ public class LevelEditorWindow : EditorWindow
             case LevelEditorBrushType.DecorativeObject:
                 context.LevelData.SetDecorativeObject(
                     anchor,
-                    context.SelectedDecorativeObjectKey);
+                    context.SelectedDecorativeObjectKey,
+                    context.SelectedDecorativeObjectRotation);
                 break;
             case LevelEditorBrushType.TutorialBuilding:
                 context.LevelData.SetTutorialObject(
@@ -1611,6 +1613,7 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedTileRenderMode = controller.SelectedTileRenderMode;
         context.SelectedHeroUnionPrefabKey = controller.SelectedHeroUnionPrefabKey;
         context.SelectedDecorativeObjectKey = controller.SelectedDecorativeObjectKey;
+        context.SelectedDecorativeObjectRotation = controller.SelectedDecorativeObjectRotation;
         context.SelectedTutorialObjectPrefabKey = controller.SelectedTutorialObjectPrefabKey;
         context.SelectedTutorialEnemyPrefabKey = controller.SelectedTutorialEnemyPrefabKey;
         context.SelectedTutorialItemPrefabKey = controller.SelectedTutorialItemPrefabKey;
@@ -2971,6 +2974,7 @@ public class LevelEditorWindow : EditorWindow
         public LevelTileRenderMode SelectedTileRenderMode;
         public string SelectedHeroUnionPrefabKey;
         public string SelectedDecorativeObjectKey;
+        public DecorativeObjectRotation SelectedDecorativeObjectRotation;
         public string SelectedTutorialObjectPrefabKey;
         public string SelectedTutorialEnemyPrefabKey;
         public string SelectedTutorialItemPrefabKey;

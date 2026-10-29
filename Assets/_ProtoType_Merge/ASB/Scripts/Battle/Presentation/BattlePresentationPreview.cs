@@ -88,6 +88,8 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     private Vector3 attackCameraPosition;
     private Quaternion attackCameraRotation;
     private float attackCameraFov, attackCameraOrthoSize;
+    private bool focusShieldGuard;
+    private readonly System.Collections.Generic.List<GameObject> shieldGuardEffects = new System.Collections.Generic.List<GameObject>();
     private BattleCharactor attackFocusActor;
     private BattleCharactor attackFocusTarget;
     private readonly List<BattleCharactor> rifleBarrageUnits = new List<BattleCharactor>();
@@ -146,6 +148,24 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         {
             if (config == null || battle == null || DHCsvTemplateCatalog.Instance == null)
                 throw new InvalidOperationException("전투 설정, BattleSceneManager 또는 데이터 카탈로그가 없습니다.");
+            if (Array.Exists(FindObjectsOfType<YT.Preview.YtSkillPreviewController>(), preview => preview.gameObject.scene == gameObject.scene))
+            {
+#if UNITY_EDITOR
+                // Load the saved configuration: play-mode scene reload can retain the previous transient clone.
+                var savedPreviewConfig = UnityEditor.AssetDatabase.LoadAssetAtPath<SimulationBattleConfig>("Assets/_ProtoType_Merge/YT/SkillPreviewConfig.asset");
+                if (savedPreviewConfig != null) config = savedPreviewConfig;
+#endif
+                if (YT.Preview.YtSkillPreviewController.OriginalEnemyGroup == null)
+                {
+                    YT.Preview.YtSkillPreviewController.OriginalEnemyGroup = config.enemyGroupKey;
+                    YT.Preview.YtSkillPreviewController.OriginalEnemyZone = config.eventZoneId;
+                    YT.Preview.YtSkillPreviewController.OriginalEnemyLevel = config.enemyLevel;
+                }
+                config = Instantiate(config);
+                config.enemyGroupKey = YT.Preview.YtSkillPreviewController.ArnoldEncounter ? "BE161" : YT.Preview.YtSkillPreviewController.OriginalEnemyGroup;
+                config.eventZoneId = YT.Preview.YtSkillPreviewController.ArnoldEncounter ? 1 : YT.Preview.YtSkillPreviewController.OriginalEnemyZone;
+                config.enemyLevel = YT.Preview.YtSkillPreviewController.ArnoldEncounter ? 2 : YT.Preview.YtSkillPreviewController.OriginalEnemyLevel;
+            }
             var allies = new List<SimulationAllyRuntimeData>();
             foreach (var input in config.allies)
             {
@@ -221,6 +241,8 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     {
         get
         {
+            if (focusShieldGuard)
+                return attackFocusActor.transform.position + Vector3.up * attackFocusHeight;
             if (rifleBarrageUnits.Count > 0)
             {
                 var bounds = new Bounds(attackFocusActor.transform.position, Vector3.zero);
@@ -296,6 +318,8 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     {
         if (!attackZoomActive || context == null || context.Caster != attackFocusActor ||
             context.Presentation == null || instance == null) return;
+        if (focusShieldGuard && context.Presentation.SkillIndex == 200032)
+            shieldGuardEffects.Add(instance);
         int family = HeroSkillRules.FamilyId(context.Presentation.SkillIndex);
         if (followLuminaProjectile && family == 2030)
             luminaSolarPrism = instance.GetComponentInChildren<JC.VFX.SolarPrismVfx>(true);
@@ -431,6 +455,12 @@ public sealed class BattlePresentationPreview : MonoBehaviour
 
     private System.Collections.IEnumerator WaitAfterSkill(BattleCharactor actor, SkillData skill)
     {
+        if (skill != null && skill.skillIndex == 200032)
+        {
+            while (shieldGuardEffects.Exists(effect => effect != null && effect.activeInHierarchy))
+                yield return null;
+            yield break;
+        }
         float delay = Mathf.Max(0f, postSkillDelay);
         if (actor != null && actor.IsPlayer && actor.PresentationIndex == "10002" && skill != null &&
             HeroSkillRules.FamilyId(skill.skillIndex) == 2020)
@@ -636,9 +666,10 @@ public sealed class BattlePresentationPreview : MonoBehaviour
             (family == 4010 || family == 4030);
         bool shouldFocusNekoPaw = actor != null && actor.PresentationIndex == "10004" && family == 4020;
         bool shouldFocusNekoBarrage = actor != null && actor.PresentationIndex == "10004" && family == 4040;
+        bool shouldFocusShieldGuard = actor != null && skill != null && skill.skillIndex == 200032;
         bool shouldFrameRifleBarrage = actor != null && skill != null && skill.skillIndex == 200022;
-        if ((useTurnCamera && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage && !shouldFrameRifleBarrage) || !useAttackZoom || previewCamera == null ||
-            actor == null || attackZoomAmount <= 0f || attackZoomActive)
+        if ((useTurnCamera && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage && !shouldFrameRifleBarrage && !shouldFocusShieldGuard) || (!useAttackZoom && !shouldFocusShieldGuard) || previewCamera == null ||
+            actor == null || (attackZoomAmount <= 0f && !shouldFocusShieldGuard) || attackZoomActive)
         {
             yield return ShowSkillSpeech(actor, skill, counter);
             yield return WaitForLuminaCast(actor, skill);
@@ -650,6 +681,8 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         attackCameraRotation = previewCamera.transform.rotation;
         attackCameraFov = previewCamera.fieldOfView;
         attackCameraOrthoSize = previewCamera.orthographicSize;
+        focusShieldGuard = shouldFocusShieldGuard;
+        shieldGuardEffects.Clear();
         attackFocusActor = actor;
         attackFocusTarget = target;
         rifleBarrageUnits.Clear();
@@ -666,7 +699,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         nekoFallingPaw = null;
         nekoHealProjectiles.Clear();
         nekoHealTargets.Clear();
-        frameRangedPair = !focusDebuffTarget && target != null && skill != null &&
+        frameRangedPair = !focusShieldGuard && !focusDebuffTarget && target != null && skill != null &&
             ((frameEnemyRangedTarget && !actor.IsPlayer && target.IsPlayer &&
                 !BattleManager.IsMeleeSkillRange(actor, skill)) ||
              (frameBlackBulletTarget && actor.IsPlayer && actor.PresentationIndex == "10003" && !target.IsPlayer));
@@ -693,7 +726,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
             yield return attack;
             if (shouldFocusNekoBarrage)
                 while (nekoBarrageEffect != null && nekoBarrageEffect.IsPlaying) yield return null;
-            if (!focusNekoHeal) followAttackFocus = false;
+            if (!focusNekoHeal && !focusShieldGuard) followAttackFocus = false;
             yield return WaitAfterSkill(actor, skill);
             followAttackFocus = false;
             focusNekoBarrage = false;
@@ -756,6 +789,8 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         }
         attackZoomActive = false;
         followAttackFocus = false;
+        focusShieldGuard = false;
+        shieldGuardEffects.Clear();
         attackFocusActor = null;
         attackFocusTarget = null;
         rifleBarrageUnits.Clear();

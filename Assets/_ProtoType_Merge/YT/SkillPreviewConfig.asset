@@ -38,4 +38,5 @@ MonoBehaviour:
     SkillIndex: 3010
     HpRatio: 1
   enemyGroupKey: A2FEP001
+  eventZoneId: 0
   enemyLevel: 1

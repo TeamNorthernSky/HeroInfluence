@@ -419,14 +419,14 @@ public class LevelData : ScriptableObject
         enemyPlacements.Add(new EnemyPlacementData(grid, enemyGroupKey, behaviorType));
     }
 
-    public void SetDecorativeObject(Vector2Int grid, string prefabKey)
+    public void SetDecorativeObject(Vector2Int grid, string prefabKey, DecorativeObjectRotation rotation = DecorativeObjectRotation.Degrees0)
     {
         if (!IsInsideGrid(grid) || string.IsNullOrWhiteSpace(prefabKey))
             return;
 
         EnsureDecorativeObjectPlacements();
         decorativeObjectPlacements.RemoveAll(x => x.GridPosition == grid);
-        decorativeObjectPlacements.Add(new DecorativeObjectPlacementData(grid, prefabKey));
+        decorativeObjectPlacements.Add(new DecorativeObjectPlacementData(grid, prefabKey, rotation));
     }
 
     public void SetTutorialObject(Vector2Int grid, string prefabKey)
@@ -1004,24 +1004,39 @@ public struct EnemyPlacementData
     }
 }
 
+public enum DecorativeObjectRotation
+{
+    Degrees0 = 0,
+    Degrees90 = 90,
+    Degrees180 = 180,
+    Degrees270 = 270
+}
+
 [Serializable]
 public struct DecorativeObjectPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField] private string prefabKey;
 
-    public DecorativeObjectPlacementData(Vector2Int gridPosition, string prefabKey)
+    [SerializeField] private DecorativeObjectRotation rotation;
+
+    public DecorativeObjectPlacementData(Vector2Int gridPosition, string prefabKey, DecorativeObjectRotation rotation = DecorativeObjectRotation.Degrees0)
     {
         this.gridPosition = gridPosition;
         this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+        this.rotation = rotation;
     }
 
     public Vector2Int GridPosition => gridPosition;
     public string PrefabKey => string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
 
+    public DecorativeObjectRotation Rotation => rotation == DecorativeObjectRotation.Degrees90
+        || rotation == DecorativeObjectRotation.Degrees180 || rotation == DecorativeObjectRotation.Degrees270
+            ? rotation : DecorativeObjectRotation.Degrees0;
+
     public DecorativeObjectPlacementData Normalized()
     {
-        return new DecorativeObjectPlacementData(gridPosition, PrefabKey);
+        return new DecorativeObjectPlacementData(gridPosition, PrefabKey, Rotation);
     }
 }
 

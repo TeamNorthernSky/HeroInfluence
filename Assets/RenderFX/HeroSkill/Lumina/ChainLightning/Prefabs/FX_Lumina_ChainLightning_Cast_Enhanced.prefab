@@ -138,6 +138,10 @@ MonoBehaviour:
   chainPartPrefab: {fileID: 4884308321838969650, guid: aa3e40fcd2b426b42ba1bc23da398e1f,
     type: 3}
   shockPartPrefab: {fileID: 0}
+  preFireCirclePrefab: {fileID: 130371810037123645, guid: 98783eafbabdb99478e8001a6ea75f2c,
+    type: 3}
+  preFireCircleScale: 0.35
+  preFireCircleSeconds: 0.3
   muzzleRenderer: {fileID: 3214152339211088957}
   mainBoltRenderer: {fileID: 406022164332393655}
   chainBoltTemplate: {fileID: 1797972610798399270}

@@ -122,3 +122,12 @@ MonoBehaviour:
   - prefabKey: Mount03
     prefab: {fileID: 4019794648730754150, guid: 7bf6518ff64fedc4a9589c68862915cf,
       type: 3}
+  - prefabKey: Streetlight
+    prefab: {fileID: 3916928473630270592, guid: 80808c17f13ac0c40b96875aa0b8c949,
+      type: 3}
+  - prefabKey: Trash Can
+    prefab: {fileID: 3492373876665137557, guid: 184f2bb6291f33a46ac968e5cafb0555,
+      type: 3}
+  - prefabKey: Vending machine
+    prefab: {fileID: 6352338779494354416, guid: 2225fce0dc9f35c48ba6d4b32a4f58c3,
+      type: 3}

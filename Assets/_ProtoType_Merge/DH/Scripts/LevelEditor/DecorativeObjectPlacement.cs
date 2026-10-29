@@ -32,7 +32,12 @@ public class DecorativeObjectPlacement : MonoBehaviour
 
     public Vector3 GetRootPositionForAnchor(Vector3 anchorWorldPosition)
     {
-        Matrix4x4 localToRoot = Matrix4x4.TRS(Vector3.zero, transform.rotation, transform.localScale);
+        return GetRootPositionForAnchor(anchorWorldPosition, transform.rotation);
+    }
+
+    public Vector3 GetRootPositionForAnchor(Vector3 anchorWorldPosition, Quaternion rotation)
+    {
+        Matrix4x4 localToRoot = Matrix4x4.TRS(Vector3.zero, rotation, transform.localScale);
         return anchorWorldPosition - localToRoot.MultiplyPoint3x4(anchorLocalOffset);
     }
 

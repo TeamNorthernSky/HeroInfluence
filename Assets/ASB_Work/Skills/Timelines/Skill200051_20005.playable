@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Time: 0.3333333333333333
-  _kind: 1
+  _kind: 2
   _cueName: 
   _cueId: 
   _targetSlot: 0
@@ -265,6 +265,37 @@ MonoBehaviour:
   m_OpenClipOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
   m_ApplyOffsets: 0
+--- !u!114 &-6453106724113646505
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0
+  _kind: 0
+  _cueName: arnold_wave_charge
+  _cueId: 09023097a02b4164b8bacd4cdffcfa95
+  _targetSlot: 0
+--- !u!114 &-6419192629340326030
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b9f0b70f2822b1439a1f6b75599521f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.17
+  _durationSeconds: 0.05555556
 --- !u!114 &-6249767609019652857
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -460,6 +491,8 @@ MonoBehaviour:
     - {fileID: -4376285691177973634}
     - {fileID: -1892059286790953905}
     - {fileID: -7426672867708633406}
+    - {fileID: -6453106724113646505}
+    - {fileID: -6419192629340326030}
 --- !u!114 &7214305518630020501
 MonoBehaviour:
   m_ObjectHideFlags: 1

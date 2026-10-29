@@ -22,6 +22,13 @@ namespace YT.Preview
         public bool showOverlay = true;
         public bool repeat;
         public int initialHero = 10001;
+        public static bool ArnoldEncounter { get; private set; }
+        private static int pendingEnemySelection;
+        public static string OriginalEnemyGroup;
+        public static int OriginalEnemyZone, OriginalEnemyLevel;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetEncounterSelection() { ArnoldEncounter = false; pendingEnemySelection = 0; OriginalEnemyGroup = null; }
 
         private static readonly KeyCode[] BasicKeys = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R };
         private static readonly KeyCode[] AlterKeys = { KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.F };
@@ -100,7 +107,12 @@ namespace YT.Preview
             }
             ready = true;
             RestoreUnits();
-            SelectHero(initialHero);
+            if (ArnoldEncounter)
+                Actor = states.Select(s => s.unit).FirstOrDefault(u => u != null && !u.IsPlayer);
+            else if (pendingEnemySelection != 0)
+                SelectEnemy(pendingEnemySelection);
+            else SelectHero(initialHero);
+            pendingEnemySelection = 0;
             battle.ChangeBattleSpeed(1f);
         }
 
@@ -134,6 +146,7 @@ namespace YT.Preview
             if (Input.GetKeyDown(KeyCode.Z)) SelectCoreSkill();
             for (int i = 0; i < EnemyNames.Length; i++)
                 if (Input.GetKeyDown((KeyCode)((int)KeyCode.F9 + i))) SelectEnemy(20001 + i);
+            if (Input.GetKeyDown(KeyCode.F12)) SelectEnemy(20005);
             if (Input.GetKeyDown(KeyCode.G)) ToggleAlly();
             if (Input.GetKeyDown(KeyCode.Space)) ReplayLast();
             if (pending != null && !IsPlaying)
@@ -161,7 +174,20 @@ namespace YT.Preview
 
         public bool SelectEnemy(int templateId)
         {
-            if (templateId < 20001 || templateId > 20003) return false;
+            if (!ready || IsPlaying || (templateId != 20005 && (templateId < 20001 || templateId > 20003))) return false;
+            bool wantsArnold = templateId == 20005;
+            if (wantsArnold != ArnoldEncounter)
+            {
+                ArnoldEncounter = wantsArnold;
+                pendingEnemySelection = templateId;
+                ReloadPreview();
+                return true;
+            }
+            if (wantsArnold)
+            {
+                var enemy = states.Select(s => s.unit).FirstOrDefault(u => u != null && !u.IsPlayer);
+                return enemy != null && SelectHero(int.TryParse(enemy.PresentationIndex, out var key) ? key : 20005);
+            }
             return SelectHero(templateId);
         }
 
@@ -201,7 +227,8 @@ namespace YT.Preview
         {
             ClearTargetDisplay();
             var targets = IsGuardPreview ? states.Select(s => s.unit).Where(u => u != null && u != Actor &&
-                !u.IsDead && !u.IsIncapacitated && u.IsPlayer == Actor.IsPlayer).ToList()
+                !u.IsDead && !u.IsIncapacitated && u.IsPlayer == Actor.IsPlayer &&
+                TargetingHelper.IsUnitInFixedFrontRow(u)).ToList()
                 : TargetingHelper.GetValidTargetsForSkillData(Actor, pending);
             Grid.Instance?.SetSelectableUnits(targets, Actor, pending);
         }
@@ -212,7 +239,8 @@ namespace YT.Preview
         {
             if (!IsGuardPreview) return SkillActivationRules.TryResolveClick(Actor, pending, unit, cell, out target);
             target = unit != null ? unit : cell != null ? cell.OccupyingUnit : null;
-            return target != null && target != Actor && !target.IsDead && !target.IsIncapacitated && target.IsPlayer == Actor.IsPlayer;
+            return target != null && target != Actor && !target.IsDead && !target.IsIncapacitated &&
+                target.IsPlayer == Actor.IsPlayer && TargetingHelper.IsUnitInFixedFrontRow(target);
         }
 
         private void ClearTargetDisplay()
@@ -300,6 +328,8 @@ namespace YT.Preview
             try
             {
                 yield return battle.ExecuteGridSkill(Actor, target, Copy(skill), ok => LastCastSucceeded = ok);
+                if (LastCastSucceeded && skill.skillIndex == 200032)
+                    yield return PlayGuardPreviewAttack(target);
                 CompletedCastCount++;
                 message = SkillLabel(skill) + (LastCastSucceeded ? " 완료 · Space 다시 재생" : " 실행 실패 · 대상/조건 확인");
                 if (!LastCastSucceeded) repeat = false;
@@ -310,6 +340,28 @@ namespace YT.Preview
                 ClearTargetDisplay();
                 repeatAt = Time.unscaledTime + repeatInterval;
             }
+        }
+
+        private IEnumerator PlayGuardPreviewAttack(BattleCharactor ward)
+        {
+            // Keep the guard buff in place and use the real single-target attack/redirect path.
+            foreach (var hero in states.Select(s => s.unit)
+                .Where(u => u != null && u.IsPlayer && !u.IsDead && !u.IsIncapacitated)
+                .OrderByDescending(u => u.PresentationIndex == "10002"))
+            {
+                foreach (var attack in hero.availableSkills.Where(s => s != null && s.classSkillEffect == 0)
+                    .OrderByDescending(s => s.skillIndex == 2010))
+                {
+                    if (!ASB.Work.Battle.SkillExecution.SkillExecutionRegistry.TryGetHandler(attack.skillKey, out var handler) ||
+                        !(handler is ASB.Work.Battle.SkillExecution.BaseSingleSkillHandler) ||
+                        !TargetingHelper.GetValidTargetsForSkillData(hero, attack).Contains(ward)) continue;
+                    message = "히어로 단일 공격 → 방패병 대신 맞기 확인 중";
+                    yield return battle.ExecuteGridSkill(hero, ward, Copy(attack), ok => LastCastSucceeded = ok);
+                    yield break;
+                }
+            }
+            LastCastSucceeded = false;
+            message = "대신 맞기 확인에 사용할 히어로 단일 공격이 없습니다.";
         }
 
         public void ToggleAlly()
@@ -366,6 +418,7 @@ namespace YT.Preview
         private static string SkillLabel(SkillData skill) => skill == null ? "없음" : skill.skillName;
         private static string HeroLabel(BattleCharactor unit)
         {
+            if (unit != null && !unit.IsPlayer && ArnoldEncounter) return "아널드";
             if (unit != null && !unit.IsPlayer && int.TryParse(unit.PresentationIndex, out int enemy))
                 return enemy >= 20001 && enemy <= 20003 ? EnemyNames[enemy - 20001] : unit.PresentationIndex;
             int index = unit != null ? HeroNumber(unit) - 1 : -1;
@@ -416,6 +469,7 @@ namespace YT.Preview
                 GUI.backgroundColor = background;
             }
             GUILayout.EndHorizontal();
+            if (GUILayout.Button("F12  아널드", buttonStyle, GUILayout.Height(34))) SelectEnemy(20005);
             GUI.enabled = true;
             GUILayout.Label(Actor != null ? "선택 캐릭터: " + HeroLabel(Actor) : message, selectedHeroStyle);
             bool enemySelected = Actor != null && !Actor.IsPlayer;

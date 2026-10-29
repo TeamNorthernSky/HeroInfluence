@@ -37,6 +37,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedHeroUnionPrefabKey;
     [FormerlySerializedAs("selectedDecorativeBuildingKey")]
     [SerializeField] private string selectedDecorativeObjectKey;
+    [SerializeField] private DecorativeObjectRotation selectedDecorativeObjectRotation;
     [SerializeField] private string selectedTutorialObjectPrefabKey;
     [SerializeField] private string selectedTutorialEnemyPrefabKey;
     [SerializeField] private string selectedTutorialItemPrefabKey;
@@ -110,6 +111,7 @@ public class LevelEditorController : MonoBehaviour
     public LevelTileRenderMode SelectedTileRenderMode => selectedTileRenderMode;
     public string SelectedHeroUnionPrefabKey => string.IsNullOrWhiteSpace(selectedHeroUnionPrefabKey) ? string.Empty : selectedHeroUnionPrefabKey.Trim();
     public string SelectedDecorativeObjectKey => selectedDecorativeObjectKey;
+    public DecorativeObjectRotation SelectedDecorativeObjectRotation => selectedDecorativeObjectRotation;
     public string SelectedTutorialObjectPrefabKey => string.IsNullOrWhiteSpace(selectedTutorialObjectPrefabKey) ? string.Empty : selectedTutorialObjectPrefabKey.Trim();
     public string SelectedTutorialEnemyPrefabKey => string.IsNullOrWhiteSpace(selectedTutorialEnemyPrefabKey) ? string.Empty : selectedTutorialEnemyPrefabKey.Trim();
     public string SelectedTutorialItemPrefabKey => string.IsNullOrWhiteSpace(selectedTutorialItemPrefabKey) ? string.Empty : selectedTutorialItemPrefabKey.Trim();
@@ -226,7 +228,7 @@ public class LevelEditorController : MonoBehaviour
                 if (string.IsNullOrWhiteSpace(selectedDecorativeObjectKey))
                     return;
 
-                levelData.SetDecorativeObject(grid, selectedDecorativeObjectKey);
+                levelData.SetDecorativeObject(grid, selectedDecorativeObjectKey, selectedDecorativeObjectRotation);
                 break;
             case LevelEditorBrushType.TutorialBuilding:
             case LevelEditorBrushType.TutorialObject:

@@ -21,21 +21,36 @@ MonoBehaviour:
     Timeline: {fileID: 11400000, guid: 5610a9fd182fd5845bf84a2dbb4067fe, type: 2}
     TargetCount: 0
     Segments: []
-  ImpactTiming: 0
-  AnimationStateName: 
+  ImpactTiming: 1
+  AnimationStateName: Idle
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 0
   HitDelay: 0.25
   HitSoundId: 0
   SfxVolume: 1
-  EnableHitEffect: 1
+  EnableHitEffect: 0
   HitEffectId: 0
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
+  OverrideHitStop: 0
+  HitStop:
+    Enabled: 1
+    DurationSeconds: 0.08
+    CharacterSpeed: 0.05
+    EffectSpeed: 0.25
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -52,6 +67,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx: []
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -60,8 +76,9 @@ MonoBehaviour:
   Move:
     Enabled: 1
     UseUnitMovement: 1
-    ForceApproach: 0
-    AnimationStateName: 
+    ForceApproach: 1
+    ApproachEffectId: 0
+    AnimationStateName: Idle
     BlendInSeconds: 0.1
     SfxKey: Explore_Move
   AttackPrepare:
@@ -72,14 +89,64 @@ MonoBehaviour:
   Attack:
     Enabled: 1
     Beats:
-    - AnimationStateName: Base Layer.ClassSkill_1
-      BlendInSeconds: 0
+    - AnimationStateName: Idle
+      BlendInSeconds: 0.1
       AdvanceOnEvent: 0
-      WaitForHitEvent: 0
-      Cues: []
+      WaitForHitEvent: 1
+      Cues:
+      - CueName: shield_bash_charge
+        EffectIds: 29810100
+        SoundIds: 
+        Operation: 0
+        InstanceKey: shield_bash_charge
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: eb0b8c6b2d444c8697dea506785edff0
+      - CueName: shield_bash_charge_stop
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: shield_bash_charge
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 73d8ed8809a64efeb6f78d531a949cd2
+      - CueName: shield_bash_dash
+        EffectIds: 2a810100
+        SoundIds: 
+        Operation: 0
+        InstanceKey: shield_bash_dash
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 65c13340cbb24c0eaf82ec4cd76bd646
+      - CueName: shield_bash_dash_stop
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: shield_bash_dash
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 07929bfdcc24421d81cd2656b1008c55
+      - CueName: shield_bash_hit
+        EffectIds: 2b810100
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 2
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 62367af7fdf940a0b7557adacc74f304
   Return:
     Enabled: 1
-    AnimationStateName: MoveForward
+    AnimationStateName: Idle
     BlendInSeconds: 0.1
     SfxKey: Explore_Move
   Post:

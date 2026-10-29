@@ -30,6 +30,9 @@ public class PartyVisualCompositionController : MonoBehaviour
     [SerializeField] private string[] initialUnitTemplateKeys = new string[ExplorationSlotCount];
     [SerializeField, Min(0f)] private float initialCurrentInfluence = 0f;
 
+    [Header("Exploration Formation")]
+    [SerializeField, Min(0f)] private float unitSpacing = 0.45f;
+
     [Header("Debug")]
     [SerializeField] private bool logWarnings = true;
 
@@ -349,18 +352,18 @@ public class PartyVisualCompositionController : MonoBehaviour
         return 0;
     }
 
-    private static Vector3 GetExplorationLocalPosition(string unitTemplateKey)
+    private Vector3 GetExplorationLocalPosition(string unitTemplateKey)
     {
         switch (unitTemplateKey)
         {
             case JusticeTemplateKey:
-                return new Vector3(0f, 0f, 0.3f);
+                return new Vector3(0f, 0f, unitSpacing);
             case RuminaTemplateKey:
-                return new Vector3(0f, 0f, -0.3f);
+                return new Vector3(0f, 0f, -unitSpacing);
             case BlackBulletTemplateKey:
-                return new Vector3(-0.3f, 0f, 0f);
+                return new Vector3(-unitSpacing, 0f, 0f);
             case NekomingTemplateKey:
-                return new Vector3(0.3f, 0f, 0f);
+                return new Vector3(unitSpacing, 0f, 0f);
             default:
                 return Vector3.zero;
         }

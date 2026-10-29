@@ -444,7 +444,9 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         runningSource = source;
         runningParty = party;
         runningTemplate = template;
-        runningProgressKey = BuildProgressKey(template != null ? template.WorldEventId : string.Empty);
+        runningProgressKey = source != null
+            ? source.ProgressKey
+            : BuildProgressKey(template != null ? template.WorldEventId : string.Empty);
         runningClosedCallback = closedCallback;
     }
 
