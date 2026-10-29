@@ -22,6 +22,9 @@ namespace JC.VFX
         [SerializeField] private ChainLightningVfx chainPartPrefab;
         [Tooltip("각 대상의 착탄 시 생성하는 독립 감전 부품입니다.")]
         [SerializeField] private LightningShock shockPartPrefab;
+        [SerializeField] private GameObject preFireCirclePrefab;
+        [SerializeField, Min(.01f)] private float preFireCircleScale = 1f;
+        [SerializeField, Min(0f)] private float preFireCircleSeconds = .25f;
         public event System.Action Contacted;
         public event System.Action ChainStarted;
         private bool hasCameraFocus;
@@ -211,6 +214,22 @@ namespace JC.VFX
             IsPlaying = true;
             var main = Instantiate(mainPartPrefab, transform);
             _spawned.Add(main.gameObject); main.PlaybackSpeed = PlaybackSpeed;
+            if (preFireCirclePrefab != null)
+            {
+                var circle = Instantiate(preFireCirclePrefab, origin.position + Vector3.up * .03f, origin.rotation);
+                circle.transform.localScale *= preFireCircleScale;
+                _spawned.Add(circle);
+                foreach (var particle in circle.GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    var settings = particle.main;
+                    settings.simulationSpeed *= PlaybackSpeed;
+                }
+                Destroy(circle, .8f / Mathf.Max(.01f, PlaybackSpeed));
+                float muzzleWarmup = main.muzzleRenderer != null ? main.muzzleTime : 0f;
+                float circleLead = Mathf.Max(0f, preFireCircleSeconds - muzzleWarmup);
+                for (float elapsed = 0f; elapsed < circleLead; elapsed += EffectDeltaTime)
+                    yield return null;
+            }
             bool contact = false;
             System.Action onContact = () => contact = true;
             main.Contacted += onContact;

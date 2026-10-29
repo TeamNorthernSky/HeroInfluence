@@ -27,7 +27,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.36666666666666664
+  m_Time: 0
   _kind: 2
   _cueName: 
   _cueId: 
@@ -158,7 +158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.36666666666666664
+  m_Time: 0.3
   _sfxKey: Battle_Elec01
   _durationSeconds: 0
 --- !u!114 &4379999398270019511
