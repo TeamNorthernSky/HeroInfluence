@@ -10,12 +10,20 @@ namespace ASB.ExcelImport.Editor
     internal enum SheetBatchState
     {
         Updated,
+        Created,
+        SchemaApplied,
         Passed,
         Failed,
         NeedsGenerate,
         Skipped,
         UpdatedLinkFailed,
         UpdateUncertain
+    }
+
+    internal enum WorkbookBatchOperation
+    {
+        Update,
+        SchemaApply
     }
 
     [Serializable]
@@ -34,6 +42,9 @@ namespace ASB.ExcelImport.Editor
         public string workbookPath;
         public string workbookName;
         public bool checkOnly;
+        public WorkbookBatchOperation operation;
+        public string sourceWorkbookPath;
+        public bool createTables;
         public string fatalError;
         public List<SheetBatchResult> Sheets = new List<SheetBatchResult>();
 

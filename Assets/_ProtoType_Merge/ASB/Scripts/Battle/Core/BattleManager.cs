@@ -1295,9 +1295,9 @@ public class BattleManager : MonoBehaviour
         var preview = BattlePresentationController.FindInScene(gameObject.scene);
         var testPreview = preview == null ? BattlePresentationController.FindPreviewInScene(gameObject.scene) : null;
         if (preview != null && preview.isActiveAndEnabled && preview.gameObject.scene == gameObject.scene)
-            yield return StartCoroutine(preview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution));
+            yield return StartCoroutine(preview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution, counter: true));
         else if (testPreview != null && testPreview.isActiveAndEnabled)
-            yield return StartCoroutine(testPreview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution));
+            yield return StartCoroutine(testPreview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution, counter: true));
         else
             yield return StartCoroutine(execution);
 

@@ -18,6 +18,7 @@ namespace ASB.ExcelImport.Editor
     internal enum UpdateApplyResult
     {
         Applied,
+        Created,
         AppliedLinkFailed,
         Failed,
         Uncertain
@@ -29,17 +30,20 @@ namespace ASB.ExcelImport.Editor
         public readonly ExcelSheetSchemaSO Schema;
         public readonly ExcelSheetParseResult ParseResult;
         public readonly string TargetAssetPath;
+        public readonly bool CreateTable;
 
         public PreparedUpdate(
             RawExcelSheetSO raw,
             ExcelSheetSchemaSO schema,
             ExcelSheetParseResult parseResult,
-            string targetAssetPath)
+            string targetAssetPath,
+            bool createTable = false)
         {
             Raw = raw;
             Schema = schema;
             ParseResult = parseResult;
             TargetAssetPath = targetAssetPath;
+            CreateTable = createTable;
         }
     }
 
@@ -157,7 +161,8 @@ namespace ASB.ExcelImport.Editor
             out ExcelSheetSchemaSO usedSchema,
             out UpdateBlockReason blockReason,
             out string error,
-            bool updateSchema = true)
+            bool updateSchema = true,
+            bool allowCreateTable = false)
         {
             prepared = null;
             usedSchema = preferredSchema;
@@ -182,10 +187,18 @@ namespace ASB.ExcelImport.Editor
             ExcelSheetParseResult parseResult = ExcelSchemaAdapter.ToParseResult(raw, usedSchema);
             string targetAssetPath = ExcelSchemaAdapter.GetTargetAssetPath(usedSchema);
             ScriptableObject existingAsset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(targetAssetPath);
-            if (existingAsset == null)
+            if (existingAsset == null && !allowCreateTable)
             {
                 blockReason = UpdateBlockReason.NeedsGenerate;
                 error = $"Update Data requires an existing DataTable asset. Use Generate first.\n{targetAssetPath}";
+                return false;
+            }
+
+            if (existingAsset == null && (AssetDatabase.LoadMainAssetAtPath(targetAssetPath) != null ||
+                File.Exists(ExcelRawImportUtility.ToAbsoluteAssetPath(targetAssetPath))))
+            {
+                blockReason = UpdateBlockReason.ValidationFailed;
+                error = $"테이블 출력 경로에 다른 파일이 있어요: {targetAssetPath}";
                 return false;
             }
 
@@ -198,7 +211,14 @@ namespace ASB.ExcelImport.Editor
 
             string tableTypeName = CodeGenerator.ToTypeBaseName(parseResult.ClassName) + "DataTable";
             Type tableType = ScriptableExporter.FindTypeByName(tableTypeName);
-            if (existingAsset.GetType() != tableType)
+            if (tableType == null || !typeof(ScriptableObject).IsAssignableFrom(tableType))
+            {
+                blockReason = UpdateBlockReason.NeedsGenerate;
+                error = $"생성된 DataTable 클래스를 찾을 수 없어요: {tableTypeName}";
+                return false;
+            }
+
+            if (existingAsset != null && existingAsset.GetType() != tableType)
             {
                 blockReason = UpdateBlockReason.NeedsGenerate;
                 error = $"Existing asset type does not match generated DataTable type. Use Generate instead of Update Data.\nAsset: {existingAsset.GetType().Name}\nExpected: {tableTypeName}";
@@ -206,13 +226,13 @@ namespace ASB.ExcelImport.Editor
             }
 
             if (!IsStructureCompatible(parseResult, usedSchema, out error) ||
-                !IsLoadedTypeCompatible(parseResult, existingAsset, out error))
+                !IsLoadedTypeCompatible(parseResult, tableType, out error))
             {
                 blockReason = UpdateBlockReason.NeedsGenerate;
                 return false;
             }
 
-            prepared = new PreparedUpdate(raw, usedSchema, parseResult, targetAssetPath);
+            prepared = new PreparedUpdate(raw, usedSchema, parseResult, targetAssetPath, existingAsset == null);
             return true;
         }
 
@@ -224,6 +244,11 @@ namespace ASB.ExcelImport.Editor
             dataChanged = false;
             RawExcelSheetSO raw = prepared.Raw;
             string targetAssetPath = prepared.TargetAssetPath;
+
+            if (prepared.CreateTable)
+            {
+                return CreateTable(prepared, out dataChanged, out error);
+            }
 
             ScriptableObject tableAsset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(targetAssetPath);
             if (tableAsset == null)
@@ -279,6 +304,102 @@ namespace ASB.ExcelImport.Editor
             return UpdateApplyResult.Applied;
         }
 
+        private static UpdateApplyResult CreateTable(PreparedUpdate prepared, out bool dataChanged, out string error)
+        {
+            dataChanged = false;
+            error = string.Empty;
+            string path = prepared.TargetAssetPath;
+            if (AssetDatabase.LoadMainAssetAtPath(path) != null || File.Exists(ExcelRawImportUtility.ToAbsoluteAssetPath(path)))
+            {
+                error = $"테이블 출력 경로가 이미 사용 중이에요: {path}";
+                return UpdateApplyResult.Failed;
+            }
+
+            string typeName = CodeGenerator.ToTypeBaseName(prepared.ParseResult.ClassName) + "DataTable";
+            Type type = ScriptableExporter.FindTypeByName(typeName);
+            if (type == null || !typeof(ScriptableObject).IsAssignableFrom(type) ||
+                !IsLoadedTypeCompatible(prepared.ParseResult, type, out error))
+            {
+                if (string.IsNullOrEmpty(error)) error = $"테이블 클래스를 찾을 수 없어요: {typeName}";
+                return UpdateApplyResult.Failed;
+            }
+
+            ScriptableObject table = ScriptableObject.CreateInstance(type);
+            if (table == null)
+            {
+                error = $"테이블 인스턴스를 만들 수 없어요: {typeName}";
+                return UpdateApplyResult.Failed;
+            }
+
+            try
+            {
+                // 먼저 메모리에서 모든 행과 키 표를 완성한 뒤 에셋으로 쓴다.
+                if (!ScriptableExporter.TryReplaceTableData(prepared.ParseResult, table, out dataChanged, out error))
+                {
+                    return UpdateApplyResult.Failed;
+                }
+
+                ExcelRawImportUtility.EnsureFolder(Path.GetDirectoryName(path)?.Replace('\\', '/'));
+                AssetDatabase.CreateAsset(table, path);
+                if (!string.Equals(AssetDatabase.GetAssetPath(table), path, StringComparison.Ordinal) ||
+                    AssetDatabase.LoadAssetAtPath<ScriptableObject>(path) == null)
+                {
+                    bool fileExists = File.Exists(ExcelRawImportUtility.ToAbsoluteAssetPath(path));
+                    error = fileExists
+                        ? $"테이블 생성 직후 에셋을 확인하지 못했어요. 파일 상태를 확인하세요: {path}"
+                        : $"테이블 에셋이 생성되지 않았어요: {path}";
+                    return fileExists ? UpdateApplyResult.Uncertain : UpdateApplyResult.Failed;
+                }
+            }
+            catch (Exception ex)
+            {
+                bool assetMayExist = AssetDatabase.LoadMainAssetAtPath(path) != null ||
+                    File.Exists(ExcelRawImportUtility.ToAbsoluteAssetPath(path));
+                error = assetMayExist
+                    ? $"테이블 생성 중 오류가 났어요. 파일이 생겼을 수 있어 상태를 확인하세요: {ex.Message}"
+                    : $"테이블 생성 중 오류가 났어요: {ex.Message}";
+                return assetMayExist ? UpdateApplyResult.Uncertain : UpdateApplyResult.Failed;
+            }
+            finally
+            {
+                if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(table)))
+                {
+                    UnityEngine.Object.DestroyImmediate(table);
+                }
+            }
+
+            try
+            {
+                AssetDatabase.SaveAssetIfDirty(table);
+            }
+            catch (Exception ex)
+            {
+                error = $"테이블 생성 뒤 저장 중 오류가 났어요. 디스크 상태를 확인하세요: {ex.Message}";
+                return UpdateApplyResult.Uncertain;
+            }
+
+            bool linked = TryUpdateTableLink(prepared.Schema, path, out string linkError);
+            try
+            {
+                prepared.Raw.importStatus = RawImportStatus.Generated;
+                prepared.Raw.lastError = linked ? string.Empty : linkError;
+                EditorUtility.SetDirty(prepared.Raw);
+                AssetDatabase.SaveAssetIfDirty(prepared.Raw);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[ExcelRawGenerate] Raw status save failed for {prepared.Raw.sheetName}: {ex.Message}");
+            }
+
+            if (!linked)
+            {
+                error = "테이블은 생성됐지만 연결 정보 저장에 실패했어요.\n" + linkError;
+                return UpdateApplyResult.AppliedLinkFailed;
+            }
+
+            return UpdateApplyResult.Created;
+        }
+
         // 테이블 .meta의 스키마 GUID(Excel Data Viewer가 사용)와 스키마의 테이블 경로를 맞춘다.
         // SaveAndReimport는 에셋을 다시 가져오므로 값이 이미 같으면 부르지 않는다.
         private static bool TryUpdateTableLink(ExcelSheetSchemaSO schema, string targetAssetPath, out string error)
@@ -320,7 +441,7 @@ namespace ASB.ExcelImport.Editor
 
         // 생성 스크립트의 서명이 같아도 컴파일 전이면 실제 클래스가 다를 수 있다.
         // 지금 로드된 클래스에 DataList(List<행 타입>)와 모든 열의 필드·타입이 있는지 직접 확인한다.
-        private static bool IsLoadedTypeCompatible(ExcelSheetParseResult parseResult, ScriptableObject tableAsset, out string error)
+        private static bool IsLoadedTypeCompatible(ExcelSheetParseResult parseResult, Type tableType, out string error)
         {
             error = string.Empty;
             string rowTypeName = CodeGenerator.ToTypeBaseName(parseResult.ClassName) + "Data";
@@ -331,10 +452,10 @@ namespace ASB.ExcelImport.Editor
                 return false;
             }
 
-            FieldInfo dataListField = tableAsset.GetType().GetField("DataList", BindingFlags.Instance | BindingFlags.Public);
+            FieldInfo dataListField = tableType.GetField("DataList", BindingFlags.Instance | BindingFlags.Public);
             if (dataListField == null || dataListField.FieldType != typeof(List<>).MakeGenericType(rowType))
             {
-                error = $"{tableAsset.GetType().Name}.DataList is not List<{rowTypeName}>. Use Generate instead of Update Data.";
+                error = $"{tableType.Name}.DataList is not List<{rowTypeName}>. Use Generate instead of Update Data.";
                 return false;
             }
 

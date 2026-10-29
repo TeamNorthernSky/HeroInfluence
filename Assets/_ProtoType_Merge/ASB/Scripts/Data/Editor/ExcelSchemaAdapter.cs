@@ -123,7 +123,6 @@ namespace ASB.ExcelImport.Editor
             schema.templateSignature = BuildTemplateSignature(schema);
 
             AssetDatabase.CreateAsset(schema, schemaPath);
-            AssetDatabase.SaveAssets();
             return schema;
         }
 
@@ -482,7 +481,7 @@ namespace ASB.ExcelImport.Editor
             schema.physicalSheetId = raw.physicalSheetId;
             schema.logicalSheetKey = raw.logicalSheetKey;
             EditorUtility.SetDirty(schema);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssetIfDirty(schema);
         }
 
         // 같은 워크북 내에서 logicalSheetKey가 겹치지만 physicalSheetId가 다른 다른 raw들.
@@ -1042,6 +1041,14 @@ namespace ASB.ExcelImport.Editor
 
         // 스키마는 열 번호로 값을 읽으므로 엑셀 중간에 열이 끼어들면 문자열 열은 오류 없이 옆 열 값을 읽는다.
         // 저장된 헤더 이름과 현재 헤더 행을 비교해 열 위치가 어긋난 시트를 막는다. 헤더 이름이 없는 옛 컬럼은 건너뛴다.
+        public static List<string> ValidateHeaders(RawExcelSheetSO raw, ExcelSheetSchemaSO schema)
+        {
+            var errors = new List<string>();
+            List<ExcelColumnMapping> included = schema.Columns.Where(c => c != null && c.include).ToList();
+            ValidateHeaders(raw, schema, included, errors);
+            return errors;
+        }
+
         private static void ValidateHeaders(
             RawExcelSheetSO raw,
             ExcelSheetSchemaSO schema,

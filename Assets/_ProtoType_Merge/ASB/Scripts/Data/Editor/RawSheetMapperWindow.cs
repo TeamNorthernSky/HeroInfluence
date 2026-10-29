@@ -82,6 +82,11 @@ namespace ASB.ExcelImport.Editor
                 ShowBatchMenu(GUILayoutUtility.GetLastRect());
             }
 
+            if (GUILayout.Button("엑셀 전체 스키마 적용", EditorStyles.toolbarButton, GUILayout.Width(160f)))
+            {
+                OpenSchemaBatchApply();
+            }
+
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
         }
@@ -118,7 +123,54 @@ namespace ASB.ExcelImport.Editor
         private void RunBatch(string workbookPath, bool checkOnly, ICollection<string> sheetNames)
         {
             WorkbookBatchReport report = ExcelRawBatchUpdater.Run(workbookPath, checkOnly, sheetNames);
-            if (sheetNames != null && _batchReport != null && _batchReport.workbookPath == workbookPath)
+            AcceptBatchReport(report, sheetNames != null);
+        }
+
+        private void OpenSchemaBatchApply()
+        {
+            string defaultFolder = ExcelRawImportUtility.ToAbsoluteAssetPath(ExcelImportPaths.DefaultExcelFolder);
+            string absolutePath = EditorUtility.OpenFilePanel("새 버전 엑셀 선택", defaultFolder, "xlsx");
+            if (string.IsNullOrEmpty(absolutePath)) return;
+            try
+            {
+                string assetPath = ExcelRawImportUtility.AbsoluteToAssetPath(absolutePath);
+                if (string.IsNullOrEmpty(assetPath))
+                {
+                    throw new System.InvalidOperationException("Unity Assets 폴더 안에 있는 엑셀 파일을 선택하세요.");
+                }
+                SchemaBatchApplyWindow.Open(assetPath, this);
+            }
+            catch (System.Exception ex)
+            {
+                EditorUtility.DisplayDialog("엑셀 전체 스키마 적용", ex.Message, "확인");
+            }
+        }
+
+        internal void AcceptSchemaBatchReport(WorkbookBatchReport report)
+        {
+            AcceptBatchReport(report, false);
+            Focus();
+        }
+
+        private void RetryBatch(ICollection<string> sheetNames)
+        {
+            if (_batchReport.operation == WorkbookBatchOperation.SchemaApply)
+            {
+                WorkbookBatchReport report = ExcelSchemaBatchApplier.Run(
+                    _batchReport.workbookPath, _batchReport.sourceWorkbookPath,
+                    _batchReport.createTables, sheetNames, true);
+                AcceptBatchReport(report, true);
+            }
+            else
+            {
+                RunBatch(_batchReport.workbookPath, _batchReport.checkOnly, sheetNames);
+            }
+        }
+
+        private void AcceptBatchReport(WorkbookBatchReport report, bool merge)
+        {
+            if (merge && _batchReport != null && _batchReport.workbookPath == report.workbookPath &&
+                _batchReport.operation == report.operation)
             {
                 _batchReport.Merge(report);
             }
@@ -141,7 +193,7 @@ namespace ASB.ExcelImport.Editor
 
             if (!string.IsNullOrEmpty(report.fatalError))
             {
-                EditorUtility.DisplayDialog("엑셀 전체 업데이트 실패", report.fatalError, "확인");
+                EditorUtility.DisplayDialog("엑셀 일괄 작업 실패", report.fatalError, "확인");
             }
         }
 
@@ -160,11 +212,15 @@ namespace ASB.ExcelImport.Editor
 
             EditorGUILayout.BeginVertical(GUI.skin.box);
             EditorGUILayout.BeginHorizontal();
+            string resultTitle = _batchReport.operation == WorkbookBatchOperation.SchemaApply
+                ? "스키마 적용 결과"
+                : _batchReport.checkOnly ? "검사 결과 (테이블 반영 안 함)" : "업데이트 결과";
             EditorGUILayout.LabelField(
-                $"{(_batchReport.checkOnly ? "검사 결과 (테이블 반영 안 함)" : "업데이트 결과")}: {_batchReport.workbookName}",
+                $"{resultTitle}: {_batchReport.workbookName}",
                 EditorStyles.boldLabel);
             GUILayout.FlexibleSpace();
-            if (_batchReport.checkOnly && GUILayout.Button("반영하기", GUILayout.Width(80f)))
+            if (_batchReport.operation == WorkbookBatchOperation.Update && _batchReport.checkOnly &&
+                GUILayout.Button("반영하기", GUILayout.Width(80f)))
             {
                 RunBatch(_batchReport.workbookPath, false, null);
                 GUIUtility.ExitGUI();
@@ -174,7 +230,7 @@ namespace ASB.ExcelImport.Editor
             {
                 if (GUILayout.Button($"문제 시트 다시 ({retryNames.Count})", GUILayout.Width(130f)))
                 {
-                    RunBatch(_batchReport.workbookPath, _batchReport.checkOnly, retryNames);
+                    RetryBatch(retryNames);
                     GUIUtility.ExitGUI();
                 }
             }
@@ -205,7 +261,8 @@ namespace ASB.ExcelImport.Editor
             }
 
             List<string> succeeded = _batchReport.Sheets
-                .Where(s => s.state == SheetBatchState.Updated || s.state == SheetBatchState.Passed)
+                .Where(s => s.state == SheetBatchState.Updated || s.state == SheetBatchState.Created ||
+                    s.state == SheetBatchState.SchemaApplied || s.state == SheetBatchState.Passed)
                 .Select(s => s.message == ExcelRawBatchUpdater.UnchangedMessage ? $"{s.sheetName}(변경 없음)" : s.sheetName)
                 .ToList();
             if (succeeded.Count > 0)
@@ -223,11 +280,15 @@ namespace ASB.ExcelImport.Editor
                 .ToList();
             if (skipped.Count > 0)
             {
-                _showBatchSkipped = EditorGUILayout.Foldout(_showBatchSkipped, $"스키마가 없어 건너뛴 시트 {skipped.Count}개", true);
+                string skippedTitle = _batchReport.operation == WorkbookBatchOperation.SchemaApply
+                    ? $"건너뛴 시트 {skipped.Count}개"
+                    : $"스키마가 없어 건너뛴 시트 {skipped.Count}개";
+                _showBatchSkipped = EditorGUILayout.Foldout(_showBatchSkipped, skippedTitle, true);
                 if (_showBatchSkipped)
                 {
                     EditorGUILayout.LabelField(
-                        string.Join(", ", skipped) + "\n데이터 시트라면 왼쪽 목록에서 열어 New Schema로 만드세요.",
+                        string.Join(", ", skipped) + (_batchReport.operation == WorkbookBatchOperation.SchemaApply
+                            ? string.Empty : "\n데이터 시트라면 왼쪽 목록에서 열어 New Schema로 만드세요."),
                         EditorStyles.wordWrappedMiniLabel);
                 }
             }
@@ -258,7 +319,7 @@ namespace ASB.ExcelImport.Editor
 
             if (GUILayout.Button("다시", GUILayout.Width(44f)))
             {
-                RunBatch(_batchReport.workbookPath, _batchReport.checkOnly, new[] { result.sheetName });
+                RetryBatch(new[] { result.sheetName });
                 GUIUtility.ExitGUI();
             }
             EditorGUILayout.EndHorizontal();
@@ -334,6 +395,8 @@ namespace ASB.ExcelImport.Editor
         {
             var parts = new List<string>();
             AddSummaryPart(parts, report, SheetBatchState.Updated);
+            AddSummaryPart(parts, report, SheetBatchState.Created);
+            AddSummaryPart(parts, report, SheetBatchState.SchemaApplied);
             AddSummaryPart(parts, report, SheetBatchState.UpdatedLinkFailed);
             AddSummaryPart(parts, report, SheetBatchState.UpdateUncertain);
             AddSummaryPart(parts, report, SheetBatchState.Passed);
@@ -357,6 +420,8 @@ namespace ASB.ExcelImport.Editor
             switch (state)
             {
                 case SheetBatchState.Updated: return "반영";
+                case SheetBatchState.Created: return "새 테이블 생성";
+                case SheetBatchState.SchemaApplied: return "스키마 적용";
                 case SheetBatchState.Passed: return "통과";
                 case SheetBatchState.Failed: return "실패";
                 case SheetBatchState.NeedsGenerate: return "Generate 필요";
@@ -371,6 +436,8 @@ namespace ASB.ExcelImport.Editor
             switch (state)
             {
                 case SheetBatchState.Updated:
+                case SheetBatchState.Created:
+                case SheetBatchState.SchemaApplied:
                 case SheetBatchState.Passed:
                     return new Color(0.55f, 0.9f, 0.55f);
                 case SheetBatchState.Failed:
@@ -1122,7 +1189,8 @@ namespace ASB.ExcelImport.Editor
             _schema = ExcelSchemaAdapter.CreateSchemaFromTemplate(raw, template);
             raw.importStatus = RawImportStatus.SchemaApplied;
             EditorUtility.SetDirty(raw);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssetIfDirty(raw);
+            AssetDatabase.SaveAssetIfDirty(_schema);
             SetSchemaApplyMessage($"New schema created for this sheet from template '{template.name}'.", MessageType.Info);
             RefreshSchemaCandidateCache();
         }
@@ -1148,7 +1216,7 @@ namespace ASB.ExcelImport.Editor
             _schema = candidate;
             raw.importStatus = RawImportStatus.SchemaApplied;
             EditorUtility.SetDirty(raw);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssetIfDirty(raw);
             SetSchemaApplyMessage("Schema relinked to this (renamed) sheet.", MessageType.Info);
             RefreshSchemaCandidateCache();
         }

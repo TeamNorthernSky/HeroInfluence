@@ -608,7 +608,7 @@ public sealed class BattlePresentationController : MonoBehaviour
     }
 
     public System.Collections.IEnumerator RunAttackWithZoom(BattleCharactor actor, BattleCharactor target,
-        SkillData skill, System.Collections.IEnumerator attack)
+        SkillData skill, System.Collections.IEnumerator attack, bool counter = false)
     {
         bool shouldFocusDebuffTarget = skill != null && skill.skillKey == "HCS005" &&
             target != null && !target.IsDead;
@@ -621,7 +621,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         if ((useTurnCamera && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage && !shouldFrameRifleBarrage) || !useAttackZoom || previewCamera == null ||
             actor == null || attackZoomAmount <= 0f || attackZoomActive)
         {
-            yield return ShowSkillSpeech(actor, skill);
+            yield return ShowSkillSpeech(actor, skill, counter);
             yield return WaitForLuminaCast(actor, skill);
             yield return attack;
             yield return WaitAfterSkill(actor, skill);
@@ -669,7 +669,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             yield return AnimateAttackZoom(zoomPosition, corner, attackCameraRotation,
                 zoomFov, attackCameraOrthoSize * scale, attackZoomInSeconds, true);
             followAttackFocus = true;
-            yield return ShowSkillSpeech(actor, skill);
+            yield return ShowSkillSpeech(actor, skill, counter);
             yield return WaitForLuminaCast(actor, skill);
             yield return attack;
             if (shouldFocusNekoBarrage)
@@ -687,11 +687,11 @@ public sealed class BattlePresentationController : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator ShowSkillSpeech(BattleCharactor actor, SkillData skill)
+    private System.Collections.IEnumerator ShowSkillSpeech(BattleCharactor actor, SkillData skill, bool counter)
     {
         var speech = FindSceneComponent<BattleSkillSpeechBubble>();
         if (speech != null && speech.gameObject.scene == gameObject.scene && speech.isActiveAndEnabled)
-            yield return speech.ShowBeforeCast(actor, skill);
+            yield return speech.ShowBeforeCast(actor, skill, counter);
     }
 
     private System.Collections.IEnumerator AnimateAttackZoom(Vector3 position, Vector3 corner, Quaternion rotation,
