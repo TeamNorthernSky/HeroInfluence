@@ -833,6 +833,21 @@ public class BattleManager : MonoBehaviour
 
                 // 투사체 전달 결과와 무관하게 적용한다. 연출은 규칙을 취소할 수 없다.
                 ApplyStatusEffect(statusContext);
+                if (result.Handler is GuardSkillHandler && result.Caster != null && result.Skill != null)
+                {
+                    // Guard skips the ordinary skill animation rail; fire its configured cast cue here.
+                    SkillPresentationData guardPresentation = _presentationCatalog?.Get(result.Skill.skillIndex);
+                    if (guardPresentation?.MovePrepare?.Cues != null)
+                    {
+                        Presentation.SetupPresentationContext(result.Caster, statusContext.Target, result.Skill,
+                            guardPresentation, SkillPresentationDirector.NextActionInstanceId(), guardPresentation.MovePrepare.Cues);
+                        var presenter = result.Caster.GetComponent<UnitEffectPresenter>();
+                        foreach (var cue in guardPresentation.MovePrepare.Cues)
+                            if (cue != null && !string.IsNullOrWhiteSpace(cue.CueName))
+                                presenter?.PresentationCue(cue.CueName, bypassStateGate: true);
+                        SkillPresentationDirector.ClearPresentationContext(result.Caster);
+                    }
+                }
             }
         }
 
