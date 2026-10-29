@@ -146,6 +146,24 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         {
             if (config == null || battle == null || DHCsvTemplateCatalog.Instance == null)
                 throw new InvalidOperationException("전투 설정, BattleSceneManager 또는 데이터 카탈로그가 없습니다.");
+            if (Array.Exists(FindObjectsOfType<YT.Preview.YtSkillPreviewController>(), preview => preview.gameObject.scene == gameObject.scene))
+            {
+#if UNITY_EDITOR
+                // Load the saved configuration: play-mode scene reload can retain the previous transient clone.
+                var savedPreviewConfig = UnityEditor.AssetDatabase.LoadAssetAtPath<SimulationBattleConfig>("Assets/_ProtoType_Merge/YT/SkillPreviewConfig.asset");
+                if (savedPreviewConfig != null) config = savedPreviewConfig;
+#endif
+                if (YT.Preview.YtSkillPreviewController.OriginalEnemyGroup == null)
+                {
+                    YT.Preview.YtSkillPreviewController.OriginalEnemyGroup = config.enemyGroupKey;
+                    YT.Preview.YtSkillPreviewController.OriginalEnemyZone = config.eventZoneId;
+                    YT.Preview.YtSkillPreviewController.OriginalEnemyLevel = config.enemyLevel;
+                }
+                config = Instantiate(config);
+                config.enemyGroupKey = YT.Preview.YtSkillPreviewController.ArnoldEncounter ? "BE161" : YT.Preview.YtSkillPreviewController.OriginalEnemyGroup;
+                config.eventZoneId = YT.Preview.YtSkillPreviewController.ArnoldEncounter ? 1 : YT.Preview.YtSkillPreviewController.OriginalEnemyZone;
+                config.enemyLevel = YT.Preview.YtSkillPreviewController.ArnoldEncounter ? 2 : YT.Preview.YtSkillPreviewController.OriginalEnemyLevel;
+            }
             var allies = new List<SimulationAllyRuntimeData>();
             foreach (var input in config.allies)
             {
