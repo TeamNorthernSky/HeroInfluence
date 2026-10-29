@@ -585,25 +585,22 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         {
             WorldEventPlacementData placement = worldEventPlacements[i];
             Vector2Int grid = placement.GridPosition + offset;
-            if (Application.isPlaying && IsWorldEventCompleted(placement.WorldEventId))
+            if (Application.isPlaying && IsWorldEventCompleted(grid, placement.WorldEventId))
                 continue;
 
             WorldEventObject worldEvent = SpawnComponent(worldEventPrefab, grid, parent);
             if (worldEvent != null)
-                worldEvent.ApplyInitialData(placement.WorldEventId, placement.Rotation);
+                worldEvent.ApplyInitialData(placement.WorldEventId, placement.Rotation, grid);
         }
     }
 
-    private static bool IsWorldEventCompleted(string worldEventId)
+    private static bool IsWorldEventCompleted(Vector2Int grid, string worldEventId)
     {
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository == null)
             return false;
 
-        string normalizedId = MapProgressKey.NormalizeSegment(worldEventId);
-        string progressKey = string.IsNullOrWhiteSpace(normalizedId)
-            ? "world_event"
-            : $"world_event_{normalizedId}";
+        string progressKey = MapProgressKey.ForWorldEvent(grid, worldEventId);
         return repository.IsEventCompleted(progressKey);
     }
 

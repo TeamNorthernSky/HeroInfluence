@@ -37,6 +37,7 @@ public sealed class WorldEventObject : MonoBehaviour
     private GameObject spawnedNpcVisual;
     private Coroutine npcVisualRetryCoroutine;
     private bool isTriggering;
+    private Vector2Int? placementGrid;
     private Transform interactionFacingVisual;
     private Quaternion rotationBeforeInteraction;
     private UnitVisualMotionController[] interactionPartyUnits = Array.Empty<UnitVisualMotionController>();
@@ -46,7 +47,7 @@ public sealed class WorldEventObject : MonoBehaviour
 
     public string WorldEventId => string.IsNullOrWhiteSpace(worldEventId) ? string.Empty : worldEventId.Trim();
     public bool OneShot => oneShot;
-    public string ProgressKey => BuildProgressKey(WorldEventId);
+    public string ProgressKey => MapProgressKey.ForWorldEvent(placementGrid ?? GetCurrentGrid(), WorldEventId);
     public int ResolvedNpcType => TryResolveTemplate(out DHWorldEventTemplate template) ? template.NpcType : 0;
 
     private void Awake()
@@ -211,8 +212,9 @@ public sealed class WorldEventObject : MonoBehaviour
         speechBubbleRoot.position = position;
     }
 
-    public void ApplyInitialData(string nextWorldEventId, WorldEventRotation rotation = WorldEventRotation.Degrees0)
+    public void ApplyInitialData(string nextWorldEventId, WorldEventRotation rotation = WorldEventRotation.Degrees0, Vector2Int? grid = null)
     {
+        placementGrid = grid;
         worldEventId = string.IsNullOrWhiteSpace(nextWorldEventId) ? string.Empty : nextWorldEventId.Trim();
         placementRotation = rotation;
         ApplyFootprint(ResolvedNpcType);
@@ -573,12 +575,5 @@ public sealed class WorldEventObject : MonoBehaviour
         return catalog != null && catalog.TryGetEvent(WorldEventId, out template) && template != null;
     }
 
-    private static string BuildProgressKey(string eventId)
-    {
-        string normalizedId = MapProgressKey.NormalizeSegment(eventId);
-        return string.IsNullOrWhiteSpace(normalizedId)
-            ? "world_event"
-            : $"world_event_{normalizedId}";
-    }
 }
 

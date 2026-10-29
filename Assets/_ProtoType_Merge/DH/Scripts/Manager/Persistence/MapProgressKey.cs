@@ -29,6 +29,13 @@ public static class MapProgressKey
         return ForGrid("outpost", grid);
     }
 
+    public static string ForWorldEvent(Vector2Int grid, string eventId)
+    {
+        string baseKey = ForGrid("world_event", grid);
+        string normalizedId = NormalizeSegment(eventId);
+        return string.IsNullOrWhiteSpace(normalizedId) ? baseKey : $"{baseKey}_{normalizedId}";
+    }
+
     public static string ForVillainUnion(Vector2Int grid)
     {
         return ForGrid("villain_union", grid);
