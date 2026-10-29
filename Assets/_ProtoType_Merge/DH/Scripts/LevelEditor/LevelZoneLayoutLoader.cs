@@ -786,7 +786,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 continue;
             }
 
-            SpawnDecorativeObjectGameObject(prefab, placement.GridPosition + offset, parent);
+            SpawnDecorativeObjectGameObject(prefab, placement.GridPosition + offset, parent, placement.Rotation);
         }
     }
 
@@ -1001,7 +1001,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         return instance;
     }
 
-    private GameObject SpawnDecorativeObjectGameObject(GameObject prefab, Vector2Int grid, Transform parent)
+    private GameObject SpawnDecorativeObjectGameObject(GameObject prefab, Vector2Int grid, Transform parent, DecorativeObjectRotation rotation)
     {
         if (prefab == null || !layoutData.IsInsideGrid(grid))
             return null;
@@ -1017,8 +1017,9 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
         Vector3 anchorWorldPosition = gridManager.GridToWorldCenter(grid);
         anchorWorldPosition.y = gridManager.GetCellSurfaceY(grid);
-        Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
-        return Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
+        Quaternion worldRotation = Quaternion.Euler(0f, (int)rotation, 0f) * prefab.transform.rotation;
+        Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition, worldRotation);
+        return Instantiate(prefab, worldPosition, worldRotation, parent);
     }
 
     private GameObject SpawnTutorialObjectGameObject(GameObject prefab, Vector2Int grid, Transform parent)
