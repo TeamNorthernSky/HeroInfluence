@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -30,6 +31,12 @@ namespace ASB.ExcelImport.Editor
         private Vector2 _columnScroll;
         private Vector2 _previewScroll;
         private Vector2 _templateScroll;
+        [SerializeField] private WorkbookBatchReport _batchReport;
+        private Vector2 _batchScroll;
+        private bool _showBatchSucceeded;
+        private bool _showBatchSkipped;
+
+        private const int MaxErrorLinesShown = 20;
 
         [MenuItem("Tools/Excel Importer/Raw Sheet Mapper")]
         public static void ShowWindow()
@@ -49,6 +56,7 @@ namespace ASB.ExcelImport.Editor
         {
             DrawToolbar();
             EditorGUILayout.Space(6f);
+            DrawBatchReport();
 
             EditorGUILayout.BeginHorizontal();
             DrawRawList();
@@ -69,8 +77,312 @@ namespace ASB.ExcelImport.Editor
                 RefreshRawList();
             }
 
+            if (GUILayout.Button("엑셀 전체 업데이트", EditorStyles.toolbarDropDown, GUILayout.Width(140f)))
+            {
+                ShowBatchMenu(GUILayoutUtility.GetLastRect());
+            }
+
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void ShowBatchMenu(Rect buttonRect)
+        {
+            var menu = new GenericMenu();
+            List<string> workbooks = ExcelRawBatchUpdater.FindKnownWorkbookPaths();
+            if (workbooks.Count == 0)
+            {
+                menu.AddDisabledItem(new GUIContent("스키마가 있는 엑셀이 없어요"));
+            }
+
+            for (int i = 0; i < workbooks.Count; i++)
+            {
+                string path = workbooks[i];
+                menu.AddItem(new GUIContent(Path.GetFileNameWithoutExtension(path)), false, () => RunBatch(path, false, null));
+            }
+
+            const string checkOnlyMenu = "검사만 (테이블 반영 안 함)/";
+            menu.AddSeparator(string.Empty);
+            menu.AddDisabledItem(new GUIContent(checkOnlyMenu + "테이블·스키마는 쓰지 않고, Raw 임시본만 새로 읽어 저장해요"));
+            menu.AddSeparator(checkOnlyMenu);
+            for (int i = 0; i < workbooks.Count; i++)
+            {
+                string path = workbooks[i];
+                menu.AddItem(new GUIContent(checkOnlyMenu + Path.GetFileNameWithoutExtension(path)), false, () => RunBatch(path, true, null));
+            }
+
+            menu.DropDown(buttonRect);
+        }
+
+        // sheetNames가 있으면 그 시트만 다시 읽어 돌리고 기존 결과에 합친다.
+        private void RunBatch(string workbookPath, bool checkOnly, ICollection<string> sheetNames)
+        {
+            WorkbookBatchReport report = ExcelRawBatchUpdater.Run(workbookPath, checkOnly, sheetNames);
+            if (sheetNames != null && _batchReport != null && _batchReport.workbookPath == workbookPath)
+            {
+                _batchReport.Merge(report);
+            }
+            else
+            {
+                _batchReport = report;
+            }
+
+            RefreshRawList();
+
+            // 왼쪽 목록을 방금 돌린 엑셀로 맞춰 시트별 결과 색을 바로 보이게 한다.
+            int folderIndex = _workbookFolders.IndexOf(report.workbookName);
+            if (folderIndex >= 0 && folderIndex != _selectedWorkbookFolderIndex)
+            {
+                _selectedWorkbookFolderIndex = folderIndex;
+                ApplyWorkbookFolderFilter();
+                _selectedRawIndex = 0;
+                LoadBestSchemaForSelectedRaw();
+            }
+
+            if (!string.IsNullOrEmpty(report.fatalError))
+            {
+                EditorUtility.DisplayDialog("엑셀 전체 업데이트 실패", report.fatalError, "확인");
+            }
+        }
+
+        private void DrawBatchReport()
+        {
+            // 도메인 리로드 뒤 Unity가 null 대신 빈 인스턴스를 넣으므로 엑셀 경로로 판단한다.
+            if (_batchReport == null || string.IsNullOrEmpty(_batchReport.workbookPath))
+            {
+                return;
+            }
+
+            List<SheetBatchResult> problems = _batchReport.Sheets
+                .Where(s => ExcelRawBatchUpdater.IsProblem(s.state))
+                .ToList();
+            List<string> retryNames = problems.Select(s => s.sheetName).ToList();
+
+            EditorGUILayout.BeginVertical(GUI.skin.box);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(
+                $"{(_batchReport.checkOnly ? "검사 결과 (테이블 반영 안 함)" : "업데이트 결과")}: {_batchReport.workbookName}",
+                EditorStyles.boldLabel);
+            GUILayout.FlexibleSpace();
+            if (_batchReport.checkOnly && GUILayout.Button("반영하기", GUILayout.Width(80f)))
+            {
+                RunBatch(_batchReport.workbookPath, false, null);
+                GUIUtility.ExitGUI();
+            }
+
+            using (new EditorGUI.DisabledScope(retryNames.Count == 0))
+            {
+                if (GUILayout.Button($"문제 시트 다시 ({retryNames.Count})", GUILayout.Width(130f)))
+                {
+                    RunBatch(_batchReport.workbookPath, _batchReport.checkOnly, retryNames);
+                    GUIUtility.ExitGUI();
+                }
+            }
+
+            if (GUILayout.Button("닫기", GUILayout.Width(50f)))
+            {
+                _batchReport = null;
+                GUIUtility.ExitGUI();
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.LabelField(BuildBatchSummary(_batchReport), EditorStyles.miniLabel);
+            if (!string.IsNullOrEmpty(_batchReport.fatalError))
+            {
+                EditorGUILayout.HelpBox(_batchReport.fatalError, MessageType.Error);
+            }
+
+            if (problems.Count > 0)
+            {
+                const float rowHeight = 22f;
+                float listHeight = Mathf.Min(problems.Count * rowHeight + 6f, 160f);
+                _batchScroll = EditorGUILayout.BeginScrollView(_batchScroll, GUILayout.Height(listHeight));
+                for (int i = 0; i < problems.Count; i++)
+                {
+                    DrawBatchResultRow(problems[i]);
+                }
+                EditorGUILayout.EndScrollView();
+            }
+
+            List<string> succeeded = _batchReport.Sheets
+                .Where(s => s.state == SheetBatchState.Updated || s.state == SheetBatchState.Passed)
+                .Select(s => s.message == ExcelRawBatchUpdater.UnchangedMessage ? $"{s.sheetName}(변경 없음)" : s.sheetName)
+                .ToList();
+            if (succeeded.Count > 0)
+            {
+                _showBatchSucceeded = EditorGUILayout.Foldout(_showBatchSucceeded, $"문제없는 시트 {succeeded.Count}개", true);
+                if (_showBatchSucceeded)
+                {
+                    EditorGUILayout.LabelField(string.Join(", ", succeeded), EditorStyles.wordWrappedMiniLabel);
+                }
+            }
+
+            List<string> skipped = _batchReport.Sheets
+                .Where(s => s.state == SheetBatchState.Skipped)
+                .Select(s => s.sheetName)
+                .ToList();
+            if (skipped.Count > 0)
+            {
+                _showBatchSkipped = EditorGUILayout.Foldout(_showBatchSkipped, $"스키마가 없어 건너뛴 시트 {skipped.Count}개", true);
+                if (_showBatchSkipped)
+                {
+                    EditorGUILayout.LabelField(
+                        string.Join(", ", skipped) + "\n데이터 시트라면 왼쪽 목록에서 열어 New Schema로 만드세요.",
+                        EditorStyles.wordWrappedMiniLabel);
+                }
+            }
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.Space(4f);
+        }
+
+        private void DrawBatchResultRow(SheetBatchResult result)
+        {
+            EditorGUILayout.BeginHorizontal();
+            Color previous = GUI.color;
+            GUI.color = GetBatchStateColor(result.state);
+            EditorGUILayout.LabelField(GetBatchStateLabel(result.state), EditorStyles.boldLabel, GUILayout.Width(90f));
+            GUI.color = previous;
+            EditorGUILayout.LabelField(result.sheetName, GUILayout.Width(160f));
+            string firstLine = GetMessageLines(result.message).FirstOrDefault(line => !line.EndsWith(":")) ?? string.Empty;
+            EditorGUILayout.LabelField(new GUIContent(firstLine, result.message), EditorStyles.miniLabel);
+
+            bool hasTarget = FindRawForResult(result) != null || !string.IsNullOrEmpty(result.schemaPath);
+            using (new EditorGUI.DisabledScope(!hasTarget))
+            {
+                if (GUILayout.Button("열기", GUILayout.Width(44f)))
+                {
+                    OpenBatchResult(result);
+                    GUIUtility.ExitGUI();
+                }
+            }
+
+            if (GUILayout.Button("다시", GUILayout.Width(44f)))
+            {
+                RunBatch(_batchReport.workbookPath, _batchReport.checkOnly, new[] { result.sheetName });
+                GUIUtility.ExitGUI();
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        // 문제 시트를 오른쪽 화면에 열고, 실패 이유를 오류 목록에 그대로 보여 준다.
+        private void OpenBatchResult(SheetBatchResult result)
+        {
+            RawExcelSheetSO raw = FindRawForResult(result);
+            if (raw == null)
+            {
+                Object schema = string.IsNullOrEmpty(result.schemaPath) ? null : AssetDatabase.LoadMainAssetAtPath(result.schemaPath);
+                if (schema != null)
+                {
+                    Selection.activeObject = schema;
+                    EditorGUIUtility.PingObject(schema);
+                }
+                return;
+            }
+
+            SelectWorkbookFolderForRaw(raw);
+            ApplyWorkbookFolderFilter();
+            _selectedRawIndex = Mathf.Max(0, _rawSheets.IndexOf(raw));
+            LoadBestSchemaForSelectedRaw();
+
+            if (ExcelRawBatchUpdater.IsProblem(result.state))
+            {
+                List<string> lines = GetMessageLines(result.message);
+                _validationErrors.AddRange(lines.Take(MaxErrorLinesShown));
+                if (lines.Count > MaxErrorLinesShown)
+                {
+                    _validationErrors.Add($"외 {lines.Count - MaxErrorLinesShown}개 오류는 Validate로 확인하세요.");
+                }
+            }
+        }
+
+        private RawExcelSheetSO FindRawForResult(SheetBatchResult result)
+        {
+            return _allRawSheets.FirstOrDefault(raw => raw != null && raw.physicalSheetId == result.physicalSheetId);
+        }
+
+        private void SetBatchResultForRaw(RawExcelSheetSO raw, SheetBatchState state, string message)
+        {
+            SheetBatchResult result = _batchReport?.Find(raw != null ? raw.physicalSheetId : null);
+            if (result != null)
+            {
+                result.state = state;
+                result.message = message;
+            }
+        }
+
+        private static SheetBatchState ToBatchState(UpdateApplyResult applyResult)
+        {
+            switch (applyResult)
+            {
+                case UpdateApplyResult.Applied: return SheetBatchState.Updated;
+                case UpdateApplyResult.AppliedLinkFailed: return SheetBatchState.UpdatedLinkFailed;
+                case UpdateApplyResult.Uncertain: return SheetBatchState.UpdateUncertain;
+                default: return SheetBatchState.Failed;
+            }
+        }
+
+        private static List<string> GetMessageLines(string message)
+        {
+            return (message ?? string.Empty)
+                .Split('\n')
+                .Select(line => line.TrimEnd('\r'))
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .ToList();
+        }
+
+        private static string BuildBatchSummary(WorkbookBatchReport report)
+        {
+            var parts = new List<string>();
+            AddSummaryPart(parts, report, SheetBatchState.Updated);
+            AddSummaryPart(parts, report, SheetBatchState.UpdatedLinkFailed);
+            AddSummaryPart(parts, report, SheetBatchState.UpdateUncertain);
+            AddSummaryPart(parts, report, SheetBatchState.Passed);
+            AddSummaryPart(parts, report, SheetBatchState.Failed);
+            AddSummaryPart(parts, report, SheetBatchState.NeedsGenerate);
+            AddSummaryPart(parts, report, SheetBatchState.Skipped);
+            return parts.Count == 0 ? "처리한 시트가 없어요." : string.Join(" · ", parts);
+        }
+
+        private static void AddSummaryPart(List<string> parts, WorkbookBatchReport report, SheetBatchState state)
+        {
+            int count = report.Count(state);
+            if (count > 0)
+            {
+                parts.Add($"{GetBatchStateLabel(state)} {count}");
+            }
+        }
+
+        private static string GetBatchStateLabel(SheetBatchState state)
+        {
+            switch (state)
+            {
+                case SheetBatchState.Updated: return "반영";
+                case SheetBatchState.Passed: return "통과";
+                case SheetBatchState.Failed: return "실패";
+                case SheetBatchState.NeedsGenerate: return "Generate 필요";
+                case SheetBatchState.UpdatedLinkFailed: return "반영·연결 실패";
+                case SheetBatchState.UpdateUncertain: return "반영 불확실";
+                default: return "건너뜀";
+            }
+        }
+
+        private static Color GetBatchStateColor(SheetBatchState state)
+        {
+            switch (state)
+            {
+                case SheetBatchState.Updated:
+                case SheetBatchState.Passed:
+                    return new Color(0.55f, 0.9f, 0.55f);
+                case SheetBatchState.Failed:
+                case SheetBatchState.UpdateUncertain:
+                    return new Color(1f, 0.55f, 0.55f);
+                case SheetBatchState.NeedsGenerate:
+                    return new Color(1f, 0.8f, 0.4f);
+                case SheetBatchState.UpdatedLinkFailed:
+                    return new Color(0.85f, 0.9f, 0.45f);
+                default:
+                    return new Color(0.75f, 0.75f, 0.75f);
+            }
         }
 
         private void DrawRawList()
@@ -95,11 +407,20 @@ namespace ASB.ExcelImport.Editor
             {
                 RawExcelSheetSO raw = _rawSheets[i];
                 GUIStyle style = i == _selectedRawIndex ? EditorStyles.toolbarButton : EditorStyles.miniButton;
-                if (GUILayout.Button($"{raw.workbookFileName}\n{raw.sheetName}\n{raw.importStatus}", style, GUILayout.Height(64f)))
+                SheetBatchResult batchResult = _batchReport?.Find(raw.physicalSheetId);
+                string status = batchResult != null ? GetBatchStateLabel(batchResult.state) : raw.importStatus.ToString();
+                Color previousBackground = GUI.backgroundColor;
+                if (batchResult != null)
+                {
+                    GUI.backgroundColor = GetBatchStateColor(batchResult.state);
+                }
+
+                if (GUILayout.Button($"{raw.workbookFileName}\n{raw.sheetName}\n{status}", style, GUILayout.Height(64f)))
                 {
                     _selectedRawIndex = i;
                     LoadBestSchemaForSelectedRaw();
                 }
+                GUI.backgroundColor = previousBackground;
             }
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
@@ -856,7 +1177,9 @@ namespace ASB.ExcelImport.Editor
                 _validationWarnings.AddRange(warnings);
             }
 
-            AssetDatabase.SaveAssets();
+            // 프로젝트 전체 저장 대신 이 시트의 Raw와 스키마(창에서 고친 열 설정 포함)만 저장한다.
+            AssetDatabase.SaveAssetIfDirty(raw);
+            AssetDatabase.SaveAssetIfDirty(_schema);
             RefreshSchemaCandidateCache();
         }
 
@@ -865,7 +1188,7 @@ namespace ASB.ExcelImport.Editor
             _validationErrors.Clear();
             _validationWarnings.Clear();
             RawExcelSheetSO raw = SelectedRaw;
-            if (!ExcelRawGeneratePipeline.UpdateData(raw, _schema, out ExcelSheetSchemaSO usedSchema, out string error))
+            if (!ExcelRawGeneratePipeline.UpdateData(raw, _schema, out ExcelSheetSchemaSO usedSchema, out UpdateApplyResult applyResult, out string error))
             {
                 if (usedSchema != null && usedSchema != _schema)
                 {
@@ -879,6 +1202,7 @@ namespace ASB.ExcelImport.Editor
                     EditorUtility.DisplayDialog("Update Data Failed", error, "OK");
                 }
 
+                SetBatchResultForRaw(raw, ToBatchState(applyResult), error);
                 RefreshSchemaCandidateCache();
                 return;
             }
@@ -888,6 +1212,7 @@ namespace ASB.ExcelImport.Editor
                 _schema = usedSchema;
             }
 
+            SetBatchResultForRaw(raw, SheetBatchState.Updated, string.Empty);
             SetSchemaApplyMessage("Data updated.", MessageType.Info);
             Debug.Log("[RawSheetMapper] Data updated.");
             RefreshSchemaCandidateCache();

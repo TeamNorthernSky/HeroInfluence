@@ -524,7 +524,13 @@ namespace ASB.ExcelImport.Editor
             return result;
         }
 
-        public static bool Validate(RawExcelSheetSO raw, ExcelSheetSchemaSO schema, out List<string> errors, out List<string> warnings)
+        // updateSchema가 false면 스키마의 파생 값(클래스명·출력명·서명)을 고쳐 쓰지 않고 검사만 한다.
+        public static bool Validate(
+            RawExcelSheetSO raw,
+            ExcelSheetSchemaSO schema,
+            out List<string> errors,
+            out List<string> warnings,
+            bool updateSchema = true)
         {
             errors = new List<string>();
             warnings = new List<string>();
@@ -614,6 +620,7 @@ namespace ASB.ExcelImport.Editor
                 }
             }
 
+            ValidateHeaders(raw, schema, included, errors);
             ValidateRows(raw, schema, included, keyColumn, errors, warnings);
             ValidateTemplateCompatibility(schema, included, errors);
             ValidateOutputAssetPathUnique(schema, errors);
@@ -621,13 +628,34 @@ namespace ASB.ExcelImport.Editor
             bool valid = errors.Count == 0;
             raw.importStatus = valid ? RawImportStatus.Validated : RawImportStatus.ValidationFailed;
             raw.lastError = valid ? string.Empty : string.Join("\n", errors);
+            EditorUtility.SetDirty(raw);
+            if (updateSchema)
+            {
+                ApplyDerivedSchemaValues(schema, templateClassName, outputAssetName);
+            }
+
+            return valid;
+        }
+
+        // 값이 그대로면 dirty로 만들지 않는다. 같은 값으로 다시 저장돼 git 변경이 생기는 것을 막는다.
+        private static void ApplyDerivedSchemaValues(ExcelSheetSchemaSO schema, string templateClassName, string outputAssetName)
+        {
+            string templateSignature = BuildTemplateSignature(schema);
+            bool schemaChanged =
+                schema.templateClassName != templateClassName ||
+                schema.className != templateClassName ||
+                schema.outputAssetName != outputAssetName ||
+                schema.templateSignature != templateSignature;
+            if (!schemaChanged)
+            {
+                return;
+            }
+
             schema.templateClassName = templateClassName;
             schema.className = templateClassName;
             schema.outputAssetName = outputAssetName;
-            schema.templateSignature = BuildTemplateSignature(schema);
+            schema.templateSignature = templateSignature;
             EditorUtility.SetDirty(schema);
-            EditorUtility.SetDirty(raw);
-            return valid;
         }
 
         public static ExcelSheetParseResult ToParseResult(RawExcelSheetSO raw, ExcelSheetSchemaSO schema)
@@ -1010,6 +1038,61 @@ namespace ASB.ExcelImport.Editor
             count++;
             usedNames[baseName] = count;
             return $"{baseName}_{count}";
+        }
+
+        // 스키마는 열 번호로 값을 읽으므로 엑셀 중간에 열이 끼어들면 문자열 열은 오류 없이 옆 열 값을 읽는다.
+        // 저장된 헤더 이름과 현재 헤더 행을 비교해 열 위치가 어긋난 시트를 막는다. 헤더 이름이 없는 옛 컬럼은 건너뛴다.
+        private static void ValidateHeaders(
+            RawExcelSheetSO raw,
+            ExcelSheetSchemaSO schema,
+            List<ExcelColumnMapping> included,
+            List<string> errors)
+        {
+            List<ExcelColumnMapping> checkable = included.Where(c => !string.IsNullOrEmpty(c.sourceHeaderName)).ToList();
+            if (checkable.Count == 0)
+            {
+                return;
+            }
+
+            if (raw.Rows == null || schema.headerRowIndex < 0 || schema.headerRowIndex >= raw.Rows.Count)
+            {
+                errors.Add($"헤더 행 {schema.headerRowIndex + 1}이(가) 시트 범위를 벗어났어요.");
+                return;
+            }
+
+            List<string> headerCells = raw.Rows[schema.headerRowIndex]?.Cells ?? new List<string>();
+            for (int i = 0; i < checkable.Count; i++)
+            {
+                ExcelColumnMapping column = checkable[i];
+                string actual = column.sourceColumnIndex >= 0 && column.sourceColumnIndex < headerCells.Count
+                    ? headerCells[column.sourceColumnIndex]
+                    : string.Empty;
+                if (string.Equals(actual, column.sourceHeaderName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                int movedTo = headerCells.IndexOf(column.sourceHeaderName);
+                errors.Add(movedTo >= 0
+                    ? $"'{column.sourceHeaderName}' 열이 {ToExcelColumnName(column.sourceColumnIndex)}열에서 {ToExcelColumnName(movedTo)}열로 옮겨졌어요. Rebuild로 열 위치를 갱신하세요."
+                    : $"{ToExcelColumnName(column.sourceColumnIndex)}열 헤더가 '{column.sourceHeaderName}'이 아니라 '{actual}'이에요. 열이 바뀌었는지 확인한 뒤 Rebuild하세요.");
+            }
+        }
+
+        private static string ToExcelColumnName(int index)
+        {
+            if (index < 0)
+            {
+                return index.ToString(CultureInfo.InvariantCulture);
+            }
+
+            string name = string.Empty;
+            for (int n = index + 1; n > 0; n = (n - 1) / 26)
+            {
+                name = (char)('A' + (n - 1) % 26) + name;
+            }
+
+            return name;
         }
 
         private static void ValidateRows(

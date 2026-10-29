@@ -23,7 +23,12 @@ namespace ASB.ExcelImport.Editor
     {
         private static readonly DataFormatter CellFormatter = new DataFormatter(CultureInfo.InvariantCulture);
 
-        public static List<RawExcelSheetSO> ImportMarkerlessSheets(string absoluteExcelPath)
+        // sheetNames가 있으면 그 시트만 다시 읽는다(다른 시트 Raw는 그대로 둔다).
+        // partialMarkerSheets를 넘기면 마커가 일부만 있어 건너뛴 시트 이름을 담아 준다.
+        public static List<RawExcelSheetSO> ImportMarkerlessSheets(
+            string absoluteExcelPath,
+            ICollection<string> sheetNames = null,
+            List<string> partialMarkerSheets = null)
         {
             if (string.IsNullOrWhiteSpace(absoluteExcelPath) || !File.Exists(absoluteExcelPath))
             {
@@ -51,6 +56,11 @@ namespace ASB.ExcelImport.Editor
                         continue;
                     }
 
+                    if (sheetNames != null && !sheetNames.Contains(sheet.SheetName))
+                    {
+                        continue;
+                    }
+
                     ExcelSheetMarkerState markerState = GetMarkerState(sheet);
                     if (markerState == ExcelSheetMarkerState.Complete)
                     {
@@ -60,6 +70,7 @@ namespace ASB.ExcelImport.Editor
                     if (markerState == ExcelSheetMarkerState.Partial)
                     {
                         Debug.LogError($"[ExcelRawImport] Sheet '{sheet.SheetName}' has partial markers. Fix #Type/#Name/#Data before importing.");
+                        partialMarkerSheets?.Add(sheet.SheetName);
                         continue;
                     }
 
@@ -67,8 +78,13 @@ namespace ASB.ExcelImport.Editor
                 }
             }
 
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            // 프로젝트 전체 SaveAssets/Refresh는 사용자의 다른 미저장 에셋까지 저장하거나
+            // 고치던 스크립트의 컴파일을 일으킬 수 있으므로, 여기서 만든 Raw만 저장한다.
+            for (int i = 0; i < imported.Count; i++)
+            {
+                AssetDatabase.SaveAssetIfDirty(imported[i]);
+            }
+
             return imported;
         }
 
