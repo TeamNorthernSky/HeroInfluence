@@ -7,7 +7,7 @@ namespace JC.BattleTesting
 {
     // 위치 선정 및 원본 지형 변환이 끝난 외형에만 적용하는 전투 전용 후처리입니다.
     [ExecuteAlways]
-    public sealed class JcBattleSurfaceDressing : MonoBehaviour
+    public sealed partial class JcBattleSurfaceDressing : MonoBehaviour
     {
         readonly List<Object> owned=new List<Object>();
         public int RoadCount {get;private set;}
@@ -31,6 +31,7 @@ namespace JC.BattleTesting
         void Build(JcBattleSurfaceProfile p,int seed,Vector3[] cameras,bool scatter)
         {
             var filters=GetComponentsInChildren<MeshFilter>();
+            if(GetComponent<JcDynamicBattleOutput>()!=null)PrepareLeftVerge(filters,p);
             foreach(var f in filters)
             {
                 var r=f.GetComponent<MeshRenderer>();if(r==null||f.sharedMesh==null)continue;
@@ -109,6 +110,7 @@ namespace JC.BattleTesting
                 }
             }
             if(grass.Count==0){ScatterReport="풀밭 후보 없음";return;}
+            if(leftVerge)PlantVergeGrass(grass,p,seed,cameras);
             var prefabs=p.naturePrefabs.Where(x=>x!=null).ToArray();if(prefabs.Length==0)return;
             var dynamicOutput=GetComponent<JcDynamicBattleOutput>();
             var obstacles=filters.Where(f=>!f.name.Contains("TileChunk_")).Select(f=>f.GetComponent<Renderer>())
@@ -116,13 +118,23 @@ namespace JC.BattleTesting
             var occupied=new List<Vector3>();var random=new System.Random(unchecked(seed+p.seed));
             var group=new GameObject("JC_BattleNature"){hideFlags=HideFlags.DontSave};group.transform.SetParent(transform,false);
             int limit=Mathf.Min(p.propLimit,Mathf.FloorToInt(area/(p.propSpacing*p.propSpacing*3)));
-            int near=0,footprint=0,obstacle=0,view=0,empty=0;
-            for(int attempt=0;attempt<1600&&NatureCount<limit;attempt++)
+            int near=0,footprint=0,obstacle=0,view=0,empty=0,extraTrees=0;
+            var vergeGrass=grass.Where(t=>leftVerge&&Mathf.Min(t.a.x,t.b.x,t.c.x)<vergeEdge).ToArray();
+            for(int attempt=0;attempt<(leftVerge?3200:1600);attempt++)
             {
-                float choose=(float)random.NextDouble()*area;int index=grass.FindIndex(t=>t.cumulative>=choose);var tri=grass[Mathf.Max(0,index)];
+                bool extra=attempt>=1600;
+                if(!extra&&NatureCount>=limit)continue;
+                if(extra&&(extraTrees>=p.leftExtraTreeLimit||vergeGrass.Length==0))break;
+                float choose=(float)random.NextDouble()*area;int index=grass.FindIndex(t=>t.cumulative>=choose);
+                var tri=extra?vergeGrass[random.Next(vergeGrass.Length)]:grass[Mathf.Max(0,index)];
                 float u=Mathf.Sqrt((float)random.NextDouble()),v=(float)random.NextDouble();var pos=(1-u)*tri.a+u*(1-v)*tri.b+u*v*tri.c;
+                if(extra&&(pos.x>vergeEdge-.8f||pos.x<vergeEdge-18||Mathf.Abs(pos.z)>35))continue;
                 if(pos.sqrMagnitude>65*65||(Mathf.Abs(pos.x)<8&&Mathf.Abs(pos.z)<22)||occupied.Any(x=>(x-pos).sqrMagnitude<p.propSpacing*p.propSpacing)){near++;continue;}
-                var prefab=prefabs[random.Next(prefabs.Length)];var renderers=prefab.GetComponentsInChildren<MeshRenderer>();if(renderers.Length==0)continue;
+                bool verge=leftVerge&&pos.x<vergeEdge;
+                if(verge&&UnderVergeSlope(pos))continue;
+                var choices=verge?prefabs.Where(x=>x.name.StartsWith("Tree",StringComparison.OrdinalIgnoreCase)).ToArray():prefabs;
+                if(choices.Length==0)continue;
+                var prefab=choices[random.Next(choices.Length)];var renderers=prefab.GetComponentsInChildren<MeshRenderer>();if(renderers.Length==0)continue;
                 Bounds local=new Bounds();bool has=false;
                 foreach(var rr in renderers)
                 {
@@ -141,7 +153,7 @@ namespace JC.BattleTesting
                 if(!safe){footprint++;continue;}
                 var bounds=new Bounds(pos+Vector3.up*height*.5f,new Vector3(radius*2,height,radius*2));
                 // 산 메시의 평평한 야지 위에 놓을 때 지지면 자체를 장애물로 판정하지 않습니다.
-                if(obstacles.Any(r=>r!=tri.support&&r.bounds.Intersects(bounds))){obstacle++;continue;}
+                if(obstacles.Any(r=>r!=tri.support&&!(verge&&r.name.StartsWith("Mount",StringComparison.OrdinalIgnoreCase))&&r.bounds.Intersects(bounds))){obstacle++;continue;}
                 if(cameras!=null)foreach(var eye in cameras)foreach(float x in new[]{-3.3f,0,3.3f})foreach(float z in new[]{-7.3f,-4f,4f,7.3f})
                 {var delta=new Vector3(x,1.3f,z)-eye;var expanded=bounds;expanded.Expand(1);if(expanded.Contains(eye)||(expanded.IntersectRay(new Ray(eye,delta.normalized),out float hit)&&hit<delta.magnitude))safe=false;}
                 if(!safe){view++;continue;}
@@ -154,7 +166,7 @@ namespace JC.BattleTesting
                     child.transform.localRotation=Quaternion.Inverse(prefab.transform.rotation)*rr.transform.rotation;child.transform.localScale=rr.transform.lossyScale;
                     child.AddComponent<MeshFilter>().sharedMesh=mf.sharedMesh;child.AddComponent<MeshRenderer>().sharedMaterials=rr.sharedMaterials;
                 }
-                occupied.Add(pos);NatureCount++;
+                occupied.Add(pos);NatureCount++;if(extra)extraTrees++;
             }
             ScatterReport=$"풀밭 면적 {area:F0}, 목표 {limit}, 배치 {NatureCount}, 거리 제외 {near}, 경계 제외 {footprint}, 장애물 제외 {obstacle}, 시야 제외 {view}, 빈 메시 {empty}";
         }
