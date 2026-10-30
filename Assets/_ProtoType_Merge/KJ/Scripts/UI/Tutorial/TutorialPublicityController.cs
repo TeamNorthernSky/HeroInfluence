@@ -10,6 +10,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     public enum PracticeInput { Unrestricted, Blocked, HeroSelection, Count, Max, Confirm, Close, CountAndConfirm }
     private PracticeInput practiceInput;
     private int practiceCount = PracticeCount;
+    private bool countAdjustedByPlayer, updatingSlider;
     public int MaximizeCount { get; private set; }
     public Button ConfirmButton => btnConfirm;
     public Button CloseButton => btnClose;
@@ -39,7 +40,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     // 독립 Count 실습의 main 잠금은 보존하되 첫 자유 조절 실습은 20 도달 후에도 낮출 수 있습니다.
     private bool PracticeCountReached => practiceInput == PracticeInput.Count && count >= practiceCount;
     // 횟수 제한은 첫 수동 실습에만 적용합니다. 이후 MAX 확정은 남은 실제 횟수를 사용합니다.
-    private bool MatchesPracticeCount => !IsCountPractice || (count >= 1 && count <= practiceCount);
+    private bool MatchesPracticeCount => !IsCountPractice || (countAdjustedByPlayer && count >= 1 && count <= practiceCount);
     private Image practiceLimitShade;
     private float limitFeedbackUntil;
     [SerializeField, Tooltip("첫 실습에서 20 초과 입력을 시도하면 표시하는 비차단 안내 패널입니다.")]
@@ -48,6 +49,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     private float limitNoticeDuration = 3f;
     public void SetPracticeInput(PracticeInput input, int targetCount = PracticeCount)
     {
+        if (practiceInput != input) countAdjustedByPlayer = false;
         practiceInput = input;
         practiceCount = targetCount > 0 ? targetCount : PracticeCount;
         if (IsCountPractice && !string.IsNullOrEmpty(SelectedKey))
@@ -59,6 +61,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
 
     public void ResetPracticeInput()
     {
+        countAdjustedByPlayer = false;
         practiceInput = PracticeInput.Unrestricted;
         practiceCount = PracticeCount;
         limitFeedbackUntil = 0f;
@@ -115,6 +118,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (progressSlider != null) progressSlider.onValueChanged.RemoveListener(OnSliderChanged);
         SelectedKey = null;
         count = 0;
+        countAdjustedByPlayer = false;
         limitFeedbackUntil = 0f;
         if (practiceLimitNotice != null) practiceLimitNotice.SetActive(false);
         if (practiceLimitShade != null) practiceLimitShade.gameObject.SetActive(false);
@@ -178,8 +182,8 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
 
     public void ClearHeroSelection() { if (!Allows(PracticeInput.HeroSelection)) return; SelectedKey = null; count = 0; Refresh(); }
     public void CloseModal() { if (Allows(PracticeInput.Close) && modalPublicityRoot != null) modalPublicityRoot.SetActive(false); }
-    private void Decrease() => SetCount(count - 1);
-    private void Increase() => SetCount(count + 1);
+    private void Decrease() => SetCountFromPlayer(count - 1);
+    private void Increase() => SetCountFromPlayer(count + 1);
     private void Maximize()
     {
         if (!Allows(PracticeInput.Max)) return;
@@ -187,7 +191,15 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         MaximizeCount++;
         Refresh();
     }
-    private void OnSliderChanged(float value) => SetCount(Mathf.RoundToInt(value));
+    private void OnSliderChanged(float value)
+    {
+        if (!updatingSlider) SetCountFromPlayer(Mathf.RoundToInt(value));
+    }
+    private void SetCountFromPlayer(int value)
+    {
+        if (Allows(PracticeInput.Count) && !PracticeCountReached) countAdjustedByPlayer = true;
+        SetCount(value);
+    }
     public void SetCount(int value)
     {
         if (!Allows(PracticeInput.Count) || PracticeCountReached) { Refresh(); return; }
@@ -290,11 +302,17 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (totalCostValueText != null) totalCostValueText.text = $"{cost:N0}";
         if (progressSlider != null)
         {
-            progressSlider.wholeNumbers = true;
-            progressSlider.minValue = IsCountPractice ? 1 : 0;
-            // 20 초과 구간은 음영 표시하고 첫 실습의 입력을 차단한다.
-            progressSlider.maxValue = TutorialMaxIp;
-            progressSlider.SetValueWithoutNotify(count);
+            // 범위 초기화로 발생하는 onValueChanged는 사용자 조작으로 세지 않는다.
+            updatingSlider = true;
+            try
+            {
+                progressSlider.wholeNumbers = true;
+                progressSlider.minValue = IsCountPractice ? 1 : 0;
+                // 20 초과 구간은 음영 표시하고 첫 실습의 입력을 차단한다.
+                progressSlider.maxValue = TutorialMaxIp;
+                progressSlider.SetValueWithoutNotify(count);
+            }
+            finally { updatingSlider = false; }
             progressSlider.interactable = maximum > 0 && Allows(PracticeInput.Count) && !PracticeCountReached;
             if (CountCaption != null) CountCaption.text = $"{count} / {AvailableCount}";
         }

@@ -65,6 +65,8 @@ public class BattleSceneManager : MonoBehaviour
     /// <summary>소환된 적 전투체 목록.</summary>
     public IReadOnlyList<BattleCharactor> EnemyBattleCharactors => enemyBattleCharactors;
 
+    public bool IsVisualPreparationPending { get; private set; }
+
     private void OnEnable()
     {
         if (battleFlowManager != null)
@@ -388,7 +390,7 @@ public class BattleSceneManager : MonoBehaviour
         returnSceneCoroutine = null;
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
         JC.BattleTesting.JcBattleHudEntryGate.Install(gameObject.scene, battleFlowManager);
         CombatContext combatContext = CombatContext.Instance;
@@ -400,7 +402,7 @@ public class BattleSceneManager : MonoBehaviour
             Debug.LogError($"[BattleSceneManager] {error}", this);
             if (isEventBattle)
                 AbortEventBattleSetup(combatContext, error);
-            return;
+            yield break;
         }
 
         playerBattleCharactor = null;
@@ -416,7 +418,7 @@ public class BattleSceneManager : MonoBehaviour
             !TryPrepareEventSlotMap(combatContext, out eventSlotMap, out string slotMapError))
         {
             AbortEventBattleSetup(combatContext, slotMapError);
-            return;
+            yield break;
         }
 
         playerSpawner?.ManualSpawn();
@@ -433,7 +435,7 @@ public class BattleSceneManager : MonoBehaviour
                     out EnemySpawnPlan eventPlan, out string planError))
             {
                 AbortEventBattleSetup(combatContext, planError);
-                return;
+                yield break;
             }
 
             if (enemySpawner == null || !enemySpawner.SpawnFromPreparedPlan(eventPlan))
@@ -441,7 +443,7 @@ public class BattleSceneManager : MonoBehaviour
                 AbortEventBattleSetup(
                     combatContext,
                     $"No complete event combat enemy set was spawned. Battle={eventBattle.BattleKey}");
-                return;
+                yield break;
             }
 
             scenario = eventPlan.Scenario;
@@ -460,7 +462,7 @@ public class BattleSceneManager : MonoBehaviour
                     ? hostageScenarioController.InitializationError
                     : "Hostage scenario controller could not be created.";
                 AbortEventBattleSetup(combatContext, hostageError);
-                return;
+                yield break;
             }
         }
 
@@ -472,7 +474,7 @@ public class BattleSceneManager : MonoBehaviour
             Debug.LogWarning($"[BattleSceneManager] {error}", this);
             if (isEventBattle)
                 AbortEventBattleSetup(combatContext, error);
-            return;
+            yield break;
         }
 
         // 그리드 ↔ 유닛 점유 동기화 후, 각 BattleCharactor.Initialize()로 스탯·스킬·무기 확정
@@ -504,13 +506,19 @@ public class BattleSceneManager : MonoBehaviour
                     $"Event battle participant validation failed. " +
                     $"Players={playerBattleCharactors.Count}, Enemies={enemyBattleCharactors.Count}, " +
                     $"HasAlivePlayer={hasAlivePlayer}, HasAliveEnemy={hasAliveEnemy}");
-                return;
+                yield break;
             }
         }
 
         var allUnits = new List<BattleCharactor>(playerBattleCharactors.Count + enemyBattleCharactors.Count);
         allUnits.AddRange(playerBattleCharactors);
         allUnits.AddRange(enemyBattleCharactors);
+
+#if !UNITY_EDITOR
+        IsVisualPreparationPending = true;
+        try { yield return BattleEffectWarmup.PrepareBattle(allUnits); }
+        finally { IsVisualPreparationPending = false; }
+#endif
 
         // Flow는 먼저 참가자만 초기화하고 멈춰 둔다. TutorialBattleDirector가 첫 턴 이벤트보다
         // 먼저 구독하고 입장 단계를 실행한 다음, 공통 전투 루프를 한 번만 시작한다.
@@ -595,6 +603,7 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         battleFlowManager.StartBattleLoop();
+        yield break;
     }
 
     private static float CalculateInitialEnemyExperience(IReadOnlyList<BattleCharactor> enemies)
