@@ -42,12 +42,8 @@ public class TutorialCutSceneManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (transitioning) return;
-        if (skipPopup != null && skipPopup.activeSelf)
-        {
-            if (Input.GetKeyDown(KeyCode.Escape)) CloseSkipPopup();
-            return;
-        }
+        if (transitioning || Input.GetKeyDown(KeyCode.Escape)) return;
+        if (skipPopup != null && skipPopup.activeSelf) return;
         if (Time.frameCount == popupClosedFrame) return;
         // Button clicks belong to the UI, not to the cutscene's advance input.
         if (Input.GetMouseButtonDown(0) && IsPointerOverButton()) return;
@@ -80,6 +76,25 @@ public class TutorialCutSceneManager : MonoBehaviour
                     break;
             }
         }
+    }
+
+    /// <summary>공통 메뉴보다 먼저 컷신의 Esc 입력을 처리한다.</summary>
+    public static bool HandleEscape()
+    {
+        var cutscene = FindFirstObjectByType<TutorialCutSceneManager>();
+        if (cutscene == null || !cutscene.isActiveAndEnabled ||
+            cutscene.gameObject.scene != SceneManager.GetActiveScene() ||
+            (cutscene.currentCutSceneState != CutScene.Opening && cutscene.currentCutSceneState != CutScene.Ending))
+            return false;
+
+        if (!cutscene.transitioning)
+        {
+            if (cutscene.skipPopup != null && cutscene.skipPopup.activeSelf)
+                cutscene.CloseSkipPopup();
+            else
+                cutscene.ShowSkipPopup();
+        }
+        return true;
     }
 
     private bool IsPointerOverButton()

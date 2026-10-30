@@ -23,19 +23,13 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
     private TMP_Text titleText;
     private GameObject panelRoot;
     private TMP_Text messageText;
-    private TMP_Text costAmountText;
-    private TMP_Text resultAmountText;
-    private Image costIcon;
-    private Image resultIcon;
+    private readonly List<PreviewSlot> costSlots = new List<PreviewSlot>();
+    private readonly List<PreviewSlot> rewardSlots = new List<PreviewSlot>();
     private Button proceedButton;
     private Button declineButton;
     private TMP_Text proceedText;
     private TMP_Text declineText;
 
-    private Image secondResultIcon;
-    private TMP_Text secondResultAmountText;
-    private Vector2 resultIconPosition;
-    private Vector2 resultAmountPosition;
     private DHWorldEventRuntimeManager manager;
     private DHWorldEventPresentationRequest currentRequest;
     private int selectionFrame = -1;
@@ -145,46 +139,42 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         RenderPreview(request.PreviewEntries);
     }
 
+    private sealed class PreviewSlot
+    {
+        public GameObject Root;
+        public Image Icon;
+        public TMP_Text Amount;
+    }
+
     private void RenderPreview(IReadOnlyList<DHWorldEventPreviewEntry> entries)
     {
-        DHWorldEventPreviewEntry cost = null;
-        var results = new List<DHWorldEventPreviewEntry>(2);
-
+        int costIndex = 0;
+        int rewardIndex = 0;
         for (int i = 0; i < entries.Count; i++)
         {
             DHWorldEventPreviewEntry entry = entries[i];
-            if (entry.Group == DHWorldEventPreviewGroup.Cost && cost == null)
-                cost = entry;
-            else if (entry.Group != DHWorldEventPreviewGroup.Cost && results.Count < 2)
-                results.Add(entry);
+            bool isCost = entry.Group == DHWorldEventPreviewGroup.Cost;
+            List<PreviewSlot> slots = isCost ? costSlots : rewardSlots;
+            int index = isCost ? costIndex++ : rewardIndex++;
+            if (index < slots.Count)
+                ApplyPreview(slots[index], entry, !isCost);
         }
 
-        ApplyPreview(costIcon, costAmountText, cost, false);
-        ApplyPreview(resultIcon, resultAmountText, results.Count > 0 ? results[0] : null, true);
-
-        EnsureSecondResultView();
-        ApplyPreview(secondResultIcon, secondResultAmountText, results.Count > 1 ? results[1] : null, true);
-
-        bool hasSecondResult = results.Count > 1;
-        float y = hasSecondResult ? 35f : 0f;
-        resultIcon.rectTransform.anchoredPosition = resultIconPosition + Vector2.up * y;
-        resultAmountText.rectTransform.anchoredPosition = resultAmountPosition + Vector2.up * y;
-        secondResultIcon.rectTransform.anchoredPosition = resultIconPosition + Vector2.down * 35f;
-        secondResultAmountText.rectTransform.anchoredPosition = resultAmountPosition + Vector2.down * 35f;
+        for (int i = costIndex; i < costSlots.Count; i++)
+            costSlots[i].Root.SetActive(false);
+        for (int i = rewardIndex; i < rewardSlots.Count; i++)
+            rewardSlots[i].Root.SetActive(false);
     }
 
-    private void ApplyPreview(Image icon, TMP_Text amountText, DHWorldEventPreviewEntry entry, bool signed)
+    private void ApplyPreview(PreviewSlot slot, DHWorldEventPreviewEntry entry, bool signed)
     {
-        bool visible = entry != null;
-        icon.gameObject.SetActive(visible);
-        amountText.gameObject.SetActive(visible);
-        if (!visible)
-            return;
-
-        icon.sprite = ResolveIcon(entry);
-        icon.enabled = icon.sprite != null;
-        amountText.text = signed && entry.Amount > 0 ? entry.Amount.ToString() : entry.Amount.ToString();
-        amountText.color = signed && entry.Amount < 0 ? NegativeAmountColor : PositiveAmountColor;
+        slot.Root.SetActive(true);
+        slot.Icon.sprite = ResolveIcon(entry);
+        slot.Icon.enabled = slot.Icon.sprite != null;
+        slot.Amount.text = signed
+            ? entry.Amount.ToString("+0;-0;+0")
+            : "-" + System.Math.Abs((long)entry.Amount).ToString();
+        slot.Amount.color = signed && entry.Amount < 0 ? NegativeAmountColor : PositiveAmountColor;
     }
 
     private Sprite ResolveIcon(DHWorldEventPreviewEntry entry)
@@ -263,43 +253,35 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         declineText = declineButton.GetComponentInChildren<TMP_Text>(true);
         proceedPosition = ((RectTransform)proceedButton.transform).anchoredPosition;
         confirmPosition = (proceedPosition + ((RectTransform)declineButton.transform).anchoredPosition) * 0.5f;
-        costIcon = FindDirect<Image>("ResourceIcon");
-        resultIcon = FindDirect<Image>("RewardIcon") ?? FindDirect<Image>("EffectIcon");
         messageText = FindDirect<TMP_Text>("world_event_description");
-        costAmountText = FindDirect<TMP_Text>("Consumed Resources");
-        resultAmountText = FindDirect<TMP_Text>("Rewards");
-
-        // 구 프리팹의 직속 텍스트만 위치로 보완한다. 새 그룹의 로컬 좌표는 사용하지 않는다.
-        TMP_Text[] labels = panelRoot.GetComponentsInChildren<TMP_Text>(true);
-        for (int i = 0; i < labels.Length; i++)
-        {
-            TMP_Text label = labels[i];
-            if (label == titleText || label == proceedText || label == declineText || label.transform.parent != panel)
-                continue;
-
-            float x = label.rectTransform.anchoredPosition.x;
-            float y = label.rectTransform.anchoredPosition.y;
-            if (y > -300f && messageText == null)
-                messageText = label;
-            else if (y <= -300f && x < 600f && costAmountText == null)
-                costAmountText = label;
-            else if (y <= -300f && x >= 600f && resultAmountText == null)
-                resultAmountText = label;
-        }
-
-        resultIconPosition = resultIcon.rectTransform.anchoredPosition;
-        resultAmountPosition = resultAmountText.rectTransform.anchoredPosition;
+        ResolvePreviewSlots(panel);
     }
 
-    private void EnsureSecondResultView()
+    private void ResolvePreviewSlots(Transform panel)
     {
-        if (secondResultIcon != null)
-            return;
+        costSlots.Clear();
+        rewardSlots.Clear();
+        // 계층의 순서대로 사용하며 프리팹에 배치한 위치와 크기를 유지한다.
+        foreach (Transform child in panel)
+        {
+            string slotName = child.name.Replace(" ", string.Empty);
+            bool isCost = slotName.StartsWith("ConsumedResources", System.StringComparison.Ordinal);
+            bool isReward = slotName.StartsWith("Rewards", System.StringComparison.Ordinal);
+            if (!isCost && !isReward) continue;
 
-        secondResultIcon = Instantiate(resultIcon, resultIcon.transform.parent);
-        secondResultIcon.name = "EffectIcon_2";
-        secondResultAmountText = Instantiate(resultAmountText, resultAmountText.transform.parent);
-        secondResultAmountText.name = "EffectAmountText_2";
+            var slot = new PreviewSlot
+            {
+                Root = child.gameObject,
+                Icon = child.GetComponentInChildren<Image>(true),
+                Amount = child.GetComponentInChildren<TMP_Text>(true)
+            };
+            if (slot.Icon == null || slot.Amount == null)
+            {
+                Debug.LogError($"[{nameof(WorldEventConsumePanelController)}] {child.name} requires an icon and amount text.", child);
+                continue;
+            }
+            (isCost ? costSlots : rewardSlots).Add(slot);
+        }
     }
 
     private T FindDirect<T>(string objectName) where T : Component
