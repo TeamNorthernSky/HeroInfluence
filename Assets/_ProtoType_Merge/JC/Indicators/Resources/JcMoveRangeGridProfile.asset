@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db12cb93f2874be88c6ac00560b98461, type: 3}
   m_Name: JcMoveRangeGridProfile
   m_EditorClassIdentifier: 
-  gridColor: {r: 0, g: 0.66666657, b: 0.013071853, a: 1}
-  gridOpacity: 0.051
-  gridEmissionIntensity: 6.5
-  gridWidth: 0.01
+  gridColor: {r: 0.4528302, g: 0.43098482, b: 0.39943042, a: 1}
+  gridOpacity: 0.073
+  gridEmissionIntensity: 6.41
+  gridWidth: 0.06
   gridEdgeSoftness: 0.3
   lineYOffset: 0.035
   curtainHeight: 0.28

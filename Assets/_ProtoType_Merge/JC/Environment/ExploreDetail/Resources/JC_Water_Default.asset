@@ -15,48 +15,48 @@ MonoBehaviour:
   settings:
     baseColor: {r: 0.21306513, g: 0.480475, b: 0.7924528, a: 1}
     edgeColor: {r: 0.42172483, g: 0.5658475, b: 0.764151, a: 1}
-    edgeColorWidth: 0.72
-    edgeVariation: 0.65
-    edgeVariationSize: 3.5
-    surfaceOpacity: 0.52
-    depthAbsorption: 0.65
-    basinDepth: 3.35
+    edgeColorWidth: 0.15
+    edgeVariation: 0.401
+    edgeVariationSize: 8.29
+    surfaceOpacity: 0.734
+    depthAbsorption: 0.48
+    basinDepth: 3.18
     basinColor: {r: 0.075, g: 0.17, b: 0.22, a: 1}
     underwaterCapsule: 1
-    capsuleDepth: 0.35
+    capsuleDepth: 0.369
     capsuleSpeed: 0.65
     broadNormal: {fileID: 2800000, guid: b1d4c7bc3cf2a2d47a5ed2f6c8d71737, type: 3}
     detailNormal: {fileID: 2800000, guid: e9797cd51921c6a409427a98e1cd7f7e, type: 3}
-    broadNormalStrength: 0.503
-    detailNormalStrength: 0.207
-    detailNormalSize: 0.56
-    rippleSpeed: 0.277
+    broadNormalStrength: 0.087
+    detailNormalStrength: 0.025
+    detailNormalSize: 1.145
+    rippleSpeed: 1
     directionalWaveMix: 0
-    waveElongation: 5
-    waveBendStrength: 0.65
-    waveBendSize: 4
+    waveElongation: 1.05
+    waveBendStrength: 0
+    waveBendSize: 0.5
     waveBendSpeed: 0.08
     directionalWaveAngle: 0
-    waveShading: 0.455
-    waveShadeSize: 2.56
-    waveShadeSoftness: 0.863
-    highlightStrength: 7.01
-    highlightRoughness: 0.444
-    highlightSoftness: 0.756
-    sparkleStrength: 1.6
-    fakeHighlightStrength: 0.29
+    waveShading: 0.579
+    waveShadeSize: 6
+    waveShadeSoftness: 1
+    highlightStrength: 0.12
+    highlightRoughness: 0.206
+    highlightSoftness: 0.195
+    sparkleStrength: 0.497
+    fakeHighlightStrength: 0.23
     fakeHighlightColor: {r: 0.7, g: 0.85, b: 1, a: 1}
     fakeHighlightWidth: 0.112
     fakeHighlightTilt: 0.056
-    fakeHighlightShadow: 0.238
+    fakeHighlightShadow: 0.067
     followCanal: 1
     direction: {x: 1, y: 0}
-    flowSpeed: 0.331
+    flowSpeed: 0.231
     shadowStrength: 0.414
-    reflection: 0.374
-    reflectionClarity: 0.571
-    reflectionFresnel: 0.45
-    reflectionDistortion: 0.012
+    reflection: 0
+    reflectionClarity: 0.357
+    reflectionFresnel: 0.139
+    reflectionDistortion: 0.0082
     planarReflection: 1
     reflectionResolution: 512
     reflectionUpdateInterval: 1
