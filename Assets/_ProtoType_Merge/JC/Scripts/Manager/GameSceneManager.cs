@@ -66,7 +66,7 @@ public class GameSceneManager : MonoBehaviour
         SceneFadeController.LoadSceneWithFadeIfNeeded(sceneName, mode);
     }
 
-    public AsyncOperation LoadSceneAsync(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
+    public SceneFadeController.SceneLoadRequest LoadSceneAsync(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
     {
         if (string.IsNullOrWhiteSpace(sceneName))
             return null;

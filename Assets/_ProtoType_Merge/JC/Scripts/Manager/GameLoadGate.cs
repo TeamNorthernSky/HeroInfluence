@@ -45,6 +45,7 @@ public class GameLoadGate : MonoBehaviour
 
     private IEnumerator RunGate()
     {
+        yield return SceneFadeController.PresentLoadingScreen();
         Debug.Log("[GameLoadGate] Begin. Loading DHScene additive...");
 
         // [KJ 260714] 이어하기 여부 확정 후 플래그 소비(재진입/새게임 시 stale 방지).
@@ -93,10 +94,20 @@ public class GameLoadGate : MonoBehaviour
         {
             if (entryOwner != null) entryOwner.CancelExplorationEntry(entryVersion);
             entryPending = false;
+            if (isContinue) DHGameStateRestoreService.CompleteRestoreSession(captureTurnStartSnapshot: false);
+            if (restoreData != null) UnityEngine.Object.Destroy(restoreData);
             Debug.LogError($"[GameLoadGate] {dhSceneName} 로드 실패. Build Settings 확인");
             yield break;
         }
         while (!op.isDone) yield return null;
+        if (op.Failed)
+        {
+            if (entryOwner != null) entryOwner.CancelExplorationEntry(entryVersion);
+            entryPending = false;
+            if (isContinue) DHGameStateRestoreService.CompleteRestoreSession(captureTurnStartSnapshot: false);
+            if (restoreData != null) UnityEngine.Object.Destroy(restoreData);
+            yield break;
+        }
 
         // 이전 진입이 진행되는 동안 새 게임이 시작됐다면 이전 작업으로 새 세션을 덮어쓰지 않는다.
         if (entryOwner != null && entryOwner.ExplorationEntryVersion != entryVersion)

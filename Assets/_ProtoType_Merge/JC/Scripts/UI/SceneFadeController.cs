@@ -10,7 +10,7 @@ using UnityEngine.UI;
 /// API:
 ///   FadeOut(duration) — 알파 0→1
 ///   FadeIn(duration) — 알파 1→0
-///   FadeToScene(name, outDur, inDur) — Out과 비동기 로드 병행 → 활성화 → 준비 후 In
+///   FadeToScene(name, outDur, inDur) — 로딩 화면 출력 → 준비 작업 → 비동기 로드 → 준비 후 In
 /// </summary>
 [DisallowMultipleComponent]
 public class SceneFadeController : MonoBehaviour
@@ -48,8 +48,23 @@ public class SceneFadeController : MonoBehaviour
     private bool transitioning;
     private AsyncOperation loadingOperation;
     private string loadingSceneName;
-    private LoadSceneMode loadingMode;
     private Coroutine entryRoutine;
+    private SceneLoadRequest loadRequest;
+    private GameObject selectionBeforeLoad;
+    public static event Action<Scene> TransitionFailed;
+
+    // Unity AsyncOperation은 실제 로드 시작 전에 만들 수 없습니다. 대기 호출부에는
+    // 준비 구간까지 포함하는 핸들을 반환하며, 씬 활성화 완료 시 기존처럼 대기가 끝납니다.
+    public sealed class SceneLoadRequest : CustomYieldInstruction
+    {
+        internal AsyncOperation operation;
+        public bool Failed { get; internal set; }
+        public bool isDone => Failed || (operation != null && operation.isDone);
+        public override bool keepWaiting => !isDone;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetTransitionCallbacks() => TransitionFailed = null;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void RegisterSceneFade()
@@ -77,57 +92,105 @@ public class SceneFadeController : MonoBehaviour
         LoadSceneAsyncWithFade(sceneName, mode);
     }
 
-    // AsyncOperation을 유지하되, 검정 화면이 된 후에만 새 씬을 활성화한다.
-    public static AsyncOperation LoadSceneAsyncWithFade(string sceneName, LoadSceneMode mode = LoadSceneMode.Single,
-        float fadeOutDuration = 1f, float fadeInDuration = 1f)
+    // prepare는 로딩 화면을 렌더한 뒤, 기존 씬을 유지한 채 실행합니다.
+    // false/예외면 씬을 로드하지 않고 onFailed와 입력/화면 복구를 수행합니다.
+    public static SceneLoadRequest LoadSceneAsyncWithFade(string sceneName, LoadSceneMode mode = LoadSceneMode.Single,
+        float fadeOutDuration = 1f, float fadeInDuration = 1f,
+        Func<bool> prepare = null, Action onFailed = null)
     {
-        return EnsureInstance().BeginSceneLoad(sceneName, mode, fadeOutDuration, fadeInDuration);
+        return EnsureInstance().BeginSceneLoad(sceneName, mode, fadeOutDuration, fadeInDuration, prepare, onFailed);
     }
 
-    private AsyncOperation BeginSceneLoad(string sceneName, LoadSceneMode mode, float outDuration, float inDuration)
+    private SceneLoadRequest BeginSceneLoad(string sceneName, LoadSceneMode mode, float outDuration, float inDuration,
+        Func<bool> prepare = null, Action onFailed = null)
     {
         if (!CanLoad(sceneName)) return null;
+        // 준비 콜백이 다른 요청의 컨텍스트를 덮어쓰지 않도록 중복 요청은 모두 거절합니다.
         if (transitioning)
         {
-            // 다른 전환의 핸들을 반환해 호출부가 성공으로 오인하지 않도록 한다.
-            if (string.Equals(loadingSceneName, sceneName, StringComparison.OrdinalIgnoreCase) && loadingMode == mode)
-                return loadingOperation;
             Debug.LogWarning($"Scene transition already in progress: {loadingSceneName} → request ignored: {sceneName}");
             return null;
         }
-        // Boot를 거치지 않은 직접 씬 실행도 지원한다. 활성화 대기 중 새 ResourceRequest를
-        // 기다리면 Unity 비동기 큐가 막힐 수 있으므로 반드시 씬 로드 시작 전에 준비한다.
-        Sprites.Library.PrepareCommonUI();
-        AsyncOperation operation;
-        try { operation = SceneManager.LoadSceneAsync(sceneName, mode); }
-        catch (Exception exception) { Debug.LogException(exception); return null; }
-        if (operation == null) return null;
-        operation.allowSceneActivation = false;
         if (entryRoutine != null) { StopCoroutine(entryRoutine); entryRoutine = null; }
+        if (activeRoutine != null) { StopCoroutine(activeRoutine); activeRoutine = null; }
         EnsureOverlay();
         AudioManager.Instance?.PrepareSceneBgmTransition(sceneName);
-        loadingOperation = operation;
+        var request = new SceneLoadRequest();
+        loadRequest = request;
         loadingSceneName = sceneName;
-        loadingMode = mode;
         pendingFadeInDuration = inDuration > 0f ? inDuration : 1f;
         transitioning = true;
+        var events = UnityEngine.EventSystems.EventSystem.current;
+        selectionBeforeLoad = events != null ? events.currentSelectedGameObject : null;
+        if (events != null) events.SetSelectedGameObject(null);
+        overlay.raycastTarget = true;
         SetLoading(true);
-        StartCoroutine(ActivateAfterFade(operation, outDuration > 0f ? outDuration : 1f));
-        return operation;
+        StartCoroutine(LoadAfterPresentation(request, SceneManager.GetActiveScene(), sceneName, mode,
+            outDuration > 0f ? outDuration : 1f, prepare, onFailed));
+        return request;
     }
 
-    private IEnumerator ActivateAfterFade(AsyncOperation operation, float duration)
+    // ForceUpdateCanvases만으로는 화면에 출력되지 않습니다. 검정 화면과 문구를 설정한 뒤
+    // 두 프레임을 양보해 호출 위치와 관계없이 렌더링 기회를 보장합니다.
+    // GameView 비표시 상태에서도 진행할 수 있도록 WaitForEndOfFrame 대신 프레임 대기를 사용합니다.
+    public static IEnumerator PresentLoadingScreen(float duration = 0f)
     {
-        // 읽기는 이미 시작했다. 암전 상태라면 화면을 다시 밝히지 않는다.
-        if (overlay.color.a < 0.999f) yield return FadeOut(duration);
+        var fade = EnsureInstance();
+        fade.EnsureOverlay();
+        if (fade.entryRoutine != null) { fade.StopCoroutine(fade.entryRoutine); fade.entryRoutine = null; }
+        if (duration > 0f && fade.overlay.color.a < .999f) yield return fade.FadeOut(duration);
         else
         {
-            if (activeRoutine != null) { StopCoroutine(activeRoutine); activeRoutine = null; }
-            overlay.color = Color.black;
-            overlay.raycastTarget = true;
+            if (fade.activeRoutine != null) { fade.StopCoroutine(fade.activeRoutine); fade.activeRoutine = null; }
+            fade.overlay.color = Color.black;
         }
-        pendingFadeInOnSceneLoad = true;
-        operation.allowSceneActivation = true;
+        fade.overlay.raycastTarget = true;
+        fade.SetLoading(true);
+        fade.loadingLabel.gameObject.SetActive(true);
+        Canvas.ForceUpdateCanvases();
+        yield return null;
+        yield return null;
+    }
+
+    private IEnumerator LoadAfterPresentation(SceneLoadRequest request, Scene sourceScene, string sceneName,
+        LoadSceneMode mode, float duration, Func<bool> prepare, Action onFailed)
+    {
+        yield return PresentLoadingScreen(duration);
+        Exception failure = null;
+        try
+        {
+            if (prepare != null && !prepare()) throw new InvalidOperationException("Scene preparation failed: " + sceneName);
+            // 비동기 씬 큐가 시작되기 전에 리소스 준비를 마칩니다.
+            Sprites.Library.PrepareCommonUI();
+            AudioManager.Instance?.UpdateSceneBgmFade(0f);
+            pendingFadeInOnSceneLoad = true;
+            loadingOperation = SceneManager.LoadSceneAsync(sceneName, mode);
+            if (loadingOperation == null) throw new InvalidOperationException("Scene load failed: " + sceneName);
+            request.operation = loadingOperation;
+        }
+        catch (Exception exception) { failure = exception; }
+        if (failure != null)
+        {
+            Debug.LogException(failure);
+            request.Failed = true;
+            loadingOperation = null;
+            loadRequest = null;
+            pendingFadeInOnSceneLoad = false;
+            waitingForActivationHandle = 0;
+            transitioning = false;
+            try { onFailed?.Invoke(); }
+            catch (Exception exception) { Debug.LogException(exception); }
+            try { TransitionFailed?.Invoke(sourceScene); }
+            catch (Exception exception) { Debug.LogException(exception); }
+            // 실패한 준비 상태를 WaitForSceneReady로 기다리면 영구 암전될 수 있습니다.
+            activeRoutine = StartCoroutine(FadeRoutine(1f, 0f, .2f, true, () =>
+            {
+                var events = UnityEngine.EventSystems.EventSystem.current;
+                if (events != null && selectionBeforeLoad != null && selectionBeforeLoad.activeInHierarchy)
+                    events.SetSelectedGameObject(selectionBeforeLoad);
+                selectionBeforeLoad = null;
+            }, waitForReady: false));
+        }
     }
 
     private static bool CanLoad(string sceneName)
@@ -139,7 +202,7 @@ public class SceneFadeController : MonoBehaviour
     }
 
     /// <summary>[KJ 261002] 페이드아웃 완료 후 씬 활성화를 기다리는 중인지. GameSceneManager 중복 페이드 방지용.</summary>
-    public bool IsSceneLoadPending => pendingFadeInOnSceneLoad;
+    public bool IsSceneLoadPending => transitioning || pendingFadeInOnSceneLoad;
     public bool IsTransitioning => transitioning || activeRoutine != null || entryRoutine != null;
 
     private void Awake()
@@ -231,15 +294,17 @@ public class SceneFadeController : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (loadingOperation != null &&
+        if (loadRequest != null &&
             !string.Equals(scene.name, loadingSceneName, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(scene.path, loadingSceneName, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(scene.path, loadingSceneName + ".unity", StringComparison.OrdinalIgnoreCase)) return;
+        selectionBeforeLoad = null;
         if (mode == LoadSceneMode.Additive)
         {
             if (!pendingFadeInOnSceneLoad) return;
             pendingFadeInOnSceneLoad = false;
             loadingOperation = null;
+            loadRequest = null;
             if (SceneManager.GetActiveScene() != scene)
             {
                 waitingForActivationHandle = scene.handle;
@@ -253,6 +318,7 @@ public class SceneFadeController : MonoBehaviour
         pendingFadeInOnSceneLoad = false;
         waitingForActivationHandle = 0;
         loadingOperation = null;
+        loadRequest = null;
         transitioning = false;
         // GameLoadGate가 이어서 Additive 로드·저장 복원을 진행할 때는 암전을 유지한다.
         string gateScene = GameSceneManager.Instance != null ? GameSceneManager.Instance.GameLoadScene : "GameLoadScene";
@@ -317,14 +383,14 @@ public class SceneFadeController : MonoBehaviour
         return activeRoutine;
     }
 
-    private IEnumerator FadeRoutine(float from, float to, float duration, bool blockRaycast, Action onComplete, float holdDuration = 0f)
+    private IEnumerator FadeRoutine(float from, float to, float duration, bool blockRaycast, Action onComplete, float holdDuration = 0f, bool waitForReady = true)
     {
         if (to < .5f)
         {
             SetLoading(true);
             overlay.color = Color.black;
             overlay.raycastTarget = true;
-            yield return WaitForSceneReady();
+            if (waitForReady) yield return WaitForSceneReady();
         }
         overlay.color = new Color(0f, 0f, 0f, from);
         AudioManager.Instance?.UpdateSceneBgmFade(1f - from);

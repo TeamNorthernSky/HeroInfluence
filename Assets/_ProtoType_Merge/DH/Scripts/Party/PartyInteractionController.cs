@@ -39,6 +39,7 @@ public class PartyInteractionController
         this.ownerParty = ownerParty;
         this.coroutineOwner = coroutineOwner;
         this.currentGridProvider = currentGridProvider;
+        SceneFadeController.TransitionFailed += HandleTransitionFailed;
 
         if (this.ownerParty != null)
         {
@@ -132,8 +133,16 @@ public class PartyInteractionController
         IsInputLocked = combatStarted;
     }
 
+    private void HandleTransitionFailed(UnityEngine.SceneManagement.Scene sourceScene)
+    {
+        if (ownerParty == null || ownerParty.gameObject.scene != sourceScene) return;
+        IsInputLocked = false;
+        RequestMoveRangeRefresh();
+    }
+
     public void Dispose()
     {
+        SceneFadeController.TransitionFailed -= HandleTransitionFailed;
         CancelPendingInteraction();
         IsInputLocked = false;
         

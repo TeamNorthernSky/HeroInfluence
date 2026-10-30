@@ -383,7 +383,7 @@ public class BattleSceneManager : MonoBehaviour
         else if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadScene(target);
         else
-            UnityEngine.SceneManagement.SceneManager.LoadScene(target);
+            SceneFadeController.LoadSceneWithFadeIfNeeded(target);
 
         returnSceneCoroutine = null;
     }

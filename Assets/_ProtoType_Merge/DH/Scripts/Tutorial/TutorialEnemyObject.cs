@@ -54,8 +54,14 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
         ResolveReferences();
     }
 
+    private void HandleTransitionFailed(UnityEngine.SceneManagement.Scene sourceScene)
+    {
+        if (gameObject.scene == sourceScene) combatStarting = false;
+    }
+
     private void OnEnable()
     {
+        SceneFadeController.TransitionFailed += HandleTransitionFailed;
         ResolveReferences();
 
         if (disableWhenObjectMarkedInactive &&
@@ -71,6 +77,7 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
 
     private void OnDisable()
     {
+        SceneFadeController.TransitionFailed -= HandleTransitionFailed;
         ClearInteractionOverlay();
         enemyRegistry?.Unregister(this);
         MoveRangeController.NotifyOccupancyChanged();
