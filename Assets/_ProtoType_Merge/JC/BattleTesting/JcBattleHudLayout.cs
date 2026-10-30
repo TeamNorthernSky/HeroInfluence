@@ -24,6 +24,8 @@ namespace JC.BattleTesting
         public Sprite surface;
         [Tooltip("기존 좌측 HUD의 선택 테두리 스프라이트입니다.")]
         public Sprite border;
+        [Tooltip("미습득 스킬의 아이콘 중앙에 표시할 자물쇠입니다.")]
+        public Sprite lockedSkillSprite;
         [Range(.5f, 1f), Tooltip("우상단 메뉴·자동·배속·도주 버튼 묶음의 크기입니다. 0.8이면 기존 대비 가로·세로 80%로 표시합니다.")]
         public float topRightButtonScale = .8f;
 
@@ -83,7 +85,139 @@ namespace JC.BattleTesting
             // 기존 씬에서 하단 패널 이름이 달라도 스킬 설명과 같은 HUD 루트만 스타일링합니다.
             if(description!=null&&description.parent!=null)
                 foreach(var r in description.parent.GetComponentsInChildren<RectTransform>(true))Style(r,panels);
+            ApplyBattlePanel(scene);
         }
+
+        // 모든 진입 경로에서 동일한 시각 규격을 사용합니다. 기존 버튼과 이벤트 참조는 유지합니다.
+        public void ApplyBattlePanel(Scene scene)
+        {
+            var panel = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<RectTransform>(true))
+                .FirstOrDefault(r => r.name == "BottomPanel" && r.Find("HeroSkillPanel") != null);
+            if (panel == null) return;
+            // 선택 순환광의 색/주기/두 갈래 연출은 씬의 원본 설정을 유지합니다.
+            RectTransform Rect(string path) => panel.Find(path) as RectTransform;
+            void Place(string path, float x, float y, float width, float height, bool stretch = false)
+            {
+                var r = Rect(path); if (r == null) return;
+                r.anchorMin = new Vector2(0, 1); r.anchorMax = new Vector2(stretch ? 1 : 0, 1);
+                r.pivot = new Vector2(0, 1); r.anchoredPosition = new Vector2(x, y); r.sizeDelta = new Vector2(width, height);
+            }
+            Image Decoration(Transform parent, string name, Sprite sprite, Color tint)
+            {
+                var child = parent.Find(name);
+                var image = child != null ? child.GetComponent<Image>() : null;
+                if (image == null)
+                {
+                    var go = new GameObject(name, typeof(RectTransform), typeof(Image));
+                    go.transform.SetParent(parent, false); image = go.GetComponent<Image>();
+                }
+                var r = image.rectTransform; r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one;
+                r.offsetMin = r.offsetMax = Vector2.zero;
+                image.sprite = sprite; image.type = Image.Type.Sliced; image.preserveAspect = false;
+                image.color = tint; image.raycastTarget = false;
+                return image;
+            }
+            Place("ActorInfoPanel/PortraitArea", 16, -16, 132, 132);
+            Place("ActorInfoPanel/PortraitArea/PortraitVisual", 0, 0, 132, 132);
+            Place("ActorInfoPanel/StatsArea", 164, -16, -180, 148, true);
+            Place("ActorInfoPanel/StatsArea/ActorName", 0, 0, 0, 36, true);
+            Place("ActorInfoPanel/StatsArea/HpLabel", 0, -44, 32, 26);
+            Place("ActorInfoPanel/StatsArea/HpValue", 36, -44, -36, 26, true);
+            Place("ActorInfoPanel/StatsArea/HpBar", 0, -78, 0, 10, true);
+            Place("ActorInfoPanel/StatsArea/IpIcon", 0, -106, 28, 28);
+            Place("ActorInfoPanel/StatsArea/IpValue", 34, -106, 48, 28);
+            var rank = Rect("ActorInfoPanel/StatsArea/Rank");
+            if (rank != null)
+            {
+                rank.anchorMin = rank.anchorMax = new Vector2(1, 1); rank.pivot = new Vector2(1, 1);
+                rank.anchoredPosition = new Vector2(0, -104); rank.sizeDelta = new Vector2(112, 34);
+                var text = rank.GetComponent<TMP_Text>(); text.alignment = TextAlignmentOptions.Center;
+                text.fontSize = 22; text.fontSizeMin = 17; text.fontSizeMax = 22; text.enableAutoSizing = true;
+                // 배경이 글자를 덮지 않도록 같은 부모의 앞쪽 형제로 둡니다.
+                var bg = Decoration(rank.parent, "RankBadgeBackground", surface, new Color(.025f,.055f,.13f,.98f));
+                bg.rectTransform.anchorMin = rank.anchorMin; bg.rectTransform.anchorMax = rank.anchorMax;
+                bg.rectTransform.pivot = rank.pivot; bg.rectTransform.anchoredPosition = rank.anchoredPosition; bg.rectTransform.sizeDelta = rank.sizeDelta;
+                Decoration(bg.transform, "Border", border, new Color(.95f,.73f,.08f,1));
+                bg.transform.SetSiblingIndex(rank.GetSiblingIndex()); rank.SetAsLastSibling();
+            }
+            const float height = 88, gap = 10;
+            Place("CoreSkillPanel", 0, -204, 0, height, true);
+            Place("CoreSkillPanel/Button_Skill_2", 16, 0, -32, height, true);
+            Place("CoreSkillPanel/Title", 104, 0, -120, height, true);
+            var title = Rect("CoreSkillPanel/Title").GetComponent<TMP_Text>();
+            title.text = "젬 파워"; title.alignment = TextAlignmentOptions.MidlineLeft;
+            Place("HeroSkillPanel", 0, -302, 0, height * 4 + gap * 3, true);
+            string[] paths = { "CoreSkillPanel/Button_Skill_2", "HeroSkillPanel/Button_Skill", "HeroSkillPanel/HeroSkillSlot_2", "HeroSkillPanel/HeroSkillSlot_3", "HeroSkillPanel/HeroSkillSlot_4" };
+            for (int i = 0; i < paths.Length; i++)
+            {
+                string path = paths[i]; var row = Rect(path); if (row == null) continue;
+                if(i > 0) Place(path, 16, -(height + gap) * (i - 1), -32, height, true);
+                Place(path + "/IconVisual", 8, -10, 68, 68);
+                if (i > 0)
+                {
+                    Place(path + "/SkillName", 88, 0, -130, height, true);
+                    var text = Rect(path + "/SkillName").GetComponent<TMP_Text>();
+                    text.alignment = TextAlignmentOptions.MidlineLeft; text.enableWordWrapping = false;
+                    text.enableAutoSizing = true; text.fontSize = text.fontSizeMax = 22; text.fontSizeMin = 16;
+                }
+                var baseImage = row.GetComponent<Image>();
+                if(baseImage != null) { baseImage.overrideSprite = null; baseImage.material = null; baseImage.sprite = surface; baseImage.type = Image.Type.Sliced; baseImage.preserveAspect = false; baseImage.color = new Color(.035f,.065f,.13f,1f); }
+                foreach (var toggle in row.GetComponents<ToggleButton>())
+                    toggle.SetVisualSprites(surface, surface);
+                var button = row.GetComponent<Button>();
+                if (button != null && button.transition == Selectable.Transition.SpriteSwap)
+                    button.spriteState = new SpriteState { highlightedSprite = surface, pressedSprite = surface, selectedSprite = surface, disabledSprite = surface };
+                foreach(var image in row.GetComponentsInChildren<Image>(true))
+                {
+                    if(image.name == "InsetShadow" || image.name == "InsetHighlight") { image.enabled = false; continue; }
+                    if(image.name == "LockedOverlay") image.color = new Color(.13f,.15f,.19f,.36f);
+                    if(image.name == "BaseHoverOverlay")
+                    {
+                        image.overrideSprite = null; image.sprite = surface; image.material = null;
+                        image.type = Image.Type.Sliced; image.preserveAspect = false;
+                        image.color = new Color(.4f,.62f,.78f,.12f);
+                    }
+                    if(image.name == "AvailableSkillEffect" || image.name == "SelectedSkillFrame" || image.name == "SkillButtonFrame" || image.name == "SelectedOverlay")
+                    {
+                        // 스윕/선택 효과는 씬에 등록된 원본 스프라이트·재질·Image 타입을 유지합니다.
+                        if (image.name != "AvailableSkillEffect" && image.name != "SelectedSkillFrame")
+                        {
+                            image.overrideSprite = null;
+                            image.sprite = border;
+                            image.type = Image.Type.Sliced;
+                        }
+                        image.preserveAspect = false;
+                        var r = image.rectTransform; r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
+                    }
+                }
+                var outline = Decoration(row, "HudButtonOutline", border, new Color(.12f,.68f,.93f,.85f));
+                outline.transform.SetAsLastSibling();
+                var padlock = Rect(path + "/LockedOverlay/Padlock");
+                if (padlock != null && lockedSkillSprite != null)
+                {
+                    // 기존 잠금 묶음의 활성/비활성 판정은 그대로 사용합니다.
+                    foreach (Transform part in padlock) part.gameObject.SetActive(false);
+                    padlock.anchorMin = padlock.anchorMax = new Vector2(0, 1);
+                    padlock.pivot = new Vector2(.5f, .5f);
+                    padlock.anchoredPosition = new Vector2(42, -44);
+                    padlock.sizeDelta = new Vector2(44, 54);
+                    var lockImage = padlock.GetComponent<Image>() ?? padlock.gameObject.AddComponent<Image>();
+                    lockImage.overrideSprite = null; lockImage.sprite = lockedSkillSprite;
+                    lockImage.material = null; lockImage.color = Color.white;
+                    lockImage.type = Image.Type.Simple; lockImage.preserveAspect = true;
+                    lockImage.raycastTarget = false;
+                    // 원본 은색 스프라이트는 유지하고 알파 실루엣에만 검은 외곽선을 더합니다.
+                    var lockOutline = padlock.GetComponent<Outline>() ?? padlock.gameObject.AddComponent<Outline>();
+                    lockOutline.effectColor = Color.black;
+                    lockOutline.effectDistance = new Vector2(1.5f, -1.5f);
+                    lockOutline.useGraphicAlpha = true;
+
+                }
+            }
+            var desc = Rect("SkillDescriptionPanel");
+            if(desc != null) { desc.anchorMin = Vector2.zero; desc.anchorMax = Vector2.one; desc.pivot = Vector2.zero; desc.anchoredPosition = new Vector2(0,12); desc.sizeDelta = new Vector2(0,-724); }
+        }
+
         void Style(RectTransform r,string[] names)
         {
             if(!names.Contains(r.name))return;var image=r.GetComponent<Image>();if(image==null)return;

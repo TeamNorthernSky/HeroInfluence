@@ -595,17 +595,12 @@ public class InputHandler : MonoBehaviour
 
     private void UpdateHostageAoEPreview(BattleCharactor actor, HostageBattleActor hostage, SkillData skill)
     {
-        ASBGridManager.Instance?.ClearPreviewHighlight();
-
-        if (actor == null || hostage == null || skill == null)
-            return;
-        if (!validHostageTargets.Contains(hostage) ||
-            !HostageFriendlyFireResolver.IsStillValidTarget(actor, pendingAction, hostage))
-            return;
-
-        if (!HostageFriendlyFireResolver.TryGetPreviewCells(hostage, skill,
+        if (actor == null || hostage == null || skill == null ||
+            !validHostageTargets.Contains(hostage) ||
+            !HostageFriendlyFireResolver.IsStillValidTarget(actor, pendingAction, hostage) ||
+            !HostageFriendlyFireResolver.TryGetPreviewCells(hostage, skill,
                 out ASBGridCell mainCell, out List<ASBGridCell> previewCells, actor))
-            return;
+        { ASBGridManager.Instance?.ClearPreviewHighlight(); return; }
 
         var splashCells = new List<ASBGridCell>();
         for (int i = 0; i < previewCells.Count; i++)
@@ -620,15 +615,13 @@ public class InputHandler : MonoBehaviour
 
     private void UpdateAoEPreview(BattleCharactor hoverUnit, SkillData currentSelectedSkill)
     {
-        ASBGridManager.Instance?.ClearPreviewHighlight();
-
-        if (hoverUnit == null || currentSelectedSkill == null) return;
-        if (!TryGetCurrentActor(out BattleCharactor actor)) return;
-        if (!validTargets.Contains(hoverUnit)) return;
-        if (!TargetingHelper.IsStillValidTarget(actor, pendingAction, hoverUnit)) return;
-
-        if (!SkillAreaPreviewHelper.TryGetAreaCells(actor, hoverUnit, currentSelectedSkill,
-                out ASBGridCell centerCell, out List<ASBGridCell> splashCells)) return;
+        if (hoverUnit == null || currentSelectedSkill == null ||
+            !TryGetCurrentActor(out BattleCharactor actor) ||
+            !validTargets.Contains(hoverUnit) ||
+            !TargetingHelper.IsStillValidTarget(actor, pendingAction, hoverUnit) ||
+            !SkillAreaPreviewHelper.TryGetAreaCells(actor, hoverUnit, currentSelectedSkill,
+                out ASBGridCell centerCell, out List<ASBGridCell> splashCells))
+        { ASBGridManager.Instance?.ClearPreviewHighlight(); return; }
 
         ASBGridManager.Instance?.ShowPreviewHighlight(currentSelectedSkill, centerCell, splashCells);
     }
