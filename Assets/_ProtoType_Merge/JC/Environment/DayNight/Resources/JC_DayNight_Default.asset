@@ -96,3 +96,96 @@ MonoBehaviour:
     intensity: 0.12
     lightColor: {r: 0.46, g: 0.6, b: 1, a: 1}
     daylight: 0.2
+  segments:
+  - hour: 8.5
+    lightColor: {r: 1, g: 0.9, b: 0.78, a: 1}
+    lightIntensity: 1.15
+    shadowMultiplier: 1
+    sky: {r: 0.3, g: 0.52, b: 0.78, a: 1}
+    horizon: {r: 0.75718004, g: 0.69704, b: 0.7084, a: 1}
+    ground: {r: 0.22, g: 0.27, b: 0.23, a: 1}
+    ambientMultiplier: 1
+    reflectionTint: {r: 1, g: 1, b: 1, a: 1}
+    reflectionMultiplier: 1
+    characterFill: 0.16
+    partyFillEnabled: 1
+    npcFillEnabled: 1
+    npcFill: 0.16
+    enemyFillEnabled: 1
+    enemyFill: 0.16
+    screenColorEnabled: 0
+    screenColorStrength: 1
+    screenColorFilter: {r: 1, g: 1, b: 1, a: 1}
+    screenSaturation: 0
+    screenContrast: 0
+    screenExposure: 0
+    waterMultiplier: 1
+  - hour: 14.5
+    lightColor: {r: 1, g: 0.94, b: 0.86, a: 1}
+    lightIntensity: 1.15
+    shadowMultiplier: 1
+    sky: {r: 0.3, g: 0.52, b: 0.78, a: 1}
+    horizon: {r: 0.74366003, g: 0.73448, b: 0.7708, a: 1}
+    ground: {r: 0.22, g: 0.27, b: 0.23, a: 1}
+    ambientMultiplier: 1
+    reflectionTint: {r: 1, g: 1, b: 1, a: 1}
+    reflectionMultiplier: 1
+    characterFill: 0.16
+    partyFillEnabled: 1
+    npcFillEnabled: 1
+    npcFill: 0.16
+    enemyFillEnabled: 1
+    enemyFill: 0.16
+    screenColorEnabled: 0
+    screenColorStrength: 1
+    screenColorFilter: {r: 1, g: 1, b: 1, a: 1}
+    screenSaturation: 0
+    screenContrast: 0
+    screenExposure: 0
+    waterMultiplier: 1
+  - hour: 20.5
+    lightColor: {r: 0.48, g: 0.62, b: 1, a: 1}
+    lightIntensity: 0.1666
+    shadowMultiplier: 1
+    sky: {r: 0.18800642, g: 0.29260802, b: 0.46080002, a: 1.1520001}
+    horizon: {r: 0.39168003, g: 0.4488192, b: 0.5584896, a: 1.1520001}
+    ground: {r: 0.14837761, g: 0.1884672, b: 0.2299392, a: 1.1520001}
+    ambientMultiplier: 1
+    reflectionTint: {r: 1, g: 1, b: 1, a: 1}
+    reflectionMultiplier: 1
+    characterFill: 0.16
+    partyFillEnabled: 1
+    npcFillEnabled: 1
+    npcFill: 0.16
+    enemyFillEnabled: 1
+    enemyFill: 0.16
+    screenColorEnabled: 0
+    screenColorStrength: 1
+    screenColorFilter: {r: 1, g: 1, b: 1, a: 1}
+    screenSaturation: 0
+    screenContrast: 0
+    screenExposure: 0
+    waterMultiplier: 0.58
+  - hour: 2.5
+    lightColor: {r: 0.46, g: 0.59, b: 1, a: 1}
+    lightIntensity: 0.132275
+    shadowMultiplier: 1
+    sky: {r: 0.17918041, g: 0.274813, b: 0.43575, a: 1.1620001}
+    horizon: {r: 0.36603, g: 0.4213412, b: 0.53312564, a: 1.1620001}
+    ground: {r: 0.14269361, g: 0.18196921, b: 0.2296112, a: 1.1620001}
+    ambientMultiplier: 1
+    reflectionTint: {r: 1, g: 1, b: 1, a: 1}
+    reflectionMultiplier: 1
+    characterFill: 0.228
+    partyFillEnabled: 1
+    npcFillEnabled: 1
+    npcFill: 0.231
+    enemyFillEnabled: 1
+    enemyFill: 0.199
+    screenColorEnabled: 1
+    screenColorStrength: 0.396
+    screenColorFilter: {r: 0.2924527, g: 0.597815, b: 1, a: 1}
+    screenSaturation: 0
+    screenContrast: 0
+    screenExposure: 0
+    waterMultiplier: 0.58

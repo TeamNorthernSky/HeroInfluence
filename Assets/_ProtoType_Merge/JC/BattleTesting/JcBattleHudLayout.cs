@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -124,14 +124,24 @@ namespace JC.BattleTesting
             Place("ActorInfoPanel/StatsArea/HpLabel", 0, -44, 32, 26);
             Place("ActorInfoPanel/StatsArea/HpValue", 36, -44, -36, 26, true);
             Place("ActorInfoPanel/StatsArea/HpBar", 0, -78, 0, 10, true);
-            Place("ActorInfoPanel/StatsArea/IpIcon", 0, -106, 28, 28);
-            Place("ActorInfoPanel/StatsArea/IpValue", 34, -106, 48, 28);
+            Place("ActorInfoPanel/StatsArea/IpIcon", 0, -101.8f, 32.2f, 32.2f);
+            Place("ActorInfoPanel/StatsArea/IpValue", 38.2f, -101.8f, 55.2f, 32.2f);
+            var ipText = Rect("ActorInfoPanel/StatsArea/IpValue")?.GetComponent<TMP_Text>();
+            if (ipText != null)
+            {
+                ipText.fontSize = ipText.fontSizeMax = 19.3f * 1.15f;
+                ipText.fontSizeMin = 15.3f * 1.15f;
+                ipText.enableAutoSizing = true;
+                ipText.alignment = TextAlignmentOptions.MidlineLeft;
+                ipText.margin = Vector4.zero;
+            }
             var rank = Rect("ActorInfoPanel/StatsArea/Rank");
             if (rank != null)
             {
                 rank.anchorMin = rank.anchorMax = new Vector2(1, 1); rank.pivot = new Vector2(1, 1);
-                rank.anchoredPosition = new Vector2(0, -104); rank.sizeDelta = new Vector2(112, 34);
-                var text = rank.GetComponent<TMP_Text>(); text.alignment = TextAlignmentOptions.Center;
+                // Keep the lower edge fixed while growing upward by 15%.
+                rank.anchoredPosition = new Vector2(0, -98.9f); rank.sizeDelta = new Vector2(112, 39.1f);
+                var text = rank.GetComponent<TMP_Text>(); text.alignment = TextAlignmentOptions.Midline; text.margin = Vector4.zero;
                 text.fontSize = 22; text.fontSizeMin = 17; text.fontSizeMax = 22; text.enableAutoSizing = true;
                 // 배경이 글자를 덮지 않도록 같은 부모의 앞쪽 형제로 둡니다.
                 var bg = Decoration(rank.parent, "RankBadgeBackground", surface, new Color(.025f,.055f,.13f,.98f));
