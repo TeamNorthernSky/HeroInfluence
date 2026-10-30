@@ -8,39 +8,49 @@ namespace JC.Tutorial
     public sealed class JcTutorialSpotlight : MaskableGraphic
     {
         private RectTransform first, second;
-        private Canvas messageCanvas;
-        private bool originalOverride;
-        private int originalLayer, originalOrder;
-        private bool messageRaised;
-
-        private void RestoreMessageOrder()
+        private sealed class RaisedCanvas
         {
-            if (messageRaised && messageCanvas != null)
+            public Canvas canvas;
+            public bool raised, originalOverride;
+            public int originalLayer, originalOrder;
+            public void Restore()
             {
-                messageCanvas.overrideSorting = originalOverride;
-                messageCanvas.sortingLayerID = originalLayer;
-                messageCanvas.sortingOrder = originalOrder;
+                if (raised && canvas != null)
+                {
+                    canvas.overrideSorting = originalOverride;
+                    canvas.sortingLayerID = originalLayer;
+                    canvas.sortingOrder = originalOrder;
+                }
+                raised = false;
+                canvas = null;
             }
-            messageRaised = false;
-            messageCanvas = null;
         }
-
-        private void RaiseMessage()
+        private readonly RaisedCanvas messageOrder = new RaisedCanvas(), tooltipOrder = new RaisedCanvas();
+        private RectTransform tooltip;
+        private void RestoreMessageOrder() => messageOrder.Restore();
+        private void RaiseMessage() => RaiseAboveDim(first, messageOrder, true);
+        public void SetTooltip(RectTransform target)
         {
-            if (first == null || canvas == null) return;
-            if (!messageRaised)
+            if (tooltip != target) tooltipOrder.Restore();
+            tooltip = target;
+            if (isActiveAndEnabled) RaiseAboveDim(tooltip, tooltipOrder, false);
+        }
+        private void RaiseAboveDim(RectTransform target, RaisedCanvas state, bool interactive)
+        {
+            if (target == null || canvas == null) return;
+            if (!state.raised)
             {
-                messageCanvas = first.GetComponent<Canvas>();
-                if (messageCanvas == null) messageCanvas = first.gameObject.AddComponent<Canvas>();
-                originalOverride = messageCanvas.overrideSorting;
-                originalLayer = messageCanvas.sortingLayerID;
-                originalOrder = messageCanvas.sortingOrder;
+                state.canvas = target.GetComponent<Canvas>();
+                if (state.canvas == null) state.canvas = target.gameObject.AddComponent<Canvas>();
+                state.originalOverride = state.canvas.overrideSorting;
+                state.originalLayer = state.canvas.sortingLayerID;
+                state.originalOrder = state.canvas.sortingOrder;
                 // 중첩 Canvas의 Graphic은 부모 Raycaster에 등록되지 않는다.
                 // 기존 버튼/CanvasGroup의 입력 규칙은 그대로 사용한다.
-                if (first.GetComponent<GraphicRaycaster>() == null)
+                if (interactive && target.GetComponent<GraphicRaycaster>() == null)
                 {
-                    var source = first.parent != null ? first.parent.GetComponentInParent<GraphicRaycaster>() : null;
-                    var raycaster = first.gameObject.AddComponent<GraphicRaycaster>();
+                    var source = target.parent != null ? target.parent.GetComponentInParent<GraphicRaycaster>() : null;
+                    var raycaster = target.gameObject.AddComponent<GraphicRaycaster>();
                     if (source != null)
                     {
                         raycaster.ignoreReversedGraphics = source.ignoreReversedGraphics;
@@ -48,19 +58,18 @@ namespace JC.Tutorial
                         raycaster.blockingMask = source.blockingMask;
                     }
                 }
-                messageRaised = true;
+                state.raised = true;
             }
             var dimCanvas = canvas;
             while (dimCanvas != null && !dimCanvas.overrideSorting && !dimCanvas.isRootCanvas)
                 dimCanvas = dimCanvas.transform.parent.GetComponentInParent<Canvas>();
             if (dimCanvas == null) return;
-            messageCanvas.overrideSorting = true;
-            messageCanvas.sortingLayerID = dimCanvas.sortingLayerID;
-            messageCanvas.sortingOrder = Mathf.Max(originalOrder, dimCanvas.sortingOrder + 1);
+            state.canvas.overrideSorting = true;
+            state.canvas.sortingLayerID = dimCanvas.sortingLayerID;
+            state.canvas.sortingOrder = Mathf.Max(state.originalOrder, dimCanvas.sortingOrder + 1);
         }
-
-        protected override void OnEnable() { base.OnEnable(); RaiseMessage(); }
-        protected override void OnDisable() { RestoreMessageOrder(); base.OnDisable(); }
+        protected override void OnEnable() { base.OnEnable(); RaiseMessage(); RaiseAboveDim(tooltip, tooltipOrder, false); }
+        protected override void OnDisable() { RestoreMessageOrder(); tooltipOrder.Restore(); base.OnDisable(); }
         private RectTransform[] extra = System.Array.Empty<RectTransform>();
         private RectTransform roundedTarget;
         private float cornerRadius;
@@ -75,7 +84,7 @@ namespace JC.Tutorial
             if (isActiveAndEnabled) RaiseMessage();
             SetVerticesDirty();
         }
-        private void LateUpdate() { RaiseMessage(); SetVerticesDirty(); }
+        private void LateUpdate() { RaiseMessage(); RaiseAboveDim(tooltip, tooltipOrder, false); SetVerticesDirty(); }
         private Rect Bounds(RectTransform target)
         {
             if (target == null) return new Rect();

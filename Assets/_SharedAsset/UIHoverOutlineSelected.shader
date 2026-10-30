@@ -79,8 +79,8 @@ Shader "UI/HoverOutlineSelected"
             #pragma fragment frag
             #include "UnityCG.cginc"
 
-            struct appdata_t { float4 vertex : POSITION; float4 color : COLOR; float2 texcoord : TEXCOORD0; };
-            struct v2f { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; float2 localPosition : TEXCOORD1; };
+            struct appdata_t { float4 vertex : POSITION; float4 color : COLOR; float2 texcoord : TEXCOORD0; float4 rimUV : TEXCOORD1; };
+            struct v2f { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; float4 rimUV : TEXCOORD1; };
 
             sampler2D _MainTex;
             float4 _MainTex_TexelSize;
@@ -108,7 +108,7 @@ Shader "UI/HoverOutlineSelected"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.localPosition = v.vertex.xy;
+                o.rimUV = v.rimUV;
                 o.texcoord = v.texcoord;
                 if (_ConfigurableOrbitRim < 0.5 && _SelectedMotion > 0.5 && _OrbitWhiteRim > 0.0)
                 {
@@ -220,11 +220,10 @@ Shader "UI/HoverOutlineSelected"
 
             float4 BattleRim(v2f i)
             {
-                // Local geometry coordinates remain linear across a nine-sliced sprite.
-                // The old alpha erosion could never grow the source's two-pixel hollow border.
-                float2 size = max(_BattleRimRect.zw, float2(0.001, 0.001));
-                float2 uv = (i.localPosition - _BattleRimRect.xy) / size;
-                float aspect = size.x / size.y;
+                // UV1 is written before batching; unlike POSITION it stays image-relative
+                // in Overlay, Camera and World Space canvases, including nine-sliced Images.
+                float2 uv = i.rimUV.xy;
+                float aspect = max(i.rimUV.z, 0.001);
                 float2 p = (uv - 0.5) * float2(aspect, 1.0);
                 float radius = min(0.08, min(aspect, 1.0) * 0.5);
                 float2 q = abs(p) - (float2(aspect, 1.0) * 0.5 - radius);

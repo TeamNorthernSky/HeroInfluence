@@ -56,6 +56,13 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
         selectedSource = selectedFrame != null ? selectedFrame.material : null;
         availableInstance = CreateInstance(availableEffect, availableSource);
         selectedInstance = CreateInstance(selectedFrame, selectedSource);
+        if (selectedFrame != null &&
+            (gameObject.scene.name == "TmpBattleScene" || gameObject.scene.name == "TutorialBattleScene"))
+        {
+            // Carry image-relative coordinates in the mesh, before Canvas batching transforms POSITION.
+            if (selectedFrame.GetComponent<BattleSkillRimCoordinates>() == null)
+                selectedFrame.gameObject.AddComponent<BattleSkillRimCoordinates>();
+        }
         SetState(false, false);
     }
 

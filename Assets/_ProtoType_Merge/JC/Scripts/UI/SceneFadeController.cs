@@ -73,7 +73,7 @@ public class SceneFadeController : MonoBehaviour
         SceneManager.sceneLoaded += EnsureSceneFade;
     }
 
-    private static SceneFadeController EnsureInstance()
+    public static SceneFadeController EnsureInstance()
     {
         if (Instance != null) return Instance;
         var root = new GameObject("SceneFadeController");

@@ -152,6 +152,7 @@ namespace JC.Tutorial
             var g = activeGuide;
             if (g == null || !g.guidedActive || g.gameObject.scene != scene || tooltip == null) return;
             g.guidedTooltip = tooltip;
+            if (g.dim != null && (g.guidedPhase == 3 || g.guidedPhase == 4)) g.dim.SetTooltip(tooltip);
             if (!g.detailed || g.formation || g.guidedPhase != 3 || g.layoutPanel == null) return;
             // Only the world-enemy hover lesson pins the tooltip above its instruction panel.
             var panelCanvas = g.layoutPanel.GetComponentInParent<Canvas>();
@@ -203,39 +204,35 @@ namespace JC.Tutorial
             {
                 string frontColor = ColorUtility.ToHtmlStringRGB(ASB.Work.BattleGrid.BattleGridManager.TutorialFrontColor);
                 string rearColor = ColorUtility.ToHtmlStringRGB(ASB.Work.BattleGrid.BattleGridManager.TutorialRearColor);
-                string[] titles = { "전열과 후열", "반격과 피해경감", "공격 가능한 대상" };
+                string[] titles = { JcTutorialText.Get("battleguide.guided.001", "전열과 후열"), JcTutorialText.Get("battleguide.guided.002", "반격과 피해경감"), JcTutorialText.Get("battleguide.guided.003", "공격 가능한 대상") };
                 string[] texts = {
-                    "전장에는 적과 가까운 ‘전열’과 그 뒤에 있는 ‘후열’이 있습니다.\n\n" +
-                    $"<color=#{frontColor}>녹색으로 표시된 열이 ‘<b>전열</b>’</color>\n" +
-                    $"<color=#{rearColor}>적색으로 표시된 열이 ‘<b>후열</b>’</color>\n\n" +
-                    "전열과 후열은 각각의 위치에 따른 특징을 지닙니다.",
-                    $"<color=#{frontColor}><b>전열</b></color>에서는 근거리 공격을 받고 살아남으면 반격 확률에 따라 반격합니다. 충전·휴식 중이거나 반격용 공격 스킬이 없으면 반격할 수 없습니다.\n<line-height=50%>\n</line-height>" +
-                    $"<color=#{rearColor}><b>후열</b></color>에서는 경감 확률에 따라 피해 계산 배율이 50%로 줄고, 해당 타격은 치명타가 되지 않습니다. 반격 피해에는 경감이 적용되지 않습니다.",
-                    "스킬에 따라 공격할 수 있는 열과 대상이 달라집니다.\n사용할 스킬을 선택한 뒤, 바닥에 표시되는 공격 가능한 대상을 확인해 보세요." };
+                    JcTutorialText.Format("battleguide.guided.004", "전장에는 적과 가까운 ‘전열’과 그 뒤에 있는 ‘후열’이 있습니다.\n\n<color=#{0}>녹색으로 표시된 열이 ‘<b>전열</b>’</color>\n<color=#{1}>적색으로 표시된 열이 ‘<b>후열</b>’</color>\n\n전열과 후열은 각각의 위치에 따른 특징을 지닙니다.", frontColor, rearColor),
+                    JcTutorialText.Format("battleguide.guided.005", "<color=#{0}><b>전열</b></color>에서는 근거리 공격을 받고 살아남으면 반격 확률에 따라 반격합니다. 충전·휴식 중이거나 반격용 공격 스킬이 없으면 반격할 수 없습니다.\n<line-height=50%>\n</line-height><color=#{1}><b>후열</b></color>에서는 경감 확률에 따라 피해 계산 배율이 50%로 줄고, 해당 타격은 치명타가 되지 않습니다. 반격 피해에는 경감이 적용되지 않습니다.", frontColor, rearColor),
+                    JcTutorialText.Get("battleguide.guided.006", "스킬에 따라 공격할 수 있는 열과 대상이 달라집니다.\n사용할 스킬을 선택한 뒤, 바닥에 표시되는 공격 가능한 대상을 확인해 보세요.") };
                 title = titles[phase]; text = texts[phase];
             }
             else if (phase == 0)
             {
                 switch (characterId)
                 {
-                    case "10001": title = "저스티스의 차례입니다"; text = "저스티스는 근거리에서 싸우며 아군을 보호하는 히어로입니다.\n‘저스티스 등장!’은 적 하나를 공격하고, 다음 자신의 차례까지 적의 단일 공격을 자신에게 유도합니다."; break;
-                    case "10002": title = "루미나의 차례입니다"; text = "루미나는 마법을 이용한 원거리 공격에 특화된 캐릭터 입니다.\n지금 사용가능한 스킬 '플레어 봄'은 하나의 적에게 원거리 공격을 하는 스킬이며, 레벨업을 하면 광역 공격 기술을 습득할 수 있습니다."; break;
-                    case "10004": title = "네코밍의 차례입니다"; text = "네코밍은 아군의 체력을 회복하는 지원형 히어로입니다.\n‘아픈 거 다 날아가라’로 체력이 줄어든 아군 한 명을 회복할 수 있습니다."; break;
-                    default: title = "블랙 불릿의 차례입니다"; text = "블랙 불릿은 적 하나를 집중 공격하는 원거리 히어로입니다.\n첫 공격에 앞서, 전투 화면과 조작 방법을 알아보겠습니다."; break;
+                    case "10001": title = JcTutorialText.Get("battleguide.guided.007", "저스티스의 차례입니다"); text = JcTutorialText.Get("battleguide.guided.008", "저스티스는 근거리에서 싸우며 아군을 보호하는 히어로입니다.\n‘저스티스 등장!’은 적 하나를 공격하고, 다음 자신의 차례까지 적의 단일 공격을 자신에게 유도합니다."); break;
+                    case "10002": title = JcTutorialText.Get("battleguide.guided.009", "루미나의 차례입니다"); text = JcTutorialText.Get("battleguide.guided.010", "루미나는 마법을 이용한 원거리 공격에 특화된 캐릭터 입니다.\n지금 사용가능한 스킬 '플레어 봄'은 하나의 적에게 원거리 공격을 하는 스킬이며, 레벨업을 하면 광역 공격 기술을 습득할 수 있습니다."); break;
+                    case "10004": title = JcTutorialText.Get("battleguide.guided.011", "네코밍의 차례입니다"); text = JcTutorialText.Get("battleguide.guided.012", "네코밍은 아군의 체력을 회복하는 지원형 히어로입니다.\n‘아픈 거 다 날아가라’로 체력이 줄어든 아군 한 명을 회복할 수 있습니다."); break;
+                    default: title = JcTutorialText.Get("battleguide.guided.013", "블랙 불릿의 차례입니다"); text = JcTutorialText.Get("battleguide.guided.014", "블랙 불릿은 적 하나를 집중 공격하는 원거리 히어로입니다.\n첫 공격에 앞서, 전투 화면과 조작 방법을 알아보겠습니다."); break;
                 }
             }
             else if (phase == FreeGuidePhase)
             {
-                title = "스킬 사용하기";
-                text = "왼쪽 스킬 버튼 위에 마우스 커서를 올리면 아래에서 스킬 설명을 확인할 수 있습니다.\n스킬을 클릭한 뒤 공격할 적을 선택하면 스킬을 사용합니다. 선택한 스킬은 버튼 테두리가 빛나며 표시됩니다.";
+                title = JcTutorialText.Get("battleguide.guided.015", "스킬 사용하기");
+                text = JcTutorialText.Get("battleguide.guided.016", "왼쪽 스킬 버튼 위에 마우스 커서를 올리면 아래에서 스킬 설명을 확인할 수 있습니다.\n스킬을 클릭한 뒤 공격할 적을 선택하면 스킬을 사용합니다. 선택한 스킬은 버튼 테두리가 빛나며 표시됩니다.");
             }
             else
             {
-                string[] titles = { "", "행동할 히어로 확인하기", "행동 순서 확인하기", "전장의 적 살펴보기", "배지로 적 찾아보기" };
-                string[] texts = { "", "왼쪽에는 현재 행동할 히어로의 정보와 사용할 수 있는 스킬이 표시됩니다.\n위쪽에서 체력을 확인하고, 아래쪽에서 사용할 스킬을 선택할 수 있습니다.",
-                    "오른쪽의 ‘현재 턴’은 지금 행동하는 유닛을 보여줍니다.\n아래의 배지는 위에서부터 앞으로 행동할 유닛의 순서입니다.",
-                    "밝게 표시된 적 위에 마우스를 올려 보세요.\n적의 정보와 윤곽선·바닥 타일이 표시되고, 턴 목록에서도 해당 적을 확인할 수 있습니다.",
-                    "오른쪽 턴 목록의 적 배지에 마우스를 올리면, 전장에서 해당 적의 윤곽선과 바닥 타일이 강조됩니다." };
+                string[] titles = { "", JcTutorialText.Get("battleguide.guided.017", "행동할 히어로 확인하기"), JcTutorialText.Get("battleguide.guided.018", "행동 순서 확인하기"), JcTutorialText.Get("battleguide.guided.019", "전장의 적 살펴보기"), JcTutorialText.Get("battleguide.guided.020", "배지로 적 찾아보기") };
+                string[] texts = { "", JcTutorialText.Get("battleguide.guided.021", "왼쪽에는 현재 행동할 히어로의 정보와 사용할 수 있는 스킬이 표시됩니다.\n위쪽에서 체력을 확인하고, 아래쪽에서 사용할 스킬을 선택할 수 있습니다."),
+                    JcTutorialText.Get("battleguide.guided.022", "오른쪽의 ‘현재 턴’은 지금 행동하는 유닛을 보여줍니다.\n아래의 배지는 위에서부터 앞으로 행동할 유닛의 순서입니다."),
+                    JcTutorialText.Get("battleguide.guided.023", "밝게 표시된 적 위에 마우스를 올려 보세요.\n적의 정보와 윤곽선·바닥 타일이 표시되고, 턴 목록에서도 해당 적을 확인할 수 있습니다."),
+                    JcTutorialText.Get("battleguide.guided.024", "오른쪽 턴 목록의 적 배지에 마우스를 올리면, 전장에서 해당 적의 윤곽선과 바닥 타일이 강조됩니다.") };
                 title = titles[phase]; text = texts[phase];
             }
             guidedBody.text = text; view.SetContent(title, "");
@@ -243,7 +240,7 @@ namespace JC.Tutorial
             view.heading.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, guidedBody.fontSize * 1.5f);
             nextButton.gameObject.SetActive(!FreeGuide);
             nextButton.interactable = true;
-            nextLabel.text = formation && phase == 2 ? "전투 시작" : "다음";
+            nextLabel.text = formation && phase == 2 ? JcTutorialText.Get("battleguide.guided.025", "전투 시작") : JcTutorialText.Get("battleguide.guided.026", "다음");
             ((RectTransform)nextButton.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 150);
             if (FreeGuide) { UnlockInput(); if (dim != null) dim.gameObject.SetActive(false); }
 
@@ -307,7 +304,8 @@ namespace JC.Tutorial
             view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.BorderOnly);
             view.SetActionHint(guidedPhase == 3 ? JcTutorialGuideView.ActionHint.HoverEnemy : guidedPhase == 4 ? JcTutorialGuideView.ActionHint.HoverBadge : JcTutorialGuideView.ActionHint.None, focus);
             dim.SetTargets(layoutPanel, focus);
-            dim.SetExtraTargets(guidedPhase == 3 || guidedPhase == 4 ? new[] { worldFocus, badge, guidedTooltip } : Array.Empty<RectTransform>());
+            dim.SetExtraTargets(guidedPhase == 3 || guidedPhase == 4 ? new[] { worldFocus, badge } : Array.Empty<RectTransform>());
+            dim.SetTooltip(guidedPhase == 3 || guidedPhase == 4 ? guidedTooltip : null);
             dim.SetRoundedTarget(guidedPhase == 4 ? worldFocus : null, 16f);
             resultShield.SetActive(true);
         }
@@ -360,6 +358,8 @@ namespace JC.Tutorial
         {
             if (!guidedActive) return;
             guidedActive = false; formation = false;
+            if (dim != null) dim.SetTooltip(null);
+            guidedTooltip = null;
             view.FixedBattleOutline = false;
             if (formationGrid != null) formationGrid.SetTutorialRows(this, false);
             formationGrid = null;

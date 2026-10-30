@@ -164,7 +164,7 @@ namespace JC.Tutorial
                     layoutPanel.anchorMin = originalAnchorMin; layoutPanel.anchorMax = originalAnchorMax;
                     layoutPanel.sizeDelta = originalSize; layoutPanel.anchoredPosition = originalPosition;
                 }
-                view.SetContent(active >= 0 && headings != null && active < headings.Length ? headings[active] : "전투 안내", "");
+                view.SetContent(active >= 0 && headings != null && active < headings.Length ? JcTutorialText.Get("battle.heading." + active, headings[active]) : JcTutorialText.Get("battleguide.001", "전투 안내"), "");
                 view.SetPanelSuppressed(instruction && !noticeOpen);
                 view.SetVisible(active >= 0 && (!instruction || noticeOpen), instruction ? null : focus);
                 return;
@@ -180,8 +180,8 @@ namespace JC.Tutorial
                 {
                     skillStarted = true;
                     layoutPanel.sizeDelta = resultPanelSize; layoutPanel.anchoredPosition = resultPanelPosition;
-                    if (body != null) body.text = SkillNotice;
-                    view.SetContent("전투 · 스킬 획득", "");
+                    if (body != null) body.text = JcTutorialText.Get("battle.skill-notice", SkillNotice);
+                    view.SetContent(JcTutorialText.Get("battleguide.002", "전투 · 스킬 획득"), "");
                     BeginNotice(skill.ConfirmButton);
                 }
                 focus = skill != null && skill.ConfirmButton != null ? skill.ConfirmButton.transform as RectTransform : null;
@@ -189,8 +189,8 @@ namespace JC.Tutorial
             else
             {
                 layoutPanel.sizeDelta = resultPanelSize; layoutPanel.anchoredPosition = resultPanelPosition;
-                if (body != null) body.text = originalBody;
-                view.SetContent(headings != null && headings.Length > 2 ? headings[2] : "전투 · 결과 확인", "");
+                if (body != null) body.text = body.GetComponent<JcTutorialTextBinding>() != null ? JcTutorialText.Read(body) : originalBody;
+                view.SetContent(headings != null && headings.Length > 2 ? JcTutorialText.Get("battle.heading.2", headings[2]) : JcTutorialText.Get("battleguide.003", "전투 · 결과 확인"), "");
                 if (!resultStarted)
                 {
                     resultStarted = true;
@@ -208,7 +208,7 @@ namespace JC.Tutorial
             UnlockInput();
             if (dim != null) dim.gameObject.SetActive(false);
             if (layoutPanel != null) foreach (var background in layoutPanel.GetComponentsInChildren<JcTutorialGraphic>(true)) background.SetOpaqueFill(false);
-            if (body != null) body.text = originalBody;
+            if (body != null) body.text = body.GetComponent<JcTutorialTextBinding>() != null ? JcTutorialText.Read(body) : originalBody;
             if (view != null) { view.SetPanelSuppressed(false); view.SetVisible(false); }
             if (layoutPanel != null)
             {

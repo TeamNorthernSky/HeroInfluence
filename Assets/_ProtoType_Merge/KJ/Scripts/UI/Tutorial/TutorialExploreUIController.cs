@@ -108,7 +108,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
             entryStage = EntryStage.Button;
             entryAwaitingRelease = true;
             publicityExplanation.ShowEntryTarget(publicityEntryButton.gameObject, publicityEntryGuide.explanationShield);
-            ShowEntryMessage("홍보 버튼을 클릭하세요.", publicityEntryButton.transform as RectTransform);
+            ShowEntryMessage(JcTutorialText.Get("exploreuicontroller.001", "홍보 버튼을 클릭하세요."), publicityEntryButton.transform as RectTransform);
         }
         else if (entryStage == EntryStage.Opened && !pointerHeld)
         {
@@ -143,7 +143,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         entryStage = EntryStage.Introduction;
         entryOpenedFrame = Time.frameCount;
         entryAwaitingRelease = true;
-        ShowEntryMessage(publicityIntroMessage, null);
+        ShowEntryMessage(JcTutorialText.Get("publicity.intro", publicityIntroMessage), null);
     }
 
     private void ShowEntryMessage(string message, RectTransform target)
@@ -153,7 +153,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         if (guide.continueButton != null) guide.continueButton.gameObject.SetActive(false);
         guide.view.blockPanelRaycasts = false;
         guide.view.centeredPointerTarget = target;
-        guide.view.SetContent("탐사 · 홍보", message);
+        guide.view.SetContent(JcTutorialText.Get("exploreuicontroller.002", "탐사 · 홍보"), message);
         // 도입용 디밍과 대상 승격은 기존 경로를 유지하고 큰 분절 화살표만 제외한다.
         guide.view.SetVisible(true, target, JC.Tutorial.JcTutorialGuideView.FocusPresentation.BorderOnly);
     }
