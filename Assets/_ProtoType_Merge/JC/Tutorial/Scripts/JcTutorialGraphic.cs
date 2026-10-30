@@ -8,6 +8,8 @@ namespace JC.Tutorial
     [RequireComponent(typeof(CanvasRenderer)), AddComponentMenu("JC Tutorial/안내 도형")]
     public sealed class JcTutorialGraphic : MaskableGraphic
     {
+        // 이동 안내 화살표와 같은 메시지 강조색. 대상 강조 accent와는 별도로 유지합니다.
+        public static Color MessageAccent => new Color(1f, .76f, .025f, 1f);
         public enum Shape { [InspectorName("둥근 패널")] Panel, [InspectorName("강조 테두리")] Frame, [InspectorName("아래 방향 포인터")] Pointer, [InspectorName("큰 안내 화살표")] Arrow }
         [SerializeField, Tooltip("배경 패널, 빈 강조 테두리, 아래 방향 포인터 중 표시할 도형입니다.")]
         private Shape shape;
@@ -20,7 +22,7 @@ namespace JC.Tutorial
         [SerializeField, Tooltip("패널 배경에 30% 섞을 보조 색입니다.")]
         private Color lowerColor = new Color(.025f, .065f, .09f, .96f);
         [SerializeField, Tooltip("패널의 윤곽선 색입니다. 강조 테두리는 Graphic의 Color를 사용합니다.")]
-        private Color borderColor = new Color(25f / 255f, 1f, 84f / 255f, .5f);
+        private Color borderColor = new Color(1f, .76f, .025f, .5f);
         [SerializeField, Min(0), Tooltip("안내 테두리의 최소 두께입니다. 모든 클릭 안내에 공통 적용합니다.")]
         private float emphasisWidth = 6;
         [SerializeField, Min(.1f), Tooltip("안내 테두리를 따라 빛이 한 바퀴 도는 시간(초)입니다.")]

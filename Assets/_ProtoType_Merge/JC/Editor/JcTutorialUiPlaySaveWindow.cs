@@ -133,6 +133,11 @@ public static class JcTutorialUiPlaySave
     }
     static void Capture(Object obj, string path, string editedText = null)
     {
+        if (obj is TMP_Text && path == "m_text")
+        {
+            Status = "튜토리얼 문구는 JC > 튜토리얼 > 외부 대본 열기에서 수정하세요. 배치와 시각 설정은 계속 저장됩니다.";
+            return;
+        }
         var overlay = Object.FindObjectsByType<TutorialPublicityExplanationView>(FindObjectsSortMode.None).FirstOrDefault(v => v.IsOverlayElement(obj));
         if (overlay != null)
         {
@@ -169,7 +174,7 @@ public static class JcTutorialUiPlaySave
     {
         if (view == null || view.CurrentPanelIndex < 0) return;
         var json = view.CaptureMessagePresentation();
-        if (json != null) Put(view, "presentation", "", json, null, view.CurrentPanelIndex, view.CurrentMessage.text);
+        if (json != null) Put(view, "presentation", "", json, null, view.CurrentPanelIndex, JcTutorialText.SceneSource(view.CurrentMessage));
     }
     static void RecaptureAfterUndo()
     {
@@ -323,7 +328,7 @@ public sealed class JcTutorialUiPlaySaveWindow : EditorWindow
         EditorGUILayout.LabelField("대기 항목", JcTutorialUiPlaySave.PendingCount.ToString());
         EditorGUILayout.HelpBox(JcTutorialUiPlaySave.Status, MessageType.None);
         EditorGUILayout.LabelField("보관 파일", JcTutorialUiPlaySave.SavePath, EditorStyles.wordWrappedMiniLabel);
-        EditorGUILayout.HelpBox("홍보 안내와 TutorialDimRegion·TutorialHighlightBorder(각 변 포함)의 배치·색상·활성 상태는 단계별로 저장됩니다. 전투 시트에서 가져오는 문구는 기존 TutorialUiSheet Inspector에서 원문을 수정하세요. Inspector에서 입력을 확정(Enter 또는 다른 항목 클릭)하면 자동 보관됩니다.", MessageType.None);
+        EditorGUILayout.HelpBox("홍보 안내와 TutorialDimRegion·TutorialHighlightBorder(각 변 포함)의 배치·색상·활성 상태는 단계별로 저장됩니다. 문구는 JC > 튜토리얼 > 외부 대본 열기에서 수정하세요. Inspector의 텍스트 수정은 보관하지 않습니다. 배치 설정은 입력을 확정하면 자동 보관됩니다.", MessageType.None);
     }
 }
 #endif
