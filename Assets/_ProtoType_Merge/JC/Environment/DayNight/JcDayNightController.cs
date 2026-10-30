@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,11 +17,12 @@ namespace JC.Environment {
   public static bool IsTransitioning => owner!=null && owner.transitioning;
   public static float CloudFactor => owner!=null && owner.applied ? Mathf.Lerp(owner.profile.nightCloudStrength,1,owner.daylight) : 1;
   public static float CloudSpeed => IsTransitioning ? owner.profile.cloudSpeedMultiplier : 1;
-  public static float WaterBrightness => owner!=null && owner.applied ? Mathf.Lerp(owner.profile.nightWaterBrightness,1,owner.daylight) : 1;
+  public static float WaterBrightness => owner!=null && owner.applied ? Mathf.Lerp(owner.profile.nightWaterBrightness,1,owner.daylight)*owner.waterMultiplier : 1;
   public static bool IsActive => owner!=null && owner.applied;
   bool transitioning,applied;
   bool battle, indoor, windowInitialized;
   float windowLevel, windowTarget, windowFrom, windowElapsed;
+  readonly JcDayNightScreenColor screenColor=new JcDayNightScreenColor();
   readonly JcNightMaterialBindings characters=new JcNightMaterialBindings();
   readonly JcSpecialBuildingWindows specialWindows=new JcSpecialBuildingWindows();
   double nextCharacterScan;
@@ -36,6 +37,8 @@ namespace JC.Environment {
    var go=new GameObject("JC_BattleDayNight");SceneManager.MoveGameObjectToScene(go,scene);
    var c=go.AddComponent<JcDayNightController>();c.profile=settings;c.battle=true;c.indoor=isIndoor;c.shownHours=hours;c.ApplyHour(hours);return c;
   }
+  int appliedRevision=-1; JcDayNightProfile appliedProfile;
+  float waterMultiplier=1;
   float daylight=1;
   int shownTurn=-1;
   double shownHours;
@@ -45,7 +48,7 @@ namespace JC.Environment {
   Material oldSkybox,skybox;
   DefaultReflectionMode oldReflectionMode; Texture oldReflection; Cubemap cube;
   SphericalHarmonicsL2 oldProbe;
-  struct ProbeState {public ReflectionProbe probe;public ReflectionProbeMode mode;public Texture texture;}
+  struct ProbeState {public ReflectionProbe probe;public ReflectionProbeMode mode;public Texture texture;public float intensity;}
   readonly List<ProbeState> probes=new List<ProbeState>();
   sealed class UILock {public CanvasGroup group;public UIInputBlocker blocker;public bool added,interactable,blocks;public float alpha;}
   readonly List<UILock> locks=new List<UILock>();
@@ -60,7 +63,14 @@ namespace JC.Environment {
    var parent=Array.Find(scene.GetRootGameObjects(),r=>r.name=="JC_Environment");if(parent!=null)go.transform.SetParent(parent.transform,false);
    return go.AddComponent<JcDayNightController>();
   }
-  void OnEnable(){if(profile==null)profile=Resources.Load<JcDayNightProfile>("JC_DayNight_Default");SceneManager.activeSceneChanged+=SceneChanged;}
+  void OnEnable(){if(profile==null)profile=Resources.Load<JcDayNightProfile>("JC_DayNight_Default");SceneManager.activeSceneChanged+=SceneChanged;EnsureSegmentObjects();}
+  public void EnsureSegmentObjects(){
+   for(int i=0;i<4;i++){
+    JcDayNightSegment slot=null;foreach(var child in GetComponentsInChildren<JcDayNightSegment>(true))if(child.index==i&&child.transform.parent==transform){slot=child;break;}
+    if(slot==null){var go=new GameObject("구간 "+(i+1)){hideFlags=HideFlags.DontSave};go.transform.SetParent(transform,false);slot=go.AddComponent<JcDayNightSegment>();}
+    slot.index=i;slot.controller=this;
+   }
+  }
   void SceneChanged(Scene oldScene,Scene newScene){if(newScene!=gameObject.scene)Cancel();}
   void OnDisable(){SceneManager.activeSceneChanged-=SceneChanged;Cancel();}
   void OnDestroy(){Cancel();}
@@ -68,12 +78,12 @@ namespace JC.Environment {
   void LateUpdate(){
    if(profile==null || SceneManager.GetActiveScene()!=gameObject.scene)return;
    if(!Application.isPlaying){if(preview)ApplyHour(previewHour);else if(applied)Restore();return;}
-   if(battle){if(!applied)ApplyHour(shownHours);UpdateWindowFade();return;}
+   if(battle){if(!applied||appliedProfile!=profile||appliedRevision!=profile.revision)ApplyHour(shownHours);UpdateWindowFade();return;}
    if(!transitioning && !DHGameStateRestoreService.IsRestoring){
     var tm=FindFirstObjectByType<TurnManager>();
     var tutorial = gameObject.scene.name == "TutorialExploreScene" ? FindFirstObjectByType<TutorialTurnManager>() : null;
     int turn=tutorial!=null?tutorial.CurrentTurn:GameManager.Instance!=null?GameManager.Instance.CurrentDay:tm!=null?tm.GetDay():1;
-    if(!applied||shownTurn!=turn){shownTurn=turn;ApplyHour(profile.HoursForTurn(turn));}
+    if(!applied||shownTurn!=turn||appliedProfile!=profile||appliedRevision!=profile.revision){shownTurn=turn;ApplyHour(profile.HoursForTurn(turn));}
    }
    if(transitioning)LockUI();
    UpdateWindowFade();
@@ -124,7 +134,7 @@ namespace JC.Environment {
    cube=new Cubemap(16,TextureFormat.RGBAHalf,false){name="JC time sky reflection",hideFlags=HideFlags.HideAndDontSave};
    RenderSettings.defaultReflectionMode=DefaultReflectionMode.Custom;RenderSettings.customReflectionTexture=cube;
    foreach(var root in gameObject.scene.GetRootGameObjects())foreach(var p in root.GetComponentsInChildren<ReflectionProbe>()){
-    probes.Add(new ProbeState{probe=p,mode=p.mode,texture=p.customBakedTexture});p.mode=ReflectionProbeMode.Custom;p.customBakedTexture=cube;
+    probes.Add(new ProbeState{probe=p,mode=p.mode,texture=p.customBakedTexture,intensity=p.intensity});p.mode=ReflectionProbeMode.Custom;p.customBakedTexture=cube;
    }
    if(battle)foreach(var root in gameObject.scene.GetRootGameObjects())foreach(var light in root.GetComponentsInChildren<Light>())
     if(light!=sun)extraLights.Add((light,light.intensity));
@@ -132,26 +142,34 @@ namespace JC.Environment {
   }
   public void ApplyHour(double hours){
    if(profile==null||SceneManager.GetActiveScene()!=gameObject.scene)return;
-   Capture();if(Application.isPlaying)specialWindows.Scan(gameObject.scene);shownHours=hours;var k=profile.Evaluate(hours);daylight=k.daylight;
+   Capture();if(Application.isPlaying)specialWindows.Scan(gameObject.scene);shownHours=hours;appliedProfile=profile;appliedRevision=profile.revision;var k=profile.Evaluate(hours);daylight=k.daylight;
+   var look=profile.SampleSegment(hours);var baseline=profile.SampleSegment(hours,true);waterMultiplier=look.waterMultiplier;
    // 방위각은 광원의 위치입니다. 방향광의 forward는 빛의 진행 방향이므로 반대쪽을 향합니다.
    if(sun!=null){sun.transform.rotation=indoor?oldRotation:Quaternion.Euler(k.elevation,k.azimuth+180f,0);sun.color=indoor?Color.Lerp(oldLightColor,new Color(.70f,.79f,1),.25f*(1-daylight)):k.lightColor;sun.intensity=indoor?oldIntensity*Mathf.Lerp(.7f,1,daylight):k.intensity*Mathf.Lerp(profile.nightLightBoost,1,daylight);sun.shadowStrength=Mathf.Lerp(.45f,oldShadow,daylight);}
+   if(sun!=null){sun.color=JcDayNightProfile.CorrectColor(sun.color,look.lightColor,baseline.lightColor);sun.intensity*=look.lightIntensity/Mathf.Max(.0001f,baseline.lightIntensity);sun.shadowStrength=Mathf.Clamp01(sun.shadowStrength*look.shadowMultiplier);}
    Color sky=Color.Lerp(profile.nightSky,profile.daySky,daylight);
    Color horizon=Color.Lerp(profile.nightHorizon,profile.dayHorizon,daylight);
    float sunset=Mathf.Clamp01((k.lightColor.r-k.lightColor.b)*1.3f);horizon=Color.Lerp(horizon,new Color(.85f,.44f,.28f),sunset);
    Color ground=Color.Lerp(profile.nightGround,profile.dayGround,daylight);
    float boost=Mathf.Lerp(profile.nightAmbientBoost,1,daylight);sky*=boost;horizon*=boost;ground*=boost;
+   sky=JcDayNightProfile.CorrectColor(sky,look.sky,baseline.sky);horizon=JcDayNightProfile.CorrectColor(horizon,look.horizon,baseline.horizon);ground=JcDayNightProfile.CorrectColor(ground,look.ground,baseline.ground);
    if(indoor){sky=Color.Lerp(oldSky,sky,.35f);horizon=Color.Lerp(oldEquator/ .55f,horizon,.35f);ground=Color.Lerp(oldGround,ground,.35f);}
    foreach(var entry in extraLights)if(entry.light!=null)entry.light.intensity=entry.intensity*(indoor?1:Mathf.Lerp(.3f,1,daylight));
    RenderSettings.ambientMode=AmbientMode.Trilight;RenderSettings.ambientIntensity=1;
    float ambientNight=Mathf.InverseLerp(1,.3f,daylight);
    float objectAmbient=Mathf.Lerp(1,Mathf.Max(1,indoor?profile.indoorNightObjectAmbientBoost:profile.nightObjectAmbientBoost),ambientNight);
+   objectAmbient*=look.ambientMultiplier;
    RenderSettings.ambientSkyColor=(sky.linear*objectAmbient).gamma;RenderSettings.ambientEquatorColor=((horizon*.55f).linear*objectAmbient).gamma;RenderSettings.ambientGroundColor=(ground.linear*objectAmbient).gamma;
    var sh=new SphericalHarmonicsL2();sh.AddAmbientLight(horizon.linear*(.4f*objectAmbient));sh.AddDirectionalLight(Vector3.up,sky.linear,.7f*objectAmbient);RenderSettings.ambientProbe=sh;
    RenderSettings.fogColor=horizon;
    if(skybox!=null){skybox.SetColor("_Top",sky);skybox.SetColor("_Horizon",horizon);skybox.SetColor("_Bottom",ground);}
-   UpdateReflection(sky,horizon,ground);
+   UpdateReflection(sky*look.reflectionTint,horizon*look.reflectionTint,ground*look.reflectionTint);
+   RenderSettings.reflectionIntensity=oldReflectionIntensity*look.reflectionMultiplier;
+   foreach(var state in probes)if(state.probe!=null)state.probe.intensity=state.intensity*look.reflectionMultiplier;
    Shader.SetGlobalVector("_JcDayNight",new Vector4(1,daylight,profile.nightBankFloor,WaterBrightness));
-   Shader.SetGlobalVector("_JcNightReadability",new Vector4(profile.humanoidNightFill,indoor?1:Mathf.Lerp(.66f,1,daylight),0,0));
+   Shader.SetGlobalVector("_JcNightReadability",new Vector4(look.characterFill,indoor?1:Mathf.Lerp(.66f,1,daylight),look.npcFill,look.enemyFill));
+   screenColor.Apply(gameObject.scene,look);
+   if(!battle && Time.realtimeSinceStartupAsDouble>=nextCharacterScan){characters.ScanCharacters(gameObject.scene);nextCharacterScan=Time.realtimeSinceStartupAsDouble+1;}
    float target=profile.WindowsOn(hours)?1:0;
    if(!windowInitialized || !Application.isPlaying){windowInitialized=true;windowFrom=windowLevel=windowTarget=target;}
    else if(target!=windowTarget){windowFrom=windowLevel;windowTarget=target;windowElapsed=0;}
@@ -213,8 +231,8 @@ namespace JC.Environment {
    RenderSettings.ambientMode=oldAmbientMode;RenderSettings.ambientSkyColor=oldSky;RenderSettings.ambientEquatorColor=oldEquator;RenderSettings.ambientGroundColor=oldGround;RenderSettings.ambientIntensity=oldAmbientIntensity;RenderSettings.ambientProbe=oldProbe;RenderSettings.fogColor=oldFog;
    RenderSettings.skybox=oldSkybox;RenderSettings.defaultReflectionMode=oldReflectionMode;RenderSettings.customReflectionTexture=oldReflection;RenderSettings.reflectionIntensity=oldReflectionIntensity;
    }
-   foreach(var p in probes)if(p.probe!=null){p.probe.mode=p.mode;p.probe.customBakedTexture=p.texture;}probes.Clear();
-   specialWindows.Dispose();characters.Dispose();foreach(var entry in extraLights)if(entry.light!=null)entry.light.intensity=entry.intensity;extraLights.Clear();
+   foreach(var p in probes)if(p.probe!=null){p.probe.mode=p.mode;p.probe.customBakedTexture=p.texture;p.probe.intensity=p.intensity;}probes.Clear();
+   screenColor.Dispose();specialWindows.Dispose();characters.Dispose();foreach(var entry in extraLights)if(entry.light!=null)entry.light.intensity=entry.intensity;extraLights.Clear();
    windowInitialized=false;
    DestroyObject(skybox);DestroyObject(cube);skybox=null;cube=null;applied=false;shownTurn=-1;
    if(owner==this){Shader.SetGlobalVector("_JcDayNight",Vector4.zero);Shader.SetGlobalVector("_JcWindowLight",Vector4.zero);Shader.SetGlobalVector("_JcNightReadability",Vector4.zero);owner=null;}
