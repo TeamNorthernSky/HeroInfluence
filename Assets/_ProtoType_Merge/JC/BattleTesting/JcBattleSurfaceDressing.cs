@@ -32,6 +32,8 @@ namespace JC.BattleTesting
         {
             var filters=GetComponentsInChildren<MeshFilter>();
             if(GetComponent<JcDynamicBattleOutput>()!=null)PrepareLeftVerge(filters,p);
+            // 원래 표시 타일과 사이의 무표시 도로를 하나의 구간으로 연결합니다.
+            BuildConnectedRoadLines(filters,p);
             foreach(var f in filters)
             {
                 var r=f.GetComponent<MeshRenderer>();if(r==null||f.sharedMesh==null)continue;
@@ -44,12 +46,29 @@ namespace JC.BattleTesting
                     // 주차장, 교차로의 무표시 도로, 흙길은 차선 추가 대상이 아닙니다.
                     if(!cross&&!line)continue;
                     if(p.roadShader==null||(!cross&&p.plainAsphalt==null))continue;
+                    if(meshLine && f.sharedMesh.isReadable)
+                    {
+                        // 디테일 키트의 좁은 도색 메시는 타일 UV(0~.096)를 사용한다.
+                        // 복사본만 폭을 확보하고 UV를 0~1로 맞춰 셰이더의 중앙 .5와 일치시킨다.
+                        var expanded=Instantiate(f.sharedMesh);expanded.name=f.sharedMesh.name+"_BattleLineWidth";
+                        expanded.hideFlags=HideFlags.DontSave;owned.Add(expanded);
+                        var bounds=expanded.bounds;var vertices=expanded.vertices;var uv=new Vector2[vertices.Length];
+                        float actualWidth=f.transform.TransformVector(Vector3.right*bounds.size.x).magnitude;
+                        float factor=Mathf.Max(1,p.lineWidth*1.1f/Mathf.Max(.0001f,actualWidth));
+                        for(int v=0;v<vertices.Length;v++)
+                        {
+                            uv[v]=new Vector2(Mathf.InverseLerp(bounds.min.x,bounds.max.x,vertices[v].x),Mathf.InverseLerp(bounds.min.z,bounds.max.z,vertices[v].z));
+                            vertices[v].x=bounds.center.x+(vertices[v].x-bounds.center.x)*factor;
+                        }
+                        expanded.vertices=vertices;expanded.uv=uv;expanded.RecalculateBounds();expanded.RecalculateTangents();f.sharedMesh=expanded;
+                    }
                     var clone=new Material(m){name=m.name+"_BattleMarkings",hideFlags=HideFlags.DontSave};owned.Add(clone);mats[i]=clone;changed=true;
                     if(cross){WhiteCrosswalk(clone,p.crosswalkEmboss);CrosswalkCount++;continue;}
                     if(!LineFrame(f,i,meshLine?"Road_Centerline_006":name,out var normal,out var offset,out var tangent,out var width)){mats[i]=m;continue;}
                     clone.shader=p.roadShader;clone.SetFloat("_MarkMode",meshLine?3:2);clone.SetTexture("_PlainMap",p.plainAsphalt);
                     clone.SetVector("_LineNormal",new Vector4(normal.x,normal.y,offset,0));clone.SetVector("_LineWorld",tangent);
-                    clone.SetFloat("_TileMeters",width);clone.SetFloat("_LineWidth",p.lineWidth);clone.SetFloat("_DashLength",p.dashLength);clone.SetFloat("_DashGap",p.dashGap);RoadCount++;
+                    // 텍스처 차선은 별도 연속 구간으로 그립니다. 원본 타일에서는 도색만 제거합니다.
+                    clone.SetFloat("_TileMeters",width);clone.SetFloat("_LineWidth",meshLine?p.lineWidth:-1);clone.SetFloat("_DashLength",p.dashLength);clone.SetFloat("_DashGap",p.dashGap);RoadCount++;
                 }
                 if(changed)r.sharedMaterials=mats;
             }
@@ -65,7 +84,7 @@ namespace JC.BattleTesting
             else if(name.EndsWith("006")){normal=Vector2.right;offset=.5f;}
             else if(name.EndsWith("007")){normal=new Vector2(1,1).normalized;offset=Mathf.Sqrt(.5f);}
             else if(!name.EndsWith("001"))return false;
-            var mesh=f.sharedMesh;if(!mesh.isReadable||sub>=mesh.subMeshCount)return false;
+            var mesh=ReadableRoadMesh(f.sharedMesh);if(!mesh.isReadable||sub>=mesh.subMeshCount)return false;
             var v=mesh.vertices;var uv=mesh.uv;var tr=mesh.GetTriangles(sub);if(uv.Length!=v.Length)return false;
             for(int i=0;i<tr.Length;i+=3)
             {
@@ -170,6 +189,6 @@ namespace JC.BattleTesting
             }
             ScatterReport=$"풀밭 면적 {area:F0}, 목표 {limit}, 배치 {NatureCount}, 거리 제외 {near}, 경계 제외 {footprint}, 장애물 제외 {obstacle}, 시야 제외 {view}, 빈 메시 {empty}";
         }
-        void OnDestroy(){foreach(var o in owned)if(o!=null){if(Application.isPlaying)Destroy(o);else DestroyImmediate(o);}}
+        void OnDestroy(){ClearRoadLines();foreach(var o in owned)if(o!=null){if(Application.isPlaying)Destroy(o);else DestroyImmediate(o);}}
     }
 }

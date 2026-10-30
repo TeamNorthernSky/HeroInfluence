@@ -37,12 +37,15 @@ namespace JC.BattleTesting
             var parts=new List<JcDynamicBattleSource.Part>();var roads=new List<JcDynamicBattleSource.Road>();
             foreach(var f in scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<MeshFilter>()))
             {
-                var r=f.GetComponent<MeshRenderer>();if(r==null||!r.enabled||r.forceRenderingOff||f.sharedMesh==null||Character(f.transform)||Barricade(f.transform))continue;
+                var r=f.GetComponent<MeshRenderer>();if(r==null||f.sharedMesh==null||Character(f.transform)||Barricade(f.transform))continue;
+                if(f.GetComponentInParent<JC.EnvironmentDetail.JcRoadMarkingControl>()!=null)continue;
+                bool originalRoad=JC.EnvironmentDetail.JcExploreRoadMarkings.TryGetOriginal(r,out var original);
+                if(!(originalRoad?original.enabled:r.enabled)||r.forceRenderingOff)continue;
                 bool tutorialSurface = tutorial && f.transform.parent != null && f.transform.parent.name == "Tutorial_VisualOnly";
                 bool ground=Ancestor(f.transform,"Generated Tile Meshes")||Ancestor(f.transform,"JC_ExploreDetail_Visuals")||tutorialSurface;
                 if(!ground&&!roots.Contains(f.transform.root.name))continue;
                 if(f.GetComponentInParent<JcDynamicBattleOutput>()!=null)continue;
-                var inputMesh=f.sharedMesh;
+                var inputMesh=originalRoad?original.mesh:f.sharedMesh;
                 if(!Application.isEditor&&!inputMesh.isReadable)
                 {
                     var cache=Resources.Load<JcDynamicBattleSource>(tutorial ? "JC_Encounters/TutorialDynamicSource" : "JC_Encounters/DynamicSource");
@@ -50,7 +53,7 @@ namespace JC.BattleTesting
                     if(readable==null)throw new InvalidOperationException("읽기 가능한 외형 캐시를 갱신해 주세요: "+f.name);
                     inputMesh=readable.mesh;
                 }
-                var part=new JcDynamicBattleSource.Part{name=f.name,group=Group(f.transform),mesh=inputMesh,originalMesh=f.sharedMesh,materials=r.sharedMaterials,matrix=f.transform.localToWorldMatrix,bounds=r.bounds,terrain=ground,renderer=r};
+                var part=new JcDynamicBattleSource.Part{name=f.name,group=Group(f.transform),mesh=inputMesh,originalMesh=f.sharedMesh,materials=originalRoad?original.materials:r.sharedMaterials,matrix=f.transform.localToWorldMatrix,bounds=r.bounds,terrain=ground,renderer=r};
                 parts.Add(part);
                 // 비이동 타일의 시각적 도로 보강도 배경 배치 후보로만 사용합니다. 레벨/이동 데이터는 수정하지 않습니다.
                 if (tutorialSurface && f.name.StartsWith("BlockedRoad_", StringComparison.Ordinal))
@@ -207,7 +210,16 @@ namespace JC.BattleTesting
                     if(mesh==null)continue;output.Add(part.name,mesh,part.materials,part.terrain,part.renderer);
                 }
                 output.Report=$"조우 {settings.encounterPosition} → 기준점 {p} / 이동 {Vector3.Distance(new Vector3(settings.encounterPosition.x,p.y,settings.encounterPosition.z),p):F2} / 방향 {(placement.alongX?"X":"Z")} / 동일 확대 {scale:F2} / 원형 보존 외형 {selected.Length}";
+                // 캐시 입력으로 생성하는 전투도 탐사와 같은 일방통행 차선 제외를 적용합니다.
+                if (source.sourceScene != null && source.sourceScene.EndsWith("/DHScene_3.unity", StringComparison.Ordinal))
+                    JC.EnvironmentDetail.JcOneWayRoadSurface.Apply(root, transform.inverse);
+                // 탐사 드레싱 적용 전의 입력도 튜토리얼 점선과 원본 도색이 겹치지 않게 한다.
+                if (source.sourceScene != null && source.sourceScene.EndsWith("/TutorialExploreScene.unity", StringComparison.Ordinal) &&
+                    selected.Any(part => part.name == "CenterLane_ThinDense_VisualOnly"))
+                    JC.EnvironmentDetail.JcTutorialRoadSurface.Apply(root);
                 if (settings.addBattleSurfaceDetails) JcBattleSurfaceDressing.Apply(root,Mathf.RoundToInt(settings.encounterPosition.x*1000)^Mathf.RoundToInt(settings.encounterPosition.z*7919),cameras);
+                else if (source.sourceScene != null && source.sourceScene.EndsWith("/TutorialExploreScene.unity", StringComparison.Ordinal))
+                    JcBattleSurfaceDressing.ApplyAuthoredLineSpacing(root);
                 Debug.Log(output.Report,root);
                 return root;
             }
