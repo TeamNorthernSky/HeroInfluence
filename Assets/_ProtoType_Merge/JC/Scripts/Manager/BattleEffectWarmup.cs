@@ -123,6 +123,8 @@ public sealed class BattleEffectWarmup : MonoBehaviour
                 if (presentation.Move != null)
                     CollectId(presentation.Move.ApproachEffectId, pending);
                 Collect(presentation.ChainLightningEffectPrefab, pending);
+                // 투사체는 EffectRegistry ID 없이 별도 프리팹으로 연결될 수 있습니다.
+                Collect(presentation.GetProjectileVisual()?.Prefab, pending);
             }
         pending.RemoveWhere(prepared.Contains);
         if (pending.Count == 0) yield break;
