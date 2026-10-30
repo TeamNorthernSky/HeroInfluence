@@ -73,6 +73,13 @@ namespace JC.BattleTesting
                         e.gameObject.scene == scene && e.EventKey == mainKey && e.ZoneId == eventBattle.ZoneId);
                     if (main != null) { origin = main.transform; key = main.EventKey; zone = main.ZoneId; }
                 }
+                else if (!string.IsNullOrWhiteSpace(eventBattle?.SourceSubEventKey))
+                {
+                    // 대화 종료 시 임시 origin이 해제되어도 전투 요청에 저장된 출처로 복구합니다.
+                    var sub = FindObjectsOfType<SubEventObject>(true).FirstOrDefault(e =>
+                        e.gameObject.scene == scene && e.EventKey == eventBattle.SourceSubEventKey && e.ZoneId == eventBattle.ZoneId);
+                    if (sub != null) { origin = sub.transform; key = sub.EventKey; zone = sub.ZoneId; }
+                }
                 if (origin == null && enemy != null) origin = enemy.transform;
                 if (origin == null || origin.gameObject.scene != scene)
                     throw new InvalidOperationException("고정 이벤트의 기준 오브젝트를 찾지 못했습니다");
@@ -206,6 +213,7 @@ namespace JC.BattleTesting
                     root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
             JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null||bossBackground);
+            JC.EnvironmentDetail.JcBattleRoadMarkings.BindScene(scene);
             if (background != null) background.SetActive(true);
             if (clearTutorialArenaTrees) RemoveArenaTrees(scene);
             Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);

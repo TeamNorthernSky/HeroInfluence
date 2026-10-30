@@ -11,7 +11,7 @@ Shader "JC/Environment/Road Markings"
   _DetailNormalMap("입자 노멀",2D)="bump"{} _DetailNormalMapScale("입자 노멀 강도",Float)=0
   _DetailMask("입자 마스크",2D)="white"{}
   _PlainMap("무표시 아스팔트",2D)="gray"{}
-  _MarkMode("표시: 횡단보도 1 중앙선 2",Float)=1
+  _MarkMode("표시: 횡단보도 1 중앙선 2 잘라내기 3 도색메시 4",Float)=1
   _LineNormal("UV 수직축과 중심",Vector)=(0,1,0,0)
   _LineWorld("월드 길이축",Vector)=(1,0,0,0)
   _TileMeters("UV 단위 실제 폭",Float)=1
@@ -58,6 +58,11 @@ Shader "JC/Environment/Road Markings"
      float2 e=float2(1.0/512,0);
      float2 slope=float2(Yellow(input.uv+e)-Yellow(input.uv-e),Yellow(input.uv+e.yx)-Yellow(input.uv-e.yx));
      s.normalTS=normalize(s.normalTS+float3(-slope*_Emboss,0));
+    }
+    else if(_MarkMode>3.5)
+    {
+     // 실제 점선 메시: 깊이와 노멀 패스도 같은 외곽을 사용합니다.
+     s.albedo=half3(.85,.59,.045);
     }
     else
     {

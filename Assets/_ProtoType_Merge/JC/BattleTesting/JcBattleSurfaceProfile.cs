@@ -11,11 +11,11 @@ namespace JC.BattleTesting
         [Tooltip("기존 표시를 지울 때 사용할 원본 무표시 아스팔트입니다.")]
         public Texture2D plainAsphalt;
         [Min(.02f),Tooltip("전투 월드 단위의 중앙 점선 폭입니다.")]
-        public float lineWidth=.15f;
+        public float lineWidth=.30f;
         [Min(.1f),Tooltip("전투 월드 단위의 중앙 점선 한 마디 길이입니다.")]
-        public float dashLength=2.5f;
+        public float dashLength=2.0f;
         [Min(.1f),Tooltip("전투 월드 단위의 점선 사이 간격입니다.")]
-        public float dashGap=3.5f;
+        public float dashGap=3.8025f;
         [Range(0,.3f),Tooltip("흰색 횡단보도 페인트 경계의 미세한 노멀 요철 강도입니다.")]
         public float crosswalkEmboss=.045f;
         [Tooltip("전투 배경의 풀밭에만 돌과 수목을 배치합니다.")]
