@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: DHScene_3
   m_EditorClassIdentifier: 
   values:
-    outlineColor: {r: 0.06779206, g: 1, b: 0, a: 1}
-    outlineIntensity: 4
-    highlightSpeed: 0.39
-    highlightIntensity: 0.27
+    outlineColor: {r: 0.4339623, g: 0.43191528, b: 0.43191528, a: 1}
+    outlineIntensity: 2
+    highlightSpeed: 0.2
+    highlightIntensity: 4
     shapeVersion: 4
-    highlightRange: 0.35
+    highlightRange: 0.6
     highlightSmoothing: 0.65
-    whiteOutlineWidth: 4.83
-    edgeSmoothing: 1
+    whiteOutlineWidth: 8.61
+    edgeSmoothing: 0.244
