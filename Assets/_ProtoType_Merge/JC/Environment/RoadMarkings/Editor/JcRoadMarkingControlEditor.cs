@@ -8,7 +8,7 @@ namespace JC.EnvironmentDetail.Editor
         public override void OnInspectorGUI()
         {
             var control=(JcRoadMarkingControl)target;
-            EditorGUILayout.HelpBox(control.IsBattle?"전투 월드 단위 · 횡단보도 최소 여백 = 빈 간격":"탐사 원본 대비 배율 · 모두 1이면 원본 외형 유지",MessageType.Info);
+            EditorGUILayout.HelpBox(control.IsBattle?"전투 월드 단위 · 횡단보도 최소 여백 = 빈 간격":"탐사 원본 대비 배율 · 크기 모두 1 · 기본 색상이면 원본 외형 유지",MessageType.Info);
             var previous=control.CurrentProfile;
             DrawDefaultInspector();
             if(previous!=control.CurrentProfile){Undo.RecordObject(control,"차선 프로필 적용");control.ApplyProfile();}
@@ -29,14 +29,14 @@ namespace JC.EnvironmentDetail.Editor
         {
             var profile=control.CurrentProfile;
             if(profile==null||!EditorUtility.IsPersistent(profile))throw new System.InvalidOperationException("프로젝트에 저장된 프로필을 연결해 주세요.");
-            Undo.RecordObject(profile,"차선 설정 프로필 저장");profile.Values=control.Values;
+            Undo.RecordObject(profile,"차선 설정 프로필 저장");profile.Values=control.Values;profile.lineColor=control.lineColor;
             EditorUtility.SetDirty(profile);AssetDatabase.SaveAssetIfDirty(profile);
             Debug.Log("[JC 차선] 현재 값을 프로필에 저장했습니다: "+AssetDatabase.GetAssetPath(profile),profile);
         }
         public static JcRoadMarkingProfile SaveNewProfile(JcRoadMarkingControl control,string path)
         {
             var profile=control.IsBattle?(JcRoadMarkingProfile)ScriptableObject.CreateInstance<JcBattleRoadProfile>():ScriptableObject.CreateInstance<JcExploreRoadProfile>();
-            profile.Values=control.Values;AssetDatabase.CreateAsset(profile,path);AssetDatabase.SaveAssetIfDirty(profile);
+            profile.Values=control.Values;profile.lineColor=control.lineColor;AssetDatabase.CreateAsset(profile,path);AssetDatabase.SaveAssetIfDirty(profile);
             Undo.RecordObject(control,"새 차선 프로필 연결");control.CurrentProfile=profile;
             if(!Application.isPlaying)EditorUtility.SetDirty(control);
             return profile;

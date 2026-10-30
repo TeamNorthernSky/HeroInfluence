@@ -8,7 +8,7 @@ namespace JC.Tutorial
     [RequireComponent(typeof(CanvasRenderer)), AddComponentMenu("JC Tutorial/안내 도형")]
     public sealed class JcTutorialGraphic : MaskableGraphic
     {
-        // 이동 안내 화살표와 같은 메시지 강조색. 대상 강조 accent와는 별도로 유지합니다.
+        // 메시지, 대상 테두리, 수렴 글로우와 이동 안내 화살표가 공유하는 강조색.
         public static Color MessageAccent => new Color(1f, .76f, .025f, 1f);
         public enum Shape { [InspectorName("둥근 패널")] Panel, [InspectorName("강조 테두리")] Frame, [InspectorName("아래 방향 포인터")] Pointer, [InspectorName("큰 안내 화살표")] Arrow }
         [SerializeField, Tooltip("배경 패널, 빈 강조 테두리, 아래 방향 포인터 중 표시할 도형입니다.")]

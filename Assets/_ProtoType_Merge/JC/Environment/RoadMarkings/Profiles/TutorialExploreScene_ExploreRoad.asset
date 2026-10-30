@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db35bbaf576448f2a108812d77853187, type: 3}
   m_Name: TutorialExploreScene_ExploreRoad
   m_EditorClassIdentifier: 
+  lineColor: {r: 1, g: 0.6229972, b: 0, a: 1}
   width: 0.85
   length: 1.34
   gap: 1

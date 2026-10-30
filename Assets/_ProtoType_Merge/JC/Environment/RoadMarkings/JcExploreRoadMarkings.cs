@@ -83,16 +83,16 @@ namespace JC.EnvironmentDetail
             }
             if (changed && lines != null)
             {
-                bool keepOriginal = Values == Vector3.one;
+                bool keepOriginal = Values == Vector3.one && lineColor == JcRoadMarkingProfile.DefaultColor;
                 foreach (var pair in originals)
                 {
                     if (pair.Key == null) continue;
                     pair.Key.sharedMaterials = keepOriginal ? pair.Value.materials : pair.Value.adjusted;
                     pair.Key.enabled = pair.Value.enabled && (keepOriginal || !pair.Value.authored);
                 }
-                lines.SetRoadValues(Values);
+                lines.SetRoadValues(Values, lineColor);
             }
-            Status = $"탐사 차선 {originals.Count}개 대상 / " + (Values == Vector3.one ? "원본 외형 유지" : "원본 대비 배율 적용");
+            Status = $"탐사 차선 {originals.Count}개 대상 / " + (Values == Vector3.one && lineColor == JcRoadMarkingProfile.DefaultColor ? "원본 외형 유지" : "원본 대비 배율 적용");
         }
 
         protected override void RestoreTargets()

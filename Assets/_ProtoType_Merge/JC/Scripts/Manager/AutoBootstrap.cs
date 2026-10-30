@@ -12,6 +12,9 @@ public static class AutoBootstrap
     private static void CompleteStartup()
     {
         EnsureAudioManager();
+        // Scene callbacks may not have created the fade service yet (e.g. additive editor entry).
+        // Reuse its normal initializer before checking readiness; do not start a transition here.
+        SceneFadeController.EnsureInstance();
         string missing = GetMissingServices();
         if (missing.Length != 0)
             Debug.LogError("[AutoBootstrap] 필수 서비스 준비 실패: " + missing);

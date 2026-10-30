@@ -16,6 +16,7 @@ Shader "JC/Environment/Road Markings"
   _LineWorld("월드 길이축",Vector)=(1,0,0,0)
   _TileMeters("UV 단위 실제 폭",Float)=1
   _LineWidth("점선 폭",Float)=.15 _DashLength("마디 길이",Float)=2.5 _DashGap("마디 간격",Float)=3.5
+  _LineColor("차선 색상",Color)=(.85,.59,.045,1)
   _Emboss("횡단보도 요철",Float)=.045
   [HideInInspector] _Surface("Surface",Float)=0
   [HideInInspector] _Cutoff("Cutoff",Float)=.5
@@ -41,6 +42,7 @@ Shader "JC/Environment/Road Markings"
    TEXTURE2D(_PlainMap); SAMPLER(sampler_PlainMap);
    float _MarkMode,_TileMeters,_LineWidth,_DashLength,_DashGap,_Emboss;
    float4 _LineNormal,_LineWorld;
+   half4 _LineColor;
    float Yellow(float2 uv)
    {
     float3 c=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv).rgb;
@@ -62,7 +64,7 @@ Shader "JC/Environment/Road Markings"
     else if(_MarkMode>3.5)
     {
      // 실제 점선 메시: 깊이와 노멀 패스도 같은 외곽을 사용합니다.
-     s.albedo=half3(.85,.59,.045);
+     s.albedo=_LineColor.rgb;
     }
     else
     {
@@ -79,7 +81,7 @@ Shader "JC/Environment/Road Markings"
      float da=max(fwidth(phase),.01);
      float dash=smoothstep(0,da,phase)*(1-smoothstep(_DashLength-da,_DashLength+da,phase));
      if(_MarkMode>2.5)clip(stripe*dash-.5);
-     s.albedo=lerp(s.albedo,half3(.85,.59,.045),stripe*dash);
+     s.albedo=lerp(s.albedo,_LineColor.rgb,stripe*dash);
     }
     InputData data;InitializeInputData(input,s.normalTS,data);
     half4 color=UniversalFragmentPBR(data,s);color.rgb=MixFog(color.rgb,data.fogCoord);color.a=1;return color;

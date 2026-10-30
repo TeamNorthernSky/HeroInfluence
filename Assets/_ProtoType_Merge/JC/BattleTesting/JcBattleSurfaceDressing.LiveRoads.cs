@@ -13,6 +13,7 @@ namespace JC.BattleTesting
         readonly Dictionary<Texture, Rect> paintBounds = new Dictionary<Texture, Rect>();
         bool redrawingLines, explorationLines;
         Vector3 lineValues = Vector3.one;
+        Color lineColor = JC.EnvironmentDetail.JcRoadMarkingProfile.DefaultColor;
         public int LineTargetCount => lineRecords.Count;
 
         internal static Mesh ReadableRoadMesh(Mesh mesh)
@@ -37,11 +38,14 @@ namespace JC.BattleTesting
             ClearRoadLines(); // 기본 배율에서는 원본 외형을 그대로 표시합니다.
         }
 
-        public void SetRoadValues(Vector3 values)
+        public void SetRoadValues(Vector3 values) => SetRoadValues(values, JC.EnvironmentDetail.JcRoadMarkingProfile.DefaultColor);
+
+        public void SetRoadValues(Vector3 values, Color color)
         {
+            lineColor = color;
             lineValues = values;
             ClearRoadLines();
-            if (explorationLines && values == Vector3.one) return;
+            if (explorationLines && values == Vector3.one && color == JC.EnvironmentDetail.JcRoadMarkingProfile.DefaultColor) return;
             var settings = Instantiate(Profile);
             try
             {

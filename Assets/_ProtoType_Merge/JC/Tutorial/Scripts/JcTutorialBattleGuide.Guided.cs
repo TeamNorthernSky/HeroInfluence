@@ -152,6 +152,7 @@ namespace JC.Tutorial
             var g = activeGuide;
             if (g == null || !g.guidedActive || g.gameObject.scene != scene || tooltip == null) return;
             g.guidedTooltip = tooltip;
+            if (g.dim != null && (g.guidedPhase == 3 || g.guidedPhase == 4)) g.dim.SetTooltip(tooltip);
             if (!g.detailed || g.formation || g.guidedPhase != 3 || g.layoutPanel == null) return;
             // Only the world-enemy hover lesson pins the tooltip above its instruction panel.
             var panelCanvas = g.layoutPanel.GetComponentInParent<Canvas>();
@@ -303,7 +304,8 @@ namespace JC.Tutorial
             view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.BorderOnly);
             view.SetActionHint(guidedPhase == 3 ? JcTutorialGuideView.ActionHint.HoverEnemy : guidedPhase == 4 ? JcTutorialGuideView.ActionHint.HoverBadge : JcTutorialGuideView.ActionHint.None, focus);
             dim.SetTargets(layoutPanel, focus);
-            dim.SetExtraTargets(guidedPhase == 3 || guidedPhase == 4 ? new[] { worldFocus, badge, guidedTooltip } : Array.Empty<RectTransform>());
+            dim.SetExtraTargets(guidedPhase == 3 || guidedPhase == 4 ? new[] { worldFocus, badge } : Array.Empty<RectTransform>());
+            dim.SetTooltip(guidedPhase == 3 || guidedPhase == 4 ? guidedTooltip : null);
             dim.SetRoundedTarget(guidedPhase == 4 ? worldFocus : null, 16f);
             resultShield.SetActive(true);
         }
@@ -356,6 +358,8 @@ namespace JC.Tutorial
         {
             if (!guidedActive) return;
             guidedActive = false; formation = false;
+            if (dim != null) dim.SetTooltip(null);
+            guidedTooltip = null;
             view.FixedBattleOutline = false;
             if (formationGrid != null) formationGrid.SetTutorialRows(this, false);
             formationGrid = null;

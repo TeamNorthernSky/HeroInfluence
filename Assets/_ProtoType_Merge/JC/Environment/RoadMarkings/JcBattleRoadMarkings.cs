@@ -21,7 +21,7 @@ namespace JC.EnvironmentDetail
             {
                 if(target.LineTargetCount==0)continue;
                 bool added=bound.Add(target);
-                if(changed||added)target.SetRoadValues(Values);
+                if(changed||added)target.SetRoadValues(Values, lineColor);
                 count+=target.LineTargetCount;
             }
             Status=count==0?"적용할 도로 차선 없음 (배경 대기/실내)":$"전투 차선 {count}개 구간 적용";

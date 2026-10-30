@@ -12,8 +12,11 @@ namespace JC.EnvironmentDetail
         public int RemovedTriangles { get; private set; }
 
         public static bool Contains(Vector3 explorationPosition) =>
-            explorationPosition.z >= 13.49f && explorationPosition.z <= 17.51f &&
-            (Mathf.Abs(explorationPosition.x - 15) <= .51f || Mathf.Abs(explorationPosition.x - 17) <= .51f);
+            (explorationPosition.z >= 13.49f && explorationPosition.z <= 17.51f &&
+             (Mathf.Abs(explorationPosition.x - 15) <= .51f || Mathf.Abs(explorationPosition.x - 17) <= .51f)) ||
+            // A2Sector1 편의점(14,23) 오른쪽 주차장 진입로. 횡단보도/주차 구획은 유지합니다.
+            (Mathf.Abs(explorationPosition.x - 16) <= .51f &&
+             explorationPosition.z >= 21.49f && explorationPosition.z <= 25.51f);
 
         public static void Apply(GameObject root, Matrix4x4 worldToExploration)
         {

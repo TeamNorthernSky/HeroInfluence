@@ -262,6 +262,7 @@ namespace JC.BattleTesting
             material.shader = profile.roadShader;
             material.SetTexture("_BaseMap", profile.plainAsphalt); material.SetTexture("_PlainMap", profile.plainAsphalt);
             material.SetTextureScale("_BaseMap", Vector2.one); material.SetTextureOffset("_BaseMap", Vector2.zero);
+            material.SetColor("_LineColor", lineColor);
             material.SetFloat("_MarkMode", 4); material.SetVector("_LineNormal", new Vector4(1, 0, .5f, 0));
             material.SetVector("_LineWorld", line.direction); material.SetFloat("_TileMeters", profile.lineWidth * 2);
             material.SetFloat("_LineWidth", profile.lineWidth); material.SetFloat("_DashLength", profile.dashLength);
