@@ -13,7 +13,7 @@ public sealed class BootAudioPrefabBuilder : AssetPostprocessor, IPreprocessBuil
 {
     public const string SourceScene = "Assets/_ProtoType_Merge/Scenes/BootScene.unity";
     public const string OutputPath = "Assets/Resources/BootAudioManager.prefab";
-    private const string Version = "BootAudio:v1:";
+    private const string Version = "BootAudio:v2:";
     private static bool generating;
     public int callbackOrder => 90;
 
@@ -50,7 +50,12 @@ public sealed class BootAudioPrefabBuilder : AssetPostprocessor, IPreprocessBuil
     public static void EnsureCurrent()
     {
         if (generating || EditorApplication.isPlaying) return;
-        string fingerprint = Version + AssetDatabase.GetAssetDependencyHash(SourceScene);
+        // The prefab copies scene-authored fields/references, not imported clip data.
+        // Library dependency hashes differ between checkouts even for identical files.
+        string sceneSourceText = System.IO.File.ReadAllText(SourceScene).TrimStart('\uFEFF').Replace("\r\n", "\n");
+        string fingerprint;
+        using (var sha = System.Security.Cryptography.SHA256.Create())
+            fingerprint = Version + BitConverter.ToString(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(sceneSourceText))).Replace("-", "").ToLowerInvariant();
         var importer = AssetImporter.GetAtPath(OutputPath);
         var existing = AssetDatabase.LoadAssetAtPath<GameObject>(OutputPath);
         if (existing != null && existing.GetComponent<AudioManager>() != null &&
