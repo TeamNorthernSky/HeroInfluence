@@ -10,6 +10,13 @@ public class ToggleButton : MonoBehaviour
 
     [SerializeField] private bool isOn;
     public bool IsOn => isOn;
+    // 공통 HUD가 지정한 외형을 클릭/재활성화 후에도 유지합니다.
+    public void SetVisualSprites(Sprite normal, Sprite active)
+    {
+        if (image == null) image = GetComponent<Image>();
+        normalSprite = normal; activeSprite = active;
+        if (image != null) { image.overrideSprite = null; ApplySprite(); }
+    }
     private bool pressedAppearance;
     private Color restingColor;
     private GameObject insetShading;

@@ -213,8 +213,9 @@ namespace ASB.Work.BattleGrid
 
         public void ShowPreviewHighlight(SkillData skill, GridCell mainCell, List<GridCell> splashCells)
         {
-            ClearPreviewHighlight();
-            if (mainCell == null) return;
+            // 새 범위를 확정한 뒤 한 번만 표시해 셀 메시의 해제·재생성을 방지합니다.
+            ClearPreviewHighlight(false);
+            if (mainCell == null) { RefreshTilePresentation(); return; }
 
             bool allConfirmed = useBattleTilePresentation || (skill != null && skill.classSkillTarget == 2);
             mainCell.SetMainTargetHighlight();
@@ -236,6 +237,11 @@ namespace ASB.Work.BattleGrid
 
         public void ClearPreviewHighlight()
         {
+            ClearPreviewHighlight(true);
+        }
+
+        private void ClearPreviewHighlight(bool refresh)
+        {
             for (int i = 0; i < _previewHighlightedCells.Count; i++)
             {
                 if (_previewHighlightedCells[i] != null)
@@ -248,7 +254,7 @@ namespace ASB.Work.BattleGrid
                 _previewMainTargetCell.ClearHighlight();
                 _previewMainTargetCell = null;
             }
-            RefreshTilePresentation();
+            if (refresh) RefreshTilePresentation();
         }
 
         /// <summary>기존 입력이 계산한 직접 선택 대상을 셀 표시로 전달합니다.</summary>
