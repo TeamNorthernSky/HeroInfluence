@@ -38,6 +38,8 @@ public class SystemMenuController : MonoBehaviour
 
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
+        if (TutorialCutSceneManager.HandleEscape()) return;
+
         if (WorldEventNpcPanelSelector.BlocksSystemMenuEscape) return;
         // 홍보 실습은 지정된 닫기 단계까지 유지한다. ESC로 실제 창을 닫으면 과제가 진행 불가능해진다.
         if (TutorialExploreUIController.BlocksSystemMenuEscape || JC.Tutorial.JcTutorialExploreGuide.BlocksSystemMenuEscape) return;

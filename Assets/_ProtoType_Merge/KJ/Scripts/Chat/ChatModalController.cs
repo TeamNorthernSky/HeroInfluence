@@ -455,6 +455,7 @@ public class ChatModalController : MonoBehaviour
             briefingEndShownFrame = Time.frameCount;
             briefingEndButton = Instantiate(choiceButtonPrefab, choiceLayout.SpawnParent);
             briefingEndButton.Bind("대화 종료", Close, true);
+            briefingEndButton.ShowEndConversationIcon();
             activeChoices.Add(briefingEndButton.gameObject);
             choiceLayout.PlayShow();
             if (skipButton != null) skipButton.interactable = false;

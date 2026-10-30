@@ -9216,7 +9216,6 @@ MonoBehaviour:
   - {x: 40, y: 28}
   - {x: 40, y: 27}
   - {x: 40, y: 26}
-  - {x: 40, y: 25}
   - {x: 39, y: 25}
   - {x: 38, y: 25}
   - {x: 38, y: 26}
@@ -9346,7 +9345,6 @@ MonoBehaviour:
   - {x: 22, y: 13}
   - {x: 21, y: 13}
   - {x: 20, y: 13}
-  - {x: 26, y: 10}
   - {x: 26, y: 9}
   - {x: 26, y: 8}
   - {x: 27, y: 8}
@@ -9432,7 +9430,6 @@ MonoBehaviour:
   - {x: 10, y: 27}
   - {x: 11, y: 27}
   - {x: 12, y: 27}
-  - {x: 13, y: 27}
   - {x: 14, y: 27}
   - {x: 15, y: 27}
   - {x: 15, y: 28}
@@ -10590,14 +10587,23 @@ MonoBehaviour:
   - {x: 48, y: 44}
   - {x: 49, y: 44}
   - {x: 19, y: 13}
+  - {x: 29, y: 34}
+  - {x: 39, y: 34}
+  - {x: 44, y: 31}
+  - {x: 44, y: 24}
+  - {x: 44, y: 8}
+  - {x: 12, y: 22}
+  - {x: 13, y: 27}
+  - {x: 19, y: 27}
+  - {x: 40, y: 25}
+  - {x: 26, y: 10}
+  - {x: 22, y: 24}
+  - {x: 45, y: 16}
   itemPlacements:
   - gridPosition: {x: 7, y: 9}
     resourceType: 0
     amount: 1000
   - gridPosition: {x: 14, y: 6}
-    resourceType: 0
-    amount: 1000
-  - gridPosition: {x: 45, y: 14}
     resourceType: 0
     amount: 1000
   - gridPosition: {x: 34, y: 19}
@@ -10678,6 +10684,9 @@ MonoBehaviour:
   - gridPosition: {x: 19, y: 23}
     resourceType: 0
     amount: 1000
+  - gridPosition: {x: 44, y: 16}
+    resourceType: 0
+    amount: 2000
   outpostPlacements:
   - gridPosition: {x: 32, y: 28}
     outpostType: 0
@@ -10688,372 +10697,922 @@ MonoBehaviour:
   decorativeObjectPlacements:
   - gridPosition: {x: 22, y: 17}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 11, y: 28}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 14, y: 28}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 18, y: 28}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 21, y: 28}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 19, y: 14}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 13, y: 17}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 10, y: 14}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 10, y: 17}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 13, y: 14}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 19, y: 17}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 22, y: 14}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 19, y: 9}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 16, y: 9}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 22, y: 9}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 27, y: 9}
     prefabKey: BGStore001
+    rotation: 0
   - gridPosition: {x: 35, y: 9}
     prefabKey: BGStore001
+    rotation: 0
   - gridPosition: {x: 31, y: 9}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 39, y: 9}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 14, y: 23}
     prefabKey: BGStore004
+    rotation: 0
   - gridPosition: {x: 27, y: 29}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 36, y: 29}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 27, y: 17}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 30, y: 14}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 33, y: 17}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 36, y: 14}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 39, y: 17}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 27, y: 14}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 30, y: 17}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 33, y: 14}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 36, y: 17}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 39, y: 14}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 30, y: 29}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 39, y: 29}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 27, y: 22}
     prefabKey: BGStore001
+    rotation: 0
   - gridPosition: {x: 39, y: 26}
     prefabKey: BGStore001
+    rotation: 0
   - gridPosition: {x: 27, y: 24}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 39, y: 22}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 10, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 11, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 12, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 13, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 14, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 15, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 16, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 17, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 18, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 19, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 20, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 21, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 22, y: 30}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 18, y: 21}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 19, y: 21}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 20, y: 21}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 21, y: 21}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 22, y: 21}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 12, y: 21}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 11, y: 21}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 10, y: 21}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 9, y: 29}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 9, y: 28}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 9, y: 27}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 9, y: 26}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 9, y: 24}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 9, y: 22}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 9, y: 23}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 23, y: 22}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 23, y: 24}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 23, y: 23}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 23, y: 25}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 23, y: 27}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 23, y: 28}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 23, y: 29}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 23, y: 26}
     prefabKey: Fence_01-1
-  - gridPosition: {x: 14, y: 8}
-    prefabKey: Fence_01-1
-  - gridPosition: {x: 14, y: 9}
-    prefabKey: Fence_01-1
-  - gridPosition: {x: 14, y: 10}
-    prefabKey: Fence_01-1
-  - gridPosition: {x: 14, y: 11}
-    prefabKey: Fence_01-1
-  - gridPosition: {x: 14, y: 12}
-    prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 7}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 8}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 9}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 11}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 12}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 13}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 14}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 15}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 16}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 16}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 15}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 14}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 13}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 12}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 11}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 10}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 9}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 7}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 6}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 8}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 24}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 25}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 26}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 27}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 28}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 29}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 24}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 23}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 26}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 25}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 27}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 28}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 29}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 30}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 31}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 32}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 34}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 33}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 46, y: 35}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 32}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 31}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 27, y: 34}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 27, y: 35}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 16, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 18, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 17, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 19, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 20, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 21, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 22, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 23, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 24, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 25, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 26, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 28, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 29, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 30, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 32, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 34, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 33, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 37, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 36, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 35, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 38, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 39, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 40, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 42, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 44, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 41, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 43, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 45, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 30, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 31, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 32, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 33, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 34, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 35, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 36, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 37, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 38, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 39, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 41, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 42, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 46, y: 36}
     prefabKey: Fence_02-1
+    rotation: 0
   - gridPosition: {x: 46, y: 17}
     prefabKey: Fence_02-1
+    rotation: 0
   - gridPosition: {x: 43, y: 17}
     prefabKey: Fence_02
+    rotation: 0
   - gridPosition: {x: 27, y: 36}
     prefabKey: Fence_02
+    rotation: 0
   - gridPosition: {x: 27, y: 33}
     prefabKey: Fence_02-2
+    rotation: 0
   - gridPosition: {x: 23, y: 21}
     prefabKey: Fence_02-2
+    rotation: 0
   - gridPosition: {x: 23, y: 30}
     prefabKey: Fence_02-1
+    rotation: 0
   - gridPosition: {x: 9, y: 30}
     prefabKey: Fence_02
+    rotation: 0
   - gridPosition: {x: 9, y: 21}
     prefabKey: Fence_02-3
+    rotation: 0
   - gridPosition: {x: 43, y: 33}
     prefabKey: Fence_02-1
+    rotation: 0
   - gridPosition: {x: 44, y: 17}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 45, y: 17}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 44, y: 22}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 45, y: 22}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 46, y: 22}
     prefabKey: Fence_02-2
+    rotation: 0
   - gridPosition: {x: 43, y: 22}
     prefabKey: Fence_02-3
+    rotation: 0
   - gridPosition: {x: 31, y: 36}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 29, y: 33}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 43, y: 18}
     prefabKey: Bridge
+    rotation: 0
   - gridPosition: {x: 7, y: 37}
     prefabKey: Mount01
+    rotation: 0
   - gridPosition: {x: 3, y: 21}
     prefabKey: Mount03
+    rotation: 0
   - gridPosition: {x: 23, y: 2}
     prefabKey: Mount02
+    rotation: 0
+  - gridPosition: {x: 23, y: 8}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 15, y: 22}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 37, y: 13}
+    prefabKey: Vending machine
+    rotation: 180
+  - gridPosition: {x: 20, y: 28}
+    prefabKey: Trash Can
+    rotation: 270
+  - gridPosition: {x: 12, y: 28}
+    prefabKey: Trash Can
+    rotation: 90
+  - gridPosition: {x: 28, y: 29}
+    prefabKey: Trash Can
+    rotation: 90
+  - gridPosition: {x: 20, y: 15}
+    prefabKey: Trash Can
+    rotation: 90
+  - gridPosition: {x: 11, y: 15}
+    prefabKey: Vending machine
+    rotation: 90
+  - gridPosition: {x: 31, y: 15}
+    prefabKey: Vending machine
+    rotation: 90
+  - gridPosition: {x: 35, y: 16}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 29, y: 16}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 29, y: 34}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 39, y: 34}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 44, y: 31}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 44, y: 24}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 44, y: 8}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 12, y: 22}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 44, y: 5}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 45, y: 5}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 46, y: 5}
+    prefabKey: Fence_02
+    rotation: 180
+  - gridPosition: {x: 43, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 42, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 41, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 40, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 39, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 38, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 37, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 36, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 35, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 34, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 33, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 32, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 31, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 30, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 29, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 28, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 27, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 26, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 25, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 24, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 23, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 22, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 21, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 20, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 19, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 18, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 17, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 16, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 15, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 14, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 13, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 12, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 11, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 10, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 9, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 8, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 7, y: 5}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 6, y: 5}
+    prefabKey: Fence_02
+    rotation: 270
+  - gridPosition: {x: 6, y: 6}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 7}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 8}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 9}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 10}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 11}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 12}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 13}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 14}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 15}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 16}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 17}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 18}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 20}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 19}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 21}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 22}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 23}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 25}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 24}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 26}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 27}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 30}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 29}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 28}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 31}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 32}
+    prefabKey: Fence_01
+    rotation: 270
+  - gridPosition: {x: 6, y: 33}
+    prefabKey: Fence_02
+    rotation: 0
+  - gridPosition: {x: 7, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 8, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 9, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 11, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 10, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 12, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 13, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 14, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 15, y: 33}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 14, y: 11}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 14, y: 12}
+    prefabKey: Vending machine
+    rotation: 90
+  - gridPosition: {x: 23, y: 10}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 14, y: 8}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 9, y: 15}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 10, y: 29}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 22, y: 29}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 26, y: 18}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 28, y: 13}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 34, y: 13}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 40, y: 13}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 28, y: 18}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 34, y: 18}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 40, y: 18}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 20, y: 13}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 21, y: 18}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 26, y: 15}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 14, y: 16}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 26, y: 28}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 21, y: 8}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 40, y: 8}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 40, y: 27}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 22, y: 24}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 28, y: 23}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 37, y: 28}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 37, y: 16}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 31, y: 16}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 21, y: 16}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 13, y: 29}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 28, y: 8}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 34, y: 8}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 45, y: 16}
+    prefabKey: Streetlight
+    rotation: 0
   tutorialObjectPlacements: []
   mainEventPlacements:
   - gridPosition: {x: 8, y: 16}

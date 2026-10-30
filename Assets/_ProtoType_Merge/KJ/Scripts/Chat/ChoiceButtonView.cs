@@ -15,11 +15,13 @@ public class ChoiceButtonView : MonoBehaviour
     [SerializeField] private TMP_Text indexLabel;
     [SerializeField] private Sprite indexedSprite;
     [SerializeField] private Sprite plainSprite;
+    [SerializeField] private Image endConversationIcon;
 
     public string Text => label != null ? label.text : string.Empty;
 
     public void SetIndex(int index)
     {
+        if (endConversationIcon != null) endConversationIcon.gameObject.SetActive(false);
         bool numbered = index > 0;
         if (indexLabel != null)
         {
@@ -40,6 +42,16 @@ public class ChoiceButtonView : MonoBehaviour
         var layout = GetComponent<VerticalLayoutGroup>();
         if (layout != null)
             layout.padding = new RectOffset(numbered ? 84 : 24, layout.padding.right,
+                layout.padding.top, layout.padding.bottom);
+    }
+
+    public void ShowEndConversationIcon()
+    {
+        if (endConversationIcon == null) return;
+        endConversationIcon.gameObject.SetActive(true);
+        var layout = GetComponent<VerticalLayoutGroup>();
+        if (layout != null)
+            layout.padding = new RectOffset(128, layout.padding.right,
                 layout.padding.top, layout.padding.bottom);
     }
 
