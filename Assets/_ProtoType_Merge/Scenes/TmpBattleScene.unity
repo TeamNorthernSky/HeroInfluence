@@ -15822,7 +15822,7 @@ MonoBehaviour:
   bloomIntensity: 0.4
   bloomSoftKnee: 2.2
   selectedColor: {r: 1, g: 0.78, b: 0.15, a: 1}
-  selectedWidth: 0.04
+  selectedWidth: 0.065
   selectedIntensity: 2.2
   selectedOrbit: 1
   orbitPeriod: 2.4

@@ -152,6 +152,27 @@ namespace JC.Tutorial
             var g = activeGuide;
             if (g == null || !g.guidedActive || g.gameObject.scene != scene || tooltip == null) return;
             g.guidedTooltip = tooltip;
+            if (!g.detailed || g.formation || g.guidedPhase != 3 || g.layoutPanel == null) return;
+            // Only the world-enemy hover lesson pins the tooltip above its instruction panel.
+            var panelCanvas = g.layoutPanel.GetComponentInParent<Canvas>();
+            var tooltipCanvas = tooltip.GetComponentInParent<Canvas>();
+            var panelCamera = panelCanvas != null && panelCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? panelCanvas.worldCamera : null;
+            var tooltipCamera = tooltipCanvas != null && tooltipCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? tooltipCanvas.worldCamera : null;
+            var corners = new Vector3[4];
+            g.layoutPanel.GetWorldCorners(corners);
+            var panelLeft = RectTransformUtility.WorldToScreenPoint(panelCamera, corners[1]);
+            var panelRight = RectTransformUtility.WorldToScreenPoint(panelCamera, corners[2]);
+            tooltip.GetWorldCorners(corners);
+            var bottomLeft = RectTransformUtility.WorldToScreenPoint(tooltipCamera, corners[0]);
+            var topRight = RectTransformUtility.WorldToScreenPoint(tooltipCamera, corners[2]);
+            float width = topRight.x - bottomLeft.x, height = topRight.y - bottomLeft.y;
+            float gap = 12f * (panelCanvas != null ? panelCanvas.scaleFactor : 1f);
+            float left = Mathf.Clamp(Mathf.Lerp(panelLeft.x, panelRight.x, .59f) - width * .5f, 8f, Mathf.Max(8f, Screen.width-width-8f));
+            float bottom = Mathf.Min(panelLeft.y + gap, Screen.height-height-8f);
+            var pivot = RectTransformUtility.WorldToScreenPoint(tooltipCamera, tooltip.position);
+            var desired = pivot + new Vector2(left-bottomLeft.x, bottom-bottomLeft.y);
+            if (RectTransformUtility.ScreenPointToWorldPointInRectangle(tooltip, desired, tooltipCamera, out var world))
+                tooltip.position = world;
         }
         private void EnsureNextButton()
         {
@@ -287,6 +308,7 @@ namespace JC.Tutorial
             view.SetActionHint(guidedPhase == 3 ? JcTutorialGuideView.ActionHint.HoverEnemy : guidedPhase == 4 ? JcTutorialGuideView.ActionHint.HoverBadge : JcTutorialGuideView.ActionHint.None, focus);
             dim.SetTargets(layoutPanel, focus);
             dim.SetExtraTargets(guidedPhase == 3 || guidedPhase == 4 ? new[] { worldFocus, badge, guidedTooltip } : Array.Empty<RectTransform>());
+            dim.SetRoundedTarget(guidedPhase == 4 ? worldFocus : null, 16f);
             resultShield.SetActive(true);
         }
         private void LateGuided()

@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using TMPro;
 namespace JC.Environment {
  [ExecuteAlways,DisallowMultipleComponent]
  public sealed class JcDayNightController : MonoBehaviour {
@@ -48,7 +47,6 @@ namespace JC.Environment {
   SphericalHarmonicsL2 oldProbe;
   struct ProbeState {public ReflectionProbe probe;public ReflectionProbeMode mode;public Texture texture;}
   readonly List<ProbeState> probes=new List<ProbeState>();
-  Canvas clockCanvas; TextMeshProUGUI clockText;
   sealed class UILock {public CanvasGroup group;public UIInputBlocker blocker;public bool added,interactable,blocks;public float alpha;}
   readonly List<UILock> locks=new List<UILock>();
   GameObject selection;
@@ -78,7 +76,7 @@ namespace JC.Environment {
     if(!applied||shownTurn!=turn){shownTurn=turn;ApplyHour(profile.HoursForTurn(turn));}
    }
    if(transitioning)LockUI();
-   UpdateClock();UpdateWindowFade();
+   UpdateWindowFade();
    if(Time.realtimeSinceStartupAsDouble>=nextCharacterScan){characters.ScanCharacters(gameObject.scene);specialWindows.Scan(gameObject.scene);nextCharacterScan=Time.realtimeSinceStartupAsDouble+1;}
   }
   bool Busy()=>PlayerInteractionBusy() || ModalManager.HasAny || ChatModalController.IsOpen ||
@@ -107,7 +105,7 @@ namespace JC.Environment {
      while(segment<timeline.Length-1 && timeline[segment]<time)segment++;
      float progress=(segment-1+Mathf.InverseLerp(timeline[segment-1],timeline[segment],time))/(timeline.Length-1);
      ApplyHour(from+(to-from)*progress);
-     UpdateClock();yield return null;
+     yield return null;
     }
     ApplyHour(to);shownTurn=toTurn;
    }finally{transitioning=false;UnlockUI();}
@@ -178,7 +176,7 @@ namespace JC.Environment {
   }
   void LockUI(){
    foreach(var canvas in UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None)){
-    if(!canvas.isRootCanvas||canvas==clockCanvas||canvas.renderMode==RenderMode.WorldSpace)continue;
+    if(!canvas.isRootCanvas||canvas.renderMode==RenderMode.WorldSpace)continue;
     LockGroup(canvas.gameObject,profile.disabledUIAlpha);
     foreach(var selectable in canvas.GetComponentsInChildren<Selectable>(true))LockGroup(selectable.gameObject,1);
    }
@@ -207,20 +205,7 @@ namespace JC.Environment {
    if(EventSystem.current!=null && EventSystem.current.currentSelectedGameObject==null && selection!=null && selection.activeInHierarchy){var s=selection.GetComponent<Selectable>();if(s!=null && s.IsInteractable())EventSystem.current.SetSelectedGameObject(selection);}
    selection=null;
   }
-  void UpdateClock(){
-   if(!Application.isPlaying)return;
-   if(clockCanvas==null){
-    var go=new GameObject("JC 탐사 시각",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler));go.transform.SetParent(transform,false);
-    clockCanvas=go.GetComponent<Canvas>();clockCanvas.renderMode=RenderMode.ScreenSpaceOverlay;clockCanvas.sortingOrder=500;
-    var scaler=go.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);
-    var text=new GameObject("시각",typeof(RectTransform),typeof(TextMeshProUGUI));text.transform.SetParent(go.transform,false);clockText=text.GetComponent<TextMeshProUGUI>();clockText.raycastTarget=false;
-    clockText.font=TMP_Settings.defaultFontAsset;foreach(var existing in FindObjectsByType<TextMeshProUGUI>(FindObjectsSortMode.None))if(existing!=clockText && existing.font!=null && existing.font.HasCharacter('시')){clockText.font=existing.font;break;}clockText.fontSize=26;clockText.alignment=TextAlignmentOptions.Center;clockText.color=new Color(.93f,.96f,1);clockText.outlineWidth=.15f;clockText.outlineColor=Color.black;
-    var rt=text.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(.5f,1);rt.pivot=new Vector2(.5f,1);rt.anchoredPosition=new Vector2(0,-65);rt.sizeDelta=new Vector2(420,55);
-   }
-   int minutes=(int)Math.Round(shownHours*60);int h=((minutes/60)%24+24)%24,m=(minutes%60+60)%60;
-   clockText.text=(transitioning?"시간 경과  ":"")+h.ToString("00")+":"+m.ToString("00");
-  }
-  public void Cancel(){transitioning=false;UnlockUI();Restore();if(clockCanvas!=null)DestroyObject(clockCanvas.gameObject);clockCanvas=null;clockText=null;}
+  public void Cancel(){transitioning=false;UnlockUI();Restore();}
   void Restore(){
    if(!applied)return;
    if(sun!=null){sun.transform.rotation=oldRotation;sun.color=oldLightColor;sun.intensity=oldIntensity;sun.shadowStrength=oldShadow;}

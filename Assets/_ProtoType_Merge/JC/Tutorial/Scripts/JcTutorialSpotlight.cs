@@ -62,6 +62,10 @@ namespace JC.Tutorial
         protected override void OnEnable() { base.OnEnable(); RaiseMessage(); }
         protected override void OnDisable() { RestoreMessageOrder(); base.OnDisable(); }
         private RectTransform[] extra = System.Array.Empty<RectTransform>();
+        private RectTransform roundedTarget;
+        private float cornerRadius;
+        public void SetRoundedTarget(RectTransform target, float radius)
+        { roundedTarget = target; cornerRadius = Mathf.Max(0, radius); SetVerticesDirty(); }
         public void SetExtraTargets(RectTransform[] targets) { extra = targets ?? System.Array.Empty<RectTransform>(); SetVerticesDirty(); }
         private readonly Vector3[] corners = new Vector3[4];
         public void SetTargets(RectTransform message, RectTransform window = null)
@@ -96,22 +100,47 @@ namespace JC.Tutorial
             var holes = new System.Collections.Generic.List<Rect>();
             if (second != null) holes.Add(Bounds(second));
             foreach (var target in extra) if (target != null && target.gameObject.activeInHierarchy) holes.Add(Bounds(target));
-            var xList = new System.Collections.Generic.List<float> { r.xMin, r.xMax };
+            bool rounded = roundedTarget != null && roundedTarget.gameObject.activeInHierarchy && cornerRadius > 0;
+            Rect roundBounds = rounded ? Bounds(roundedTarget) : new Rect();
+            float radius = rounded ? Mathf.Min(cornerRadius, Mathf.Min(roundBounds.width,roundBounds.height)*.5f) : 0;
             var yList = new System.Collections.Generic.List<float> { r.yMin, r.yMax };
-            foreach (var hole in holes) { xList.Add(Mathf.Clamp(hole.xMin,r.xMin,r.xMax)); xList.Add(Mathf.Clamp(hole.xMax,r.xMin,r.xMax)); yList.Add(Mathf.Clamp(hole.yMin,r.yMin,r.yMax)); yList.Add(Mathf.Clamp(hole.yMax,r.yMin,r.yMax)); }
-            var xs = xList.ToArray(); var ys = yList.ToArray();
-            System.Array.Sort(xs); System.Array.Sort(ys);
-            for(int x=0;x<xs.Length-1;x++) for(int y=0;y<ys.Length-1;y++)
+            foreach (var hole in holes) { yList.Add(Mathf.Clamp(hole.yMin,r.yMin,r.yMax)); yList.Add(Mathf.Clamp(hole.yMax,r.yMin,r.yMax)); }
+            // Subpixel strips retain correct union with overlapping tooltip/badge holes.
+            if (rounded) for (int n=0;n<=32;n++)
+            { yList.Add(Mathf.Clamp(roundBounds.yMin+radius*n/32f,r.yMin,r.yMax)); yList.Add(Mathf.Clamp(roundBounds.yMax-radius*n/32f,r.yMin,r.yMax)); }
+            var ys = yList.ToArray(); System.Array.Sort(ys);
+            for(int y=0;y<ys.Length-1;y++)
             {
-                if(xs[x+1]-xs[x]<.01f || ys[y+1]-ys[y]<.01f) continue;
+                if(ys[y+1]-ys[y]<.01f) continue;
+                float midY=(ys[y]+ys[y+1])*.5f;
+                var rowHoles=new System.Collections.Generic.List<Rect>();
+                var xList=new System.Collections.Generic.List<float>{r.xMin,r.xMax};
+                foreach(var original in holes)
+                {
+                    if(midY<original.yMin || midY>original.yMax)continue;
+                    var hole=original;
+                    if(rounded && hole==roundBounds)
+                    {
+                        float dy=Mathf.Max(roundBounds.yMin+radius-midY,midY-(roundBounds.yMax-radius));
+                        float inset=dy>0 ? radius-Mathf.Sqrt(Mathf.Max(0,radius*radius-dy*dy)) : 0;
+                        hole.xMin+=inset; hole.xMax-=inset;
+                    }
+                    rowHoles.Add(hole);
+                    xList.Add(Mathf.Clamp(hole.xMin,r.xMin,r.xMax));xList.Add(Mathf.Clamp(hole.xMax,r.xMin,r.xMax));
+                }
+                var xs=xList.ToArray();System.Array.Sort(xs);
+                for(int x=0;x<xs.Length-1;x++)
+                {
+                if(xs[x+1]-xs[x]<.01f)continue;
                 var mid = new Vector2((xs[x]+xs[x+1])*.5f,(ys[y]+ys[y+1])*.5f);
-                if (holes.Exists(h => h.Contains(mid))) continue;
+                if (rowHoles.Exists(h => h.Contains(mid))) continue;
                 int i=vh.currentVertCount;
                 vh.AddVert(new Vector3(xs[x],ys[y]), color, Vector2.zero);
                 vh.AddVert(new Vector3(xs[x],ys[y+1]), color, Vector2.zero);
                 vh.AddVert(new Vector3(xs[x+1],ys[y+1]), color, Vector2.zero);
                 vh.AddVert(new Vector3(xs[x+1],ys[y]), color, Vector2.zero);
                 vh.AddTriangle(i,i+1,i+2); vh.AddTriangle(i,i+2,i+3);
+                }
             }
         }
     }
