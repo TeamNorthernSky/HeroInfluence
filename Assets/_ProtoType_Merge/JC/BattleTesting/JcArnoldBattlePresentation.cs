@@ -90,6 +90,15 @@ namespace JC.BattleTesting
             return settings;
         }
 
+        // 전환 실패 시 다음 전투에 이전 배경/sceneLoaded 콜백이 남지 않게 정리합니다.
+        public static void CancelPending()
+        {
+            if (pending == null) return;
+            SceneManager.sceneLoaded -= pending.Loaded;
+            Destroy(pending.gameObject);
+            pending = null;
+        }
+
         public static void Prepare(PartyGridMover party, EnemyGridMover enemy, string battleScene)
         {
             Prepare(party, enemy, battleScene, false);

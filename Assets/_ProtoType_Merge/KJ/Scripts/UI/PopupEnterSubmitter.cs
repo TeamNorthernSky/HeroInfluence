@@ -53,6 +53,7 @@ public sealed class PopupEnterSubmitter : MonoBehaviour
 
     private void Update()
     {
+        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) return;
         if (!IsPlainEnterPressed()) return;
 
         EventSystem eventSystem = EventSystem.current;
