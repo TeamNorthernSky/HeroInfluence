@@ -68,7 +68,7 @@ namespace JC.Tutorial
             public Rect normalizedBounds;
         }
         public ResourceRegion[] resourceRegions = System.Array.Empty<ResourceRegion>();
-        [Tooltip("씬에 배치한 안내 디밍입니다. 대상과 메시지 영역은 밝게 유지합니다.")]
+        [Tooltip("씬에 배치한 안내 디밍입니다. 안내 대상은 디밍에서 제외하고 메시지는 디밍 위에 그립니다.")]
         public JcTutorialSpotlight spotlight;
         private FocusPresentation focusPresentation;
         private bool visible;

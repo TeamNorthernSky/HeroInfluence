@@ -42,8 +42,37 @@ public sealed class SimulationBattleLauncher : MonoBehaviour
         return true;
     }
 
-    /// <summary>검증 → transient 아군 생성 → CombatContext.BeginSimulation → 전투 씬 로드.</summary>
+    /// <summary>전환 요청 접수. 접수 뒤 데이터 검증 실패는 로그와 원래 화면 복구로 처리합니다.</summary>
     public bool TryBuildAndBegin(out string error)
+    {
+        error = string.Empty;
+        if (config == null || CombatContext.Instance == null)
+        {
+            error = "SimulationBattleConfig 또는 CombatContext가 없습니다.";
+            return false;
+        }
+        var request = SceneFadeController.LoadSceneAsyncWithFade(BattleSceneName, prepare: () =>
+        {
+            if (this == null) return false;
+            if (!PrepareSimulation(out string preparationError))
+            {
+                Debug.LogError($"[SimulationBattleLauncher] {preparationError}", this);
+                return false;
+            }
+            var bossBackground = JC.BattleTesting.JcBossBattleBackground.Load();
+            if (bossBackground != null && bossBackground.Matches(CombatContext.Instance))
+                JC.BattleTesting.JcArnoldBattlePresentation.PrepareCameraOnly(BattleSceneName);
+            return true;
+        }, onFailed: () =>
+        {
+            CombatContext.Instance?.ClearSimulation();
+            JC.BattleTesting.JcArnoldBattlePresentation.CancelPending();
+        });
+        if (request == null) error = "전투 씬이 없거나 다른 씬 전환이 진행 중입니다.";
+        return request != null;
+    }
+
+    private bool PrepareSimulation(out string error)
     {
         error = string.Empty;
 
@@ -116,36 +145,6 @@ public sealed class SimulationBattleLauncher : MonoBehaviour
             return false;
         }
 
-        if (!TryLoadBattleScene(out string loadError))
-        {
-            // 씬 로드 실패 시 컨텍스트만 되돌린다(리포지토리 부작용 없음).
-            context.ClearSimulation();
-            error = loadError;
-            return false;
-        }
-
         return true;
-    }
-
-    private bool TryLoadBattleScene(out string error)
-    {
-        error = string.Empty;
-        try
-        {
-            var bossBackground = JC.BattleTesting.JcBossBattleBackground.Load();
-            if (bossBackground != null && bossBackground.Matches(CombatContext.Instance))
-                JC.BattleTesting.JcArnoldBattlePresentation.PrepareCameraOnly(BattleSceneName);
-            if (GameSceneManager.Instance != null)
-                GameSceneManager.Instance.LoadScene(BattleSceneName);
-            else
-                SceneFadeController.LoadSceneWithFadeIfNeeded(BattleSceneName);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            error = $"전투 씬 로드 실패: {ex.Message}";
-            Debug.LogException(ex, this);
-            return false;
-        }
     }
 }

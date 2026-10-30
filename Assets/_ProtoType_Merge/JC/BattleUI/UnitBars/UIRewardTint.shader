@@ -6,6 +6,7 @@ Shader "JC/UI/RewardTint"
         _Color ("Tint", Color) = (1,1,1,1)
         _EffectColor ("Effect Color", Color) = (1,1,1,1)
         _Effect ("Effect Amount", Range(0,1)) = 0
+        _Saturation ("Saturation", Range(0,1)) = 1
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
         _StencilOp ("Stencil Operation", Float) = 0
@@ -39,7 +40,7 @@ Shader "JC/UI/RewardTint"
             sampler2D _MainTex;
             fixed4 _Color, _TextureSampleAdd, _EffectColor;
             float4 _ClipRect, _MainTex_ST;
-            float _Effect;
+            float _Effect, _Saturation;
             v2f vert(appdata v)
             {
                 v2f o;
@@ -54,6 +55,7 @@ Shader "JC/UI/RewardTint"
             fixed4 frag(v2f i):SV_Target
             {
                 fixed4 color = (tex2D(_MainTex, i.uv) + _TextureSampleAdd) * i.color;
+                color.rgb = lerp(dot(color.rgb, float3(.2126, .7152, .0722)).xxx, color.rgb, _Saturation);
                 color.rgb = lerp(color.rgb, _EffectColor.rgb * i.color.rgb, saturate(_Effect));
                 color.a *= lerp(1, _EffectColor.a, saturate(_Effect));
                 #ifdef UNITY_UI_CLIP_RECT

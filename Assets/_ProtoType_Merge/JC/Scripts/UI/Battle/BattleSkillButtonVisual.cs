@@ -127,6 +127,8 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
     private void UpdateOrbitPixelSize()
     {
         if (selectedInstance == null || selectedFrame == null) return;
+        var rect = selectedFrame.rectTransform.rect;
+        selectedInstance.SetVector("_BattleRimRect", new Vector4(rect.xMin, rect.yMin, rect.width, rect.height));
         var canvas = selectedFrame.canvas;
         var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
         selectedFrame.rectTransform.GetWorldCorners(selectedCorners);

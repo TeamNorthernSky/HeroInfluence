@@ -74,6 +74,10 @@ public class BattleSkillSweepSettings : MonoBehaviour
         }
         if (selected != null)
         {
+            // Preserve the planning team's preview scene and other shared shader consumers.
+            string sceneName = gameObject.scene.name;
+            selected.SetFloat("_ConfigurableOrbitRim",
+                sceneName == "TmpBattleScene" || sceneName == "TutorialBattleScene" ? 1f : 0f);
             selected.SetColor("_GlowColor", selectedColor); selected.SetFloat("_GlowWidth", selectedWidth);
             selected.SetFloat("_GlowIntensity", selectedIntensity);
             selected.SetFloat("_SelectedMotion", selectedOrbit ? 1 : 0);

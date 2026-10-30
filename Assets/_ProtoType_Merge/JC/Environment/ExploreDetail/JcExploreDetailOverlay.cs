@@ -93,6 +93,7 @@ namespace JC.EnvironmentDetail
                     instances.Add(new CombineInstance{mesh=block,transform=Matrix4x4.TRS(at,Quaternion.Euler(0,d<2?0:90,0),Vector3.one)});
                 }
             }}
+            AddGrassCurbCorners(cells,instances);
             if(instances.Count>0){var mesh=new Mesh{name="JC continuous boundaries",indexFormat=IndexFormat.UInt32,hideFlags=HideFlags.DontSave};mesh.CombineMeshes(instances.ToArray());owned.Add(mesh);var go=new GameObject("연속 연석: 보도·야지 경계");go.hideFlags=HideFlags.DontSave;go.transform.SetParent(output.transform,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;go.AddComponent<MeshRenderer>().sharedMaterial=curb;}
             string edgeStatus=BuildNaturalEdges(cells);
             string waterStatus=BuildWaterfront(sources,cells);

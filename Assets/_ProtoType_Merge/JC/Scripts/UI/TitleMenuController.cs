@@ -19,6 +19,7 @@ public class TitleMenuController : MonoBehaviour
 
     private void Update()
     {
+        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) return;
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
         if (ModalManager.HasAny)

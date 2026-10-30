@@ -336,6 +336,7 @@ public class ChatModalController : MonoBehaviour
 
     private void Update()
     {
+        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) return;
         if (skipping) return;
         if (entranceTween.isAlive || Time.frameCount == beginFrame) return;
         if (isClosing || (!waitingForRewardClose && (manager == null || !manager.IsRunning))) return;

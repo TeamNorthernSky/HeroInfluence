@@ -33,6 +33,8 @@ namespace JC.Tutorial
         private float arrowCorner=3;
         [SerializeField, Min(0), Tooltip("화살표가 대상에서 멀어졌다 돌아오는 왕복 폭(Canvas 단위)입니다.")]
         private float arrowBobTravel=4;
+        private bool grayscaleFill;
+        public void SetGrayscaleFill(bool value) { if (grayscaleFill == value) return; grayscaleFill = value; SetVerticesDirty(); }
         private bool opaqueFill;
         public void SetOpaqueFill(bool value) { if (opaqueFill == value) return; opaqueFill = value; SetVerticesDirty(); }
         private float sweepClock;
@@ -148,6 +150,7 @@ namespace JC.Tutorial
             if (shape == Shape.Panel)
             {
                 Color fill = Color.Lerp(lowerColor, color, .7f);
+                if (grayscaleFill) { float gray = fill.grayscale; fill = new Color(gray, gray, gray, fill.a); }
                 if (opaqueFill) fill.a = 1;
                 Add(vh, r.center, fill);
                 for (int i = 0; i < count; i++)

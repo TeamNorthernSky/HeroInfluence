@@ -152,6 +152,27 @@ namespace JC.Tutorial
             var g = activeGuide;
             if (g == null || !g.guidedActive || g.gameObject.scene != scene || tooltip == null) return;
             g.guidedTooltip = tooltip;
+            if (!g.detailed || g.formation || g.guidedPhase != 3 || g.layoutPanel == null) return;
+            // Only the world-enemy hover lesson pins the tooltip above its instruction panel.
+            var panelCanvas = g.layoutPanel.GetComponentInParent<Canvas>();
+            var tooltipCanvas = tooltip.GetComponentInParent<Canvas>();
+            var panelCamera = panelCanvas != null && panelCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? panelCanvas.worldCamera : null;
+            var tooltipCamera = tooltipCanvas != null && tooltipCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? tooltipCanvas.worldCamera : null;
+            var corners = new Vector3[4];
+            g.layoutPanel.GetWorldCorners(corners);
+            var panelLeft = RectTransformUtility.WorldToScreenPoint(panelCamera, corners[1]);
+            var panelRight = RectTransformUtility.WorldToScreenPoint(panelCamera, corners[2]);
+            tooltip.GetWorldCorners(corners);
+            var bottomLeft = RectTransformUtility.WorldToScreenPoint(tooltipCamera, corners[0]);
+            var topRight = RectTransformUtility.WorldToScreenPoint(tooltipCamera, corners[2]);
+            float width = topRight.x - bottomLeft.x, height = topRight.y - bottomLeft.y;
+            float gap = 12f * (panelCanvas != null ? panelCanvas.scaleFactor : 1f);
+            float left = Mathf.Clamp(Mathf.Lerp(panelLeft.x, panelRight.x, .59f) - width * .5f, 8f, Mathf.Max(8f, Screen.width-width-8f));
+            float bottom = Mathf.Min(panelLeft.y + gap, Screen.height-height-8f);
+            var pivot = RectTransformUtility.WorldToScreenPoint(tooltipCamera, tooltip.position);
+            var desired = pivot + new Vector2(left-bottomLeft.x, bottom-bottomLeft.y);
+            if (RectTransformUtility.ScreenPointToWorldPointInRectangle(tooltip, desired, tooltipCamera, out var world))
+                tooltip.position = world;
         }
         private void EnsureNextButton()
         {
@@ -274,15 +295,10 @@ namespace JC.Tutorial
             UpdateWorldFocus();
             if (currentTurnFocus != null)
             {
-                float height = 0;
-                var corners = new Vector3[4];
-                foreach (var part in turnFocus.GetComponentsInChildren<RectTransform>(true))
-                    if (part.name.StartsWith("CurrentTurnFramePart_", StringComparison.Ordinal))
-                    {
-                        part.GetWorldCorners(corners);
-                        foreach (var corner in corners) height = Mathf.Max(height, turnFocus.rect.yMax - turnFocus.InverseTransformPoint(corner).y);
-                    }
-                currentTurnFocus.sizeDelta = new Vector2(turnFocus.rect.width, height);
+                // TurnFrameReferenceFit의 375 x 1069 기준에서 현재 턴 배지는 상단 311까지다.
+                // 비활성 레거시 조각의 경계는 다음 슬롯까지 포함하므로 사용하지 않는다.
+                // 부모 Rect 크기에 비례하므로 CanvasScaler/해상도 변경에도 같은 배지를 감싼다.
+                currentTurnFocus.sizeDelta = new Vector2(turnFocus.rect.width, turnFocus.rect.height * (311f / 1069f));
             }
             var badge = guidedSlot != null ? guidedSlot.transform as RectTransform : null;
             RectTransform focus = guidedPhase == 1 ? profileFocus : guidedPhase == 2 ? turnFocus :
@@ -292,6 +308,7 @@ namespace JC.Tutorial
             view.SetActionHint(guidedPhase == 3 ? JcTutorialGuideView.ActionHint.HoverEnemy : guidedPhase == 4 ? JcTutorialGuideView.ActionHint.HoverBadge : JcTutorialGuideView.ActionHint.None, focus);
             dim.SetTargets(layoutPanel, focus);
             dim.SetExtraTargets(guidedPhase == 3 || guidedPhase == 4 ? new[] { worldFocus, badge, guidedTooltip } : Array.Empty<RectTransform>());
+            dim.SetRoundedTarget(guidedPhase == 4 ? worldFocus : null, 16f);
             resultShield.SetActive(true);
         }
         private void LateGuided()

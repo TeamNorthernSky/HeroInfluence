@@ -22,6 +22,8 @@ Shader "UI/HoverOutlineSelected"
         _OrbitTrail ("Orbit Trail Length", Range(0.05,0.95)) = 0.55
         _OrbitWhiteRim ("Orbit White Rim Intensity", Range(0,3)) = 0
         _OrbitGlowSpread ("Orbit Glow Spread", Range(1,4)) = 1
+        [HideInInspector] _ConfigurableOrbitRim ("Use Configurable Battle Rim", Float) = 0
+        [HideInInspector] _BattleRimRect ("Battle Rim Local Rect", Vector) = (0,0,320,88)
         [HideInInspector] _OrbitUVPerPixel ("Orbit UV Per Screen Pixel", Vector) = (0.00556,0.01351,0,0)
         _SelectedSweepPeriod ("Inner Sweep Period Seconds", Float) = 2
         _SelectedSweepWidth ("Inner Sweep Soft Width", Range(0.02,0.4)) = 0.14
@@ -78,7 +80,7 @@ Shader "UI/HoverOutlineSelected"
             #include "UnityCG.cginc"
 
             struct appdata_t { float4 vertex : POSITION; float4 color : COLOR; float2 texcoord : TEXCOORD0; };
-            struct v2f { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; };
+            struct v2f { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 texcoord : TEXCOORD0; float2 localPosition : TEXCOORD1; };
 
             sampler2D _MainTex;
             float4 _MainTex_TexelSize;
@@ -90,6 +92,8 @@ Shader "UI/HoverOutlineSelected"
             float _GlowLumEdge;
             float _SelectedMotion, _SelectedTime, _OrbitPeriod, _OrbitTrail;
             float _OrbitWhiteRim, _OrbitGlowSpread;
+            float _ConfigurableOrbitRim;
+            float4 _BattleRimRect;
             float4 _OrbitUVPerPixel;
             float _SelectedSweepPeriod, _SelectedSweepWidth, _SelectedSweepIntensity;
             fixed4 _SelectedSweepColor;
@@ -104,8 +108,9 @@ Shader "UI/HoverOutlineSelected"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
+                o.localPosition = v.vertex.xy;
                 o.texcoord = v.texcoord;
-                if (_SelectedMotion > 0.5 && _OrbitWhiteRim > 0.0)
+                if (_ConfigurableOrbitRim < 0.5 && _SelectedMotion > 0.5 && _OrbitWhiteRim > 0.0)
                 {
                     // 원본 버튼 크기는 유지하고 효과 메시만 화면 기준 2픽셀 확장합니다.
                     float2 direction = sign(v.texcoord - 0.5);
@@ -213,8 +218,45 @@ Shader "UI/HoverOutlineSelected"
                 return s * 0.125;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            float4 BattleRim(v2f i)
             {
+                // Local geometry coordinates remain linear across a nine-sliced sprite.
+                // The old alpha erosion could never grow the source's two-pixel hollow border.
+                float2 size = max(_BattleRimRect.zw, float2(0.001, 0.001));
+                float2 uv = (i.localPosition - _BattleRimRect.xy) / size;
+                float aspect = size.x / size.y;
+                float2 p = (uv - 0.5) * float2(aspect, 1.0);
+                float radius = min(0.08, min(aspect, 1.0) * 0.5);
+                float2 q = abs(p) - (float2(aspect, 1.0) * 0.5 - radius);
+                float distance = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
+                float aa = max(fwidth(distance), 0.0001);
+                float width = max(_GlowWidth, 0.0);
+                float ring = (1.0 - smoothstep(-aa, aa, distance))
+                    * smoothstep(-width - aa, -width + aa, distance) * step(0.00001, width);
+                float2 edge = (uv * 2.0 - 1.0);
+                float2 projected = edge / max(max(abs(edge.x), abs(edge.y)), 0.0001);
+                float perimeter;
+                if (abs(edge.y) >= abs(edge.x))
+                    perimeter = projected.y >= 0 ? (projected.x + 1) * aspect : 2 * aspect + 2 + (1 - projected.x) * aspect;
+                else
+                    perimeter = projected.x >= 0 ? 2 * aspect + (1 - projected.y) : 4 * aspect + 2 + (projected.y + 1);
+                perimeter /= 4 * (aspect + 1);
+                float age = frac((_SelectedTime / max(_OrbitPeriod, 0.1) - perimeter) * 2);
+                float head = exp(-pow(min(age, 1-age) / 0.035, 2));
+                float tail = 1 - smoothstep(max(_OrbitTrail, 0.05) * 0.35, max(_OrbitTrail, 0.05), age);
+                float coverage = ring * (_SelectedMotion > 0.5 ? lerp(0.04, 1.0, tail) : 1.0);
+                float3 color = lerp(_GlowColor.rgb, float3(1,1,1), head * saturate(_OrbitWhiteRim) * 0.2);
+                float intensity = max(_GlowIntensity, 0);
+                float travel = lerp(-0.6, 1.6, frac(_SelectedTime / max(_SelectedSweepPeriod, 0.1)));
+                float sweep = exp(-pow((uv.x - (uv.y - 0.5)*0.28 - travel) / max(_SelectedSweepWidth, 0.02), 2));
+                float interior = (1 - ring) * (1 - smoothstep(-aa, aa, distance)) * sweep * _SelectedSweepIntensity;
+                float3 rgb = color * coverage * intensity + _SelectedSweepColor.rgb * interior;
+                return float4(rgb * i.color.rgb * i.color.a, saturate(coverage * intensity + interior) * i.color.a);
+            }
+
+            float4 frag(v2f i) : SV_Target
+            {
+                if (_ConfigurableOrbitRim > 0.5) return BattleRim(i);
                 float2 uv = i.texcoord;
                 float baseA = tex2D(_MainTex, uv).a;
                 if (_SelectedMotion > 0.5 && _OrbitWhiteRim > 0.0) baseA = OrbitAlpha(uv);
@@ -253,7 +295,9 @@ Shader "UI/HoverOutlineSelected"
                     float cover = 0.0;
                     if (_OrbitWhiteRim > 0.0)
                     {
-                        float2 coreWidth = float2(0.055 / aspect, 0.055);
+                        // Opt in per battle instance; catalog and other shared users retain their look.
+                        float rimWidth = _ConfigurableOrbitRim > 0.5 ? max(0.0, _GlowWidth) : 0.055;
+                        float2 coreWidth = float2(rimWidth / aspect, rimWidth);
                         float inner = OrbitErodedAlpha(uv, coreWidth);
                         float core = saturate(baseA - inner);
                         // 테두리 내부와 외부를 하나의 불투명 띠로 합성합니다.
@@ -267,6 +311,9 @@ Shader "UI/HoverOutlineSelected"
                         cover = bandMask * solidHead * saturate(_GlowIntensity);
                         rimRGB = float3(1,1,1) * core * _OrbitWhiteRim * 0.8 * (1.0 - cover)
                                + _GlowColor.rgb * cover;
+                        // Coverage stays bounded; radiance must still respond above intensity 1.
+                        if (_ConfigurableOrbitRim > 0.5)
+                            rimRGB *= max(0.0, _GlowIntensity);
                     }
 
                     // 내부의 상시 블룸 대신, 화면 밖에서 진입·이탈하는 가우시안 빛띠를 반복합니다.

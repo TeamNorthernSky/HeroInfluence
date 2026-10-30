@@ -29,6 +29,7 @@ public class HeroInfoPanel : MonoBehaviour
 
     private void Awake()
     {
+        Resources.Load<JC.BattleTesting.JcBattleHudLayout>("JC_BattleHud_Layout")?.ApplyBattlePanel(gameObject.scene);
         if (portraitImage != null) return;
 
         if (portrait != null)
@@ -122,7 +123,7 @@ public class HeroInfoPanel : MonoBehaviour
         {
             // 현재 성장표의 F~SSS 등급을 사용한다.
             int rankLevel = currentUnit.SourceData != null ? currentUnit.SourceData.Level : currentUnit.Level;
-            rankText.text = UnitRankLookup.GetRank(rankLevel);
+            rankText.text = $"랭크: <b><color=#FFD45C>{UnitRankLookup.GetRank(rankLevel)}</color></b>";
         }
 
         UpdateHpText(currentUnit.CurrentHp, currentUnit.MaxHp);

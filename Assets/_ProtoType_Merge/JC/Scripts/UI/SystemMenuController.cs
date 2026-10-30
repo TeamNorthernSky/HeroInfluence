@@ -30,6 +30,7 @@ public class SystemMenuController : MonoBehaviour
 
     private void Update()
     {
+        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) return;
         if (JC.Environment.JcDayNightController.IsTransitioning) return;
         if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
         var sceneName = SceneManager.GetActiveScene().name;
@@ -131,9 +132,20 @@ public class SystemMenuController : MonoBehaviour
         // ModalPauseGate resume exploration before the title scene is loaded.
         Time.timeScale = 0f;
         // [JC 260617] 타이틀 복귀 시 전체 영속 상태 초기화(새 게임이 첫 실행과 동일하도록).
-        if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
-        Debug.Log($"[SystemMenu] → {TitleScene}");
-        SceneFadeController.LoadSceneWithFadeIfNeeded(TitleScene);
+        var request = SceneFadeController.LoadSceneAsyncWithFade(TitleScene, prepare: () =>
+        {
+            if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
+            return true;
+        }, onFailed: CancelTitleTransition);
+        if (request == null) CancelTitleTransition();
+    }
+
+    private void CancelTitleTransition()
+    {
+        SceneManager.sceneLoaded -= HandleTitleSceneLoaded;
+        returningToTitle = false;
+        // 원래 메뉴가 열린 일시정지 상태로 복구합니다.
+        Time.timeScale = 0f;
     }
 
     private void HandleTitleSceneLoaded(Scene scene, LoadSceneMode mode)
