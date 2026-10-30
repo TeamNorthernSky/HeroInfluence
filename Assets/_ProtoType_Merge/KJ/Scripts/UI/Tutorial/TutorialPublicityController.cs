@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -293,8 +293,8 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         }
         if (currentIPText != null)
             currentIPText.text = selected
-                ? $"현재 IP : {state.CurrentIp}"
-                : "현재 IP : -";
+                ? JcTutorialText.Format("publicity.current-ip", "현재 IP : {0}", state.CurrentIp)
+                : JcTutorialText.Get("publicity.no-ip", "현재 IP : -");
         if (selectPromptGo != null) selectPromptGo.SetActive(!selected);
         if (cost1ValueText != null) cost1ValueText.text = $"{TutorialPublicityState.CostPerProgress:N0}";
         if (availableValueText != null) availableValueText.text = $"{budget.Pool}";
@@ -324,10 +324,10 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (disabledOverlay != null) disabledOverlay.SetActive(!canConfirm);
         if (stateInfoText != null)
         {
-            string message = !selected ? "영웅을 선택해 주세요." :
-                (budget.Pool <= 0 ? "이번 주 진행 가능 횟수를 모두 사용했습니다." :
-                (state.CurrentIp >= state.MaxIp ? $"이미 최대 I.P({state.MaxIp})에 도달했습니다." :
-                (!affordable ? "자원이 부족합니다." : "")));
+            string message = !selected ? JcTutorialText.Get("publicity.select-hero", "영웅을 선택해 주세요.") :
+                (budget.Pool <= 0 ? JcTutorialText.Get("publicity.no-remaining", "이번 주 진행 가능 횟수를 모두 사용했습니다.") :
+                (state.CurrentIp >= state.MaxIp ? JcTutorialText.Format("publicity.max-ip", "이미 최대 I.P({0})에 도달했습니다.", state.MaxIp) :
+                (!affordable ? JcTutorialText.Get("publicity.insufficient-resource", "자원이 부족합니다.") : "")));
             stateInfoText.text = message;
             stateInfoText.gameObject.SetActive(message.Length > 0);
         }

@@ -24,8 +24,8 @@ namespace JC.Tutorial
             if (panel == null) return;
             EnsureActionHint();
             hintRoot.gameObject.SetActive(true);
-            hintText.text = value == ActionHint.ScrollRight ? "오른쪽으로 화면 이동\n<size=85%>마우스 스크롤 또는 D 키</size>" :
-                value == ActionHint.ClickSkill ? "클릭하여 스킬을 사용" : "마우스 커서를\n올려보세요";
+            hintText.text = value == ActionHint.ScrollRight ? JcTutorialText.Get("guideview.hints.001", "오른쪽으로 화면 이동\n<size=85%>마우스 스크롤 또는 D 키</size>") :
+                value == ActionHint.ClickSkill ? JcTutorialText.Get("guideview.hints.002", "클릭하여 스킬을 사용") : JcTutorialText.Get("guideview.hints.003", "마우스 커서를\n올려보세요");
             hintKey.transform.parent.gameObject.SetActive(value == ActionHint.ScrollRight);
             iconGraphic.mouse = value == ActionHint.ClickSkill;
         }

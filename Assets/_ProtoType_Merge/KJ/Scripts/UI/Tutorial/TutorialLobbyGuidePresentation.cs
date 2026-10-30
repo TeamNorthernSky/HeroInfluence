@@ -105,7 +105,7 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
         view.SetSideLayout(null);
         bool overview = index == FacilitiesOverviewIndex;
         if (cardBackground != null) cardBackground.SetOpaqueFill(true);
-        view.SetContent("협회 안내", sourceMessages[index] != null ? sourceMessages[index].text : "");
+        view.SetContent(JcTutorialText.Get("lobbyguidepresentation.001", "협회 안내"), JcTutorialText.Read(sourceMessages[index]));
         var card = (RectTransform)view.panel.transform;
         if (messagePositions != null && index < messagePositions.Length)
             card.anchoredPosition = messagePositions[index] + (overview ? new Vector2(overviewOffsetX, 0) : Vector2.zero);
