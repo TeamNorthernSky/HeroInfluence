@@ -114,6 +114,9 @@ namespace JC.Tutorial
         {
             if (layoutPanel != null || view.panel == null) return;
             layoutPanel = view.panel.transform as RectTransform;
+            // 메시지를 디밍 위로 올려도 본문 클릭은 기존 안내 닫기 표면까지 통과시킨다.
+            // 다음/확인 버튼의 Graphic과 클릭 이벤트는 그대로 둔다.
+            foreach (var text in layoutPanel.GetComponentsInChildren<TMP_Text>(true)) text.raycastTarget = false;
             originalSize = layoutPanel.sizeDelta; originalPosition = layoutPanel.anchoredPosition;
             originalAnchorMin = layoutPanel.anchorMin; originalAnchorMax = layoutPanel.anchorMax;
             if (stepTexts != null && stepTexts.Length > 2 && stepTexts[2] != null)

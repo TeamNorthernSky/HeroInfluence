@@ -303,9 +303,19 @@ public class SceneFadeController : MonoBehaviour
                 if (party.gameObject.scene == scene && party.isActiveAndEnabled && !party.SceneEntryReady) ready = false;
             foreach (var guide in FindObjectsByType<TutorialExploreUIController>(FindObjectsSortMode.None))
                 if (guide.gameObject.scene == scene && guide.isActiveAndEnabled && !guide.SceneEntryReady) ready = false;
+#if !UNITY_EDITOR
+            if (BattleEffectWarmup.IsPreparing) ready = false;
+            foreach (var battle in FindObjectsByType<BattleSceneManager>(FindObjectsSortMode.None))
+                if (battle.gameObject.scene == scene && battle.IsVisualPreparationPending) ready = false;
+#endif
             stableFrames = ready ? stableFrames + 1 : 0;
             yield return null;
         }
+#if !UNITY_EDITOR
+        // Tutorial entry bypasses GameLoadGate; prepare its joined heroes under the same fade.
+        if (SceneManager.GetActiveScene().name == "TutorialExploreScene")
+            yield return BattleEffectWarmup.PrepareParty();
+#endif
         Canvas.ForceUpdateCanvases();
         yield return null;
     }

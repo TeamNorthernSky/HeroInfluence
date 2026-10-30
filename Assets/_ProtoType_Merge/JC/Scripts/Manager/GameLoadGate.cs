@@ -127,6 +127,11 @@ public class GameLoadGate : MonoBehaviour
             Debug.Log("[GameLoadGate] 이어하기 복원 완료.");
         }
 
+#if !UNITY_EDITOR
+        // Build only: party data is restored/bootstrapped; keep the loading fade closed.
+        yield return BattleEffectWarmup.PrepareParty();
+#endif
+
         // HeroUnionHQVisitDetector 즉시 재평가 (이벤트 기반 전환 후)
         var detector = FindFirstObjectByType<HeroUnionHQVisitDetector>();
         if (detector != null)

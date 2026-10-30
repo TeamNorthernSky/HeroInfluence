@@ -3,17 +3,75 @@ using UnityEngine.UI;
 
 namespace JC.Tutorial
 {
-    // 입력은 기존 전면 차단막이 담당하고, 이 Graphic은 두 안내 영역을 제외한 디밍만 그린다.
+    // 입력은 기존 전면 차단막이 담당하고, 이 Graphic은 안내 대상만 제외한 디밍을 그린다. 메시지는 별도 Canvas로 그 위에 표시한다.
     [RequireComponent(typeof(CanvasRenderer)), AddComponentMenu("JC Tutorial/안내 영역 디밍")]
     public sealed class JcTutorialSpotlight : MaskableGraphic
     {
         private RectTransform first, second;
+        private Canvas messageCanvas;
+        private bool originalOverride;
+        private int originalLayer, originalOrder;
+        private bool messageRaised;
+
+        private void RestoreMessageOrder()
+        {
+            if (messageRaised && messageCanvas != null)
+            {
+                messageCanvas.overrideSorting = originalOverride;
+                messageCanvas.sortingLayerID = originalLayer;
+                messageCanvas.sortingOrder = originalOrder;
+            }
+            messageRaised = false;
+            messageCanvas = null;
+        }
+
+        private void RaiseMessage()
+        {
+            if (first == null || canvas == null) return;
+            if (!messageRaised)
+            {
+                messageCanvas = first.GetComponent<Canvas>();
+                if (messageCanvas == null) messageCanvas = first.gameObject.AddComponent<Canvas>();
+                originalOverride = messageCanvas.overrideSorting;
+                originalLayer = messageCanvas.sortingLayerID;
+                originalOrder = messageCanvas.sortingOrder;
+                // 중첩 Canvas의 Graphic은 부모 Raycaster에 등록되지 않는다.
+                // 기존 버튼/CanvasGroup의 입력 규칙은 그대로 사용한다.
+                if (first.GetComponent<GraphicRaycaster>() == null)
+                {
+                    var source = first.parent != null ? first.parent.GetComponentInParent<GraphicRaycaster>() : null;
+                    var raycaster = first.gameObject.AddComponent<GraphicRaycaster>();
+                    if (source != null)
+                    {
+                        raycaster.ignoreReversedGraphics = source.ignoreReversedGraphics;
+                        raycaster.blockingObjects = source.blockingObjects;
+                        raycaster.blockingMask = source.blockingMask;
+                    }
+                }
+                messageRaised = true;
+            }
+            var dimCanvas = canvas;
+            while (dimCanvas != null && !dimCanvas.overrideSorting && !dimCanvas.isRootCanvas)
+                dimCanvas = dimCanvas.transform.parent.GetComponentInParent<Canvas>();
+            if (dimCanvas == null) return;
+            messageCanvas.overrideSorting = true;
+            messageCanvas.sortingLayerID = dimCanvas.sortingLayerID;
+            messageCanvas.sortingOrder = Mathf.Max(originalOrder, dimCanvas.sortingOrder + 1);
+        }
+
+        protected override void OnEnable() { base.OnEnable(); RaiseMessage(); }
+        protected override void OnDisable() { RestoreMessageOrder(); base.OnDisable(); }
         private RectTransform[] extra = System.Array.Empty<RectTransform>();
         public void SetExtraTargets(RectTransform[] targets) { extra = targets ?? System.Array.Empty<RectTransform>(); SetVerticesDirty(); }
         private readonly Vector3[] corners = new Vector3[4];
         public void SetTargets(RectTransform message, RectTransform window = null)
-        { first = message; second = window; raycastTarget = false; SetVerticesDirty(); }
-        private void LateUpdate() => SetVerticesDirty();
+        {
+            if (first != message) RestoreMessageOrder();
+            first = message; second = window; raycastTarget = false;
+            if (isActiveAndEnabled) RaiseMessage();
+            SetVerticesDirty();
+        }
+        private void LateUpdate() { RaiseMessage(); SetVerticesDirty(); }
         private Rect Bounds(RectTransform target)
         {
             if (target == null) return new Rect();
@@ -36,7 +94,6 @@ namespace JC.Tutorial
             vh.Clear();
             Rect r = rectTransform.rect;
             var holes = new System.Collections.Generic.List<Rect>();
-            if (first != null) holes.Add(Bounds(first));
             if (second != null) holes.Add(Bounds(second));
             foreach (var target in extra) if (target != null && target.gameObject.activeInHierarchy) holes.Add(Bounds(target));
             var xList = new System.Collections.Generic.List<float> { r.xMin, r.xMax };

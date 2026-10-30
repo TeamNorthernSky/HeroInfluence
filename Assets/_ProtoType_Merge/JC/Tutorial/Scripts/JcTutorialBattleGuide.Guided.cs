@@ -274,15 +274,10 @@ namespace JC.Tutorial
             UpdateWorldFocus();
             if (currentTurnFocus != null)
             {
-                float height = 0;
-                var corners = new Vector3[4];
-                foreach (var part in turnFocus.GetComponentsInChildren<RectTransform>(true))
-                    if (part.name.StartsWith("CurrentTurnFramePart_", StringComparison.Ordinal))
-                    {
-                        part.GetWorldCorners(corners);
-                        foreach (var corner in corners) height = Mathf.Max(height, turnFocus.rect.yMax - turnFocus.InverseTransformPoint(corner).y);
-                    }
-                currentTurnFocus.sizeDelta = new Vector2(turnFocus.rect.width, height);
+                // TurnFrameReferenceFit의 375 x 1069 기준에서 현재 턴 배지는 상단 311까지다.
+                // 비활성 레거시 조각의 경계는 다음 슬롯까지 포함하므로 사용하지 않는다.
+                // 부모 Rect 크기에 비례하므로 CanvasScaler/해상도 변경에도 같은 배지를 감싼다.
+                currentTurnFocus.sizeDelta = new Vector2(turnFocus.rect.width, turnFocus.rect.height * (311f / 1069f));
             }
             var badge = guidedSlot != null ? guidedSlot.transform as RectTransform : null;
             RectTransform focus = guidedPhase == 1 ? profileFocus : guidedPhase == 2 ? turnFocus :

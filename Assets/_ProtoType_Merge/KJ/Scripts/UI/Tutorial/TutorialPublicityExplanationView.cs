@@ -498,6 +498,31 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         messageBackground = step.messageBox;
         messageText = step.sceneMessage;
         hintText = step.sceneHint;
+        if (messageBackground != null)
+        {
+            // 공유 스프라이트/프리팹은 그대로 두고 홍보 안내의 배경만 교체한다.
+            var legacyImage = messageBackground.GetComponent<UnityEngine.UI.Image>();
+            if (legacyImage != null) legacyImage.color = Color.clear;
+            const string backgroundName = "PublicityNeutralGuideBackground";
+            var background = messageBackground.Find(backgroundName) as RectTransform;
+            if (background == null)
+            {
+                var go = new GameObject(backgroundName, typeof(RectTransform), typeof(JC.Tutorial.JcTutorialGraphic));
+                go.layer = messageBackground.gameObject.layer;
+                background = (RectTransform)go.transform;
+                background.SetParent(messageBackground, false);
+                background.anchorMin = Vector2.zero;
+                background.anchorMax = Vector2.one;
+                background.offsetMin = background.offsetMax = Vector2.zero;
+            }
+            background.SetAsFirstSibling();
+            var graphic = background.GetComponent<JC.Tutorial.JcTutorialGraphic>();
+            graphic.Configure(JC.Tutorial.JcTutorialGraphic.Shape.Panel, new Color(.045f, .12f, .15f, 1f), 16f, 1.5f);
+            graphic.SetGrayscaleFill(true);
+            graphic.SetOpaqueFill(true);
+        }
+        if (messageText != null) messageText.color = new Color(.94f, .94f, .94f, 1f);
+        if (hintText != null) hintText.color = new Color(.72f, .72f, .72f, 1f);
     }
 
     private void ShowHighlights(Step step)
