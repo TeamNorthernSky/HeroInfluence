@@ -664,14 +664,6 @@ MonoBehaviour:
     tileKey: tilemap_01
     materialKey: 
     renderMode: 3
-  - gridPosition: {x: 25, y: 15}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 17}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 19, y: 19}
     tileKey: Road_01
     materialKey: 
@@ -992,14 +984,6 @@ MonoBehaviour:
     tileKey: tilemap_01
     materialKey: 
     renderMode: 3
-  - gridPosition: {x: 24, y: 15}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 17}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 24, y: 22}
     tileKey: Road_01
     materialKey: 
@@ -1132,30 +1116,6 @@ MonoBehaviour:
     tileKey: tilemap_04
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 24, y: 6}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 6}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 12}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 11}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 12}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 11}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 35, y: 14}
     tileKey: tilemap_01
     materialKey: 
@@ -1189,14 +1149,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 42, y: 14}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 14}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 14}
     tileKey: Road_01
     materialKey: 
     renderMode: 0
@@ -2928,30 +2880,6 @@ MonoBehaviour:
     tileKey: Road_01
     materialKey: 
     renderMode: 2
-  - gridPosition: {x: 3, y: 6}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 3, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 3, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 4, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 4, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 4, y: 6}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
   - gridPosition: {x: 4, y: 8}
     tileKey: Road_01
     materialKey: 
@@ -3114,118 +3042,6 @@ MonoBehaviour:
     renderMode: 2
   - gridPosition: {x: 15, y: 15}
     tileKey: tilemap_04
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 6, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 8, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 9, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 14, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 19, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 20, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 22, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 24, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 25, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 25, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 24, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 18, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 12, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 11, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 9, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 8, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 6, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 11, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 12, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 16, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 15, y: 4}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 14, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 15, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 16, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 18, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 19, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 20, y: 3}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 22, y: 3}
-    tileKey: Road_01
     materialKey: 
     renderMode: 2
   - gridPosition: {x: 25, y: 8}
@@ -5052,191 +4868,7 @@ MonoBehaviour:
     tileKey: tilemap_01
     materialKey: 
     renderMode: 3
-  - gridPosition: {x: 20, y: 22}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 19, y: 22}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 19, y: 23}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 20, y: 23}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 22, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 22, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 19, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 19, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 20, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 20, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 20, y: 25}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 19, y: 25}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 18, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 16, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 14, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 12, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 11, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 9, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 8, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 6, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 6, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 8, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 9, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 11, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 12, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 14, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 16, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 18, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 14, y: 30}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 29, y: 30}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 29, y: 28}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 29, y: 27}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 29, y: 25}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 29, y: 24}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 31, y: 24}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 33, y: 24}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 34, y: 24}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 36, y: 24}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 37, y: 24}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
   - gridPosition: {x: 41, y: 24}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 31, y: 25}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 33, y: 25}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 34, y: 25}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 36, y: 25}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 37, y: 25}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 39, y: 24}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 39, y: 25}
     tileKey: Road_01
     materialKey: 
     renderMode: 2
@@ -5269,14 +4901,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 2
   - gridPosition: {x: 19, y: 8}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 19, y: 6}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 20, y: 6}
     tileKey: Road_01
     materialKey: 
     renderMode: 2
@@ -5328,15 +4952,7 @@ MonoBehaviour:
     tileKey: Road_01
     materialKey: 
     renderMode: 2
-  - gridPosition: {x: 15, y: 6}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
   - gridPosition: {x: 15, y: 8}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 2
-  - gridPosition: {x: 14, y: 6}
     tileKey: Road_01
     materialKey: 
     renderMode: 2
@@ -6540,31 +6156,7 @@ MonoBehaviour:
     tileKey: Road_Cross_001
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 40, y: 25}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 30, y: 25}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 23, y: 28}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 15, y: 28}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 5, y: 28}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 5, y: 20}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 13, y: 28}
     tileKey: Road_Cross_001
     materialKey: 
     renderMode: 0
@@ -6577,18 +6169,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 18, y: 9}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 5, y: 4}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 13, y: 4}
-    tileKey: Road_Cross_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 23, y: 4}
     tileKey: Road_Cross_001
     materialKey: 
     renderMode: 0
@@ -6616,15 +6196,7 @@ MonoBehaviour:
     tileKey: Road_Cross_002
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 23, y: 3}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 18, y: 8}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 13, y: 3}
     tileKey: Road_Cross_002
     materialKey: 
     renderMode: 0
@@ -6633,10 +6205,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 5, y: 8}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 5, y: 3}
     tileKey: Road_Cross_002
     materialKey: 
     renderMode: 0
@@ -6652,14 +6220,6 @@ MonoBehaviour:
     tileKey: Road_Cross_002
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 40, y: 24}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 30, y: 24}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 30, y: 32}
     tileKey: Road_Cross_002
     materialKey: 
@@ -6669,22 +6229,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 23, y: 32}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 23, y: 27}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 15, y: 27}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 13, y: 27}
-    tileKey: Road_Cross_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 5, y: 27}
     tileKey: Road_Cross_002
     materialKey: 
     renderMode: 0
@@ -6716,43 +6260,11 @@ MonoBehaviour:
     tileKey: Road_Cross_003
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 3, y: 7}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 14, y: 7}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 19, y: 7}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 7}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 19, y: 10}
     tileKey: Road_Cross_003
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 24, y: 10}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 18}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 19, y: 18}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 19, y: 21}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 19, y: 26}
     tileKey: Road_Cross_003
     materialKey: 
     renderMode: 0
@@ -6772,27 +6284,7 @@ MonoBehaviour:
     tileKey: Road_Cross_004
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 25, y: 7}
-    tileKey: Road_Cross_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 10}
-    tileKey: Road_Cross_004
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 20, y: 10}
-    tileKey: Road_Cross_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 20, y: 7}
-    tileKey: Road_Cross_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 15, y: 7}
-    tileKey: Road_Cross_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 4, y: 7}
     tileKey: Road_Cross_004
     materialKey: 
     renderMode: 0
@@ -6818,18 +6310,6 @@ MonoBehaviour:
     renderMode: 0
   - gridPosition: {x: 24, y: 31}
     tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 18}
-    tileKey: Road_Cross_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 20, y: 26}
-    tileKey: Road_Cross_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 20, y: 21}
-    tileKey: Road_Cross_004
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 20, y: 18}
@@ -6860,34 +6340,6 @@ MonoBehaviour:
     tileKey: Road_01
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 41, y: 6}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 42, y: 6}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 41, y: 5}
-    tileKey: Road_Cross_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 42, y: 5}
-    tileKey: Road_Cross_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 14, y: 31}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 29, y: 31}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 29, y: 26}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 7, y: 33}
     tileKey: Road_Centerline_001
     materialKey: 
@@ -6916,34 +6368,6 @@ MonoBehaviour:
     tileKey: Road_Centerline_001
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 32, y: 25}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 35, y: 25}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 38, y: 25}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 17, y: 28}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 21, y: 28}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 7, y: 28}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 10, y: 28}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 7, y: 20}
     tileKey: Road_Centerline_001
     materialKey: 
@@ -6965,22 +6389,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 10, y: 9}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 7, y: 4}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 10, y: 4}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 17, y: 4}
-    tileKey: Road_Centerline_001
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 21, y: 4}
     tileKey: Road_Centerline_001
     materialKey: 
     renderMode: 0
@@ -7020,14 +6428,6 @@ MonoBehaviour:
     tileKey: Road_Centerline_002
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 17, y: 3}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 21, y: 3}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 16, y: 8}
     tileKey: Road_Centerline_002
     materialKey: 
@@ -7037,14 +6437,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 7, y: 8}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 10, y: 3}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 7, y: 3}
     tileKey: Road_Centerline_002
     materialKey: 
     renderMode: 0
@@ -7061,22 +6453,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 16, y: 19}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 7, y: 27}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 10, y: 27}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 17, y: 27}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 21, y: 27}
     tileKey: Road_Centerline_002
     materialKey: 
     renderMode: 0
@@ -7105,18 +6481,6 @@ MonoBehaviour:
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 38, y: 32}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 32, y: 24}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 35, y: 24}
-    tileKey: Road_Centerline_002
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 38, y: 24}
     tileKey: Road_Centerline_002
     materialKey: 
     renderMode: 0
@@ -7156,39 +6520,11 @@ MonoBehaviour:
     tileKey: Road_Centerline_003
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 3, y: 5}
-    tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 14, y: 5}
-    tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 19, y: 5}
-    tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 5}
-    tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 19, y: 16}
     tileKey: Road_Centerline_003
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 19, y: 13}
-    tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 16}
-    tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 24, y: 13}
-    tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 19, y: 24}
     tileKey: Road_Centerline_003
     materialKey: 
     renderMode: 0
@@ -7206,14 +6542,6 @@ MonoBehaviour:
     renderMode: 0
   - gridPosition: {x: 41, y: 23}
     tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 41, y: 7}
-    tileKey: Road_Centerline_003
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 42, y: 7}
-    tileKey: Road_Centerline_004
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 42, y: 23}
@@ -7240,39 +6568,11 @@ MonoBehaviour:
     tileKey: Road_Centerline_004
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 20, y: 24}
-    tileKey: Road_Centerline_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 16}
-    tileKey: Road_Centerline_004
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 20, y: 16}
     tileKey: Road_Centerline_004
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 20, y: 13}
-    tileKey: Road_Centerline_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 13}
-    tileKey: Road_Centerline_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 25, y: 5}
-    tileKey: Road_Centerline_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 20, y: 5}
-    tileKey: Road_Centerline_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 15, y: 5}
-    tileKey: Road_Centerline_004
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 4, y: 5}
     tileKey: Road_Centerline_004
     materialKey: 
     renderMode: 0
@@ -7290,14 +6590,6 @@ MonoBehaviour:
     renderMode: 0
   - gridPosition: {x: 24, y: 23}
     tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 14, y: 29}
-    tileKey: Road_Centerline_006
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 29, y: 29}
-    tileKey: Road_Centerline_006
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 46, y: 4}
@@ -10816,6 +10108,714 @@ MonoBehaviour:
     tileKey: tilemap_02
     materialKey: 
     renderMode: 1
+  - gridPosition: {x: 14, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 15, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 15, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 15, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 41, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 42, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 41, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 42, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 41, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 42, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 10}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 11}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 10}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 11}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 12}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 12}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 13}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 13}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 14}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 14}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 15}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 15}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 16}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 16}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 17}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 17}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 18}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 18}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 31}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 30}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 29}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 5, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 5, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 6, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 6, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 7, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 7, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 8, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 8, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 9, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 9, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 10, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 10, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 11, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 11, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 12, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 12, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 13, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 13, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 15, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 15, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 16, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 16, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 17, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 17, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 18, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 18, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 22, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 21, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 21, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 22, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 23, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 23, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 26}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 26}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 23}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 23}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 22}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 22}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 21}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 21}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 31}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 30}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 29}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 28}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 27}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 26}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 30, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 30, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 31, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 31, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 32, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 32, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 33, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 33, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 34, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 34, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 35, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 35, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 36, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 36, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 37, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 38, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 37, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 38, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 39, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 39, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 40, y: 24}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 40, y: 25}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 3, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 4, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 4, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 3, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 3, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 4, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 4, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 4, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 3, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 3, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 5, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 5, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 6, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 6, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 7, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 7, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 8, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 8, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 9, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 9, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 10, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 10, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 11, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 11, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 12, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 12, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 13, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 13, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 14, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 15, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 15, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 16, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 16, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 17, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 17, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 18, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 18, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 19, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 20, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 21, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 21, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 22, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 22, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 23, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 23, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 4}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 3}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 5}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 6}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 24, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 25, y: 7}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
   obstacleCells:
   - {x: 14, y: 10}
   - {x: 15, y: 10}
@@ -10833,7 +10833,6 @@ MonoBehaviour:
   - {x: 10, y: 18}
   - {x: 9, y: 18}
   - {x: 8, y: 18}
-  - {x: 7, y: 18}
   - {x: 6, y: 18}
   - {x: 5, y: 18}
   - {x: 5, y: 17}
@@ -11744,7 +11743,6 @@ MonoBehaviour:
   - {x: 6, y: 30}
   - {x: 7, y: 30}
   - {x: 10, y: 30}
-  - {x: 11, y: 30}
   - {x: 9, y: 30}
   - {x: 8, y: 30}
   - {x: 12, y: 30}
@@ -12625,10 +12623,21 @@ MonoBehaviour:
   - {x: 57, y: 44}
   - {x: 58, y: 44}
   - {x: 59, y: 44}
+  - {x: 18, y: 30}
+  - {x: 32, y: 6}
+  - {x: 27, y: 29}
+  - {x: 13, y: 25}
+  - {x: 11, y: 30}
+  - {x: 8, y: 15}
+  - {x: 11, y: 3}
+  - {x: 19, y: 3}
+  - {x: 36, y: 11}
+  - {x: 30, y: 24}
+  - {x: 29, y: 24}
+  - {x: 3, y: 3}
+  - {x: 28, y: 11}
+  - {x: 42, y: 5}
   itemPlacements:
-  - gridPosition: {x: 7, y: 15}
-    resourceType: 0
-    amount: 1000
   - gridPosition: {x: 6, y: 21}
     resourceType: 0
     amount: 1000
@@ -12719,562 +12728,1078 @@ MonoBehaviour:
   - gridPosition: {x: 20, y: 5}
     resourceType: 3
     amount: 5
+  - gridPosition: {x: 6, y: 17}
+    resourceType: 0
+    amount: 1000
+  - gridPosition: {x: 41, y: 5}
+    resourceType: 0
+    amount: 1000
   outpostPlacements: []
   eventPlacements: []
   enemyPlacements: []
   decorativeObjectPlacements:
   - gridPosition: {x: 32, y: 30}
     prefabKey: BGHigh001
+    rotation: 0
   - gridPosition: {x: 32, y: 28}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 39, y: 22}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 33, y: 22}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 30, y: 22}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 36, y: 22}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 27, y: 30}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 27, y: 27}
     prefabKey: BGHigh001
+    rotation: 0
   - gridPosition: {x: 27, y: 24}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 6, y: 30}
     prefabKey: BGHigh001
+    rotation: 0
   - gridPosition: {x: 12, y: 30}
     prefabKey: BGHigh001
+    rotation: 0
   - gridPosition: {x: 19, y: 30}
     prefabKey: BGHigh001
+    rotation: 0
   - gridPosition: {x: 9, y: 30}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 16, y: 30}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 7, y: 25}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 13, y: 25}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 10, y: 25}
     prefabKey: BGHigh001
+    rotation: 0
   - gridPosition: {x: 17, y: 25}
     prefabKey: BGHigh001
+    rotation: 0
   - gridPosition: {x: 22, y: 25}
     prefabKey: BGHigh001
+    rotation: 0
   - gridPosition: {x: 22, y: 30}
     prefabKey: BGHigh002
+    rotation: 0
   - gridPosition: {x: 22, y: 22}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 17, y: 22}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 11, y: 22}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 14, y: 22}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 8, y: 22}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 17, y: 6}
     prefabKey: BGStore001
+    rotation: 0
   - gridPosition: {x: 9, y: 6}
     prefabKey: BGStore001
-  - gridPosition: {x: 27, y: 6}
-    prefabKey: BGStore001
-  - gridPosition: {x: 33, y: 6}
-    prefabKey: BGStore001
-  - gridPosition: {x: 39, y: 6}
-    prefabKey: BGStore001
-  - gridPosition: {x: 36, y: 6}
-    prefabKey: BGStore002
-  - gridPosition: {x: 30, y: 6}
-    prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 22, y: 6}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 12, y: 6}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 6, y: 6}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 17, y: 17}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 22, y: 14}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 17, y: 11}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 17, y: 14}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 22, y: 17}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 22, y: 11}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 30, y: 17}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 36, y: 17}
     prefabKey: BGOffice001
+    rotation: 0
   - gridPosition: {x: 39, y: 17}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 33, y: 17}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 27, y: 17}
     prefabKey: BGOffice002
+    rotation: 0
   - gridPosition: {x: 27, y: 14}
     prefabKey: BGStore001
+    rotation: 0
   - gridPosition: {x: 33, y: 14}
     prefabKey: BGStore001
+    rotation: 0
   - gridPosition: {x: 39, y: 14}
     prefabKey: BGStore001
+    rotation: 0
   - gridPosition: {x: 36, y: 14}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 30, y: 14}
     prefabKey: BGStore002
+    rotation: 0
   - gridPosition: {x: 26, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 27, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 28, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 29, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 30, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 31, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 32, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 34, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 35, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 36, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 37, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 38, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 39, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 40, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 3, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 4, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 5, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 6, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 8, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 7, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 9, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 13, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 10, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 12, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 14, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 17, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 11, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 15, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 16, y: 37}
     prefabKey: Fence_01
-  - gridPosition: {x: 30, y: 33}
-    prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 18, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 19, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 20, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 21, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 22, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 23, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 24, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 25, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 26, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 27, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 28, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 29, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 30, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 33, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 32, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 31, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 34, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 35, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 36, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 38, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 37, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 39, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 40, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 43, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 42, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 41, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 45, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 44, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 46, y: 37}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 47, y: 5}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 6}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 7}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 8}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 9}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 10}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 11}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 12}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 13}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 14}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 15}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 16}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 17}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 18}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 19}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 20}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 21}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 22}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 23}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 24}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 25}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 26}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 27}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 30}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 28}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 29}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 31}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 32}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 33}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 34}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 35}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 47, y: 36}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 3}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 4}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 5}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 6}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 7}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 8}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 9}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 10}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 13}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 11}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 12}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 14}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 17}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 16}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 15}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 18}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 21}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 22}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 23}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 24}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 26}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 27}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 28}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 25}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 29}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 30}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 31}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 32}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 33}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 35}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 36}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 2, y: 34}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 5, y: 17}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 5, y: 16}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 5, y: 14}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 5, y: 13}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 5, y: 11}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 15, y: 17}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 15, y: 16}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 15, y: 15}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 15, y: 14}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 15, y: 13}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 15, y: 12}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 15, y: 11}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 5}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 7}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 8}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 10}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 9}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 12}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 13}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 14}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 15}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 16}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 17}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 19}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 20}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 21}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 22}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 23}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 25}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 24}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 26}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 27}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 28}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 29}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 30}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 31}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 32}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 43, y: 33}
     prefabKey: Fence_01-1
+    rotation: 0
   - gridPosition: {x: 6, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 7, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 8, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 9, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 11, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 12, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 14, y: 10}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 13, y: 18}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 12, y: 18}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 11, y: 18}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 10, y: 18}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 9, y: 18}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 8, y: 18}
     prefabKey: Fence_01
-  - gridPosition: {x: 7, y: 18}
-    prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 6, y: 18}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 42, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 41, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 40, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 39, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 38, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 37, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 36, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 34, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 35, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 33, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 31, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 32, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 30, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 29, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 28, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 27, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 26, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 25, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 24, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 22, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 20, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 21, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 18, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 19, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 17, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 16, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 15, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 13, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 12, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 10, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 11, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 8, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 9, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 5, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 7, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 6, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 4, y: 34}
     prefabKey: Fence_01
+    rotation: 0
   - gridPosition: {x: 2, y: 37}
     prefabKey: Fence_02
+    rotation: 0
   - gridPosition: {x: 5, y: 18}
     prefabKey: Fence_02
+    rotation: 0
   - gridPosition: {x: 47, y: 37}
     prefabKey: Fence_02-1
+    rotation: 0
   - gridPosition: {x: 43, y: 34}
     prefabKey: Fence_02-1
+    rotation: 0
   - gridPosition: {x: 15, y: 18}
     prefabKey: Fence_02-1
+    rotation: 0
   - gridPosition: {x: 15, y: 10}
     prefabKey: Fence_02-2
+    rotation: 0
   - gridPosition: {x: 5, y: 10}
     prefabKey: Fence_02-3
+    rotation: 0
   - gridPosition: {x: 25, y: 0}
     prefabKey: Mount02
+    rotation: 0
   - gridPosition: {x: 36, y: 0}
     prefabKey: Mount01
-  - gridPosition: {x: 47, y: 4}
-    prefabKey: Fence_01-1
+    rotation: 0
+  - gridPosition: {x: 9, y: 24}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 14, y: 25}
+    prefabKey: Trash Can
+    rotation: 90
+  - gridPosition: {x: 16, y: 10}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 21, y: 10}
+    prefabKey: Trash Can
+    rotation: 90
+  - gridPosition: {x: 16, y: 13}
+    prefabKey: Trash Can
+    rotation: 90
+  - gridPosition: {x: 18, y: 16}
+    prefabKey: Trash Can
+    rotation: 90
+  - gridPosition: {x: 28, y: 16}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 34, y: 16}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 37, y: 13}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 23, y: 5}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 13, y: 5}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 7, y: 5}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 37, y: 21}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 31, y: 21}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 33, y: 27}
+    prefabKey: Trash Can
+    rotation: 180
+  - gridPosition: {x: 28, y: 28}
+    prefabKey: Trash Can
+    rotation: 90
+  - gridPosition: {x: 12, y: 22}
+    prefabKey: Vending machine
+    rotation: 90
+  - gridPosition: {x: 17, y: 30}
+    prefabKey: Vending machine
+    rotation: 90
+  - gridPosition: {x: 11, y: 30}
+    prefabKey: Vending machine
+    rotation: 270
+  - gridPosition: {x: 26, y: 27}
+    prefabKey: Vending machine
+    rotation: 270
+  - gridPosition: {x: 31, y: 30}
+    prefabKey: Vending machine
+    rotation: 270
+  - gridPosition: {x: 23, y: 23}
+    prefabKey: Vending machine
+    rotation: 90
+  - gridPosition: {x: 10, y: 22}
+    prefabKey: Vending machine
+    rotation: 270
+  - gridPosition: {x: 27, y: 6}
+    prefabKey: BGStore001
+    rotation: 180
+  - gridPosition: {x: 33, y: 6}
+    prefabKey: BGStore001
+    rotation: 180
+  - gridPosition: {x: 36, y: 6}
+    prefabKey: BGStore001
+    rotation: 180
+  - gridPosition: {x: 30, y: 6}
+    prefabKey: BGStore002
+    rotation: 180
+  - gridPosition: {x: 39, y: 6}
+    prefabKey: BGStore002
+    rotation: 180
+  - gridPosition: {x: 46, y: 11}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 46, y: 5}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 46, y: 18}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 46, y: 28}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 46, y: 36}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 3, y: 36}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 15, y: 35}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 22, y: 35}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 13, y: 31}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 23, y: 29}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 23, y: 21}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 8, y: 15}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 10, y: 7}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 11, y: 3}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 19, y: 3}
+    prefabKey: Streetlight
+    rotation: 90
   - gridPosition: {x: 43, y: 4}
+    prefabKey: Fence_02
+    rotation: 180
+  - gridPosition: {x: 42, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 41, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 40, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 39, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 38, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 37, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 36, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 35, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 34, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 33, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 32, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 31, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 30, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 29, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 28, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 27, y: 4}
+    prefabKey: Fence_01
+    rotation: 180
+  - gridPosition: {x: 26, y: 4}
+    prefabKey: Fence_02
+    rotation: 0
+  - gridPosition: {x: 26, y: 3}
     prefabKey: Fence_01-1
-  - gridPosition: {x: 47, y: 3}
-    prefabKey: Fence_01-1
+    rotation: 0
+  - gridPosition: {x: 46, y: 4}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 45, y: 4}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 44, y: 4}
+    prefabKey: Fence_01
+    rotation: 0
+  - gridPosition: {x: 47, y: 4}
+    prefabKey: Fence_02
+    rotation: 180
+  - gridPosition: {x: 29, y: 7}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 35, y: 7}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 18, y: 12}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 23, y: 15}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 36, y: 11}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 40, y: 15}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 31, y: 16}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 34, y: 21}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 30, y: 24}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 33, y: 31}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 28, y: 31}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 40, y: 21}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 40, y: 27}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 10, y: 21}
+    prefabKey: Streetlight
+    rotation: 270
+  - gridPosition: {x: 18, y: 23}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 9, y: 26}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 15, y: 26}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 6, y: 26}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 18, y: 18}
+    prefabKey: Streetlight
+    rotation: 180
+  - gridPosition: {x: 3, y: 3}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 28, y: 11}
+    prefabKey: Streetlight
+    rotation: 90
+  - gridPosition: {x: 42, y: 5}
+    prefabKey: Streetlight
+    rotation: 0
   tutorialObjectPlacements: []
   mainEventPlacements:
   - gridPosition: {x: 4, y: 27}
@@ -13296,60 +13821,59 @@ MonoBehaviour:
   - gridPosition: {x: 5, y: 9}
     worldEventId: R_NPC_04_001
     eventType: 2
-  - gridPosition: {x: 14, y: 11}
-    worldEventId: R_NPC_04_002
-    eventType: 2
+    rotation: 0
   - gridPosition: {x: 12, y: 35}
     worldEventId: R_NPC_04_003
     eventType: 2
+    rotation: 0
   - gridPosition: {x: 24, y: 24}
     worldEventId: R_NPC_04_004
     eventType: 2
-  - gridPosition: {x: 46, y: 20}
-    worldEventId: R_NPC_04_005
-    eventType: 2
-  - gridPosition: {x: 9, y: 3}
-    worldEventId: C_NPC_04_001
-    eventType: 1
+    rotation: 0
   - gridPosition: {x: 9, y: 32}
     worldEventId: C_NPC_04_002
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 28, y: 22}
     worldEventId: C_NPC_04_003
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 30, y: 31}
     worldEventId: C_NPC_04_004
     eventType: 1
-  - gridPosition: {x: 44, y: 14}
-    worldEventId: C_NPC_04_005
-    eventType: 1
+    rotation: 0
   - gridPosition: {x: 4, y: 35}
     worldEventId: S_NPC_04_001
     eventType: 3
+    rotation: 0
   - gridPosition: {x: 34, y: 27}
     worldEventId: S_NPC_04_002
     eventType: 3
+    rotation: 0
   - gridPosition: {x: 45, y: 27}
     worldEventId: S_NPC_04_003
     eventType: 3
+    rotation: 0
   - gridPosition: {x: 25, y: 14}
     worldEventId: S_NPC_04_004
     eventType: 3
-  - gridPosition: {x: 21, y: 3}
-    worldEventId: S_NPC_04_005
-    eventType: 3
+    rotation: 0
   - gridPosition: {x: 20, y: 27}
     worldEventId: R_NPC_04_006
     eventType: 2
+    rotation: 0
   - gridPosition: {x: 41, y: 11}
     worldEventId: R_NPC_04_006
     eventType: 2
+    rotation: 0
   - gridPosition: {x: 35, y: 25}
     worldEventId: C_NPC_04_006
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 3, y: 5}
     worldEventId: C_NPC_01_005
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 7, y: 36}
     worldEventId: C_NPC_01_005
     eventType: 1
@@ -13357,9 +13881,31 @@ MonoBehaviour:
   - gridPosition: {x: 46, y: 23}
     worldEventId: C_NPC_01_005
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 31, y: 19}
     worldEventId: C_NPC_04_006
     eventType: 1
+    rotation: 0
+  - gridPosition: {x: 9, y: 3}
+    worldEventId: C_NPC_04_001
+    eventType: 1
+    rotation: 180
+  - gridPosition: {x: 21, y: 3}
+    worldEventId: S_NPC_04_005
+    eventType: 3
+    rotation: 180
+  - gridPosition: {x: 14, y: 11}
+    worldEventId: R_NPC_04_002
+    eventType: 2
+    rotation: 90
+  - gridPosition: {x: 46, y: 20}
+    worldEventId: R_NPC_04_005
+    eventType: 2
+    rotation: 90
+  - gridPosition: {x: 44, y: 14}
+    worldEventId: C_NPC_04_005
+    eventType: 1
+    rotation: 270
   gatePlacements:
   - gateId: gate_001
     firstZoneId: zone_001
