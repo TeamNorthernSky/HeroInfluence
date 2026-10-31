@@ -125,6 +125,19 @@ MonoBehaviour:
   visibility: {fileID: 4674845924688963258}
   messageText: {fileID: 4839692723148529030}
   partyPanelSprite: {fileID: 21300000, guid: 1fbbdab26fdbfa44286fc0c75fc2108b, type: 3}
+  movementBalloons:
+  - TemplateId: 10001
+    AboveCharacter: {fileID: 21300000, guid: 143005237ae66644b8e07c1e88bc1852, type: 3}
+    BesideProfile: {fileID: 21300000, guid: 87e33e5b27111224a827251b6b1ff6ca, type: 3}
+  - TemplateId: 10002
+    AboveCharacter: {fileID: 21300000, guid: 23cca07a18b7b4642afb595357b4fbe5, type: 3}
+    BesideProfile: {fileID: 21300000, guid: 45af5e1ecc3496642a93ee50d9038c17, type: 3}
+  - TemplateId: 10003
+    AboveCharacter: {fileID: 21300000, guid: 8240ae7bfd89dad428e62492f425c9ee, type: 3}
+    BesideProfile: {fileID: 21300000, guid: 420846f88f0db0e4a8bab575b8ffddd2, type: 3}
+  - TemplateId: 10004
+    AboveCharacter: {fileID: 21300000, guid: 8a779d111331eb64989686ae95f43783, type: 3}
+    BesideProfile: {fileID: 21300000, guid: 7a8e3fbf925c83b41994c97cae396e01, type: 3}
   holdSeconds: 1.6
   fadeSeconds: 0.25
   followCharacterPosition: 1
@@ -298,11 +311,11 @@ RectTransform:
   - {fileID: 6685209988470683896}
   m_Father: {fileID: 59108555528270565}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 292, y: 80}
-  m_Pivot: {x: 0.5, y: 0}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!225 &2220956296367404119
 CanvasGroup:
   m_ObjectHideFlags: 0

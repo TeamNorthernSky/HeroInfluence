@@ -17,6 +17,7 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
     private bool showingInWorld;
     private float expiresAt;
     private string currentMessage;
+    private int movementBalloonTemplateId;
     private readonly Queue<(PartyGridMover party, ResourceType type)> pendingResources =
         new Queue<(PartyGridMover party, ResourceType type)>();
 
@@ -129,7 +130,10 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
         }
     }
 
-    private void OnDestinationUnreachable(PartyGridMover party) => ShowForParty(party);
+    private void OnDestinationUnreachable(PartyGridMover party)
+    {
+        if (ShowForParty(party)) AudioManager.Instance?.PlaySfx("Button_Click_Fail");
+    }
 
     public void NotifyResourceInteraction(PartyGridMover party, ResourceType type)
     {
@@ -167,9 +171,10 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
         var selection = visibleCandidates.Count > 0 ? visibleCandidates : candidates;
         visibleBubble = selection[Random.Range(0, selection.Count)];
         LastSpeakerUnitIndex = visibleBubble.UnitIndex;
+        var speaker = visibleBubble.GetComponent<PartyUnitState>();
+        movementBalloonTemplateId = ExplorationHeroDialogue.GetTemplateId(speaker);
         if (string.IsNullOrWhiteSpace(currentMessage))
         {
-            var speaker = visibleBubble.GetComponent<PartyUnitState>();
             currentMessage = resourceType.HasValue
                 ? ExplorationHeroDialogue.GetResourceMessage(speaker, resourceType.Value)
                 : ExplorationHeroDialogue.GetMovementMessage(speaker);
@@ -196,7 +201,7 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
         visibleBubble.Hide();
         panelBubble.Hide();
         showingInWorld = inWorld;
-        return inWorld ? visibleBubble.Show(camera, currentMessage)
+        return inWorld ? visibleBubble.Show(camera, currentMessage, movementBalloonTemplateId)
             : LoadPrefab() && panelBubble.ShowForUnit(LastSpeakerUnitIndex, prefab, currentMessage);
     }
 

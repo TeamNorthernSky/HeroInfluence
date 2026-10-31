@@ -131,6 +131,9 @@ public sealed class PopupEnterSubmitter : MonoBehaviour
     {
         confirmButton = null;
 
+        if (TutorialCutSceneManager.TryGetSkipConfirmButton(out confirmButton))
+            return true;
+
         GameObject topModal = ModalManager.Top;
         if (topModal != null && topModal.activeInHierarchy)
         {
