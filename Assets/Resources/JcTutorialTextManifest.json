@@ -1,0 +1,964 @@
+{
+  "entries": [
+    {
+      "id": "explore.cameraScrollExplanation",
+      "text": "화면 밖에도 이동할 수 있는 목표가 있습니다.\nW A S D 키 또는 화면 가장자리로 지도를 움직일 수 있습니다.\n확인 후 오른쪽의 빛나는 목표를 화면 중앙으로 가져오세요."
+    },
+    {
+      "id": "explore.cameraScrollPractice",
+      "text": "D키 또는 화면 오른쪽 가장자리로 카메라를 이동하세요.\n빛나는 목표가 화면 중앙 가까이에 오면 다음 안내가 표시됩니다."
+    },
+    {
+      "id": "explore.selectText",
+      "text": "필드에 노란 색으로 표시된 목표 위치를 마우스 왼쪽 버튼으로 클릭하세요.\n이동 경로가 녹색으로 표시되면 같은 목표를 한 번 더 클릭해 이동합니다."
+    },
+    {
+      "id": "explore.confirmText",
+      "text": "선택한 목표를 마우스 왼쪽 버튼으로 한 번 더 클릭하면 이동합니다."
+    },
+    {
+      "id": "explore.movingText",
+      "text": "목표 위치로 이동 중입니다."
+    },
+    {
+      "id": "explore.exhaustedText",
+      "text": "이동력을 모두 사용하면 자동으로 현재 턴이 종료됩니다.\n다음 턴에는 이동력이 다시 채워집니다.\n이동력이 남아 있어도 ‘휴식’을 누르면 현재 턴을 마칠 수 있습니다."
+    },
+    {
+      "id": "exploreguide.001",
+      "text": "목표 위치까지 이동하세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:323"
+    },
+    {
+      "id": "exploreguide.002",
+      "text": "마우스로 이동",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:331"
+    },
+    {
+      "id": "exploreguide.003",
+      "text": "이 게임에서는 마우스 왼쪽 버튼으로 이동합니다.\n목표 안내 표시를 클릭해 이동 경로를 확인한 뒤,\n같은 목표를 한 번 더 클릭해서 이동해봅시다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:331"
+    },
+    {
+      "id": "exploreguide.004",
+      "text": "탐사 · 이동",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:334"
+    },
+    {
+      "id": "exploreguide.005",
+      "text": "카메라 이동",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:337"
+    },
+    {
+      "id": "exploreguide.006",
+      "text": "마우스를 화면 가장자리로 옮기면 카메라가 이동합니다.\nW A S D 키로도 위·왼쪽·아래·오른쪽을 볼 수 있습니다.\n영웅의 이동은 목표 위치를 마우스로 클릭하세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:337"
+    },
+    {
+      "id": "exploreguide.007",
+      "text": "이동력 확인",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:343"
+    },
+    {
+      "id": "exploreguide.008",
+      "text": "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:343"
+    },
+    {
+      "id": "exploreguide.009",
+      "text": "목표 위치까지 이동하세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:348"
+    },
+    {
+      "id": "exploreguide.010",
+      "text": "다음 목표 위치까지 이동하세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:348"
+    },
+    {
+      "id": "exploreguide.011",
+      "text": "이동하면 이동력이 소모됩니다. 남은 이동력을 확인하고 다음 목표를 눌러 보세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:354"
+    },
+    {
+      "id": "exploreguide.012",
+      "text": "탐사 · 이동",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:355"
+    },
+    {
+      "id": "exploreguide.013",
+      "text": "필드 자원을 수집하세요 ({0}/{1})",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:366"
+    },
+    {
+      "id": "exploreguide.014",
+      "text": "빌런에게 접근하세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:366"
+    },
+    {
+      "id": "exploreguide.015",
+      "text": " 획득",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:370"
+    },
+    {
+      "id": "exploreguide.016",
+      "text": "{0} {1}개를 획득했습니다. {2}\n보유량은 화면 상단에서 확인할 수 있습니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:371"
+    },
+    {
+      "id": "exploreguide.017",
+      "text": "자원 수집",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:377"
+    },
+    {
+      "id": "exploreguide.018",
+      "text": "계속해서 이동을 진행합니다.\n표시된 {0}을 수집하세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:377"
+    },
+    {
+      "id": "exploreguide.019",
+      "text": "첫 전투",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:388"
+    },
+    {
+      "id": "exploreguide.020",
+      "text": "빌런 주변의 붉은 영역에 도착하면 전투가 시작됩니다. 이동력을 확인하고 접근하세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:388"
+    },
+    {
+      "id": "exploreguide.021",
+      "text": "첫 전투",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:390"
+    },
+    {
+      "id": "exploreguide.022",
+      "text": "표시된 빌런을 선택한 뒤 한 번 더 눌러 접근하세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:390"
+    },
+    {
+      "id": "exploreguide.023",
+      "text": "자동 턴 전환 안내를 확인하세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:415"
+    },
+    {
+      "id": "exploreguide.024",
+      "text": "자동 턴 전환",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:416"
+    },
+    {
+      "id": "exploreguide.025",
+      "text": "새로운 턴",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:432"
+    },
+    {
+      "id": "exploreguide.026",
+      "text": "이동력이 다시 채워졌습니다.\n턴이 바뀌면 시간이 흐르고, 낮과 밤도 달라집니다.\n표시된 목표로 계속 이동해 보세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:432"
+    },
+    {
+      "id": "exploreguide.027",
+      "text": "협회 입장",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:477"
+    },
+    {
+      "id": "exploreguide.028",
+      "text": "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 빛 테두리로 강조된 건물을 더블클릭하세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:477"
+    },
+    {
+      "id": "exploreguide.029",
+      "text": "협회 입장",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:484"
+    },
+    {
+      "id": "exploreguide.030",
+      "text": "빛 테두리로 강조된 건물을 더블클릭하세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:484"
+    },
+    {
+      "id": "exploreguide.031",
+      "text": "점령한 건물을 더블클릭하세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:486"
+    },
+    {
+      "id": "exploreguide.032",
+      "text": "W A S D 키로 화면을 이동하는 방법을 확인하세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:498"
+    },
+    {
+      "id": "exploreguide.033",
+      "text": "화면 이동",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:501"
+    },
+    {
+      "id": "exploreguide.034",
+      "text": "D키로 화면을 이동하여 목표를 화면 중앙에 맞추세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:516"
+    },
+    {
+      "id": "exploreguide.035",
+      "text": "화면 이동 연습",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:517"
+    },
+    {
+      "id": "exploreguide.036",
+      "text": "건물 점령",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:529"
+    },
+    {
+      "id": "exploreguide.037",
+      "text": "표시된 목표 지점을 선택한 뒤\n한 번 더 누르면 건물 점령 전투 위치로 이동합니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:529"
+    },
+    {
+      "id": "exploreguide.038",
+      "text": "점령전으로 이동",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:536"
+    },
+    {
+      "id": "exploreguide.039",
+      "text": "표시된 전투 진입 지점으로 이동하세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:538"
+    },
+    {
+      "id": "exploreguide.040",
+      "text": "표시된 목표 지점을 선택한 뒤\n한 번 더 눌러 이동하세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:539"
+    },
+    {
+      "id": "exploreguide.041",
+      "text": "건물 점령",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:540"
+    },
+    {
+      "id": "exploreguide.042",
+      "text": "탐사 · ",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:569"
+    },
+    {
+      "id": "exploreguide.043",
+      "text": "이동력 확인",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:584"
+    },
+    {
+      "id": "exploreguide.044",
+      "text": "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:584"
+    },
+    {
+      "id": "exploreguide.045",
+      "text": "마우스 클릭으로 이동합니다",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:699"
+    },
+    {
+      "id": "exploreguide.046",
+      "text": "히어로 메달",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:737"
+    },
+    {
+      "id": "exploreguide.047",
+      "text": "크리스탈",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:737"
+    },
+    {
+      "id": "exploreguide.048",
+      "text": "건설 자재",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:737"
+    },
+    {
+      "id": "exploreguide.049",
+      "text": "자금",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:737"
+    },
+    {
+      "id": "exploreguide.050",
+      "text": "히어로 스킬 강화에 사용하는 자원입니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:739"
+    },
+    {
+      "id": "exploreguide.051",
+      "text": "히어로 코어 제작과 강화에 사용하는 자원입니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:739"
+    },
+    {
+      "id": "exploreguide.052",
+      "text": "협회 시설의 건설과 승급에 사용하는 자원입니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:739"
+    },
+    {
+      "id": "exploreguide.053",
+      "text": "협회 운영과 다양한 강화에 사용하는 기본 자원입니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs:739"
+    },
+    {
+      "id": "battleguide.guided.001",
+      "text": "전열과 후열",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:206"
+    },
+    {
+      "id": "battleguide.guided.002",
+      "text": "반격과 피해경감",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:206"
+    },
+    {
+      "id": "battleguide.guided.003",
+      "text": "공격 가능한 대상",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:206"
+    },
+    {
+      "id": "battleguide.guided.004",
+      "text": "전장에는 적과 가까운 ‘전열’과 그 뒤에 있는 ‘후열’이 있습니다.\n\n<color=#{0}>녹색으로 표시된 열이 ‘<b>전열</b>’</color>\n<color=#{1}>적색으로 표시된 열이 ‘<b>후열</b>’</color>\n\n전열과 후열은 각각의 위치에 따른 특징을 지닙니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:208"
+    },
+    {
+      "id": "battleguide.guided.005",
+      "text": "<color=#{0}><b>전열</b></color>에서는 근거리 공격을 받고 살아남으면 반격 확률에 따라 반격합니다. 충전·휴식 중이거나 반격용 공격 스킬이 없으면 반격할 수 없습니다.\n<line-height=50%>\n</line-height><color=#{1}><b>후열</b></color>에서는 경감 확률에 따라 피해 계산 배율이 50%로 줄고, 해당 타격은 치명타가 되지 않습니다. 반격 피해에는 경감이 적용되지 않습니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:212"
+    },
+    {
+      "id": "battleguide.guided.006",
+      "text": "스킬에 따라 공격할 수 있는 열과 대상이 달라집니다.\n사용할 스킬을 선택한 뒤, 바닥에 표시되는 공격 가능한 대상을 확인해 보세요.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:214"
+    },
+    {
+      "id": "battleguide.guided.007",
+      "text": "저스티스의 차례입니다",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:221"
+    },
+    {
+      "id": "battleguide.guided.008",
+      "text": "저스티스는 근거리에서 싸우며 아군을 보호하는 히어로입니다.\n‘저스티스 등장!’은 적 하나를 공격하고, 다음 자신의 차례까지 적의 단일 공격을 자신에게 유도합니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:221"
+    },
+    {
+      "id": "battleguide.guided.009",
+      "text": "루미나의 차례입니다",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:222"
+    },
+    {
+      "id": "battleguide.guided.010",
+      "text": "루미나는 마법을 이용한 원거리 공격에 특화된 캐릭터 입니다.\n지금 사용가능한 스킬 '플레어 봄'은 하나의 적에게 원거리 공격을 하는 스킬이며, 레벨업을 하면 광역 공격 기술을 습득할 수 있습니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:222"
+    },
+    {
+      "id": "battleguide.guided.011",
+      "text": "네코밍의 차례입니다",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:223"
+    },
+    {
+      "id": "battleguide.guided.012",
+      "text": "네코밍은 아군의 체력을 회복하는 지원형 히어로입니다.\n‘아픈 거 다 날아가라’로 체력이 줄어든 아군 한 명을 회복할 수 있습니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:223"
+    },
+    {
+      "id": "battleguide.guided.013",
+      "text": "블랙 불릿의 차례입니다",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:224"
+    },
+    {
+      "id": "battleguide.guided.014",
+      "text": "블랙 불릿은 적 하나를 집중 공격하는 원거리 히어로입니다.\n첫 공격에 앞서, 전투 화면과 조작 방법을 알아보겠습니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:224"
+    },
+    {
+      "id": "battleguide.guided.015",
+      "text": "스킬 사용하기",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:229"
+    },
+    {
+      "id": "battleguide.guided.016",
+      "text": "왼쪽 스킬 버튼 위에 마우스 커서를 올리면 아래에서 스킬 설명을 확인할 수 있습니다.\n스킬을 클릭한 뒤 공격할 적을 선택하면 스킬을 사용합니다. 선택한 스킬은 버튼 테두리가 빛나며 표시됩니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:230"
+    },
+    {
+      "id": "battleguide.guided.017",
+      "text": "행동할 히어로 확인하기",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:234"
+    },
+    {
+      "id": "battleguide.guided.018",
+      "text": "행동 순서 확인하기",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:234"
+    },
+    {
+      "id": "battleguide.guided.019",
+      "text": "전장의 적 살펴보기",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:234"
+    },
+    {
+      "id": "battleguide.guided.020",
+      "text": "배지로 적 찾아보기",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:234"
+    },
+    {
+      "id": "battleguide.guided.021",
+      "text": "왼쪽에는 현재 행동할 히어로의 정보와 사용할 수 있는 스킬이 표시됩니다.\n위쪽에서 체력을 확인하고, 아래쪽에서 사용할 스킬을 선택할 수 있습니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:235"
+    },
+    {
+      "id": "battleguide.guided.022",
+      "text": "오른쪽의 ‘현재 턴’은 지금 행동하는 유닛을 보여줍니다.\n아래의 배지는 위에서부터 앞으로 행동할 유닛의 순서입니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:236"
+    },
+    {
+      "id": "battleguide.guided.023",
+      "text": "밝게 표시된 적 위에 마우스를 올려 보세요.\n적의 정보와 윤곽선·바닥 타일이 표시되고, 턴 목록에서도 해당 적을 확인할 수 있습니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:237"
+    },
+    {
+      "id": "battleguide.guided.024",
+      "text": "오른쪽 턴 목록의 적 배지에 마우스를 올리면, 전장에서 해당 적의 윤곽선과 바닥 타일이 강조됩니다.",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:238"
+    },
+    {
+      "id": "battleguide.guided.025",
+      "text": "전투 시작",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:246"
+    },
+    {
+      "id": "battleguide.guided.026",
+      "text": "다음",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:246"
+    },
+    {
+      "id": "guideview.hints.001",
+      "text": "오른쪽으로 화면 이동\n<size=85%>마우스 스크롤 또는 D 키</size>",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialGuideView.Hints.cs:27"
+    },
+    {
+      "id": "guideview.hints.002",
+      "text": "클릭하여 스킬을 사용",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialGuideView.Hints.cs:28"
+    },
+    {
+      "id": "guideview.hints.003",
+      "text": "마우스 커서를\n올려보세요",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialGuideView.Hints.cs:28"
+    },
+    {
+      "id": "battleguide.001",
+      "text": "전투 안내",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.cs:167"
+    },
+    {
+      "id": "battleguide.002",
+      "text": "전투 · 스킬 획득",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.cs:184"
+    },
+    {
+      "id": "battleguide.003",
+      "text": "전투 · 결과 확인",
+      "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.cs:193"
+    },
+    {
+      "id": "lobbyguidepresentation.001",
+      "text": "협회 안내",
+      "source": "Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialLobbyGuidePresentation.cs:108"
+    },
+    {
+      "id": "exploreuicontroller.001",
+      "text": "홍보 버튼을 클릭하세요.",
+      "source": "Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialExploreUIController.cs:111"
+    },
+    {
+      "id": "exploreuicontroller.002",
+      "text": "탐사 · 홍보",
+      "source": "Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialExploreUIController.cs:156"
+    },
+    {
+      "id": "battle.heading.0",
+      "text": "전투 · 행동 안내"
+    },
+    {
+      "id": "battle.heading.1",
+      "text": "전투 · 지원 안내"
+    },
+    {
+      "id": "battle.heading.2",
+      "text": "전투 · 결과 확인"
+    },
+    {
+      "id": "battle.heading.3",
+      "text": "전투 안내"
+    },
+    {
+      "id": "battle.skill-notice",
+      "text": "새로운 스킬이 추가되거나, 기존 스킬이 강화되고 다음 전투부터 사용 가능합니다."
+    },
+    {
+      "id": "publicity.intro",
+      "text": "홍보 기능에 대해 알아봅시다.\n홍보는 자금을 사용해 영웅의 영향력(IP)을 높이는 기능입니다."
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.First.Announcement.Text.TMP",
+      "text": "협회에는 홍보부 외에도 많은 기능들이 있습니다.\n",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/First Announcement/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.TextBox.Text.TMP",
+      "text": "각 시설의 기능을 활용해\n히어로를 강화할 수 있습니다.\n",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/TextBox/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_HQMenu.Text.TMP",
+      "text": "본부",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_HQMenu/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_HQMenu.Explanation",
+      "text": "매 턴 자금을 획득합니다.\n업그레이드 할 수록 획득하는 자금이 증가합니다.",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_HQMenu/Explanation"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Lab.Text.TMP",
+      "text": "연구소",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Lab/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Lab.Explanation",
+      "text": "영웅들의 스킬을 강화합니다.",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Lab/Explanation"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Publicity.Text.TMP",
+      "text": "홍보부",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Publicity/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Publicity.Explanation",
+      "text": "영웅들의 IP를 보충합니다.",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Publicity/Explanation"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Workshop.Text.TMP",
+      "text": "공방",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Workshop/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Workshop.Explanation",
+      "text": "영웅의 코어를\n제작 / 강화 합니다.",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Workshop/Explanation"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Exchanger.Text.TMP",
+      "text": "교환소",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Exchanger/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Exchanger.Explanation",
+      "text": "소지하고 있는 자원을 \n다른 종류의 자원으로 \n교환합니다.",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Exchanger/Explanation"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Training.Text.TMP",
+      "text": "훈련실",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Training/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_Training.Explanation",
+      "text": "영웅의 능력치를 강화합니다.",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_Training/Explanation"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_HeroRecruit.Text.TMP",
+      "text": "의무실",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_HeroRecruit/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Second.Announcement.BTN_HQLobby_Frame_HeroRecruit.Explanation",
+      "text": "쓰러지거나 다친 영웅들을 \n회복시킵니다.",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Second Announcement/BTN_HQLobby_Frame_HeroRecruit/Explanation"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.HQLobbyCanvas.Explanation.Third.Announcement.TextBox.Text.TMP",
+      "text": "튜토리얼 종료\n이제 오로라 시티로 이동하겠습니다.\n",
+      "scene": "TutorialLobbyScene",
+      "path": "HQLobbyCanvas/Explanation/Third Announcement/TextBox/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialLobbyScene.KJ_LobbyGuidePresentation.GuideCanvas.GuideCard.Continue.Label",
+      "text": "확인",
+      "scene": "TutorialLobbyScene",
+      "path": "KJ_LobbyGuidePresentation/GuideCanvas/GuideCard/Continue/Label"
+    },
+    {
+      "id": "scene.TutorialExploreScene.Exploration_HUD_Canvas.SkipPopup.Panel.Text.TMP",
+      "text": "건너뛰시겠습니까?",
+      "scene": "TutorialExploreScene",
+      "path": "Exploration_HUD_Canvas/SkipPopup/Panel/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.Exploration_HUD_Canvas.SkipPopup.Panel.Accept.Button.Text.TMP",
+      "text": "확인",
+      "scene": "TutorialExploreScene",
+      "path": "Exploration_HUD_Canvas/SkipPopup/Panel/Accept Button/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.Exploration_HUD_Canvas.SkipPopup.Panel.Deny.Button.Text.TMP",
+      "text": "취소",
+      "scene": "TutorialExploreScene",
+      "path": "Exploration_HUD_Canvas/SkipPopup/Panel/Deny Button/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_01.TutorialGuideBackground.Text.TMP",
+      "text": "홍보 버튼을\n누르세요\n",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_01/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_02.TutorialGuideBackground.Text.TMP",
+      "text": "홍보할 영웅을 먼저 선택합니다.\n이번에는 저스티스의\n영향력(IP)을 높여 봅시다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_02/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_02.TutorialGuideBackground.TutorialContinueHint",
+      "text": "아무 곳이나 클릭하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_02/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_02.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_02/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_03.TutorialGuideBackground.Text.TMP",
+      "text": "영웅 목록에서\n저스티스를 클릭하세요.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_03/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.Text.TMP",
+      "text": "홍보 1회에는 자금 100이 필요하며,\n영웅의 IP가 1 증가합니다.\n이번 실습에서는 저스티스를\n총 40회 홍보합니다.\n자금 4,000이 필요합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.TutorialContinueHint",
+      "text": "아무 곳이나 클릭하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_05.TutorialGuideBackground.Text.TMP",
+      "text": "슬라이더 또는 + / − 버튼으로\nIP 충전량을 1~20 사이에서\n조절한 뒤 진행 버튼을 클릭하세요.\n",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_05/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_05.TutorialGuideBackground.TutorialContinueHint",
+      "text": "안내한 조작을 완료하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_05/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_05.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_05/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_05.PracticeLimitNotice.Text.TMP",
+      "text": "이번 튜토리얼에서는 홍보 횟수를 최대 20까지만 설정할 수 있습니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_05/PracticeLimitNotice/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.TutorialGuideBackground.Text.TMP",
+      "text": "저스티스의 IP가\n홍보 횟수만큼 증가했습니다.\n홍보 가능 횟수와 자금이\n소모되었습니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_06/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.TutorialGuideBackground.TutorialContinueHint",
+      "text": "아무 곳이나 클릭하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_06/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_06/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.Text.TMP",
+      "text": "남은 홍보 가능 횟수만큼 홍보가 가능합니다.\n남은 홍보 횟수는 모든 캐릭터가 공유합니다.\n이번에는 모두 저스티스에 사용해 보겠습니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.TutorialContinueHint",
+      "text": "아무 곳이나 클릭하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_08.TutorialGuideBackground.Text.TMP",
+      "text": "MAX 버튼을 누른 후, 진행 버튼을 눌러 남은 홍보 가능 횟수를 모두 사용 해 보세요.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_08/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_08.TutorialGuideBackground.TutorialContinueHint",
+      "text": "안내한 조작을 완료하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_08/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_08.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_08/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_09.TutorialGuideBackground.Text.TMP",
+      "text": "MAX 버튼을 누른 후, 진행 버튼을 눌러 남은 홍보 가능 횟수를 모두 사용 해 보세요.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_09/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_09.TutorialGuideBackground.TutorialContinueHint",
+      "text": "안내한 조작을 완료하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_09/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_09.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_09/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_10.TutorialGuideBackground.Text.TMP",
+      "text": "홍보를 두 번 완료했습니다!\n저스티스의 IP가 40에 도달했고,\n홍보 가능 횟수 40회를\n모두 사용했습니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_10/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_10.TutorialGuideBackground.TutorialContinueHint",
+      "text": "아무 곳이나 클릭하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_10/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_10.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_10/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_11.TutorialGuideBackground.Text.TMP",
+      "text": "진행 가능 횟수는\n4턴마다 갱신되며,\n사용하지 않은 횟수는\n다음 갱신으로 이월됩니다.\n닫기 버튼을 클릭해\n탐사 화면으로 돌아가세요.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_11/TutorialGuideBackground/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_11.TutorialGuideBackground.TutorialContinueHint",
+      "text": "안내한 조작을 완료하면 계속합니다.",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_11/TutorialGuideBackground/TutorialContinueHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_11.TutorialGuideBackground.TutorialPreviewLabel",
+      "text": "사용법 안내 · 예시 화면",
+      "scene": "TutorialExploreScene",
+      "path": "TutorialExploreUI/TutorialSteps/Explanation_11/TutorialGuideBackground/TutorialPreviewLabel"
+    },
+    {
+      "id": "scene.TutorialExploreScene.JC_TutorialExplore.MovementGuide.GuideCanvas.OpeningObjectiveBox.DismissHint",
+      "text": "화면을 누르면 바로 시작합니다",
+      "scene": "TutorialExploreScene",
+      "path": "JC_TutorialExplore/MovementGuide/GuideCanvas/OpeningObjectiveBox/DismissHint"
+    },
+    {
+      "id": "scene.TutorialExploreScene.JC_TutorialExplore.MovementGuide.GuideCanvas.GuideCard.Continue.Label",
+      "text": "확인  ›",
+      "scene": "TutorialExploreScene",
+      "path": "JC_TutorialExplore/MovementGuide/GuideCanvas/GuideCard/Continue/Label"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Button.step1.Text.TMP",
+      "text": "확인",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialUITest/Button/step1/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Button.step2.Text.TMP",
+      "text": "확인",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialUITest/Button/step2/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Button.step3.Text.TMP",
+      "text": "step3",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialUITest/Button/step3/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Button.step4.Text.TMP",
+      "text": "step4\n",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialUITest/Button/step4/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Text.Text.Step1",
+      "text": "전투가 시작되었습니다.\n안내를 확인한 뒤 스킬과 대상을 선택하세요.",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialUITest/Text/Text (Step1)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Text.Text.Step2",
+      "text": "네코밍의 차례입니다.\n안내를 확인한 뒤 아군을 회복할 수 있습니다.",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialUITest/Text/Text (Step2)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Text.Text.Step3",
+      "text": "전투에서 승리했습니다.\n결과를 확인하고 탐사로 돌아가세요.",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialUITest/Text/Text (Step3)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialRunRestrictionPopup.Text.TMP",
+      "text": "튜토리얼 전투에서는\n도주할 수 없습니다.",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialRunRestrictionPopup/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialRunRestrictionPopup.Accept.Button.Text.TMP",
+      "text": "확인",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialRunRestrictionPopup/Accept Button/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.TutorialRunRestrictionPopup.Deny.Button.Text.TMP",
+      "text": "취소",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/TutorialRunRestrictionPopup/Deny Button/Text (TMP)"
+    },
+    {
+      "id": "sheet.TutorialUiSheet_TUT_01.step1",
+      "text": "튜토리얼: 전투를 시작합니다.\n아군의 IP가 50으로 올랐습니다. 버튼을 눌러 계속하세요.",
+      "source": "Assets\\ASB_Work\\Tutoriral\\TutorialUiSheet_TUT_01.asset"
+    },
+    {
+      "id": "sheet.TutorialUiSheet_TUT_01.step2",
+      "text": "튜토리얼: 2라운드입니다.\n스킬과 대상을 선택해 공격해 보세요.\n(이 튜토리얼에서는 적이 쓰러지지 않습니다.)",
+      "source": "Assets\\ASB_Work\\Tutoriral\\TutorialUiSheet_TUT_01.asset"
+    },
+    {
+      "id": "publicity.current-ip",
+      "text": "현재 IP : {0}"
+    },
+    {
+      "id": "publicity.no-ip",
+      "text": "현재 IP : -"
+    },
+    {
+      "id": "publicity.select-hero",
+      "text": "영웅을 선택해 주세요."
+    },
+    {
+      "id": "publicity.no-remaining",
+      "text": "이번 주 진행 가능 횟수를 모두 사용했습니다."
+    },
+    {
+      "id": "publicity.max-ip",
+      "text": "이미 최대 I.P({0})에 도달했습니다."
+    },
+    {
+      "id": "publicity.insufficient-resource",
+      "text": "자원이 부족합니다."
+    },
+    {
+      "id": "scene.TitleScene.Canvas.SaveSlotPanel.Modals.TutorialPopup.Text.TMP",
+      "text": "튜토리얼을 진행하시겠습니까?",
+      "scene": "TitleScene",
+      "path": "Canvas/SaveSlotPanel/Modals/TutorialPopup/Text (TMP)"
+    },
+    {
+      "id": "scene.TitleScene.Canvas.SaveSlotPanel.Modals.TutorialPopup.Accept.Button.Text.TMP",
+      "text": "예",
+      "scene": "TitleScene",
+      "path": "Canvas/SaveSlotPanel/Modals/TutorialPopup/Accept Button/Text (TMP)"
+    },
+    {
+      "id": "scene.TitleScene.Canvas.SaveSlotPanel.Modals.TutorialPopup.Deny.Button.Text.TMP",
+      "text": "아니요",
+      "scene": "TitleScene",
+      "path": "Canvas/SaveSlotPanel/Modals/TutorialPopup/Deny Button/Text (TMP)"
+    },
+    {
+      "id": "scene.OpeningCutScene.CunScene.Canvas.SkipPopup.Panel.Text.TMP",
+      "text": "건너뛰시겠습니까?",
+      "scene": "Opening CutScene",
+      "path": "CunScene Canvas/SkipPopup/Panel/Text (TMP)"
+    },
+    {
+      "id": "scene.OpeningCutScene.CunScene.Canvas.SkipPopup.Panel.Accept.Button.Text.TMP",
+      "text": "확인",
+      "scene": "Opening CutScene",
+      "path": "CunScene Canvas/SkipPopup/Panel/Accept Button/Text (TMP)"
+    },
+    {
+      "id": "scene.OpeningCutScene.CunScene.Canvas.SkipPopup.Panel.Deny.Button.Text.TMP",
+      "text": "취소",
+      "scene": "Opening CutScene",
+      "path": "CunScene Canvas/SkipPopup/Panel/Deny Button/Text (TMP)"
+    },
+    {
+      "id": "scene.OpeningCutScene.CunScene.Canvas.Click.to.Continue.Message",
+      "text": "Click to Continue",
+      "scene": "Opening CutScene",
+      "path": "CunScene Canvas/Click to Continue Message"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.RunConfirmationPopup.Text.TMP",
+      "text": "전투에서 도주하시겠습니까?\n<size=10> </size>\n<size=30>(도주할 경우, 현재 체력의 2/3과\n현재 IP의 10%를 잃습니다)</size>",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/RunConfirmationPopup/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.RunConfirmationPopup.Accept.Button.Text.TMP",
+      "text": "확인",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/RunConfirmationPopup/Accept Button/Text (TMP)"
+    },
+    {
+      "id": "scene.TutorialBattleScene.BattleSceneCanvas.RunConfirmationPopup.Deny.Button.Text.TMP",
+      "text": "취소",
+      "scene": "TutorialBattleScene",
+      "path": "BattleSceneCanvas/RunConfirmationPopup/Deny Button/Text (TMP)"
+    }
+  ]
+}

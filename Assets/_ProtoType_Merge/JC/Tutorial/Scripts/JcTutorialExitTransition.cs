@@ -51,7 +51,7 @@ namespace JC.Tutorial
                 var host = new GameObject("Scene Fade Controller");
                 DontDestroyOnLoad(host); fade = host.AddComponent<SceneFadeController>();
             }
-            yield return fade.FadeOut(.35f);
+            yield return SceneFadeController.PresentLoadingScreen(.35f);
             CombatContext.Instance?.ClearTutorial();
             TutorialProgressRepository.ClearProgress();
             TutorialCatalog.DestroyAllTutorialCatalogs();

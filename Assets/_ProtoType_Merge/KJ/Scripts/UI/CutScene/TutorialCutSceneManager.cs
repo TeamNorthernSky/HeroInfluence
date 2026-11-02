@@ -42,12 +42,8 @@ public class TutorialCutSceneManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (transitioning) return;
-        if (skipPopup != null && skipPopup.activeSelf)
-        {
-            if (Input.GetKeyDown(KeyCode.Escape)) CloseSkipPopup();
-            return;
-        }
+        if (transitioning || Input.GetKeyDown(KeyCode.Escape)) return;
+        if (skipPopup != null && skipPopup.activeSelf) return;
         if (Time.frameCount == popupClosedFrame) return;
         // Button clicks belong to the UI, not to the cutscene's advance input.
         if (Input.GetMouseButtonDown(0) && IsPointerOverButton()) return;
@@ -80,6 +76,47 @@ public class TutorialCutSceneManager : MonoBehaviour
                     break;
             }
         }
+    }
+
+    /// <summary>공통 메뉴보다 먼저 컷신의 Esc 입력을 처리한다.</summary>
+    public static bool HandleEscape()
+    {
+        var cutscene = FindFirstObjectByType<TutorialCutSceneManager>();
+        if (cutscene == null || !cutscene.isActiveAndEnabled ||
+            cutscene.gameObject.scene != SceneManager.GetActiveScene() ||
+            (cutscene.currentCutSceneState != CutScene.Opening && cutscene.currentCutSceneState != CutScene.Ending))
+            return false;
+
+        if (!cutscene.transitioning)
+        {
+            if (cutscene.skipPopup != null && cutscene.skipPopup.activeSelf)
+                cutscene.CloseSkipPopup();
+            else
+                cutscene.ShowSkipPopup();
+        }
+        return true;
+    }
+
+    /// <summary>The visible skip popup owns Space/Enter, regardless of the selected button.</summary>
+    public static bool TryGetSkipConfirmButton(out Button confirmButton)
+    {
+        confirmButton = null;
+        foreach (var cutscene in FindObjectsByType<TutorialCutSceneManager>(FindObjectsSortMode.None))
+        {
+            if (!cutscene.isActiveAndEnabled || cutscene.gameObject.scene != SceneManager.GetActiveScene() ||
+                (cutscene.currentCutSceneState != CutScene.Opening && cutscene.currentCutSceneState != CutScene.Ending) ||
+                cutscene.skipPopup == null || !cutscene.skipPopup.activeInHierarchy) continue;
+
+            if (!cutscene.transitioning)
+                foreach (var button in cutscene.skipPopup.GetComponentsInChildren<Button>(true))
+                    if (button.name == "Accept Button")
+                    {
+                        confirmButton = button;
+                        break;
+                    }
+            return true;
+        }
+        return false;
     }
 
     private bool IsPointerOverButton()

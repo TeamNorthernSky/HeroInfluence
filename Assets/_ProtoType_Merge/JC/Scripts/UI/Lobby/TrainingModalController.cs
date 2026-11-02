@@ -83,6 +83,7 @@ public class TrainingModalController : MonoBehaviour
     private int selRow = -1;        // 선택된 행 인덱스
     private int selStageLevel = -1; // 선택된 도달 레벨(1~MaxTrainingLevel)
     private int detailsRow = -1;
+    private TMP_Text requiredTrainingLevelText;
 
     private TrainingManager subTM;
     private EconomyManager subEco;
@@ -104,6 +105,7 @@ public class TrainingModalController : MonoBehaviour
 
     private void Awake()
     {
+        BindRequiredTrainingLevelText();
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null) btnCancel.onClick.AddListener(OnCancel);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
@@ -339,6 +341,14 @@ public class TrainingModalController : MonoBehaviour
         bool hasHero = selectedUnitIndex >= 0;
         int maxLv = tm.GetMaxTrainableLevel();
 
+        int requiredLevel = 0;
+        if (hasHero && detailsRow >= 0 && detailsRow < rows.Count && rows[detailsRow] != null)
+        {
+            int level = tm.GetLevel(selectedUnitIndex, rows[detailsRow].stat);
+            if (level < TrainingManager.MaxTrainingLevel) requiredLevel = level + 1;
+        }
+        UpdateRequiredTrainingLevelText(requiredLevel, maxLv);
+
         // 영웅 영역
         if (heroSilhouette != null) heroSilhouette.SetActive(!hasHero);
         if (heroProfileImage != null)
@@ -418,6 +428,31 @@ public class TrainingModalController : MonoBehaviour
                 if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
             }
         }
+    }
+
+    private void BindRequiredTrainingLevelText()
+    {
+        if (requiredTrainingLevelText != null) return;
+        Transform searchRoot = modalRoot != null ? modalRoot.transform : transform;
+        foreach (var text in searchRoot.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (text.name != "WarningMessage" && text.name != "WarningMessageBox") continue;
+            requiredTrainingLevelText = text;
+            text.text = "";
+            text.raycastTarget = false;
+            text.gameObject.SetActive(false);
+            break;
+        }
+    }
+
+    private void UpdateRequiredTrainingLevelText(int requiredLevel, int currentLevel)
+    {
+        if (requiredTrainingLevelText == null) return;
+        bool levelTooLow = requiredLevel > 0 && currentLevel < requiredLevel;
+        requiredTrainingLevelText.gameObject.SetActive(levelTooLow);
+        requiredTrainingLevelText.text = levelTooLow ? "부서 레벨이 부족합니다" : "";
+        requiredTrainingLevelText.fontStyle = FontStyles.Bold;
+        requiredTrainingLevelText.color = Color.red;
     }
 
     private void RefreshCardDetails(int rowIndex, StatRow row, TrainingManager training, int level)

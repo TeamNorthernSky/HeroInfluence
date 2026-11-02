@@ -146,27 +146,33 @@ public class SaveSlotPanel : MonoBehaviour
         }
     }
 
-    private void OnTutorialYes()
+    private void OnTutorialYes() => BeginNewGame(TutorialScene);
+
+    private void OnTutorialNo() => BeginNewGame(OpeningCutScene);
+
+    private void BeginNewGame(string destination)
     {
         if (!tutorialSelectionPending || pendingSlotIndex < 0) return;
-        SaveSlotRepository.Save(pendingSlotIndex);
-        SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
-        SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
-        tutorialPopup?.SetActive(false);
-        //튜토리얼 하면 튜토리얼씬
-        SceneFadeController.LoadSceneWithFadeIfNeeded(TutorialScene);
-    }
-
-    private void OnTutorialNo()
-    {
-        if (!tutorialSelectionPending || pendingSlotIndex < 0) return;
-        SaveSlotRepository.Save(pendingSlotIndex);
-        SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
-        SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
-        tutorialPopup?.SetActive(false);
-
-        //튜토리얼 안하면 오프닝 컷씬
-        SceneFadeController.LoadSceneWithFadeIfNeeded(OpeningCutScene);
+        int slot = pendingSlotIndex;
+        int previousSlot = SaveSlotRepository.CurrentSlot;
+        bool previousContinue = SaveSlotRepository.IsContinue;
+        var request = SceneFadeController.LoadSceneAsyncWithFade(destination, prepare: () =>
+        {
+            SaveSlotRepository.Save(slot);
+            SaveSlotRepository.CurrentSlot = slot;
+            SaveSlotRepository.IsContinue = false;
+            if (this != null) tutorialPopup?.SetActive(false);
+            return true;
+        }, onFailed: () =>
+        {
+            SaveSlotRepository.CurrentSlot = previousSlot;
+            SaveSlotRepository.IsContinue = previousContinue;
+            if (this == null) return;
+            pendingSlotIndex = slot;
+            tutorialSelectionPending = true;
+            tutorialPopup?.SetActive(true);
+        });
+        if (request != null) tutorialSelectionPending = false;
     }
 
     private void OnTutorialCancle()

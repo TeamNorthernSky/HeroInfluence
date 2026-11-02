@@ -1,4 +1,4 @@
-Shader "JC/Environment/Night Lit"
+﻿Shader "JC/Environment/Night Lit"
 
 {
 
@@ -270,7 +270,12 @@ Shader "JC/Environment/Night Lit"
                 // Red encounter cells only. Preserve surface alpha and every non-combat overlay.
                 float red=saturate((surfaceData.albedo.r-max(surfaceData.albedo.g,surfaceData.albedo.b))*4);
                 surfaceData.emission+=surfaceData.albedo*_JcCombatOverlay*red*_JcDayNight.x*(1-saturate(_JcDayNight.y))*.22;
-                surfaceData.emission+=surfaceData.albedo*_JcHumanoid*_JcDayNight.x*(1-saturate(_JcDayNight.y))*_JcNightReadability.x;
+                float characterFill = _JcHumanoid > 2.5 ? _JcNightReadability.w : (_JcHumanoid > 1.5 ? _JcNightReadability.z : _JcNightReadability.x);
+                // Dark enemy clothing needs a small neutral fill as well as albedo-scaled light.
+                // Keep the party/NPC response unchanged and preserve detail between dark texels.
+                half peak=max(surfaceData.albedo.r,max(surfaceData.albedo.g,surfaceData.albedo.b));
+                half3 fillColor=surfaceData.albedo+step(2.5,_JcHumanoid)*.06*(1-saturate(peak));
+                surfaceData.emission+=fillColor*step(.5,_JcHumanoid)*_JcDayNight.x*(1-saturate(_JcDayNight.y))*characterFill;
 
             }
 

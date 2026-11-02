@@ -29,6 +29,8 @@ public class SkillButtonController : MonoBehaviour
         [Tooltip("이 슬롯의 사용 가능 효과와 선택 테두리입니다. 없으면 기존 표시를 유지합니다.")] public BattleSkillButtonVisual visual;
         [NonSerialized] public SkillData skill;
         [NonSerialized] public Action<bool> click;
+        [NonSerialized] public Material originalIconMaterial;
+        [NonSerialized] public bool iconMaterialCaptured;
     }
 
     [Tooltip("기본 스킬 습득 순서의 4슬롯입니다. 비어 있으면 기존 단일 버튼을 사용합니다. 위치는 씬에서 직접 조절합니다.")]
@@ -51,6 +53,7 @@ public class SkillButtonController : MonoBehaviour
     private bool descriptionBattleEnded;
     private BattleCharactor displayedUnit;
     private CanvasGroup panelInput;
+    private Material lockedIconMaterial;
 
     private bool IsPlayerTurn => battleFlowManager != null && battleFlowManager.CurrentUnit != null &&
         battleFlowManager.CurrentUnit.IsPlayer && !descriptionBattleEnded;
@@ -193,6 +196,26 @@ public class SkillButtonController : MonoBehaviour
                 if (slot.name != null) slot.name.text = shown != null ? shown.skillName : "-";
                 if (slot.icon != null)
                 {
+                    if (!slot.iconMaterialCaptured)
+                    {
+                        slot.originalIconMaterial = slot.icon.material;
+                        slot.iconMaterialCaptured = true;
+                    }
+                    if (locked && lockedIconMaterial == null)
+                    {
+                        var shader = Shader.Find("JC/UI/RewardTint");
+                        if (shader != null)
+                        {
+                            lockedIconMaterial = new Material(shader) { name = "BattleLockedSkillIcon", hideFlags = HideFlags.HideAndDontSave };
+                            lockedIconMaterial.SetFloat("_Saturation", .2f);
+                            // 미습득 아이콘만 어두운 회색으로 혼합해 명도와 대비를 함께 낮춥니다.
+                            // 프레임/자물쇠는 별도 Image이며, 습득 시 원본 재질로 복원됩니다.
+                            lockedIconMaterial.SetColor("_EffectColor", new Color(.045f, .055f, .07f, 1f));
+                            lockedIconMaterial.SetFloat("_Effect", .55f);
+
+                        }
+                    }
+                    slot.icon.material = locked && lockedIconMaterial != null ? lockedIconMaterial : slot.originalIconMaterial;
                     // '+' 변형은 별도 스킬 ID이며 협회 강화 단계와 혼용하지 않습니다.
                     slot.icon.sprite = shown != null ? Sprites.Icon.ClassSkill(shown.skillIndex, 1) : null;
                     slot.icon.enabled = slot.icon.sprite != null;
@@ -270,7 +293,7 @@ public class SkillButtonController : MonoBehaviour
         if (skill == null) skill = CurrentSkillData;
         if (skill == null)
         {
-            SetDescription("스킬 선택", "사용할 스킬 버튼 또는\n코어 스킬을 클릭하세요.", null);
+            SetDescription("스킬 선택", "사용할 스킬 버튼 또는\n젬 파워를 클릭하세요.", null);
             return;
         }
 
@@ -356,6 +379,15 @@ public class SkillButtonController : MonoBehaviour
             panelInput.blocksRaycasts = playerTurn;
         }
         if (!playerTurn) hoveredSkillButton = null;
+    }
+
+    private void OnDestroy()
+    {
+        if (heroSlots != null)
+            foreach (var slot in heroSlots)
+                if (slot != null && slot.icon != null && slot.iconMaterialCaptured)
+                    slot.icon.material = slot.originalIconMaterial;
+        if (lockedIconMaterial != null) Destroy(lockedIconMaterial);
     }
 
     private void SetDescription(string title, string body, SkillData skill)

@@ -53,6 +53,7 @@ public sealed class PopupEnterSubmitter : MonoBehaviour
 
     private void Update()
     {
+        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) return;
         if (!IsPlainEnterPressed()) return;
 
         EventSystem eventSystem = EventSystem.current;
@@ -129,6 +130,9 @@ public sealed class PopupEnterSubmitter : MonoBehaviour
     private static bool TryResolveActivePopup(out Button confirmButton)
     {
         confirmButton = null;
+
+        if (TutorialCutSceneManager.TryGetSkipConfirmButton(out confirmButton))
+            return true;
 
         GameObject topModal = ModalManager.Top;
         if (topModal != null && topModal.activeInHierarchy)

@@ -37,10 +37,21 @@ public class CombatSceneEntryController : MonoBehaviour
         }
 
         // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.
-        JC.BattleTesting.JcArnoldBattlePresentation.Prepare(party, enemy, battleSceneName);
-        if (GameSceneManager.Instance != null)
-            GameSceneManager.Instance.LoadScene(battleSceneName);
-        else
-            SceneFadeController.LoadSceneWithFadeIfNeeded(battleSceneName);
+        var request = SceneFadeController.LoadSceneAsyncWithFade(battleSceneName, prepare: () =>
+        {
+            if (party == null) return false;
+            JC.BattleTesting.JcArnoldBattlePresentation.Prepare(party, enemy, battleSceneName);
+            return true;
+        }, onFailed: () =>
+        {
+            JC.BattleTesting.JcArnoldBattlePresentation.CancelPending();
+            CombatContext.Instance?.Clear();
+            if (combatEncounterManager != null) combatEncounterManager.ClearCombatState();
+        });
+        if (request == null && (SceneFadeController.Instance == null || !SceneFadeController.Instance.IsTransitioning))
+        {
+            CombatContext.Instance?.Clear();
+            if (combatEncounterManager != null) combatEncounterManager.ClearCombatState();
+        }
     }
 }

@@ -37,6 +37,8 @@ public class CombatEncounterManager : MonoBehaviour
 
     public bool BeginCombat(PartyGridMover party, EnemyGridMover enemy)
     {
+        // 지연 로딩이 접수된 동안 다른 조우가 기존 전투 컨텍스트를 덮어쓰지 않습니다.
+        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsSceneLoadPending) return false;
         if (DHGameEndState.IsEnding)
             return false;
 
@@ -62,11 +64,13 @@ public class CombatEncounterManager : MonoBehaviour
         ActiveEnemy = enemy;
 
         CombatStarted?.Invoke(party, enemy);
-        return true;
+        return IsCombatActive;
     }
 
     public bool PrepareEnemyCombatContext(PartyGridMover party, EnemyGridMover enemy)
     {
+        // 지연 로딩이 접수된 동안 다른 조우가 기존 전투 컨텍스트를 덮어쓰지 않습니다.
+        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsSceneLoadPending) return false;
         if (DHGameEndState.IsEnding)
             return false;
 
@@ -94,6 +98,8 @@ public class CombatEncounterManager : MonoBehaviour
 
     public bool BeginEventBattleCombat(PartyGridMover party, CombatEventBattleData eventBattle)
     {
+        // 지연 로딩이 접수된 동안 다른 조우가 기존 전투 컨텍스트를 덮어쓰지 않습니다.
+        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsSceneLoadPending) return false;
         if (DHGameEndState.IsEnding)
             return false;
 
@@ -141,7 +147,7 @@ public class CombatEncounterManager : MonoBehaviour
         ActiveEnemy = null;
 
         CombatStarted?.Invoke(party, null);
-        return true;
+        return IsCombatActive;
     }
 
     public void ApplyCurrentCombatResultAndClear()

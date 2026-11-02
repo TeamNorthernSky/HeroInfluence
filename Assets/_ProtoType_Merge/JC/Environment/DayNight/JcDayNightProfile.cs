@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 namespace JC.Environment {
  [CreateAssetMenu(menuName="JC Environment/탐사 낮밤 설정")]
- public sealed class JcDayNightProfile : ScriptableObject {
+ public sealed partial class JcDayNightProfile : ScriptableObject {
   [Tooltip("시간대 하늘 셰이더입니다. 빌드에서 유지되는 명시적 참조입니다.")] public Shader skyShader;
   [Tooltip("1턴 시작 시각입니다. 8.5는 08:30입니다."),Range(0,24)] public float startHour=8.5f;
   [Tooltip("턴마다 흐르는 게임 시간입니다."),Range(1,24)] public float hoursPerTurn=6;
@@ -54,7 +54,12 @@ namespace JC.Environment {
    [Tooltip("환경 밝기입니다. 밤에도 탐사 대상을 식별할 수 있게 설정합니다."),Range(.05f,1)] public float daylight;
   }
   static Key K(float h,float e,float a,float i,Color c,float d)=>new Key{hour=h,elevation=e,azimuth=a,intensity=i,lightColor=c,daylight=d};
-  public double HoursForTurn(int turn)=>startHour+(Math.Max(1,turn)-1)*(double)hoursPerTurn;
+  public double HoursForTurn(int turn){
+   EnsureSegments();if(!ValidSegmentTimes())return startHour+(Math.Max(1,turn)-1)*(double)hoursPerTurn;
+   int step=Math.Max(1,turn)-1;double hours=segments[0].hour+(step/4)*24.0;
+   for(int i=0;i<step%4;i++)hours+=Mathf.Repeat(segments[i+1].hour-segments[i].hour,24);
+   return hours;
+  }
   public float[] BuildTransitionTimeline(double from,double to){
    const int samples=256;
    var times=new float[samples+1];
@@ -69,7 +74,7 @@ namespace JC.Environment {
    return times;
   }
   public Key Evaluate(double totalHours){
-   float h=(float)(totalHours%24);if(h<0)h+=24;
+   float h=MapSegmentHour(totalHours);
    if(keys==null||keys.Length<2) return K(h,38,110,1.15f,Color.white,1);
    int segment=keys.Length-2;
    for(int i=1;i<keys.Length;i++)if(h<=keys[i].hour){segment=i-1;break;}

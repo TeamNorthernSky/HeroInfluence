@@ -53,8 +53,14 @@ public sealed class TutorialOutpostObject : MonoBehaviour
         ApplyStateVisuals();
     }
 
+    private void HandleTransitionFailed(UnityEngine.SceneManagement.Scene sourceScene)
+    {
+        if (gameObject.scene == sourceScene) combatStarting = false;
+    }
+
     private void OnEnable()
     {
+        SceneFadeController.TransitionFailed += HandleTransitionFailed;
         ResolveReferences();
         LoadStateFromRepository();
         ApplyStateVisuals();
@@ -62,6 +68,7 @@ public sealed class TutorialOutpostObject : MonoBehaviour
 
     private void OnDisable()
     {
+        SceneFadeController.TransitionFailed -= HandleTransitionFailed;
         combatStarting = false;
     }
 

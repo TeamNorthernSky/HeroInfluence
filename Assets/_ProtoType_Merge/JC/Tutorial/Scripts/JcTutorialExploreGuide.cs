@@ -320,7 +320,7 @@ namespace JC.Tutorial
                 CurrentGuideStep = "intro";
                 if (!showingIntro) PresentationOpenedFrame = Time.frameCount;
                 showingIntro = true;
-                SetQuest("목표 위치까지 이동하세요"); SetShield(true); SetContinue(false); view.SetVisible(false); HideMarker();
+                SetQuest(JcTutorialText.Get("exploreguide.001", "목표 위치까지 이동하세요")); SetShield(true); SetContinue(false); view.SetVisible(false); HideMarker();
                 introElapsed += delta; DrawIntro(introElapsed);
                 if (introElapsed >= introDuration) DismissIntro();
                 return;
@@ -328,31 +328,31 @@ namespace JC.Tutorial
             EndIntro();
             if (movement.CurrentOrder == 1 && !Seen("mouse-move-explanation"))
             {
-                Explain("mouse-move-explanation", "마우스로 이동", "이 게임에서는 마우스 왼쪽 버튼으로 이동합니다.\n목표 안내 표시를 클릭해 이동 경로를 확인한 뒤,\n같은 목표를 한 번 더 클릭해서 이동해봅시다.", null, time);
+                Explain("mouse-move-explanation", JcTutorialText.Get("exploreguide.002", "마우스로 이동"), JcTutorialText.Get("exploreguide.003", "이 게임에서는 마우스 왼쪽 버튼으로 이동합니다.\n목표 안내 표시를 클릭해 이동 경로를 확인한 뒤,\n같은 목표를 한 번 더 클릭해서 이동해봅시다."), null, time);
                 return;
             }
-            if (moving) { ShowAction("moving", "탐사 · 이동", movingText); HideMarker(); return; }
+            if (moving) { ShowAction("moving", JcTutorialText.Get("exploreguide.004", "탐사 · 이동"), JcTutorialText.Get("explore.movingText", movingText)); HideMarker(); return; }
             if (movement.CurrentOrder >= 2 && !Seen("early-camera-explanation"))
             {
-                Explain("early-camera-explanation", "카메라 이동", "마우스를 화면 가장자리로 옮기면 카메라가 이동합니다.\nW A S D 키로도 위·왼쪽·아래·오른쪽을 볼 수 있습니다.\n영웅의 이동은 목표 위치를 마우스로 클릭하세요.", null, time);
+                Explain("early-camera-explanation", JcTutorialText.Get("exploreguide.005", "카메라 이동"), JcTutorialText.Get("exploreguide.006", "마우스를 화면 가장자리로 옮기면 카메라가 이동합니다.\nW A S D 키로도 위·왼쪽·아래·오른쪽을 볼 수 있습니다.\n영웅의 이동은 목표 위치를 마우스로 클릭하세요."), null, time);
                 return;
             }
             if (movement.CurrentOrder == 2 && !Seen("move-gauge-pulse") && movementGauge != null)
             {
                 if (movementGaugePulse != null) movementGaugePulse.Stop();
-                Explain("move-gauge-pulse", "이동력 확인", "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다.", movementGauge, time);
+                Explain("move-gauge-pulse", JcTutorialText.Get("exploreguide.007", "이동력 확인"), JcTutorialText.Get("exploreguide.008", "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다."), movementGauge, time);
                 return;
             }
             if (hasTarget)
             {
-                SetQuest(movement.CurrentOrder == 1 ? "목표 위치까지 이동하세요" : "다음 목표 위치까지 이동하세요");
+                SetQuest(movement.CurrentOrder == 1 ? JcTutorialText.Get("exploreguide.009", "목표 위치까지 이동하세요") : JcTutorialText.Get("exploreguide.010", "다음 목표 위치까지 이동하세요"));
                 if (Application.isPlaying && movement.CurrentOrder == 2 && !Seen("second-move-camera-view") && initialCameraMove == null)
                     initialCameraMove = StartCoroutine(AdjustCameraView(true, "second-move-camera-view", secondMoveCameraCells, false, false));
                 var target = movement.CurrentTargetCells[0]; bool selected = IsSelected(target, time);
-                string instruction = selected ? confirmText : selectText;
+                string instruction = selected ? JcTutorialText.Get("explore.confirmText", confirmText) : JcTutorialText.Get("explore.selectText", selectText);
                 if (movement.CurrentOrder > 1 && !selected)
-                    instruction = "이동하면 이동력이 소모됩니다. 남은 이동력을 확인하고 다음 목표를 눌러 보세요.";
-                ShowAction("move", "탐사 · 이동", instruction);
+                    instruction = JcTutorialText.Get("exploreguide.011", "이동하면 이동력이 소모됩니다. 남은 이동력을 확인하고 다음 목표를 눌러 보세요.");
+                ShowAction("move", JcTutorialText.Get("exploreguide.012", "탐사 · 이동"), instruction);
                 ShowMarker(target, time); return;
             }
             int collected = 0; ItemTarget nearest = null; float distance = float.MaxValue;
@@ -363,18 +363,18 @@ namespace JC.Tutorial
                 float d = (item.cell - cell).sqrMagnitude;
                 if (d < distance) { distance = d; nearest = item; }
             }
-            SetQuest(nearest != null ? $"필드 자원을 수집하세요 ({collected}/{items.Count})" : "빌런에게 접근하세요");
+            SetQuest(nearest != null ? JcTutorialText.Format("exploreguide.013", "필드 자원을 수집하세요 ({0}/{1})", collected, items.Count) : JcTutorialText.Get("exploreguide.014", "빌런에게 접근하세요"));
             foreach (var item in items)
             {
                 if (!repository.IsItemCollected(item.key) || Seen("resource-" + item.type)) continue;
-                Explain("resource-" + item.type, ResourceName(item.type) + " 획득",
-                    $"{ResourceName(item.type)} {item.amount}개를 획득했습니다. {ResourceUse(item.type)}\n보유량은 화면 상단에서 확인할 수 있습니다.",
+                Explain("resource-" + item.type, ResourceName(item.type) + JcTutorialText.Get("exploreguide.015", " 획득"),
+                    JcTutorialText.Format("exploreguide.016", "{0} {1}개를 획득했습니다. {2}\n보유량은 화면 상단에서 확인할 수 있습니다.", ResourceName(item.type), item.amount, ResourceUse(item.type)),
                     ResourceBlock(item.type), time); return;
             }
             if (nearest != null)
             {
                 bool selected = IsSelected(nearest.cell, time);
-                ShowAction("collect", "자원 수집", selected ? confirmText : $"계속해서 이동을 진행합니다.\n표시된 {ResourceName(nearest.type)}을 수집하세요.");
+                ShowAction("collect", JcTutorialText.Get("exploreguide.017", "자원 수집"), selected ? JcTutorialText.Get("explore.confirmText", confirmText) : JcTutorialText.Format("exploreguide.018", "계속해서 이동을 진행합니다.\n표시된 {0}을 수집하세요.", ResourceName(nearest.type)));
                 ShowMarker(nearest.cell, time);
                 return;
             }
@@ -385,9 +385,9 @@ namespace JC.Tutorial
             if (enemy == null) { Hide(); return; }
             if (!Seen("enemy"))
             {
-                Explain("enemy", "첫 전투", "빌런 주변의 붉은 영역에 도착하면 전투가 시작됩니다. 이동력을 확인하고 접근하세요.", null, time); return;
+                Explain("enemy", JcTutorialText.Get("exploreguide.019", "첫 전투"), JcTutorialText.Get("exploreguide.020", "빌런 주변의 붉은 영역에 도착하면 전투가 시작됩니다. 이동력을 확인하고 접근하세요."), null, time); return;
             }
-            ShowAction("enemy-approach", "첫 전투", "표시된 빌런을 선택한 뒤 한 번 더 눌러 접근하세요.");
+            ShowAction("enemy-approach", JcTutorialText.Get("exploreguide.021", "첫 전투"), JcTutorialText.Get("exploreguide.022", "표시된 빌런을 선택한 뒤 한 번 더 눌러 접근하세요."));
             ShowMarker(enemy.GetCurrentGrid(), time);
         }
         private bool RefreshAutomaticTurnGuide(PartyGridMover party, float time)
@@ -412,8 +412,8 @@ namespace JC.Tutorial
                 if (!Seen("automatic-turn"))
                 {
                     Mark("exhausted");
-                    SetQuest("자동 턴 전환 안내를 확인하세요");
-                    Explain("automatic-turn", "자동 턴 전환", exhaustedText, movementGauge, time);
+                    SetQuest(JcTutorialText.Get("exploreguide.023", "자동 턴 전환 안내를 확인하세요"));
+                    Explain("automatic-turn", JcTutorialText.Get("exploreguide.024", "자동 턴 전환"), JcTutorialText.Get("explore.exhaustedText", exhaustedText), movementGauge, time);
                 }
                 else { view.SetVisible(false); SetContinue(false); SetShield(false); }
                 return true;
@@ -429,7 +429,7 @@ namespace JC.Tutorial
                 SetTurnAvailable(true);
                 if (Application.isPlaying && !Seen("new-turn-camera-view") && initialCameraMove == null)
                     initialCameraMove = StartCoroutine(AdjustCameraView(true, "new-turn-camera-view", 3f, false, false, -1.5f));
-                ShowAction("new-turn", "새로운 턴", "이동력이 다시 채워졌습니다.\n턴이 바뀌면 시간이 흐르고, 낮과 밤도 달라집니다.\n표시된 목표로 계속 이동해 보세요.", movementGauge);
+                ShowAction("new-turn", JcTutorialText.Get("exploreguide.025", "새로운 턴"), JcTutorialText.Get("exploreguide.026", "이동력이 다시 채워졌습니다.\n턴이 바뀌면 시간이 흐르고, 낮과 밤도 달라집니다.\n표시된 목표로 계속 이동해 보세요."), movementGauge);
                 if (movement.CurrentTargetCells.Count > 0) ShowMarker(movement.CurrentTargetCells[0], time);
                 else
                 {
@@ -474,16 +474,16 @@ namespace JC.Tutorial
                     SetTurnAvailable(false);
                     movement.SetGuidanceTarget(this, null);
                     if (explanationKey != "association-entry-explanation")
-                        Explain("association-entry-explanation", "협회 입장", "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 빛 테두리로 강조된 건물을 더블클릭하세요.", associationFocus, time);
+                        Explain("association-entry-explanation", JcTutorialText.Get("exploreguide.027", "협회 입장"), JcTutorialText.Get("exploreguide.028", "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 빛 테두리로 강조된 건물을 더블클릭하세요."), associationFocus, time);
                     return;
                 }
                 view.SetSideLayout(associationFocus, heroSlots);
                 CurrentGuideStep = "association-entry";
                 SetShield(false); SetContinue(false);
                 view.blockPanelRaycasts = false;
-                view.SetContent("협회 입장", "빛 테두리로 강조된 건물을 더블클릭하세요.");
+                view.SetContent(JcTutorialText.Get("exploreguide.029", "협회 입장"), JcTutorialText.Get("exploreguide.030", "빛 테두리로 강조된 건물을 더블클릭하세요."));
                 view.SetVisible(true, associationFocus, JcTutorialGuideView.FocusPresentation.BuildingOutline);
-                SetQuest("점령한 건물을 더블클릭하세요");
+                SetQuest(JcTutorialText.Get("exploreguide.031", "점령한 건물을 더블클릭하세요"));
                 SetTurnAvailable(false);
                 movement.SetGuidanceTarget(this, null);
                 HideMarker();
@@ -495,10 +495,10 @@ namespace JC.Tutorial
             if (!Seen("camera-scroll-explanation"))
             {
                 SetTurnAvailable(false);
-                SetQuest("W A S D 키로 화면을 이동하는 방법을 확인하세요");
+                SetQuest(JcTutorialText.Get("exploreguide.032", "W A S D 키로 화면을 이동하는 방법을 확인하세요"));
                 // 설명을 매 프레임 다시 열면 클릭을 연 프레임으로 취급하여 닫을 수 없다.
                 if (explanationKey != "camera-scroll-explanation")
-                    Explain("camera-scroll-explanation", "화면 이동", cameraScrollExplanation, null, time);
+                    Explain("camera-scroll-explanation", JcTutorialText.Get("exploreguide.033", "화면 이동"), JcTutorialText.Get("explore.cameraScrollExplanation", cameraScrollExplanation), null, time);
                 ShowMarker(captureEntryCell, time);
                 movement.SetGuidanceTarget(this, null);
                 return;
@@ -513,8 +513,8 @@ namespace JC.Tutorial
                 if (!visible)
                 {
                     SetTurnAvailable(false);
-                    SetQuest("D키로 화면을 이동하여 목표를 화면 중앙에 맞추세요");
-                    ShowAction("camera-scroll-practice", "화면 이동 연습", cameraScrollPractice);
+                    SetQuest(JcTutorialText.Get("exploreguide.034", "D키로 화면을 이동하여 목표를 화면 중앙에 맞추세요"));
+                    ShowAction("camera-scroll-practice", JcTutorialText.Get("exploreguide.035", "화면 이동 연습"), JcTutorialText.Get("explore.cameraScrollPractice", cameraScrollPractice));
                     ShowMarker(captureEntryCell, time);
                     // 카메라는 기존 WASD 입력을 사용하고, 목표를 찾는 동안 월드 이동 선택만 막는다.
                     movement.SetGuidanceTarget(this, null);
@@ -526,18 +526,18 @@ namespace JC.Tutorial
             if (!Seen("capture-move-explanation"))
             {
                 if (explanationKey != "capture-move-explanation")
-                    Explain("capture-move-explanation", "건물 점령", "표시된 목표 지점을 선택한 뒤\n한 번 더 누르면 건물 점령 전투 위치로 이동합니다.", null, time);
+                    Explain("capture-move-explanation", JcTutorialText.Get("exploreguide.036", "건물 점령"), JcTutorialText.Get("exploreguide.037", "표시된 목표 지점을 선택한 뒤\n한 번 더 누르면 건물 점령 전투 위치로 이동합니다."), null, time);
                 ShowMarker(captureEntryCell, time);
                 movement.SetGuidanceTarget(this, null);
                 return;
             }
             if (party.IsMoving)
             {
-                ShowAction("capture-moving", "점령전으로 이동", movingText); HideMarker(); return;
+                ShowAction("capture-moving", JcTutorialText.Get("exploreguide.038", "점령전으로 이동"), JcTutorialText.Get("explore.movingText", movingText)); HideMarker(); return;
             }
-            SetQuest("표시된 전투 진입 지점으로 이동하세요");
-            string approach = "표시된 목표 지점을 선택한 뒤\n한 번 더 눌러 이동하세요.";
-            ShowAction("capture-approach", "건물 점령", approach);
+            SetQuest(JcTutorialText.Get("exploreguide.039", "표시된 전투 진입 지점으로 이동하세요"));
+            string approach = JcTutorialText.Get("exploreguide.040", "표시된 목표 지점을 선택한 뒤\n한 번 더 눌러 이동하세요.");
+            ShowAction("capture-approach", JcTutorialText.Get("exploreguide.041", "건물 점령"), approach);
             ShowMarker(captureEntryCell, time);
         }
         // 우측 퀘스트·상하 HUD에서 떨어진 영역에 목표가 들어와야 클릭 안내로 전환한다.
@@ -566,7 +566,7 @@ namespace JC.Tutorial
             explanationKey = key; explanationFocus = focus;
             PresentationOpenedFrame = Time.frameCount;
             view.blockPanelRaycasts = true;
-            CurrentGuideStep = key; view.SetContent("탐사 · " + title, text);
+            CurrentGuideStep = key; view.SetContent(JcTutorialText.Get("exploreguide.042", "탐사 · ") + title, text);
             SetShield(true); SetContinue(true); view.SetVisible(true, focus, ExplanationStyle(key)); HideMarker();
         }
         public void ContinueExplanation()
@@ -581,7 +581,7 @@ namespace JC.Tutorial
             if (completedKey == "early-camera-explanation" && movement.CurrentOrder == 2 && !Seen("move-gauge-pulse") && movementGauge != null)
             {
                 if (movementGaugePulse != null) movementGaugePulse.Stop();
-                Explain("move-gauge-pulse", "이동력 확인", "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다.", movementGauge, Time.unscaledTime);
+                Explain("move-gauge-pulse", JcTutorialText.Get("exploreguide.043", "이동력 확인"), JcTutorialText.Get("exploreguide.044", "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다."), movementGauge, Time.unscaledTime);
                 return;
             }
             if (completedKey == "mouse-move-explanation" && Application.isPlaying && !exiting && initialCameraMove == null)
@@ -696,7 +696,7 @@ namespace JC.Tutorial
             float pulse = .5f - .5f * Mathf.Cos(phase * Mathf.PI * 2);
             if (introTitle != null)
             {
-                introTitle.text = "마우스 클릭으로 이동합니다";
+                introTitle.text = JcTutorialText.Get("exploreguide.045", "마우스 클릭으로 이동합니다");
                 introTitle.alpha = Mathf.Lerp(.65f, 1, pulse);
             }
             if (introOutlines == null) return;
@@ -706,7 +706,7 @@ namespace JC.Tutorial
                 float progress = Mathf.Repeat(phase + i / (float)introOutlines.Length, 1);
                 float remaining = 1 - Mathf.SmoothStep(0, 1, progress);
                 outline.rectTransform.sizeDelta = introBox.sizeDelta + Vector2.one * (2 * introOutlineExpansion * remaining);
-                var color = view.accent; color.a = Mathf.Sin(progress * Mathf.PI) * .65f; outline.color = color;
+                var color = JcTutorialGraphic.MessageAccent; color.a = Mathf.Sin(progress * Mathf.PI) * .65f; outline.color = color;
             }
         }
         private void SetIntroVisible(bool value)
@@ -734,8 +734,8 @@ namespace JC.Tutorial
             repository = null; Hide();
         }
         public static string ResourceName(ResourceType type)
-        { return type == ResourceType.Chip ? "히어로 메달" : type == ResourceType.Crystal ? "크리스탈" : type == ResourceType.Supply ? "건설 자재" : "자금"; }
+        { return type == ResourceType.Chip ? JcTutorialText.Get("exploreguide.046", "히어로 메달") : type == ResourceType.Crystal ? JcTutorialText.Get("exploreguide.047", "크리스탈") : type == ResourceType.Supply ? JcTutorialText.Get("exploreguide.048", "건설 자재") : JcTutorialText.Get("exploreguide.049", "자금"); }
         private static string ResourceUse(ResourceType type)
-        { return type == ResourceType.Chip ? "히어로 스킬 강화에 사용하는 자원입니다." : type == ResourceType.Crystal ? "히어로 코어 제작과 강화에 사용하는 자원입니다." : type == ResourceType.Supply ? "협회 시설의 건설과 승급에 사용하는 자원입니다." : "협회 운영과 다양한 강화에 사용하는 기본 자원입니다."; }
+        { return type == ResourceType.Chip ? JcTutorialText.Get("exploreguide.050", "히어로 스킬 강화에 사용하는 자원입니다.") : type == ResourceType.Crystal ? JcTutorialText.Get("exploreguide.051", "히어로 코어 제작과 강화에 사용하는 자원입니다.") : type == ResourceType.Supply ? JcTutorialText.Get("exploreguide.052", "협회 시설의 건설과 승급에 사용하는 자원입니다.") : JcTutorialText.Get("exploreguide.053", "협회 운영과 다양한 강화에 사용하는 기본 자원입니다."); }
     }
 }

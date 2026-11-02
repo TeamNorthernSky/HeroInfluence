@@ -339,25 +339,17 @@ public class WorkshopModalController : MonoBehaviour
 
     private void CreateRequiredWorkshopLevelText()
     {
-        if (requiredWorkshopLevelText != null || costCrystalText == null) return;
-        var costRoot = costCrystalText.transform.parent as RectTransform;
-        if (costRoot == null || costRoot.parent == null) return;
-        requiredWorkshopLevelText = Instantiate(costCrystalText, costRoot.parent, false);
-        requiredWorkshopLevelText.name = "RequiredWorkshopLevel";
-        requiredWorkshopLevelText.text = "";
-        requiredWorkshopLevelText.raycastTarget = false;
-        requiredWorkshopLevelText.fontSize = 26;
-        requiredWorkshopLevelText.enableAutoSizing = false;
-        requiredWorkshopLevelText.alignment = TextAlignmentOptions.MidlineLeft;
-        requiredWorkshopLevelText.color = new Color(1f, 0.35f, 0.35f);
-        var rect = requiredWorkshopLevelText.rectTransform;
-        rect.anchorMin = rect.anchorMax = costRoot.anchorMin;
-        rect.pivot = new Vector2(0, 0.5f);
-        rect.sizeDelta = new Vector2(250, costRoot.sizeDelta.y);
-        rect.anchoredPosition = costRoot.anchoredPosition +
-            new Vector2(costRoot.sizeDelta.x * (1f - costRoot.pivot.x) + 18,
-                costRoot.sizeDelta.y * (0.5f - costRoot.pivot.y));
-        requiredWorkshopLevelText.gameObject.SetActive(false);
+        if (requiredWorkshopLevelText != null) return;
+        Transform searchRoot = modalRoot != null ? modalRoot.transform : transform;
+        foreach (var text in searchRoot.GetComponentsInChildren<TextMeshProUGUI>(true))
+        {
+            if (text.name != "WarningMessage" && text.name != "WarningMessageBox") continue;
+            requiredWorkshopLevelText = text;
+            text.text = "";
+            text.raycastTarget = false;
+            text.gameObject.SetActive(false);
+            break;
+        }
     }
 
     private void UpdateRequiredWorkshopLevelText(int requiredLevel, int currentLevel)
@@ -365,7 +357,9 @@ public class WorkshopModalController : MonoBehaviour
         if (requiredWorkshopLevelText == null) return;
         bool levelTooLow = requiredLevel > 0 && currentLevel < requiredLevel;
         requiredWorkshopLevelText.gameObject.SetActive(levelTooLow);
-        requiredWorkshopLevelText.text = levelTooLow ? $"Lv.{requiredLevel}이 필요합니다" : "";
+        requiredWorkshopLevelText.text = levelTooLow ? "부서 레벨이 부족합니다" : "";
+        requiredWorkshopLevelText.fontStyle = FontStyles.Bold;
+        requiredWorkshopLevelText.color = Color.red;
     }
 
     /// <summary>미보유 코어는 제작, 보유 코어는 선택 영웅에게 장착.</summary>

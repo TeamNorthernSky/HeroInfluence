@@ -184,12 +184,12 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
     public string CaptureMessagePresentation()
     {
         if (current == null || messageText == null) return null;
-        current.message = messageText.text;
+        current.message = JcTutorialText.SceneSource(messageText);
         current.useAuthoredPresentation = true;
         current.authoredPresentation = new MessagePresentation {
             message = ElementPresentation.Capture(messageText.rectTransform, messageText),
             hint = hintText != null ? ElementPresentation.Capture(hintText.rectTransform, hintText) : null,
-            background = ElementPresentation.Capture(messageBackground), hintText = hintText != null ? hintText.text : null,
+            background = ElementPresentation.Capture(messageBackground), hintText = JcTutorialText.SceneSource(hintText),
             textInBackground = messageBackground != null && messageText.transform.IsChildOf(messageBackground),
             hintInBackground = messageBackground != null && hintText != null && hintText.transform.IsChildOf(messageBackground) };
         return JsonUtility.ToJson(current.authoredPresentation);
@@ -215,7 +215,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
     [SerializeField] private TutorialPublicityController publicity;
     [Tooltip("홍보 실습에서 직접 선택할 영웅 키입니다. 시작 시 이 영웅의 IP를 0/40으로 준비하며 자동 선택하지 않습니다.")]
     [SerializeField] private string tutorialHeroKey = "10001";
-    [Tooltip("기존 설명 패널별 완료 조건과 씬 UI 참조입니다. 문구와 배치는 해당 씬 오브젝트에서 편집합니다.")]
+    [Tooltip("기존 설명 패널별 완료 조건과 씬 UI 참조입니다. 배치는 씬에서, 문구는 JC > 튜토리얼 > 외부 대본 열기에서 편집합니다.")]
     [SerializeField] private Step[] steps = Array.Empty<Step>();
     [SerializeField] private List<GameObject> highlightPools = new List<GameObject>();
     [SerializeField] private GameObject backgroundSource;
@@ -498,6 +498,31 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         messageBackground = step.messageBox;
         messageText = step.sceneMessage;
         hintText = step.sceneHint;
+        if (messageBackground != null)
+        {
+            // 공유 스프라이트/프리팹은 그대로 두고 홍보 안내의 배경만 교체한다.
+            var legacyImage = messageBackground.GetComponent<UnityEngine.UI.Image>();
+            if (legacyImage != null) legacyImage.color = Color.clear;
+            const string backgroundName = "PublicityNeutralGuideBackground";
+            var background = messageBackground.Find(backgroundName) as RectTransform;
+            if (background == null)
+            {
+                var go = new GameObject(backgroundName, typeof(RectTransform), typeof(JC.Tutorial.JcTutorialGraphic));
+                go.layer = messageBackground.gameObject.layer;
+                background = (RectTransform)go.transform;
+                background.SetParent(messageBackground, false);
+                background.anchorMin = Vector2.zero;
+                background.anchorMax = Vector2.one;
+                background.offsetMin = background.offsetMax = Vector2.zero;
+            }
+            background.SetAsFirstSibling();
+            var graphic = background.GetComponent<JC.Tutorial.JcTutorialGraphic>();
+            graphic.Configure(JC.Tutorial.JcTutorialGraphic.Shape.Panel, new Color(.045f, .12f, .15f, 1f), 16f, 1.5f);
+            graphic.SetGrayscaleFill(true);
+            graphic.SetOpaqueFill(true);
+        }
+        if (messageText != null) messageText.color = new Color(.94f, .94f, .94f, 1f);
+        if (hintText != null) hintText.color = new Color(.72f, .72f, .72f, 1f);
     }
 
     private void ShowHighlights(Step step)

@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scenes:
   - scenePath: Assets/_ProtoType_Merge/Scenes/DHScene_3.unity
-    current: {fileID: 11400000, guid: d0f13a31f3aaa74459186bcdf152a35c, type: 2}
-    previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/DHScene_3_a7c8d8a5e2394c689b3a8a8aa3acd03d/Bake.asset
+    current: {fileID: 11400000, guid: 5ad2bc110b1a4bd3a69356e3a0a76bb1, type: 2}
+    previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/DHScene_3_ae203e30cb584ca5afed1f33d781de82/Bake.asset
     buildInputWarning: 
   - scenePath: Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity
-    current: {fileID: 11400000, guid: 2688026b17e646ce879751001a4fec04, type: 2}
-    previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/TutorialExploreScene_fdd62e82e2764fb684523792f6d00966/Bake.asset
+    current: {fileID: 11400000, guid: 497e399966ea428f93e57bf585c6e943, type: 2}
+    previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/TutorialExploreScene_f9f4ad8530ee4ff7aac1ad61da81bfd4/Bake.asset
     buildInputWarning: 

@@ -476,7 +476,8 @@ public class LevelData : ScriptableObject
         string secondZoneId,
         Vector2Int grid,
         string prefabKey,
-        IEnumerable<Vector2Int> blockerCells)
+        IEnumerable<Vector2Int> blockerCells,
+        bool flipModel180 = false)
     {
         if (!IsInsideGrid(grid))
             return;
@@ -493,7 +494,8 @@ public class LevelData : ScriptableObject
             firstZoneId,
             secondZoneId,
             grid,
-            prefabKey);
+            prefabKey,
+            flipModel180);
 
         if (blockerCells != null)
         {
@@ -1151,6 +1153,7 @@ public struct GatePlacementData
     // Empty prefabKey means the loader should use blockerCells with the obstacle fallback.
     [SerializeField] private string prefabKey;
     [SerializeField] private List<Vector2Int> blockerCells;
+    [SerializeField] private bool flipModel180;
 
     public GatePlacementData(string gateId, string firstZoneId, string secondZoneId)
         : this(gateId, firstZoneId, secondZoneId, Vector2Int.zero, string.Empty)
@@ -1162,13 +1165,15 @@ public struct GatePlacementData
         string firstZoneId,
         string secondZoneId,
         Vector2Int gridPosition,
-        string prefabKey)
+        string prefabKey,
+        bool flipModel180 = false)
     {
         this.gateId = NormalizeId(gateId);
         this.firstZoneId = NormalizeId(firstZoneId);
         this.secondZoneId = NormalizeId(secondZoneId);
         this.gridPosition = gridPosition;
         this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+        this.flipModel180 = flipModel180;
         blockerCells = new List<Vector2Int>();
     }
 
@@ -1178,6 +1183,7 @@ public struct GatePlacementData
     public Vector2Int GridPosition => gridPosition;
     public string PrefabKey => string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
     public bool HasPrefab => !string.IsNullOrWhiteSpace(PrefabKey);
+    public bool FlipModel180 => flipModel180;
     public IReadOnlyList<Vector2Int> BlockerCells => blockerCells != null ? blockerCells : Array.Empty<Vector2Int>();
 
     public void SetConnectedZones(string firstZoneId, string secondZoneId)
@@ -1217,7 +1223,8 @@ public struct GatePlacementData
             FirstZoneId,
             SecondZoneId,
             GridPosition,
-            PrefabKey);
+            PrefabKey,
+            FlipModel180);
 
         if (blockerCells != null)
         {

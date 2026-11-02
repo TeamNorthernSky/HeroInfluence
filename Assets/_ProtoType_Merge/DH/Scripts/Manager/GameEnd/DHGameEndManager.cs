@@ -44,7 +44,6 @@ public class DHGameEndManager : MonoBehaviour
         returnToTitleStarted = true;
         Time.timeScale = 1f;
 
-        ResetProgressForTitle();
         LoadTitleScene();
     }
 
@@ -81,30 +80,23 @@ public class DHGameEndManager : MonoBehaviour
         clearEndingStarted = true;
         Time.timeScale = 1f;
 
-        HidePanels();
-        ResetProgressForTitle();
-
-        if (string.IsNullOrWhiteSpace(clearEndingSceneName))
-            return;
-
-        if (GameSceneManager.Instance != null)
+        var request = SceneFadeController.LoadSceneAsyncWithFade(clearEndingSceneName, prepare: () =>
         {
-            GameSceneManager.Instance.LoadScene(clearEndingSceneName);
-            return;
-        }
-
-        SceneFadeController.LoadSceneWithFadeIfNeeded(clearEndingSceneName);
+            HidePanels();
+            ResetProgressForTitle();
+            return true;
+        }, onFailed: () => { if (this != null) { clearEndingStarted = false; ShowPanel(clearPanel); } });
+        if (request == null) clearEndingStarted = false;
     }
 
     private void LoadTitleScene()
     {
-        if (GameSceneManager.Instance != null)
+        string destination = GameSceneManager.Instance != null ? GameSceneManager.Instance.TitleScene : fallbackTitleSceneName;
+        var request = SceneFadeController.LoadSceneAsyncWithFade(destination, prepare: () =>
         {
-            GameSceneManager.Instance.LoadTitle();
-            return;
-        }
-
-        if (!string.IsNullOrWhiteSpace(fallbackTitleSceneName))
-            SceneFadeController.LoadSceneWithFadeIfNeeded(fallbackTitleSceneName);
+            ResetProgressForTitle();
+            return true;
+        }, onFailed: () => { if (this != null) returnToTitleStarted = false; });
+        if (request == null) returnToTitleStarted = false;
     }
 }

@@ -124,6 +124,8 @@ namespace JC.EnvironmentDetail
                     if(candidate.GetComponentsInChildren<MeshFilter>(true).Any(f=>f.sharedMesh==null) ||
                        candidate.GetComponentsInChildren<MeshRenderer>(true).Any(r=>r.sharedMaterials.Any(m=>m==null || m.shader==null)))
                         throw new InvalidOperationException("확정본의 메시 또는 재질이 누락되었습니다.");
+                    if (gameObject.scene.name == "TutorialExploreScene") JcTutorialRoadSurface.Apply(candidate);
+                    if (gameObject.scene.name == "DHScene_3") JcOneWayRoadSurface.Apply(candidate, Matrix4x4.identity);
                     waterController.Bind(candidate); // 새 재질 준비 실패 시 이전 연결을 유지합니다.
                     ReleaseVisual(false);
                     output=candidate;candidate=null;appliedBake=selectedBake;appliedPrefab=selectedBake.prefab;IsPreview=false;

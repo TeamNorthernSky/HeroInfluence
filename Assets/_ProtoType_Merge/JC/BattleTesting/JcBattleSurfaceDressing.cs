@@ -7,7 +7,7 @@ namespace JC.BattleTesting
 {
     // 위치 선정 및 원본 지형 변환이 끝난 외형에만 적용하는 전투 전용 후처리입니다.
     [ExecuteAlways]
-    public sealed class JcBattleSurfaceDressing : MonoBehaviour
+    public sealed partial class JcBattleSurfaceDressing : MonoBehaviour
     {
         readonly List<Object> owned=new List<Object>();
         public int RoadCount {get;private set;}
@@ -31,6 +31,9 @@ namespace JC.BattleTesting
         void Build(JcBattleSurfaceProfile p,int seed,Vector3[] cameras,bool scatter)
         {
             var filters=GetComponentsInChildren<MeshFilter>();
+            if(GetComponent<JcDynamicBattleOutput>()!=null)PrepareLeftVerge(filters,p);
+            // 원래 표시 타일과 사이의 무표시 도로를 하나의 구간으로 연결합니다.
+            BuildConnectedRoadLines(filters,p);
             foreach(var f in filters)
             {
                 var r=f.GetComponent<MeshRenderer>();if(r==null||f.sharedMesh==null)continue;
@@ -43,12 +46,29 @@ namespace JC.BattleTesting
                     // 주차장, 교차로의 무표시 도로, 흙길은 차선 추가 대상이 아닙니다.
                     if(!cross&&!line)continue;
                     if(p.roadShader==null||(!cross&&p.plainAsphalt==null))continue;
+                    if(meshLine && f.sharedMesh.isReadable)
+                    {
+                        // 디테일 키트의 좁은 도색 메시는 타일 UV(0~.096)를 사용한다.
+                        // 복사본만 폭을 확보하고 UV를 0~1로 맞춰 셰이더의 중앙 .5와 일치시킨다.
+                        var expanded=Instantiate(f.sharedMesh);expanded.name=f.sharedMesh.name+"_BattleLineWidth";
+                        expanded.hideFlags=HideFlags.DontSave;owned.Add(expanded);
+                        var bounds=expanded.bounds;var vertices=expanded.vertices;var uv=new Vector2[vertices.Length];
+                        float actualWidth=f.transform.TransformVector(Vector3.right*bounds.size.x).magnitude;
+                        float factor=Mathf.Max(1,p.lineWidth*1.1f/Mathf.Max(.0001f,actualWidth));
+                        for(int v=0;v<vertices.Length;v++)
+                        {
+                            uv[v]=new Vector2(Mathf.InverseLerp(bounds.min.x,bounds.max.x,vertices[v].x),Mathf.InverseLerp(bounds.min.z,bounds.max.z,vertices[v].z));
+                            vertices[v].x=bounds.center.x+(vertices[v].x-bounds.center.x)*factor;
+                        }
+                        expanded.vertices=vertices;expanded.uv=uv;expanded.RecalculateBounds();expanded.RecalculateTangents();f.sharedMesh=expanded;
+                    }
                     var clone=new Material(m){name=m.name+"_BattleMarkings",hideFlags=HideFlags.DontSave};owned.Add(clone);mats[i]=clone;changed=true;
                     if(cross){WhiteCrosswalk(clone,p.crosswalkEmboss);CrosswalkCount++;continue;}
                     if(!LineFrame(f,i,meshLine?"Road_Centerline_006":name,out var normal,out var offset,out var tangent,out var width)){mats[i]=m;continue;}
                     clone.shader=p.roadShader;clone.SetFloat("_MarkMode",meshLine?3:2);clone.SetTexture("_PlainMap",p.plainAsphalt);
                     clone.SetVector("_LineNormal",new Vector4(normal.x,normal.y,offset,0));clone.SetVector("_LineWorld",tangent);
-                    clone.SetFloat("_TileMeters",width);clone.SetFloat("_LineWidth",p.lineWidth);clone.SetFloat("_DashLength",p.dashLength);clone.SetFloat("_DashGap",p.dashGap);RoadCount++;
+                    // 텍스처 차선은 별도 연속 구간으로 그립니다. 원본 타일에서는 도색만 제거합니다.
+                    clone.SetFloat("_TileMeters",width);clone.SetFloat("_LineWidth",meshLine?p.lineWidth:-1);clone.SetFloat("_DashLength",p.dashLength);clone.SetFloat("_DashGap",p.dashGap);RoadCount++;
                 }
                 if(changed)r.sharedMaterials=mats;
             }
@@ -64,7 +84,7 @@ namespace JC.BattleTesting
             else if(name.EndsWith("006")){normal=Vector2.right;offset=.5f;}
             else if(name.EndsWith("007")){normal=new Vector2(1,1).normalized;offset=Mathf.Sqrt(.5f);}
             else if(!name.EndsWith("001"))return false;
-            var mesh=f.sharedMesh;if(!mesh.isReadable||sub>=mesh.subMeshCount)return false;
+            var mesh=ReadableRoadMesh(f.sharedMesh);if(!mesh.isReadable||sub>=mesh.subMeshCount)return false;
             var v=mesh.vertices;var uv=mesh.uv;var tr=mesh.GetTriangles(sub);if(uv.Length!=v.Length)return false;
             for(int i=0;i<tr.Length;i+=3)
             {
@@ -109,6 +129,7 @@ namespace JC.BattleTesting
                 }
             }
             if(grass.Count==0){ScatterReport="풀밭 후보 없음";return;}
+            if(leftVerge)PlantVergeGrass(grass,p,seed,cameras);
             var prefabs=p.naturePrefabs.Where(x=>x!=null).ToArray();if(prefabs.Length==0)return;
             var dynamicOutput=GetComponent<JcDynamicBattleOutput>();
             var obstacles=filters.Where(f=>!f.name.Contains("TileChunk_")).Select(f=>f.GetComponent<Renderer>())
@@ -116,13 +137,23 @@ namespace JC.BattleTesting
             var occupied=new List<Vector3>();var random=new System.Random(unchecked(seed+p.seed));
             var group=new GameObject("JC_BattleNature"){hideFlags=HideFlags.DontSave};group.transform.SetParent(transform,false);
             int limit=Mathf.Min(p.propLimit,Mathf.FloorToInt(area/(p.propSpacing*p.propSpacing*3)));
-            int near=0,footprint=0,obstacle=0,view=0,empty=0;
-            for(int attempt=0;attempt<1600&&NatureCount<limit;attempt++)
+            int near=0,footprint=0,obstacle=0,view=0,empty=0,extraTrees=0;
+            var vergeGrass=grass.Where(t=>leftVerge&&Mathf.Min(t.a.x,t.b.x,t.c.x)<vergeEdge).ToArray();
+            for(int attempt=0;attempt<(leftVerge?3200:1600);attempt++)
             {
-                float choose=(float)random.NextDouble()*area;int index=grass.FindIndex(t=>t.cumulative>=choose);var tri=grass[Mathf.Max(0,index)];
+                bool extra=attempt>=1600;
+                if(!extra&&NatureCount>=limit)continue;
+                if(extra&&(extraTrees>=p.leftExtraTreeLimit||vergeGrass.Length==0))break;
+                float choose=(float)random.NextDouble()*area;int index=grass.FindIndex(t=>t.cumulative>=choose);
+                var tri=extra?vergeGrass[random.Next(vergeGrass.Length)]:grass[Mathf.Max(0,index)];
                 float u=Mathf.Sqrt((float)random.NextDouble()),v=(float)random.NextDouble();var pos=(1-u)*tri.a+u*(1-v)*tri.b+u*v*tri.c;
+                if(extra&&(pos.x>vergeEdge-.8f||pos.x<vergeEdge-18||Mathf.Abs(pos.z)>35))continue;
                 if(pos.sqrMagnitude>65*65||(Mathf.Abs(pos.x)<8&&Mathf.Abs(pos.z)<22)||occupied.Any(x=>(x-pos).sqrMagnitude<p.propSpacing*p.propSpacing)){near++;continue;}
-                var prefab=prefabs[random.Next(prefabs.Length)];var renderers=prefab.GetComponentsInChildren<MeshRenderer>();if(renderers.Length==0)continue;
+                bool verge=leftVerge&&pos.x<vergeEdge;
+                if(verge&&UnderVergeSlope(pos))continue;
+                var choices=verge?prefabs.Where(x=>x.name.StartsWith("Tree",StringComparison.OrdinalIgnoreCase)).ToArray():prefabs;
+                if(choices.Length==0)continue;
+                var prefab=choices[random.Next(choices.Length)];var renderers=prefab.GetComponentsInChildren<MeshRenderer>();if(renderers.Length==0)continue;
                 Bounds local=new Bounds();bool has=false;
                 foreach(var rr in renderers)
                 {
@@ -141,7 +172,7 @@ namespace JC.BattleTesting
                 if(!safe){footprint++;continue;}
                 var bounds=new Bounds(pos+Vector3.up*height*.5f,new Vector3(radius*2,height,radius*2));
                 // 산 메시의 평평한 야지 위에 놓을 때 지지면 자체를 장애물로 판정하지 않습니다.
-                if(obstacles.Any(r=>r!=tri.support&&r.bounds.Intersects(bounds))){obstacle++;continue;}
+                if(obstacles.Any(r=>r!=tri.support&&!(verge&&r.name.StartsWith("Mount",StringComparison.OrdinalIgnoreCase))&&r.bounds.Intersects(bounds))){obstacle++;continue;}
                 if(cameras!=null)foreach(var eye in cameras)foreach(float x in new[]{-3.3f,0,3.3f})foreach(float z in new[]{-7.3f,-4f,4f,7.3f})
                 {var delta=new Vector3(x,1.3f,z)-eye;var expanded=bounds;expanded.Expand(1);if(expanded.Contains(eye)||(expanded.IntersectRay(new Ray(eye,delta.normalized),out float hit)&&hit<delta.magnitude))safe=false;}
                 if(!safe){view++;continue;}
@@ -154,10 +185,10 @@ namespace JC.BattleTesting
                     child.transform.localRotation=Quaternion.Inverse(prefab.transform.rotation)*rr.transform.rotation;child.transform.localScale=rr.transform.lossyScale;
                     child.AddComponent<MeshFilter>().sharedMesh=mf.sharedMesh;child.AddComponent<MeshRenderer>().sharedMaterials=rr.sharedMaterials;
                 }
-                occupied.Add(pos);NatureCount++;
+                occupied.Add(pos);NatureCount++;if(extra)extraTrees++;
             }
             ScatterReport=$"풀밭 면적 {area:F0}, 목표 {limit}, 배치 {NatureCount}, 거리 제외 {near}, 경계 제외 {footprint}, 장애물 제외 {obstacle}, 시야 제외 {view}, 빈 메시 {empty}";
         }
-        void OnDestroy(){foreach(var o in owned)if(o!=null){if(Application.isPlaying)Destroy(o);else DestroyImmediate(o);}}
+        void OnDestroy(){ClearRoadLines();foreach(var o in owned)if(o!=null){if(Application.isPlaying)Destroy(o);else DestroyImmediate(o);}}
     }
 }

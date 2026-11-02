@@ -48,7 +48,7 @@ namespace JC.Tutorial
         [Min(.1f), Tooltip("테두리 밝기가 한 번 왕복하는 시간(초)입니다. 게임 시간 배율과 무관합니다.")]
         public float pulsePeriod = 1.6f;
         [Tooltip("클릭 대상 강조색입니다. 실제 적용값은 씬에 저장됩니다.")]
-        public Color accent = new Color(25f / 255f, 1f, 84f / 255f, 1);
+        public Color accent = JcTutorialGraphic.MessageAccent;
         [Min(0), Tooltip("강조 테두리와 대상 UI 사이의 여유입니다. Canvas 기준 단위입니다.")]
         public float focusPadding = 9;
         [Min(0), Tooltip("포인터가 대상 UI 위에서 떨어지는 거리입니다. Canvas 기준 단위입니다.")]
@@ -68,7 +68,7 @@ namespace JC.Tutorial
             public Rect normalizedBounds;
         }
         public ResourceRegion[] resourceRegions = System.Array.Empty<ResourceRegion>();
-        [Tooltip("씬에 배치한 안내 디밍입니다. 대상과 메시지 영역은 밝게 유지합니다.")]
+        [Tooltip("씬에 배치한 안내 디밍입니다. 안내 대상은 디밍에서 제외하고 메시지는 디밍 위에 그립니다.")]
         public JcTutorialSpotlight spotlight;
         private FocusPresentation focusPresentation;
         private bool visible;

@@ -38,6 +38,7 @@ public sealed class AudioManager : MonoBehaviour
 
     public DHAudioClipCatalog ClipCatalog => clipCatalog;
     public string CurrentBgmKey => currentBgmKey;
+    public bool IsReady => isActiveAndEnabled && clipCatalog != null && bgmSource != null && sfxSource != null;
 
     private void Awake()
     {
@@ -54,6 +55,8 @@ public sealed class AudioManager : MonoBehaviour
 
         ResolveAudioSources();
         ApplyVolumes();
+        // Apply saved settings before sceneLoaded/Start can play the first sound.
+        GameSettings.LoadAndApplyAll();
     }
 
     private void OnEnable()
@@ -70,6 +73,11 @@ public sealed class AudioManager : MonoBehaviour
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= HandleSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     public void PlayBgm(string key)
@@ -314,6 +322,11 @@ public sealed class AudioManager : MonoBehaviour
                 }
             }
         }
+
+        // Preserve old authored bindings while accepting the current build scene name.
+        // An explicit TutorialLobbyScene binding above always takes precedence.
+        if (string.Equals(normalizedSceneName, "TutorialLobbyScene", System.StringComparison.OrdinalIgnoreCase))
+            return TryGetSceneBgmKey("TutorialUnionScene", out bgmKey);
 
         bgmKey = string.Empty;
         return false;

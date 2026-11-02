@@ -181,14 +181,14 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
         // 코드-온리: 표시 문구/버튼은 씬 stepTexts/actionButtons가 key로 소유한다.
         // 시트는 '있으면' 문구·하이라이트 보조로만 쓰고, 엔트리가 없어도(step3/step4 등) key만으로 표시한다.
         TutorialUiEntry entry = uiSheet != null ? uiSheet.Get(key) : null;
-        string message = entry != null ? entry.message : null;
+        string message = entry != null ? JcTutorialText.Get("sheet." + uiSheet.name + "." + entry.key, entry.message) : null;
         string highlight = entry != null ? entry.highlightActionId : null;
 
         if (entry != null && formatArgs != null && formatArgs.Length > 0)
         {
             try
             {
-                message = string.Format(entry.message ?? string.Empty, formatArgs);
+                message = string.Format(message ?? string.Empty, formatArgs);
             }
             catch (FormatException e)
             {

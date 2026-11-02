@@ -3,11 +3,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-/// <summary>일반 전투 패배 후 협회에 돌아오면 의무실을 튜토리얼 효과로 안내한다.</summary>
+/// <summary>협회 방문 파티에 체력이 부족한 유닛이 있으면 의무실을 안내한다.</summary>
 [DisallowMultipleComponent]
 public sealed class DefeatInfirmaryGuide : MonoBehaviour
 {
-    private static bool pending;
     private FacilityModule facility;
     private Button boundButton;
     private JcTutorialGuideView view;
@@ -15,7 +14,6 @@ public sealed class DefeatInfirmaryGuide : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetState()
     {
-        pending = false;
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
@@ -28,8 +26,7 @@ public sealed class DefeatInfirmaryGuide : MonoBehaviour
 
     public static void Request(CombatContext context)
     {
-        if (context != null && !context.IsTutorial && !context.IsSimulation && !DHGameEndState.IsEnding)
-            pending = true;
+        // Kept for existing combat callers; visibility now follows visiting party health.
     }
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -38,10 +35,9 @@ public sealed class DefeatInfirmaryGuide : MonoBehaviour
         if (DHGameEndState.IsEnding || scene.name == (scenes != null ? scenes.TitleScene : "TitleScene")
             || scene.name == (scenes != null ? scenes.GameLoadScene : "GameLoadScene"))
         {
-            pending = false;
             return;
         }
-        if (!pending || scene.name != (scenes != null ? scenes.LobbyScene : "HQLobbyScene")) return;
+        if (scene.name != (scenes != null ? scenes.LobbyScene : "HQLobbyScene")) return;
         // UIComposer creates and registers the facilities during scene Awake.
         foreach (var root in scene.GetRootGameObjects())
             if (root.GetComponent<DefeatInfirmaryGuide>() != null) return;
@@ -52,7 +48,7 @@ public sealed class DefeatInfirmaryGuide : MonoBehaviour
 
     private void Update()
     {
-        if (!pending || DHGameEndState.IsEnding)
+        if (DHGameEndState.IsEnding)
         {
             Destroy(gameObject);
             return;
@@ -69,12 +65,28 @@ public sealed class DefeatInfirmaryGuide : MonoBehaviour
         if (facility == null || view == null) return;
         if (facility.FacilityModal != null && facility.FacilityModal.activeInHierarchy)
         {
-            Complete();
+            view.SetVisible(false);
             return;
         }
         bool building = LobbyUIRegistry.BuildMode != null && LobbyUIRegistry.BuildMode.IsBuildMode;
-        view.SetVisible(!building, boundButton != null ? boundButton.transform as RectTransform : null,
+        view.SetVisible(!building && HasInjuredVisitingUnit(), boundButton != null ? boundButton.transform as RectTransform : null,
             JcTutorialGuideView.FocusPresentation.PointerAbove);
+    }
+
+    private static bool HasInjuredVisitingUnit()
+    {
+        var visit = HQVisitState.Instance;
+        var parties = PartyPersistentRepository.Instance;
+        var units = PersistentUnitRepository.Instance;
+        if (visit == null || !visit.HasVisitingParty || parties == null || units == null) return false;
+        foreach (var party in parties.Parties)
+        {
+            if (party == null || !visit.IsPartyVisiting(party.PartyId)) continue;
+            foreach (int index in party.UnitIndices)
+                if (units.TryGetUnit(index, out var unit) && unit != null && unit.CurrentHp < unit.IngameStats.HP)
+                    return true;
+        }
+        return false;
     }
 
     private void BindFacility(FacilityModule target)
@@ -129,9 +141,7 @@ public sealed class DefeatInfirmaryGuide : MonoBehaviour
 
     private void Complete()
     {
-        pending = false;
         if (view != null) view.SetVisible(false);
-        Destroy(gameObject);
     }
 
     private void OnDestroy()

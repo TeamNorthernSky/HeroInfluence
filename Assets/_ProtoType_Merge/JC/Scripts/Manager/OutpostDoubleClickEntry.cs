@@ -294,7 +294,7 @@ public class OutpostVisitIndicator : MonoBehaviour
         return visitBuffer;
     }
 
-    /// <summary>인디케이터 GO를 1회 생성. 스프라이트·배치는 본부 와이어링(HeroUnionVisitWiringForDHScene3)에서 읽어 본부와 일관.
+    /// <summary>인디케이터 GO를 1회 생성. 본부 표시 설정을 사용하되 건물 지붕보다 높게 배치한다.
     /// 컴포넌트는 씬에 항상 존재하므로 wire 타이밍과 무관(없으면 보류 후 다음 평가 재시도).</summary>
     private void EnsureIndicator()
     {
@@ -313,6 +313,34 @@ public class OutpostVisitIndicator : MonoBehaviour
         sr.sprite = wiring.VisitorIndicatorSprite;
         sr.sortingOrder = wiring.VisitorIndicatorSortingOrder;
 
+        PlaceAboveBuilding(sr);
+
         indicator.SetActive(false);
+    }
+
+    private void PlaceAboveBuilding(SpriteRenderer indicatorRenderer)
+    {
+        bool hasBounds = false;
+        Bounds buildingBounds = default;
+        foreach (Renderer buildingRenderer in GetComponentsInChildren<Renderer>())
+        {
+            // 안내 이미지와 이펙트를 제외하고 실제 건물의 높이만 사용한다.
+            if (!buildingRenderer.enabled ||
+                !(buildingRenderer is MeshRenderer || buildingRenderer is SkinnedMeshRenderer)) continue;
+
+            if (hasBounds) buildingBounds.Encapsulate(buildingRenderer.bounds);
+            else
+            {
+                buildingBounds = buildingRenderer.bounds;
+                hasBounds = true;
+            }
+        }
+
+        if (!hasBounds) return;
+
+        Vector3 position = indicatorRenderer.transform.position;
+        float bottomOffset = position.y - indicatorRenderer.bounds.min.y;
+        position.y = Mathf.Max(position.y, buildingBounds.max.y + bottomOffset + 0.1f);
+        indicatorRenderer.transform.position = position;
     }
 }

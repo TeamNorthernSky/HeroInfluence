@@ -73,7 +73,25 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         return BeginCombat(enemyGroupKey, enemyLevel, tutorialBattleKey, tutorialZoneId, ReturnSceneName);
     }
 
-    public bool BeginCombat(
+    // true는 전환 요청 접수를 뜻합니다. 실제 데이터/배경 생성은 화면 출력 뒤에 수행합니다.
+    public bool BeginCombat(string enemyGroupKey, int enemyLevel, string tutorialBattleKey,
+        int tutorialZoneId, string nextReturnSceneName)
+    {
+        if (JC.Tutorial.JcTutorialExitTransition.IsActive || !allowBattleSceneLoad ||
+            string.IsNullOrWhiteSpace(enemyGroupKey) || string.IsNullOrWhiteSpace(TutorialBattleSceneName)) return false;
+        AudioManager.Instance?.StopLoopingSfx("Explore_Move");
+        return SceneFadeController.LoadSceneAsyncWithFade(TutorialBattleSceneName, prepare: () =>
+        {
+            return this != null && PrepareCombat(enemyGroupKey, enemyLevel, tutorialBattleKey, tutorialZoneId, nextReturnSceneName);
+        }, onFailed: () =>
+        {
+            CombatContext.Instance?.ClearTutorial();
+            TutorialProgressRepository.EnsureInstance()?.ClearPendingCombatSource();
+            JC.BattleTesting.JcArnoldBattlePresentation.CancelPending();
+        }) != null;
+    }
+
+    private bool PrepareCombat(
         string enemyGroupKey,
         int enemyLevel,
         string tutorialBattleKey,
@@ -147,7 +165,6 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         // 도착 콜백 안에서 배경 캡처/씬 전환이 시작되어도 이동 반복음은 즉시 종료합니다.
         AudioManager.Instance?.StopLoopingSfx("Explore_Move");
         JC.BattleTesting.JcArnoldBattlePresentation.PrepareCameraOnly(sceneName);
-        LoadBattleScene(sceneName);
         return true;
     }
 
@@ -294,11 +311,4 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             currentHp <= 0f);
     }
 
-    private static void LoadBattleScene(string sceneName)
-    {
-        if (GameSceneManager.Instance != null)
-            GameSceneManager.Instance.LoadScene(sceneName);
-        else
-            SceneManager.LoadScene(sceneName);
-    }
 }
