@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -189,7 +189,12 @@ namespace JC.BattleTesting
                     }
                     if(image.name == "AvailableSkillEffect" || image.name == "SelectedSkillFrame" || image.name == "SkillButtonFrame" || image.name == "SelectedOverlay")
                     {
-                        // 스윕/선택 효과는 씬에 등록된 원본 스프라이트·재질·Image 타입을 유지합니다.
+                        // 사용 가능 스윕은 버튼 바탕의 실루엣을 따라 흐르게 합니다.
+                        if (image.name == "AvailableSkillEffect")
+                        {
+                            image.overrideSprite = null;
+                            image.sprite = surface;
+                        }
                         if (image.name != "AvailableSkillEffect" && image.name != "SelectedSkillFrame")
                         {
                             image.overrideSprite = null;

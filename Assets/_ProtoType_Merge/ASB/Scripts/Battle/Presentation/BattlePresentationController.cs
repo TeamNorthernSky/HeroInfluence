@@ -90,11 +90,14 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool panelPositionInitialized;
     private bool panelRequestedVisible;
     private bool entryHudPresented;
-    public void PrepareEntryHud()
+    public void PrepareEntryHud(bool showPlayerPanel)
     {
         if (panelMotion != null) StopCoroutine(panelMotion);
-        panelMotion = null; panelRequestedVisible = true; entryHudPresented = true;
-        if (skillPanel != null) skillPanel.anchoredPosition = panelHome;
+        panelMotion = null;
+        panelRequestedVisible = showPlayerPanel;
+        entryHudPresented = showPlayerPanel;
+        if (skillPanel != null)
+            skillPanel.anchoredPosition = showPlayerPanel ? panelHome : HiddenPanelPosition;
     }
     private Coroutine panelMotion;
     private Vector2 panelDestination;

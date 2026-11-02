@@ -21,6 +21,7 @@ public class GateRuntimeController : MonoBehaviour
     public string FirstZoneId => NormalizeId(firstZoneId);
     public string SecondZoneId => NormalizeId(secondZoneId);
     public bool IsOpen => isOpen;
+    public bool IsVisiblyOpen => isOpen && !visualChangePending && !IsVisualAnimating;
 
     private void OnEnable()
     {
