@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scenes:
   - scenePath: Assets/_ProtoType_Merge/Scenes/DHScene_3.unity
-    current: {fileID: 11400000, guid: 5ad2bc110b1a4bd3a69356e3a0a76bb1, type: 2}
+    current: {fileID: 11400000, guid: 560c372ce340f0340bdb67793a3d5f49, type: 2}
     previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/DHScene_3_ae203e30cb584ca5afed1f33d781de82/Bake.asset
     buildInputWarning: 
   - scenePath: Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity
