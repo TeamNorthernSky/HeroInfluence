@@ -26,7 +26,7 @@ namespace JC.BattleTesting.Editor
                     // 입력 수집은 저장된 베이크만 사용하며 탐사 외형을 재생성하지 않습니다.
                     overlay.Refresh();
                 }
-                captured=JcDynamicBattleGeometry.Capture(scene);
+                captured=JcDynamicBattleGeometry.Capture(scene, forCacheGeneration: true);
                 string folder=Folder+"/DynamicSourceData";EnsureFolder(folder);var context=new ExportContext(folder);
                 for(int i=0;i<captured.parts.Length;i++)
                 {
@@ -59,7 +59,7 @@ namespace JC.BattleTesting.Editor
             try
             {
                 if (opened) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
-                captured = JcDynamicBattleGeometry.Capture(scene, true);
+                captured = JcDynamicBattleGeometry.Capture(scene, tutorial: true, forCacheGeneration: true);
                 // 런타임 외형과 색상은 매번 실제 탐사씬에서 수집합니다. 여기에는 CPU 읽기용 메시만 저장합니다.
                 captured.parts = captured.parts.Where(p => !p.mesh.isReadable).GroupBy(p => p.originalMesh).Select(g => g.First()).ToArray();
                 string folder = Folder + "/TutorialDynamicSourceData";

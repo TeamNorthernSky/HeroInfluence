@@ -9,6 +9,7 @@ public partial class BattleCharactor
 {
     /// <summary>현재 유닛의 장비와 스킬 UI가 튜토리얼 전용 카탈로그를 사용하는지 나타냅니다.</summary>
     public bool UsesTutorialEquipment { get; private set; }
+    public int EquippedWeaponLevel { get; private set; } = 1;
 
     /// <summary>
     /// 카탈로그 인덱스로 스킬·무기 데이터를 직접 주입합니다.
@@ -21,6 +22,7 @@ public partial class BattleCharactor
             CombatContext.Instance.TryGetTutorialAlly(SourceData.UnitIndex, out _);
         if (UsesTutorialEquipment)
         {
+            EquippedWeaponLevel = 1;
             LoadTutorialEquipment(skillIdx, weaponIdx, skillLevel);
             return;
         }
@@ -28,7 +30,7 @@ public partial class BattleCharactor
         bool weaponLoaded = false;
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-        int resolvedWeaponLevel = ResolveWeaponLevel(equippedWeaponInstanceIndex);
+        EquippedWeaponLevel = ResolveWeaponLevel(equippedWeaponInstanceIndex);
 
         if (catalog != null)
         {
@@ -61,8 +63,8 @@ public partial class BattleCharactor
             if (catalog.TryGetWeapon(weaponIdx, out WeaponData weaponData) && weaponData != null)
             {
                 WeaponData leveledWeapon = CloneWeaponData(weaponData);
-                leveledWeapon.WeaponSkillValue = catalog.GetWeaponSkillValueAtLevel(weaponIdx, resolvedWeaponLevel);
-                leveledWeapon.WeaponSkillSubValue = catalog.GetWeaponSkillSubValueAtLevel(weaponIdx, resolvedWeaponLevel);
+                leveledWeapon.WeaponSkillValue = catalog.GetWeaponSkillValueAtLevel(weaponIdx, EquippedWeaponLevel);
+                leveledWeapon.WeaponSkillSubValue = catalog.GetWeaponSkillSubValueAtLevel(weaponIdx, EquippedWeaponLevel);
 
                 if (availableWeapons == null) availableWeapons = new List<WeaponData>();
                 availableWeapons.Clear();

@@ -10,7 +10,7 @@ namespace JC.Indicators
     {
         [SerializeField, Tooltip("표시할 기존 게이트 식별자입니다. 이동 판정과 같은 게이트 쌍을 사용합니다.")]
         private string gateId = "gate_001";
-        [SerializeField, Tooltip("인디케이터를 표시할 출발 구역입니다. 반대편 복귀 지점은 표시하지 않습니다.")]
+        [SerializeField, Tooltip("카메라가 안내할 출발 구역입니다. 반대편에는 귀환 방향을 표시합니다.")]
         private string sourceZoneId = "zone_001";
         [SerializeField, Tooltip("씬에 배치된 출발 게이트입니다. 레벨 재생성으로 없어지면 구역 경계에서 다시 찾습니다.")]
         private GateRuntimeController sourceGate;
@@ -49,6 +49,7 @@ namespace JC.Indicators
         }
 
         private readonly List<Vector2Int> cells = new List<Vector2Int>();
+        private readonly List<Vector2Int> returnCells = new List<Vector2Int>();
         private readonly List<CellView> views = new List<CellView>();
         private GateRuntimeController destinationGate;
         private GridManager grid;
@@ -85,6 +86,8 @@ namespace JC.Indicators
             ResolveGates();
             cells.Clear();
             if (sourceGate != null) sourceGate.CollectTeleportCells(cells);
+            returnCells.Clear();
+            if (destinationGate != null) destinationGate.CollectTeleportCells(returnCells);
             if (grid == null || borderPrefab == null || borderProfile == null)
             {
                 warpAvailable = false;
@@ -92,19 +95,22 @@ namespace JC.Indicators
                 return;
             }
 
-            bool rebuild = views.Count != cells.Count || !Mathf.Approximately(configuredSize, grid.CellSize)
+            bool rebuild = views.Count != cells.Count + returnCells.Count || !Mathf.Approximately(configuredSize, grid.CellSize)
                 || !Mathf.Approximately(configuredArrowScale, arrowScale);
             for (int i = 0; !rebuild && i < cells.Count; i++) rebuild = views[i].cell != cells[i];
+            for (int i = 0; !rebuild && i < returnCells.Count; i++) rebuild = views[cells.Count + i].cell != returnCells[i];
             if (rebuild) BuildViews();
             warpAvailable = false;
+            bool open = sourceGate != null && sourceGate.IsVisiblyOpen && destinationGate != null && destinationGate.IsVisiblyOpen;
             for (int i = 0; i < views.Count; i++)
             {
-                bool available = sourceGate != null && sourceGate.isActiveAndEnabled && sourceGate.IsOpen
-                    && destinationGate != null && destinationGate.isActiveAndEnabled && destinationGate.IsOpen
-                    && destinationGate.TryGetTeleportCellByIndex(i, out var target)
-                    && grid.CanOccupyCell(target, party != null ? party.transform : null, true);
+                bool returning = i >= cells.Count;
+                var targets = returning ? cells : returnCells;
+                int index = returning ? i - cells.Count : i;
+                bool available = open && index < targets.Count
+                    && grid.CanOccupyCell(targets[index], party != null ? party.transform : null, true);
                 views[i].root.SetActive(available);
-                warpAvailable |= available;
+                if (!returning) warpAvailable |= available;
             }
             if (pillarFade != null && !pillarFade.IsValid) { pillarFade.Dispose(); pillarFade = null; }
             if (warpAvailable && pillarFade == null && cells.Count > 0)
@@ -194,13 +200,20 @@ namespace JC.Indicators
             northArrowMaterial = new Material(overlayArrowMaterial) { name = "북쪽 입구 · 최상단 화살표", renderQueue = 4001 };
             northBorderMaterial.SetFloat("_ZTest", (float)CompareFunction.Always);
             northArrowMaterial.SetFloat("_ZTest", (float)CompareFunction.Always);
+            BuildSide(cells, false);
+            BuildSide(returnCells, true);
+        }
+
+        private void BuildSide(List<Vector2Int> sideCells, bool returning)
+        {
+            var shape = configuration.currentTurn.shape;
             float minZ = float.PositiveInfinity, maxZ = float.NegativeInfinity;
-            foreach (var cell in cells)
+            foreach (var cell in sideCells)
             {
                 float z = grid.GridToWorldCenter(cell).z;
                 minZ = Mathf.Min(minZ, z); maxZ = Mathf.Max(maxZ, z);
             }
-            foreach (var cell in cells)
+            foreach (var cell in sideCells)
             {
                 // 화면 위쪽(+Z) 표시는 기둥 위에, 아래쪽 표시는 반투명 기둥 뒤에 합성합니다.
                 bool north = grid.GridToWorldCenter(cell).z > (minZ + maxZ) * .5f + .001f;
@@ -226,7 +239,8 @@ namespace JC.Indicators
                 {
                     var arrow = new GameObject("흰 화살표 " + (i + 1));
                     arrow.transform.SetParent(view.root.transform, false);
-                    arrow.transform.localPosition = new Vector3((i - 1) * .19f * grid.CellSize * scale, shape.depth + .008f, 0);
+                    arrow.transform.localPosition = new Vector3((returning ? 1 - i : i - 1) * .19f * grid.CellSize * scale, shape.depth + .008f, 0);
+                    if (returning) arrow.transform.localRotation = Quaternion.Euler(0, 180, 0);
                     arrow.transform.localScale = Vector3.one * (grid.CellSize * scale);
                     arrow.AddComponent<MeshFilter>().sharedMesh = arrowMesh;
                     var renderer = arrow.AddComponent<MeshRenderer>();
@@ -263,8 +277,11 @@ namespace JC.Indicators
                 view.root.transform.position = position;
                 view.root.transform.rotation = Quaternion.identity;
                 view.border.RenderProfile(configuration, BattleCellVisualState.CurrentTurn, 1, clock, ground);
+                bool showArrows = party == null || party.GetCurrentGrid() != view.cell;
                 for (int i = 0; i < 3; i++)
                 {
+                    view.arrows[i].enabled = showArrows;
+                    if (!showArrows) continue;
                     float phase = Mathf.Repeat(clock / Mathf.Max(.3f, cycleSeconds) - i * .22f, 1);
                     float pulse = phase < .3f ? Mathf.Pow(Mathf.Sin(phase / .3f * Mathf.PI), .65f) : 0;
                     arrowProperties.Clear();

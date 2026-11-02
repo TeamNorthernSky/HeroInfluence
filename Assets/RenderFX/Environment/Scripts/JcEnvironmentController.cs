@@ -97,7 +97,8 @@ namespace JC.Env
             else if (applyOnStart) ApplyNow();
 
             // 첫 진입은 시작 시각, 씬 왕복은 마지막 시각을 적용합니다. 턴 진행은 아직 연결하지 않습니다.
-            if (Application.isPlaying && applyOnStart && CanApply && timePreviewSettings != null)
+            if (Application.isPlaying && applyOnStart && CanApply && timePreviewSettings != null &&
+                !JC.Environment.JcDayNightController.OwnsOutdoorLighting(gameObject.scene))
             {
                 SetPreviewHour(_initialTimeApplied ? PreviewHour : timePreviewSettings.startHour);
                 _initialTimeApplied = IsTimePreviewActive;
@@ -118,7 +119,7 @@ namespace JC.Env
             if (p == null) return;
             StopTimePreview();
             _requestedProfile = p;
-            if (!CanApply) return;
+            if (!CanApply || JC.Environment.JcDayNightController.OwnsOutdoorLighting(gameObject.scene)) return;
 
             var light = ResolveLight();
 

@@ -199,7 +199,11 @@ public class JcSkillButtonController : MonoBehaviour
                 bool wired = shown != null && !locked && unit.availableSkills != null &&
                     unit.availableSkills.Exists(s => s != null && s.skillIndex == shown.skillIndex && s.acquireLevel <= unit.Level);
                 if (slot.button != null) slot.button.interactable = wired && !locked;
-                if (slot.name != null) slot.name.text = shown != null ? shown.skillName : "-";
+                if (slot.name != null)
+                {
+                    slot.name.text = shown != null ? shown.skillName : "-";
+                    slot.name.fontStyle = shown != null && !locked && wired ? FontStyles.Bold : FontStyles.Normal;
+                }
                 if (slot.icon != null)
                 {
                     // '+' 변형은 별도 스킬 ID이며 협회 강화 단계와 혼용하지 않습니다.
@@ -353,12 +357,9 @@ public class JcSkillButtonController : MonoBehaviour
                 if (i == 1) text = skill.classSkillRange switch { 0 => "근거리", 1 => "원거리", _ => string.Empty };
                 if (i == 2) text = skill.classSkillTarget switch { 0 => "단수", 1 => "복수", 2 => "전체", _ => string.Empty };
             }
-            // 24px 높이의 효과 태그에서 한글이 세로 여백 때문에 생략되지 않게 합니다.
-            if (i == 0)
-            {
-                var margin = label.margin;
-                label.margin = new Vector4(margin.x, 0f, margin.z, 0f);
-            }
+            // 효과·사거리·대상 태그 모두 한 줄 높이를 온전히 사용합니다.
+            var margin = label.margin;
+            label.margin = new Vector4(margin.x, 0f, margin.z, 0f);
             label.text = text;
             label.transform.parent.gameObject.SetActive(!string.IsNullOrEmpty(text));
         }
