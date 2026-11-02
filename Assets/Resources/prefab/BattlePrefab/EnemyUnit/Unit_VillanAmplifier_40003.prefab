@@ -287,6 +287,7 @@ MonoBehaviour:
   _reviveStartPhase: 1
   _corpseReviveDelayRounds: 2
   _reviveHpRatio: 0.5
+  _reviveGroupId: YuliaAmplifier
   _immediateRevivePhase: 0
   _immediateReviveHoldSeconds: 0.7
 --- !u!1 &7706491001306831887

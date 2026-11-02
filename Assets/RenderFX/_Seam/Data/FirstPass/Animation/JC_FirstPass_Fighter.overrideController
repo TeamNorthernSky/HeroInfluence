@@ -7,7 +7,7 @@ AnimatorOverrideController:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: JC_FirstPass_Fighter
-  m_Controller: {fileID: 9100000, guid: 2810019eb36a72848b19818b792689b1, type: 2}
+  m_Controller: {fileID: 9100000, guid: 2a9b5050cdcd92945a5d26aa6510a468, type: 2}
   m_Clips:
   - m_OriginalClip: {fileID: 7400000, guid: ee3c1563025c169489fd30dc6595aeef, type: 2}
     m_OverrideClip: {fileID: 7400000, guid: 5b1326aa58b03834784858521496fec7, type: 2}
@@ -47,7 +47,13 @@ AnimatorOverrideController:
     m_OverrideClip: {fileID: 1827226128182048838, guid: 03deb9f948c4da142b1d5034b7c552ec,
       type: 3}
   - m_OriginalClip: {fileID: 7400000, guid: d1cfa68144e7cdc478d58bda677ace3d, type: 2}
-    m_OverrideClip: {fileID: 1827226128182048838, guid: 388a1f0cb707f9e4cac0d235cc2380d9,
-      type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 5c87777394189284e8fd9796abb9039d, type: 2}
   - m_OriginalClip: {fileID: 7400000, guid: faccf6f633888ac4183b2d4dbded7269, type: 2}
+    m_OverrideClip: {fileID: 0}
+  - m_OriginalClip: {fileID: 7400000, guid: 916565e992995894389d359e5aa29980, type: 2}
+    m_OverrideClip: {fileID: 0}
+  - m_OriginalClip: {fileID: 7400000, guid: 2d5ca6a8e0d67c74cbae1dfda3e6c53b, type: 2}
+    m_OverrideClip: {fileID: 0}
+  - m_OriginalClip: {fileID: 1827226128182048838, guid: 45b03afa4f184aa46abc3a48fff137ed,
+      type: 3}
     m_OverrideClip: {fileID: 0}

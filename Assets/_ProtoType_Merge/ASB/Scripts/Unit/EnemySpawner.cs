@@ -36,6 +36,8 @@ public class EnemySpawner : MonoBehaviour
 
     private readonly Dictionary<int, GameObject> spawnedByGrid = new Dictionary<int, GameObject>();
     private BattleFlowManager _flowForRemoval;
+    // 지연 시체 제거를 기다리는 유닛 → 예약한 셀 번호. 부활이 지연 제거보다 먼저 오면 남은 제거를 즉시 끝낸다.
+    private readonly Dictionary<BattleCharactor, int> _pendingCorpseRemovals = new Dictionary<BattleCharactor, int>();
     private readonly Dictionary<int, GridCellRef> gridCellsByNumber = new Dictionary<int, GridCellRef>();
     private BattleLogicalSlotMap eventSlotMap;
     private bool hierarchyReady;
@@ -777,6 +779,13 @@ public class EnemySpawner : MonoBehaviour
         }
 
         if (_flowForRemoval == null) _flowForRemoval = FindFirstObjectByType<BattleFlowManager>();
+        // 묶음 동시 부활이면 막 쓰러진 시체가 지연 제거(배속과 무관한 실제 시간) 전에 부활할 수 있다.
+        // 남은 제거를 지금 끝내 거절되지 않게 한다. 뒤늦게 도는 지연 제거는 부활한 유닛이면 건너뛴다.
+        if (_pendingCorpseRemovals.TryGetValue(corpse, out int pendingGridNumber))
+        {
+            RemoveCorpseNow(corpse, pendingGridNumber);
+        }
+
         if (_flowForRemoval == null || ContainsParticipant(_flowForRemoval, corpse))
         {
             // 지연 RemoveUnit이 아직 끝나지 않았거나 전투 흐름이 없으면 다음 라운드에 재시도한다.
@@ -844,6 +853,7 @@ public class EnemySpawner : MonoBehaviour
             DisableCorpseInteraction(bc.gameObject);
             return;
         }
+        _pendingCorpseRemovals[bc] = gridNumber;
         StartCoroutine(RemoveCorpseAfter(bc, gridNumber, _corpseRemovalDelay));
     }
 
@@ -855,6 +865,7 @@ public class EnemySpawner : MonoBehaviour
 
     private void RemoveCorpseNow(BattleCharactor bc, int gridNumber)
     {
+        if (!ReferenceEquals(bc, null)) _pendingCorpseRemovals.Remove(bc);
         if (bc == null) { spawnedByGrid.Remove(gridNumber); return; }
         if (!bc.IsDead || bc.IsIncapacitated) return;   // 되살아났거나(부활) 무력화면 제거 취소
 

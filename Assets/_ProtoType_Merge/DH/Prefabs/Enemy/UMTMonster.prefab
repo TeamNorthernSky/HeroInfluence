@@ -125,6 +125,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2274781388336465605}
     m_Modifications:
+    - target: {fileID: 136140647584621524, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 9d3e01f712b765c4d95fece63f76b60c, type: 2}
+    - target: {fileID: 2407689813563499347, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.034787897
+      objectReference: {fileID: 0}
+    - target: {fileID: 2407689813563499347, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.066550754
+      objectReference: {fileID: 0}
     - target: {fileID: 6270004528674257326, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
         type: 3}
       propertyPath: m_LocalScale.x
