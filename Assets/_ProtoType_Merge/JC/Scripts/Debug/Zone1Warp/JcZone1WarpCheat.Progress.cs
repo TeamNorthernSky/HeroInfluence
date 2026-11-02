@@ -22,13 +22,16 @@ namespace JC.DebugTools
             var catalog = EventScriptCatalog.Instance;
             foreach (var route in selected)
             {
-                if (JcZone1WarpRoute.NextStage(Flag) != route.Stage)
+                if (JcZone1WarpRoute.NextStage(Flag, zoneNumber) != route.Stage)
                     throw new InvalidOperationException("이미 완료된 단계는 다시 선택할 수 없습니다.");
                 if (route.Stage == 2 && !JcZone1WarpRoute.IsStageComplete(1, Flag))
                     throw new InvalidOperationException("앞 단계의 분기를 먼저 선택해 주세요.");
                 if (FindEvent(route.EventKey) == null || MapProgressRepository.Instance.IsMainEventCompleted(route.EventKey))
                     throw new InvalidOperationException($"진행할 수 없는 이벤트입니다: {route.EventKey}");
                 // 대화 엔진과 같은 우선순위: 첫 일치 행. 루미나/네코밍이 소년 미동행 기본행보다 우선합니다.
+                if (!route.AllowsChoice(Flag)) throw new InvalidOperationException("기존 선택과 다른 경로입니다.");
+                if (route.ChoiceFlag != null) flags[route.ChoiceFlag] = true;
+                string battleKey = route.ResolveBattleKey(Flag);
                 DHEventBranchTemplate completion = route.ResolveCompletion(catalog, Flag);
                 var step = new JcZone1WarpStep { Route = route, Effects = DHEventEffectRuntimeManager.ParseEffects(completion.TriggerEffect) };
                 foreach (var effect in step.Effects)
@@ -55,10 +58,10 @@ namespace JC.DebugTools
                     }
                 }
                 if (!Flag($"Flag_{route.EventKey}Complete")) throw new InvalidOperationException("완료 플래그가 없는 분기입니다.");
-                if (!catalog.TryGetBattleEnemyGroupTemplate(1, route.BattleKey, out var group))
+                if (!catalog.TryGetBattleEnemyGroupTemplate(zoneNumber, battleKey, out var group))
                     throw new InvalidOperationException($"전투 그룹 누락: {route.BattleKey}");
                 int zoneLevel = 1;
-                if (!MapProgressRepository.Instance.TryGetZoneEnemyLevel("1", out zoneLevel))
+                if (!MapProgressRepository.Instance.TryGetZoneEnemyLevel(zoneNumber.ToString(), out zoneLevel))
                 {
                     int sum = 0;
                     foreach (int index in partyData.UnitIndices)
@@ -72,11 +75,11 @@ namespace JC.DebugTools
                 plannedZoneEnemyLevel = enemyLevel;
                 if (group.MinLevel > 0) enemyLevel = Mathf.Max(enemyLevel, group.MinLevel);
                 if (group.MaxLevel > 0) enemyLevel = Mathf.Min(enemyLevel, group.MaxLevel);
-                if (!EnemySpawnPlanBuilder.TryBuildFromEventBattleKey(1, route.BattleKey, enemyLevel, out var spawn, out string error))
+                if (!EnemySpawnPlanBuilder.TryBuildFromEventBattleKey(zoneNumber, battleKey, enemyLevel, out var spawn, out string error))
                     throw new InvalidOperationException(error);
                 float total = 0;
                 foreach (var enemy in spawn.Entries) total += Mathf.Max(0, enemy.Data.ExperiencePoint);
-                step.ExperiencePerUnit = JcZone1WarpRoute.ExpPerUnit(route.BattleKey, total, partyData.UnitIndices.Count);
+                step.ExperiencePerUnit = JcZone1WarpRoute.ExpPerUnit(battleKey, total, partyData.UnitIndices.Count);
                 foreach (var reward in step.Rewards) step.ExperiencePerUnit = checked(step.ExperiencePerUnit + Mathf.Max(0, reward.Exp));
                 steps.Add(step);
             }
@@ -85,7 +88,7 @@ namespace JC.DebugTools
         MainEventObject FindEvent(string key)
         {
             foreach (var e in FindObjectsByType<MainEventObject>(FindObjectsSortMode.None))
-                if (e.ZoneId == 1 && string.Equals(e.EventKey, key, StringComparison.OrdinalIgnoreCase)) return e;
+                if (e.ZoneId == zoneNumber && string.Equals(e.EventKey, key, StringComparison.OrdinalIgnoreCase)) return e;
             return null;
         }
 
@@ -110,9 +113,10 @@ namespace JC.DebugTools
             var repository = PersistentUnitRepository.Instance;
             var effects = DHEventEffectRuntimeManager.EnsureInstance();
             if (steps.Count > 0)
-                MapProgressRepository.Instance.EnsureZoneEnemyLevel("1", plannedZoneEnemyLevel);
+                MapProgressRepository.Instance.EnsureZoneEnemyLevel(zoneNumber.ToString(), plannedZoneEnemyLevel);
             foreach (var step in steps)
             {
+                if (step.Route.ChoiceFlag != null) DHEventStateRepository.Instance.SetFlag(step.Route.ChoiceFlag, true);
                 DHEventStateRepository.Instance.SetNumericValue("Flag_BattleResult", 1f);
                 // 전체 전투 종료 루틴은 대화/씬 전환을 시작하므로 호출하지 않습니다.
                 foreach (int index in partyData.UnitIndices)
