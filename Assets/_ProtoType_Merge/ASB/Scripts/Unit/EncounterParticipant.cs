@@ -14,6 +14,7 @@ using UnityEngine;
 /// - 현재 페이즈 읽기(참여자 AI가 행동 분기).
 /// - 무력화 라운드 카운트다운 구동(자기 턴 무관, 라운드 경계 기준).
 /// - (선택) 지정 페이즈 진입 시 쓰러져 있으면 턴 사이 연출에서 즉시 부활(율리아 증폭기: 3페이즈).
+/// - (선택) 같은 부활 묶음이 모두 쓰러지면 먼저 쓰러진 쪽의 부활 시점에 맞춰 함께 부활(율리아 증폭기 둘).
 ///
 /// 의존은 단방향(이 컴포넌트 → 코어/블랙보드). 코어(BattleCharactor)는 블랙보드를 모른다.
 /// </summary>
@@ -36,6 +37,9 @@ public sealed class EncounterParticipant : MonoBehaviour
     [Min(1)] [SerializeField] private int _corpseReviveDelayRounds = 2;
     [Tooltip("부활 시 최대 HP 대비 체력 비율입니다.")]
     [Range(0.01f, 1f)] [SerializeField] private float _reviveHpRatio = 0.5f;
+    [Tooltip("같은 값을 가진 참여자가 모두 쓰러지면 먼저 쓰러진 쪽의 부활 시점에 맞춰 함께 부활합니다(빈 값 = 각자 부활). " +
+             "율리아 증폭기 = YuliaAmplifier")]
+    [SerializeField] private string _reviveGroupId;
 
     [Header("Immediate revival on phase entry")]
     [Tooltip("이 페이즈로 들어올 때 쓰러져 있으면 라운드 카운트다운 없이 다음 턴 사이 연출에서 바로 부활합니다(0 = 사용 안 함). " +
@@ -125,7 +129,54 @@ public sealed class EncounterParticipant : MonoBehaviour
         if (bb.CurrentPhase >= _reviveStartPhase)
         {
             ArmCorpseRevivalIfNeeded();
+            SyncGroupRevival();
         }
+    }
+
+    // 같은 묶음이 모두 쓰러졌으면 먼저 쓰러진 쪽의 남은 라운드로 맞춰 같은 라운드 경계에서 함께 부활시킨다.
+    // 하나라도 살아 있으면 각자 카운트다운을 그대로 둔다.
+    private void SyncGroupRevival()
+    {
+        if (string.IsNullOrEmpty(_reviveGroupId)) return;
+
+        var members = new List<EncounterParticipant>();
+        foreach (EncounterParticipant participant in FindObjectsByType<EncounterParticipant>(FindObjectsSortMode.None))
+        {
+            if (participant != null && participant._reviveGroupId == _reviveGroupId) members.Add(participant);
+        }
+
+        var isDead = new bool[members.Count];
+        var roundsLeft = new int[members.Count];
+        for (int i = 0; i < members.Count; i++)
+        {
+            isDead[i] = members[i]._self != null && members[i]._self.IsDead;
+            roundsLeft[i] = members[i]._corpseReviveRoundsLeft;
+        }
+
+        int synced = ComputeGroupReviveRounds(isDead, roundsLeft);
+        if (synced < 0) return;
+
+        foreach (EncounterParticipant member in members)
+        {
+            if (member._corpseReviveRoundsLeft >= 0) member._corpseReviveRoundsLeft = synced;
+        }
+        Debug.Log($"[EncounterParticipant] 묶음 동시 부활: {_reviveGroupId} {members.Count}명, 남은 라운드 {synced}", this);
+    }
+
+    /// <summary>
+    /// 묶음 동시 부활에 맞출 남은 라운드. 하나라도 살아 있거나 카운트다운이 걸린(0 이상) 참여자가 없으면 -1(각자 부활),
+    /// 아니면 걸린 값 중 가장 작은 값 = 먼저 부활할 참여자의 시점.
+    /// </summary>
+    public static int ComputeGroupReviveRounds(IReadOnlyList<bool> isDead, IReadOnlyList<int> roundsLeft)
+    {
+        int synced = -1;
+        for (int i = 0; i < isDead.Count; i++)
+        {
+            if (!isDead[i]) return -1;
+            int left = roundsLeft[i];
+            if (left >= 0 && (synced < 0 || left < synced)) synced = left;
+        }
+        return synced;
     }
 
     private void HandlePhaseAdvanced(int phase)

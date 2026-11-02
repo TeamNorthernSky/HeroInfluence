@@ -211792,7 +211792,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5b0e06b0eab28a47acf37bb601b8bb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moneyPenalty: 500
+  moneyPenalty: 2000
+  chipPenalty: 3
+  crystalPenalty: 3
+  supplyPenalty: 3
   destroyEnemyAfterRaid: 1
   gridManager: {fileID: 1870279752}
 --- !u!1 &2000933638

@@ -4852,18 +4852,6 @@ MonoBehaviour:
     tileKey: Road_01
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 29, y: 9}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 33, y: 9}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 37, y: 9}
-    tileKey: Road_01
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 11, y: 7}
     tileKey: Road_Centerline_001
     materialKey: 
@@ -4984,35 +4972,11 @@ MonoBehaviour:
     tileKey: Road_Centerline_004
     materialKey: 
     renderMode: 0
-  - gridPosition: {x: 29, y: 8}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 33, y: 8}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 37, y: 8}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 37, y: 10}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
   - gridPosition: {x: 17, y: 13}
     tileKey: Road_Cross_006
     materialKey: 
     renderMode: 0
   - gridPosition: {x: 15, y: 13}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 29, y: 10}
-    tileKey: Road_Cross_006
-    materialKey: 
-    renderMode: 0
-  - gridPosition: {x: 33, y: 10}
     tileKey: Road_Cross_006
     materialKey: 
     renderMode: 0
@@ -9016,6 +8980,42 @@ MonoBehaviour:
     tileKey: tilemap_02
     materialKey: 
     renderMode: 1
+  - gridPosition: {x: 29, y: 10}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 9}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 29, y: 8}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 33, y: 8}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 33, y: 9}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 33, y: 10}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 37, y: 10}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 37, y: 9}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
+  - gridPosition: {x: 37, y: 8}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
   obstacleCells:
   - {x: 49, y: 18}
   - {x: 48, y: 18}
@@ -10332,7 +10332,6 @@ MonoBehaviour:
   - {x: 17, y: 9}
   - {x: 16, y: 9}
   - {x: 15, y: 9}
-  - {x: 27, y: 9}
   - {x: 31, y: 9}
   - {x: 35, y: 9}
   - {x: 39, y: 9}
@@ -10599,6 +10598,11 @@ MonoBehaviour:
   - {x: 26, y: 10}
   - {x: 22, y: 24}
   - {x: 45, y: 16}
+  - {x: 37, y: 23}
+  - {x: 27, y: 9}
+  - {x: 26, y: 26}
+  - {x: 27, y: 26}
+  - {x: 28, y: 26}
   itemPlacements:
   - gridPosition: {x: 7, y: 9}
     resourceType: 0
@@ -10713,18 +10717,6 @@ MonoBehaviour:
   - gridPosition: {x: 19, y: 14}
     prefabKey: BGHouse001
     rotation: 0
-  - gridPosition: {x: 13, y: 17}
-    prefabKey: BGHouse001
-    rotation: 0
-  - gridPosition: {x: 10, y: 14}
-    prefabKey: BGHouse001
-    rotation: 0
-  - gridPosition: {x: 10, y: 17}
-    prefabKey: BGHouse002
-    rotation: 0
-  - gridPosition: {x: 13, y: 14}
-    prefabKey: BGHouse002
-    rotation: 0
   - gridPosition: {x: 19, y: 17}
     prefabKey: BGHouse002
     rotation: 0
@@ -10740,18 +10732,6 @@ MonoBehaviour:
   - gridPosition: {x: 22, y: 9}
     prefabKey: BGHouse001
     rotation: 0
-  - gridPosition: {x: 27, y: 9}
-    prefabKey: BGStore001
-    rotation: 0
-  - gridPosition: {x: 35, y: 9}
-    prefabKey: BGStore001
-    rotation: 0
-  - gridPosition: {x: 31, y: 9}
-    prefabKey: BGStore002
-    rotation: 0
-  - gridPosition: {x: 39, y: 9}
-    prefabKey: BGStore002
-    rotation: 0
   - gridPosition: {x: 14, y: 23}
     prefabKey: BGStore004
     rotation: 0
@@ -10761,31 +10741,16 @@ MonoBehaviour:
   - gridPosition: {x: 36, y: 29}
     prefabKey: BGOffice001
     rotation: 0
-  - gridPosition: {x: 27, y: 17}
-    prefabKey: BGOffice001
-    rotation: 0
   - gridPosition: {x: 30, y: 14}
-    prefabKey: BGOffice001
-    rotation: 0
-  - gridPosition: {x: 33, y: 17}
     prefabKey: BGOffice001
     rotation: 0
   - gridPosition: {x: 36, y: 14}
     prefabKey: BGOffice001
     rotation: 0
-  - gridPosition: {x: 39, y: 17}
-    prefabKey: BGOffice001
-    rotation: 0
   - gridPosition: {x: 27, y: 14}
     prefabKey: BGOffice002
     rotation: 0
-  - gridPosition: {x: 30, y: 17}
-    prefabKey: BGOffice002
-    rotation: 0
   - gridPosition: {x: 33, y: 14}
-    prefabKey: BGOffice002
-    rotation: 0
-  - gridPosition: {x: 36, y: 17}
     prefabKey: BGOffice002
     rotation: 0
   - gridPosition: {x: 39, y: 14}
@@ -10796,18 +10761,6 @@ MonoBehaviour:
     rotation: 0
   - gridPosition: {x: 39, y: 29}
     prefabKey: BGOffice002
-    rotation: 0
-  - gridPosition: {x: 27, y: 22}
-    prefabKey: BGStore001
-    rotation: 0
-  - gridPosition: {x: 39, y: 26}
-    prefabKey: BGStore001
-    rotation: 0
-  - gridPosition: {x: 27, y: 24}
-    prefabKey: BGStore002
-    rotation: 0
-  - gridPosition: {x: 39, y: 22}
-    prefabKey: BGStore002
     rotation: 0
   - gridPosition: {x: 10, y: 30}
     prefabKey: Fence_01
@@ -11550,9 +11503,6 @@ MonoBehaviour:
   - gridPosition: {x: 40, y: 13}
     prefabKey: Streetlight
     rotation: 270
-  - gridPosition: {x: 28, y: 18}
-    prefabKey: Streetlight
-    rotation: 90
   - gridPosition: {x: 34, y: 18}
     prefabKey: Streetlight
     rotation: 90
@@ -11613,6 +11563,63 @@ MonoBehaviour:
   - gridPosition: {x: 45, y: 16}
     prefabKey: Streetlight
     rotation: 0
+  - gridPosition: {x: 37, y: 23}
+    prefabKey: Streetlight
+    rotation: 0
+  - gridPosition: {x: 27, y: 17}
+    prefabKey: BGOffice001
+    rotation: 180
+  - gridPosition: {x: 33, y: 17}
+    prefabKey: BGOffice001
+    rotation: 180
+  - gridPosition: {x: 39, y: 17}
+    prefabKey: BGOffice001
+    rotation: 180
+  - gridPosition: {x: 30, y: 17}
+    prefabKey: BGOffice002
+    rotation: 180
+  - gridPosition: {x: 36, y: 17}
+    prefabKey: BGOffice002
+    rotation: 180
+  - gridPosition: {x: 27, y: 9}
+    prefabKey: BGStore001
+    rotation: 270
+  - gridPosition: {x: 39, y: 9}
+    prefabKey: BGStore002
+    rotation: 90
+  - gridPosition: {x: 31, y: 9}
+    prefabKey: BGStore002
+    rotation: 90
+  - gridPosition: {x: 35, y: 9}
+    prefabKey: BGStore001
+    rotation: 270
+  - gridPosition: {x: 26, y: 23}
+    prefabKey: Vending machine
+    rotation: 0
+  - gridPosition: {x: 27, y: 25}
+    prefabKey: BGStore002
+    rotation: 270
+  - gridPosition: {x: 27, y: 22}
+    prefabKey: BGStore001
+    rotation: 270
+  - gridPosition: {x: 39, y: 26}
+    prefabKey: BGStore001
+    rotation: 90
+  - gridPosition: {x: 39, y: 22}
+    prefabKey: BGStore002
+    rotation: 90
+  - gridPosition: {x: 13, y: 17}
+    prefabKey: BGHouse001
+    rotation: 90
+  - gridPosition: {x: 10, y: 14}
+    prefabKey: BGHouse001
+    rotation: 270
+  - gridPosition: {x: 13, y: 14}
+    prefabKey: BGHouse002
+    rotation: 90
+  - gridPosition: {x: 10, y: 17}
+    prefabKey: BGHouse002
+    rotation: 270
   tutorialObjectPlacements: []
   mainEventPlacements:
   - gridPosition: {x: 8, y: 16}
@@ -11692,6 +11699,7 @@ MonoBehaviour:
     blockerCells:
     - {x: 43, y: 19}
     - {x: 43, y: 20}
+    flipModel180: 0
   enemySpawnPointPlacements:
   - gridPosition: {x: 42, y: 19}
     zoneId: zone_001

@@ -5,6 +5,9 @@ using UnityEngine;
 /// <summary>행동 중인 턴 아이콘 옆에 스킬명을 외친 뒤 시전을 재개합니다.</summary>
 public sealed class BattleSkillSpeechBubble : MonoBehaviour
 {
+    // 반격은 스킬명 대신 고정 문구를 외칩니다.
+    private const string CounterText = "반격!";
+
     [SerializeField] private CanvasGroup group;
     [SerializeField] private TMP_Text label;
     [SerializeField] private RectTransform bubble;
@@ -15,7 +18,7 @@ public sealed class BattleSkillSpeechBubble : MonoBehaviour
     private void Awake() => Hide();
     private void OnDisable() => Hide();
 
-    public IEnumerator ShowBeforeCast(BattleCharactor actor, SkillData skill)
+    public IEnumerator ShowBeforeCast(BattleCharactor actor, SkillData skill, bool counter = false)
     {
         if (actor == null || skill == null || group == null || label == null || bubble == null)
             yield break;
@@ -28,7 +31,8 @@ public sealed class BattleSkillSpeechBubble : MonoBehaviour
 
         var icon = (RectTransform)activeSlot.transform;
         PositionBesideSlot(icon);
-        label.text = (skill.skillName ?? string.Empty).TrimEnd('+', ' ', '\t', '\r', '\n') + "!";
+        label.text = counter ? CounterText
+            : (skill.skillName ?? string.Empty).TrimEnd('+', ' ', '\t', '\r', '\n') + "!";
         float elapsed = 0f;
         float total = Mathf.Max(0f, duration);
         try

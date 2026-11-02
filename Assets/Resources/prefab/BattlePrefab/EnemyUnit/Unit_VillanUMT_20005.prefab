@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 3319386083322840906}
   - component: {fileID: 46910108340771423}
   - component: {fileID: 1197634199004853179}
+  - component: {fileID: 9059149737460886611}
   m_Layer: 9
   m_Name: Unit_VillanUMT_20005
   m_TagString: Untagged
@@ -233,6 +234,8 @@ MonoBehaviour:
   ReturnDuration: 0.3
   RotateDuration: 0.15
   RotateReturnDuration: 0.2
+  ApproachSfxKey: 
+  ReturnSfxKey: 
 --- !u!114 &46910108340771423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -285,6 +288,19 @@ CapsuleCollider:
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0.7, z: 0}
+--- !u!114 &9059149737460886611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6674627687946970983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ba2819a26fea5b479c246cbca04e9da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blendSeconds: 0.25
 --- !u!1001 &3074062666685958431
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -447,6 +463,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5500272111037074576}
     m_Modifications:
+    - target: {fileID: 136140647584621524, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 9d3e01f712b765c4d95fece63f76b60c, type: 2}
+    - target: {fileID: 2407689813563499347, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.034787897
+      objectReference: {fileID: 0}
+    - target: {fileID: 2407689813563499347, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.066550754
+      objectReference: {fileID: 0}
     - target: {fileID: 6270004528674257326, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
         type: 3}
       propertyPath: m_LocalScale.x

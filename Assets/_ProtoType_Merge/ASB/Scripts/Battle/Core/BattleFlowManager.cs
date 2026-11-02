@@ -100,6 +100,11 @@ public class BattleFlowManager : MonoBehaviour
     public bool IsEndingBattle => ShouldEndBattle();
     public bool IsBattleEnded => battleEnded;
 
+    /// <summary>모의전 전용 턴 선택. null이면 메인과 같은 순서이며 일반 전투에는 적용하지 않습니다.</summary>
+    public Predicate<BattleCharactor> SimulationTurnFilter { get; set; }
+    /// <summary>모의전의 수동 적 스킬 실행. 일반 전투는 기존 AI를 사용합니다.</summary>
+    public Func<BattleCharactor, IEnumerator> SimulationEnemyTurnOverride { get; set; }
+
     /// <summary>
     /// UI가 조회하는 행동 진행 상태입니다. 아군은 수동·자동 행동 점유 후 완료 통지 전,
     /// 적은 AI 판단 대기부터 공격·반격 처리가 반환될 때까지를 포함합니다.
@@ -110,6 +115,11 @@ public class BattleFlowManager : MonoBehaviour
                               playerActionClaimed && !playerActionResolved));
 
     public event Action<int, BattleCharactor> OnTurnStarted;
+    /// <summary>턴 배너 직전에 발행하는 자세 연출용 신호. 행동 가능 판정 전이므로 게임 로직에는 사용하지 않는다.</summary>
+    public event Action<BattleCharactor> OnTurnPresentationStarted;
+    /// <summary>행동 점유가 시작되면 발행한다. 실패하여 점유가 풀릴 수 있다.</summary>
+    public event Action<BattleCharactor> OnTurnActionCommitted;
+    public event Action<BattleCharactor> OnTurnActionCancelled;
     // 초기 HUD 바인딩 전용. 행동·AI·튜토리얼 시작 이벤트와 분리합니다.
     public event Action<int, BattleCharactor> OnEntryUiPrepared;
     public event Action<TurnResolutionContext> OnTurnResolved;
@@ -123,6 +133,8 @@ public class BattleFlowManager : MonoBehaviour
 
     private void OnDisable()
     {
+        SimulationTurnFilter = null;
+        SimulationEnemyTurnOverride = null;
         turnPresentationPending = false;
         turnBanner?.Hide();
         enemyTurnRunning = false;
@@ -299,6 +311,8 @@ public class BattleFlowManager : MonoBehaviour
     {
         var ordered = participants
             .Where(u => u != null && !u.IsDead)
+            .Where(u => CombatContext.Instance == null || !CombatContext.Instance.IsSimulation ||
+                        SimulationTurnFilter == null || SimulationTurnFilter(u))
             .OrderByDescending(u => u.FinalStats.Speed)
             .ThenByDescending(u => u.IsPlayer)
             .ThenByDescending(u => GetRowTurnPriority(u))
@@ -374,7 +388,9 @@ public class BattleFlowManager : MonoBehaviour
         while (turnQueue != null && turnQueue.Count > 0)
         {
             BattleCharactor unit = turnQueue.Dequeue();
-            if (unit != null && !unit.IsDead)
+            if (unit != null && !unit.IsDead &&
+                (CombatContext.Instance == null || !CombatContext.Instance.IsSimulation ||
+                 SimulationTurnFilter == null || SimulationTurnFilter(unit)))
             {
                 return unit;
             }
@@ -574,6 +590,7 @@ public class BattleFlowManager : MonoBehaviour
             if (turnInterludes.Count > 0) yield return PresentTurnInterludes();
 
             // 건너뛰는 순번도 표시하되, 기존 OnTurnStarted는 행동 가능한 유닛에만 발행한다.
+            OnTurnPresentationStarted?.Invoke(unit);
             if (turnBanner != null && !JC.BattleTesting.JcBattleHudEntryGate.IsPending(gameObject.scene)) yield return PresentTurnIntro(unit);
             if (turnBanner != null && ShouldEndBattle())
             {
@@ -735,8 +752,14 @@ public class BattleFlowManager : MonoBehaviour
         }
 
         enemyTurnRunning = true;
+        OnTurnActionCommitted?.Invoke(enemyUnit);
         try
         {
+            if (CombatContext.Instance != null && CombatContext.Instance.IsSimulation && SimulationEnemyTurnOverride != null)
+            {
+                yield return SimulationEnemyTurnOverride(enemyUnit);
+                yield break;
+            }
             EnemyScript enemyScript = enemyUnit.GetComponent<EnemyScript>();
             if (enemyScript != null)
             {
@@ -952,7 +975,11 @@ public class BattleFlowManager : MonoBehaviour
     /// <summary>이번 턴의 행동 권한을 요청합니다. 안내 중/이미 행동 중/행동 불가라면 false를 반환합니다.</summary>
     public void ReleaseFailedPlayerAction(BattleCharactor actor)
     {
-        if (CurrentUnit == actor && !playerActionResolved) playerActionClaimed = false;
+        if (CurrentUnit == actor && !playerActionResolved)
+        {
+            playerActionClaimed = false;
+            OnTurnActionCancelled?.Invoke(actor);
+        }
     }
 
     public bool TryClaimPlayerAction(BattleCharactor actor)
@@ -979,6 +1006,7 @@ public class BattleFlowManager : MonoBehaviour
         }
 
         playerActionClaimed = true;
+        OnTurnActionCommitted?.Invoke(actor);
         return true;
     }
 

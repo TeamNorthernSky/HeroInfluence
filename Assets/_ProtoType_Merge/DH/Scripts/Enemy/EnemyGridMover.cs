@@ -20,6 +20,8 @@ public interface IGridEnemyObject
 [RequireComponent(typeof(EnemyComposition))]
 public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
 {
+    private const string MoveSfxKey = "Explore_Arnold_Move";
+
     public event System.Action<EnemyGridMover, Vector2Int> GridChanged;
     public event System.Action<EnemyGridMover, Vector2Int> MoveStepStarted;
     public event System.Action<EnemyGridMover, bool> MovementStateChanged;
@@ -33,6 +35,10 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
     [SerializeField] private int movePointsPerTurn = 5;
     [SerializeField] private EnemyBehaviorType behaviorType = EnemyBehaviorType.Mobile;
 
+    [Header("Move Audio")]
+    [SerializeField, Min(0.01f)] private float footstepDuration = 0.25f;
+    [SerializeField, Min(0.01f)] private float footstepInterval = 0.3f;
+
     private Vector2Int currentGrid;
     private float fixedY;
     private EnemyTargetType currentTargetType;
@@ -41,6 +47,7 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
     private EnemyIdentity enemyIdentity;
     private EnemyComposition enemyComposition;
     private bool isMoving;
+    private Coroutine footstepRoutine;
 
     public string EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : string.Empty;
     public int MovePointsPerTurn => Mathf.Max(0, movePointsPerTurn);
@@ -72,6 +79,7 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
 
     private void OnDisable()
     {
+        StopMoveFootsteps();
         GridChanged -= HandleGridChanged;
         enemyRegistry?.Unregister(this);
         MoveRangeController.NotifyOccupancyChanged();
@@ -193,7 +201,34 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
             return;
 
         isMoving = moving;
+        if (isMoving && !IsStatic)
+        {
+            footstepRoutine = StartCoroutine(PlayMoveFootsteps());
+        }
+        else if (!isMoving)
+        {
+            StopMoveFootsteps();
+        }
         MovementStateChanged?.Invoke(this, isMoving);
+    }
+
+    private IEnumerator PlayMoveFootsteps()
+    {
+        var interval = new WaitForSeconds(Mathf.Max(0.01f, footstepInterval));
+        while (isMoving && !IsStatic && isActiveAndEnabled)
+        {
+            if (Time.timeScale > 0f)
+                AudioManager.Instance?.PlaySfxForDuration(MoveSfxKey, footstepDuration);
+            yield return interval;
+        }
+        footstepRoutine = null;
+    }
+
+    private void StopMoveFootsteps()
+    {
+        if (footstepRoutine != null)
+            StopCoroutine(footstepRoutine);
+        footstepRoutine = null;
     }
 
     private void ResolveRegistry()

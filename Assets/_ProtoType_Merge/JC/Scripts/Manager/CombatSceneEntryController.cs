@@ -36,6 +36,9 @@ public class CombatSceneEntryController : MonoBehaviour
             return;
         }
 
+        // Set before requesting the fade so its BGM comparison uses the battle-specific key.
+        AudioManager.Instance?.SetSceneBgmOverride(battleSceneName, ResolveBattleBgmKey(CombatContext.Instance));
+
         // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.
         var request = SceneFadeController.LoadSceneAsyncWithFade(battleSceneName, prepare: () =>
         {
@@ -44,14 +47,32 @@ public class CombatSceneEntryController : MonoBehaviour
             return true;
         }, onFailed: () =>
         {
+            AudioManager.Instance?.ClearSceneBgmOverride(battleSceneName);
             JC.BattleTesting.JcArnoldBattlePresentation.CancelPending();
             CombatContext.Instance?.Clear();
             if (combatEncounterManager != null) combatEncounterManager.ClearCombatState();
         });
         if (request == null && (SceneFadeController.Instance == null || !SceneFadeController.Instance.IsTransitioning))
         {
+            AudioManager.Instance?.ClearSceneBgmOverride(battleSceneName);
             CombatContext.Instance?.Clear();
             if (combatEncounterManager != null) combatEncounterManager.ClearCombatState();
         }
+    }
+
+    private static string ResolveBattleBgmKey(CombatContext context)
+    {
+        if (context == null || context.IsTutorial)
+            return "NormalBattle";
+
+        var boss = JC.BattleTesting.JcBossBattleBackground.Load();
+        if (boss != null && boss.Matches(context))
+            return "YuliaBoss";
+
+        var bank = JC.BattleTesting.JcBankBattleBackground.Load();
+        if (bank != null && bank.Matches(context))
+            return "BankBoss";
+
+        return "NormalBattle";
     }
 }

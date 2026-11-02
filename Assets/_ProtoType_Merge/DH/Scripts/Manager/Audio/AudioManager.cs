@@ -35,6 +35,11 @@ public sealed class AudioManager : MonoBehaviour
     private float currentBgmDefaultVolume = 1f;
     private float sceneBgmFadeVolume = 1f;
     private bool sceneBgmTransitionActive;
+    private AudioSource bgmLoopSource;
+    private Coroutine pendingBgmPreparation;
+    private double scheduledBgmStart;
+    private string overrideBgmScene;
+    private string overrideBgmKey;
 
     public DHAudioClipCatalog ClipCatalog => clipCatalog;
     public string CurrentBgmKey => currentBgmKey;
@@ -54,6 +59,7 @@ public sealed class AudioManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
 
         ResolveAudioSources();
+        PreloadBgmClips();
         ApplyVolumes();
         // Apply saved settings before sceneLoaded/Start can play the first sound.
         GameSettings.LoadAndApplyAll();
@@ -73,6 +79,7 @@ public sealed class AudioManager : MonoBehaviour
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= HandleSceneLoaded;
+        if (Instance == this) StopBgm();
     }
 
     private void OnDestroy()
@@ -90,7 +97,7 @@ public sealed class AudioManager : MonoBehaviour
             return;
 
         if (string.Equals(currentBgmKey, normalizedKey, System.StringComparison.OrdinalIgnoreCase) &&
-            bgmSource.isPlaying)
+            HasBgmPlayback())
         {
             return;
         }
@@ -98,20 +105,109 @@ public sealed class AudioManager : MonoBehaviour
         if (!TryGetBgmEntry(normalizedKey, out DHAudioClipEntry entry) || entry.Clip == null)
             return;
 
+        StopBgm();
         currentBgmKey = entry.Key;
         currentBgmDefaultVolume = entry.DefaultVolume;
-        bgmSource.clip = entry.Clip;
-        bgmSource.loop = entry.Loop;
         ApplyBgmSourceVolume();
-        bgmSource.Play();
+        RequestAudioData(entry.IntroClip);
+        RequestAudioData(entry.Clip);
+        if (IsBgmDataReady(entry))
+            ScheduleBgm(entry);
+        else
+            pendingBgmPreparation = StartCoroutine(PrepareBgm(entry));
     }
 
     public void StopBgm()
     {
+        if (pendingBgmPreparation != null)
+            StopCoroutine(pendingBgmPreparation);
+        pendingBgmPreparation = null;
         currentBgmKey = null;
+        scheduledBgmStart = 0;
 
         if (bgmSource != null)
+        {
             bgmSource.Stop();
+            bgmSource.clip = null;
+        }
+        if (bgmLoopSource != null)
+        {
+            bgmLoopSource.Stop();
+            bgmLoopSource.clip = null;
+        }
+    }
+
+    private bool HasBgmPlayback()
+    {
+        return pendingBgmPreparation != null || scheduledBgmStart > AudioSettings.dspTime ||
+            (bgmSource != null && bgmSource.isPlaying) ||
+            (bgmLoopSource != null && bgmLoopSource.isPlaying);
+    }
+
+    private void PreloadBgmClips()
+    {
+        if (clipCatalog == null) return;
+        foreach (var entry in clipCatalog.BgmClips)
+        {
+            RequestAudioData(entry.IntroClip);
+            RequestAudioData(entry.Clip);
+        }
+    }
+
+    private static void RequestAudioData(AudioClip clip)
+    {
+        if (clip != null && clip.loadState == AudioDataLoadState.Unloaded)
+            clip.LoadAudioData();
+    }
+
+    private static bool IsBgmDataReady(DHAudioClipEntry entry)
+    {
+        return entry.Clip.loadState == AudioDataLoadState.Loaded &&
+            (entry.IntroClip == null || entry.IntroClip.loadState == AudioDataLoadState.Loaded);
+    }
+
+    private System.Collections.IEnumerator PrepareBgm(DHAudioClipEntry entry)
+    {
+        // Keep the preparation handle valid even if loading fails immediately.
+        yield return null;
+        while (!IsBgmDataReady(entry))
+        {
+            if (entry.Clip.loadState == AudioDataLoadState.Failed ||
+                (entry.IntroClip != null && entry.IntroClip.loadState == AudioDataLoadState.Failed))
+            {
+                Debug.LogWarning($"[AudioManager] Failed to load BGM '{entry.Key}'.", this);
+                pendingBgmPreparation = null;
+                currentBgmKey = null;
+                yield break;
+            }
+            yield return null;
+        }
+        pendingBgmPreparation = null;
+        ScheduleBgm(entry);
+    }
+
+    private void ScheduleBgm(DHAudioClipEntry entry)
+    {
+        AudioSettings.GetDSPBufferSize(out int bufferLength, out int bufferCount);
+        double bufferSeconds = (double)bufferLength * bufferCount / Mathf.Max(1, AudioSettings.outputSampleRate);
+        scheduledBgmStart = AudioSettings.dspTime + System.Math.Max(0.1, bufferSeconds * 2);
+        bgmSource.pitch = bgmLoopSource.pitch = 1f;
+        bgmSource.spatialBlend = bgmLoopSource.spatialBlend = 0f;
+        bgmLoopSource.outputAudioMixerGroup = bgmSource.outputAudioMixerGroup;
+        bgmLoopSource.clip = entry.Clip;
+        bgmLoopSource.loop = true;
+        if (entry.IntroClip != null)
+        {
+            // Schedule both now; no frame callback is needed at the intro/loop seam.
+            double loopStart = scheduledBgmStart + (double)entry.IntroClip.samples / entry.IntroClip.frequency;
+            bgmSource.clip = entry.IntroClip;
+            bgmSource.loop = false;
+            bgmSource.PlayScheduled(scheduledBgmStart);
+            bgmSource.SetScheduledEndTime(loopStart);
+            bgmLoopSource.PlayScheduled(loopStart);
+        }
+        else
+            bgmLoopSource.PlayScheduled(scheduledBgmStart);
     }
 
     public void PlaySfx(string key)
@@ -256,7 +352,7 @@ public sealed class AudioManager : MonoBehaviour
                 if (TryGetBgmEntry(key, out DHAudioClipEntry entry) && entry.Clip != null)
                     sceneBgmTransitionActive = !string.Equals(currentBgmKey,
                         DHAudioClipCatalog.NormalizeKey(key), System.StringComparison.OrdinalIgnoreCase)
-                        || bgmSource == null || !bgmSource.isPlaying;
+                        || !HasBgmPlayback();
             }
             else
                 sceneBgmTransitionActive = stopBgmWhenSceneHasNoBinding;
@@ -310,6 +406,12 @@ public sealed class AudioManager : MonoBehaviour
     public bool TryGetSceneBgmKey(string sceneName, out string bgmKey)
     {
         string normalizedSceneName = NormalizeSceneName(sceneName);
+        if (!string.IsNullOrWhiteSpace(overrideBgmKey) &&
+            string.Equals(overrideBgmScene, normalizedSceneName, System.StringComparison.OrdinalIgnoreCase))
+        {
+            bgmKey = overrideBgmKey;
+            return true;
+        }
         if (!string.IsNullOrWhiteSpace(normalizedSceneName) && sceneBgmBindings != null)
         {
             for (int i = 0; i < sceneBgmBindings.Count; i++)
@@ -330,6 +432,20 @@ public sealed class AudioManager : MonoBehaviour
 
         bgmKey = string.Empty;
         return false;
+    }
+
+    public void SetSceneBgmOverride(string sceneName, string key)
+    {
+        overrideBgmScene = NormalizeSceneName(sceneName);
+        overrideBgmKey = DHAudioClipCatalog.NormalizeKey(key);
+    }
+
+    public void ClearSceneBgmOverride(string sceneName)
+    {
+        if (!string.Equals(overrideBgmScene, NormalizeSceneName(sceneName), System.StringComparison.OrdinalIgnoreCase))
+            return;
+        overrideBgmScene = null;
+        overrideBgmKey = null;
     }
 
     private static bool TryGetEntryFromList(
@@ -357,9 +473,14 @@ public sealed class AudioManager : MonoBehaviour
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (Instance != this || !playBgmOnSceneLoaded)
+        if (Instance != this)
             return;
 
+        if (mode == LoadSceneMode.Single && !string.Equals(overrideBgmScene, scene.name, System.StringComparison.OrdinalIgnoreCase))
+            ClearSceneBgmOverride(overrideBgmScene);
+
+        if (!playBgmOnSceneLoaded)
+            return;
         PlayBgmForScene(scene.name);
     }
 
@@ -373,6 +494,8 @@ public sealed class AudioManager : MonoBehaviour
 
         bgmSource.playOnAwake = false;
         sfxSource.playOnAwake = false;
+        bgmLoopSource = gameObject.AddComponent<AudioSource>();
+        bgmLoopSource.playOnAwake = false;
 
         EnsureTimedSfxPool();
     }
@@ -390,6 +513,8 @@ public sealed class AudioManager : MonoBehaviour
     {
         if (bgmSource != null)
             bgmSource.volume = masterVolume * bgmVolume * currentBgmDefaultVolume * sceneBgmFadeVolume;
+        if (bgmLoopSource != null)
+            bgmLoopSource.volume = masterVolume * bgmVolume * currentBgmDefaultVolume * sceneBgmFadeVolume;
     }
 
     private float GetSfxPlaybackVolume(DHAudioClipEntry entry)

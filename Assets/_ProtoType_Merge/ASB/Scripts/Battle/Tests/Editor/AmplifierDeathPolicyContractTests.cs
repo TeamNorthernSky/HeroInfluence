@@ -37,6 +37,54 @@ public sealed class AmplifierDeathPolicyContractTests
             "율리아전 페이즈가 없어(항상 1) 첫 사망부터 시체 부활을 걸어야 합니다.");
         Assert.That(serializedParticipant.FindProperty("_corpseReviveDelayRounds").intValue, Is.EqualTo(2));
         Assert.That(serializedParticipant.FindProperty("_reviveHpRatio").floatValue, Is.EqualTo(0.5f).Within(0.001f));
+        Assert.That(serializedParticipant.FindProperty("_reviveGroupId").stringValue, Is.EqualTo("YuliaAmplifier"),
+            "두 증폭기가 모두 쓰러지면 함께 부활하도록 같은 부활 묶음이어야 합니다.");
+    }
+
+    [Test]
+    public void ComputeGroupReviveRounds_UsesEarliestOnlyWhenWholeGroupIsDown()
+    {
+        Assert.That(ComputeGroupReviveRounds(new[] { true, true }, new[] { 1, 2 }), Is.EqualTo(1),
+            "시차를 두고 모두 쓰러지면 먼저 쓰러진 쪽의 남은 라운드에 맞춰야 합니다.");
+        Assert.That(ComputeGroupReviveRounds(new[] { true, true }, new[] { 2, 2 }), Is.EqualTo(2));
+        Assert.That(ComputeGroupReviveRounds(new[] { true, false }, new[] { 2, -1 }), Is.EqualTo(-1),
+            "하나라도 살아 있으면 각자 부활해야 합니다.");
+        Assert.That(ComputeGroupReviveRounds(new[] { true, true }, new[] { 0, 2 }), Is.EqualTo(0),
+            "부활이 거절돼 0에 머문 쪽이 있으면 그 시점에 맞춰야 합니다.");
+        Assert.That(ComputeGroupReviveRounds(new[] { true, true }, new[] { -1, 2 }), Is.EqualTo(2),
+            "카운트다운이 없는(사망 셀을 모르는) 쪽은 맞출 기준에서 빠져야 합니다.");
+    }
+
+    [Test]
+    public void SyncGroupRevival_AlignsCountdownsOnlyWhenWholeGroupIsDown()
+    {
+        string groupId = "AmplifierGroup_Test_" + Guid.NewGuid().ToString("N");
+        var firstObject = new GameObject("AmplifierGroup_First_Test");
+        var secondObject = new GameObject("AmplifierGroup_Second_Test");
+
+        try
+        {
+            Component first = AddGroupMember(firstObject, groupId, roundsLeft: 1, isDead: true);
+            Component second = AddGroupMember(secondObject, groupId, roundsLeft: 2, isDead: true);
+
+            InvokePrivate(second, "SyncGroupRevival");
+            Assert.That(ReadIntProperty(first, "CorpseReviveRoundsLeft"), Is.EqualTo(1));
+            Assert.That(ReadIntProperty(second, "CorpseReviveRoundsLeft"), Is.EqualTo(1),
+                "늦게 쓰러진 증폭기가 먼저 쓰러진 쪽과 같은 라운드에 부활해야 합니다.");
+
+            SetProperty(firstObject.GetComponent(FindRuntimeType("BattleCharactor")), "IsDead", false);
+            SetPrivateField(first, "_corpseReviveRoundsLeft", -1);
+            SetPrivateField(second, "_corpseReviveRoundsLeft", 2);
+
+            InvokePrivate(second, "SyncGroupRevival");
+            Assert.That(ReadIntProperty(second, "CorpseReviveRoundsLeft"), Is.EqualTo(2),
+                "다른 증폭기가 살아 있으면 쓰러진 쪽은 자기 카운트다운으로 부활해야 합니다.");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(secondObject);
+            UnityEngine.Object.DestroyImmediate(firstObject);
+        }
     }
 
     [Test]
@@ -173,6 +221,29 @@ public sealed class AmplifierDeathPolicyContractTests
             UnityEngine.Object.DestroyImmediate(sourceObject);
             UnityEngine.Object.DestroyImmediate(blackboardObject);
         }
+    }
+
+    private static int ComputeGroupReviveRounds(bool[] isDead, int[] roundsLeft)
+    {
+        MethodInfo method = FindRuntimeType("EncounterParticipant").GetMethod(
+            "ComputeGroupReviveRounds",
+            BindingFlags.Public | BindingFlags.Static);
+        Assert.That(method, Is.Not.Null, "묶음 부활 계산 메서드를 찾지 못했습니다.");
+        return (int)method.Invoke(null, new object[] { isDead, roundsLeft });
+    }
+
+    // EditMode AddComponent는 Awake를 부르지 않으므로 _self를 직접 넣는다.
+    private static Component AddGroupMember(GameObject owner, string groupId, int roundsLeft, bool isDead)
+    {
+        Component battle = owner.AddComponent(FindRuntimeType("BattleCharactor"));
+        Component participant = owner.AddComponent(FindRuntimeType("EncounterParticipant"));
+        SetPrivateField(participant, "_self", battle);
+        SetPrivateField(participant, "_useIncapacitation", false);
+        SetPrivateField(participant, "_keepCorpseAfterDeath", true);
+        SetPrivateField(participant, "_reviveGroupId", groupId);
+        SetPrivateField(participant, "_corpseReviveRoundsLeft", roundsLeft);
+        SetProperty(battle, "IsDead", isDead);
+        return participant;
     }
 
     private static bool ReadBoolProperty(object instance, string propertyName)

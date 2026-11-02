@@ -15,6 +15,8 @@ public class CharactorAnimationController : MonoBehaviour
     private const string TriggerHit = "Hit";
     private const string BoolIsDead = "isDead";
     private const float CrossFadeDuration = 0.1f;
+    private const float TurnIdleAttackBlendSeconds = 0.08f;
+    private const float TurnIdleReturnBlendSeconds = 0.10f;
     private const float StateEnterWaitTimeoutSeconds = 0.1f;
     private const float SkillClipEndNormalizedThreshold = 0.95f;
     private const float SkillClipEndLoopGuardSeconds = 5f;
@@ -392,7 +394,10 @@ public class CharactorAnimationController : MonoBehaviour
             return;
         }
 
-        _animator.CrossFade(resolved, CrossFadeDuration);
+        if (_animator.GetLayerIndex("IdleUpperBody") >= 0)
+            _animator.CrossFadeInFixedTime(resolved, TurnIdleAttackBlendSeconds, 0, 0f);
+        else
+            _animator.CrossFade(resolved, CrossFadeDuration);
     }
 
     /// <summary>
@@ -621,7 +626,11 @@ public class CharactorAnimationController : MonoBehaviour
             return;
         }
 
-        _animator.CrossFade(StateIdle, CrossFadeDuration, 0, _idleStartNormalizedTime);
+        if (_animator.GetLayerIndex("IdleUpperBody") >= 0)
+            _animator.CrossFadeInFixedTime(StateIdle, TurnIdleReturnBlendSeconds, 0,
+                _idleStartNormalizedTime * _idleStateLengthSeconds);
+        else
+            _animator.CrossFade(StateIdle, CrossFadeDuration, 0, _idleStartNormalizedTime);
     }
 
     /// <summary>피격·사망·부활 등 범용 연출. Has Exit Time 영향을 받지 않도록 CrossFade로 즉시 전환합니다.</summary>
@@ -646,18 +655,27 @@ public class CharactorAnimationController : MonoBehaviour
                 if (GetComponent<HitKnockbackMotion>() == null)
                     gameObject.AddComponent<HitKnockbackMotion>();
                 _animator.ResetTrigger(TriggerHit);
-                _animator.CrossFade("Hit", 0.03f, 0, 0f);
+                if (_animator.GetLayerIndex("IdleUpperBody") >= 0)
+                    _animator.CrossFadeInFixedTime("Hit", 0.06f, 0, 0f);
+                else
+                    _animator.CrossFade("Hit", 0.03f, 0, 0f);
                 break;
             case "Die":
                 _animator.SetBool(BoolIsDead, true);
-                _animator.CrossFade("Dead", 0.05f, 0, 0f);
+                if (_animator.GetLayerIndex("IdleUpperBody") >= 0)
+                    _animator.CrossFadeInFixedTime("Dead", 0.07f, 0, 0f);
+                else
+                    _animator.CrossFade("Dead", 0.05f, 0, 0f);
                 break;
             case "Revive":
                 _animator.SetBool(BoolIsDead, false);
-                _animator.CrossFade(StateIdle, CrossFadeDuration, 0, _idleStartNormalizedTime);
+                PlayIdleAnimation();
                 break;
             default:
-                _animator.CrossFade(actionType.Trim(), 0.05f, 0, 0f);
+                if (_animator.GetLayerIndex("IdleUpperBody") >= 0)
+                    _animator.CrossFadeInFixedTime(actionType.Trim(), 0.07f, 0, 0f);
+                else
+                    _animator.CrossFade(actionType.Trim(), 0.05f, 0, 0f);
                 break;
         }
 

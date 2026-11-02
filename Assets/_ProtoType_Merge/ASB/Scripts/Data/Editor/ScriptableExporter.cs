@@ -169,6 +169,122 @@ namespace ASB.ExcelImport.Editor
             return (IList)Activator.CreateInstance(listType);
         }
 
+        // Update Data 전용 출력. 새 목록에 모든 행을 만든 뒤에만 기존 DataList와 바꾼다.
+        // 필드가 없거나 변환 중 예외가 나면 기존 데이터를 그대로 두고 false와 이유를 돌려준다.
+        // 내용이 같으면 바꾸지 않고 changed=false (같은 값으로 다시 저장돼 git 변경이 생기는 것을 막음).
+        // Bake(마커 경로)는 ExportAll을 그대로 쓴다.
+        public static bool TryReplaceTableData(ExcelSheetParseResult sheet, ScriptableObject tableAsset, out bool changed, out string error)
+        {
+            changed = false;
+            error = string.Empty;
+            if (sheet == null || tableAsset == null)
+            {
+                error = "Sheet or DataTable asset is missing.";
+                return false;
+            }
+
+            string rowTypeName = CodeGenerator.ToTypeBaseName(sheet.ClassName) + "Data";
+            Type rowType = FindTypeByName(rowTypeName);
+            if (rowType == null)
+            {
+                error = $"Row type was not found: {rowTypeName}";
+                return false;
+            }
+
+            FieldInfo dataListField = tableAsset.GetType().GetField("DataList", BindingFlags.Instance | BindingFlags.Public);
+            if (dataListField == null || dataListField.FieldType != typeof(List<>).MakeGenericType(rowType))
+            {
+                error = $"{tableAsset.GetType().Name}.DataList is not List<{rowTypeName}>.";
+                return false;
+            }
+
+            var fields = new FieldInfo[sheet.Names.Count];
+            for (int c = 0; c < fields.Length; c++)
+            {
+                string fieldName = CodeGenerator.SanitizeFieldName(sheet.Names[c]);
+                fields[c] = rowType.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public);
+                if (fields[c] == null)
+                {
+                    error = $"Field '{fieldName}' was not found on {rowTypeName}.";
+                    return false;
+                }
+            }
+
+            IList newList = CreateListInstance(rowType);
+            int rowIndex = 0;
+            try
+            {
+                for (; rowIndex < sheet.Rows.Count; rowIndex++)
+                {
+                    List<string> rowValues = sheet.Rows[rowIndex];
+                    object rowInstance = Activator.CreateInstance(rowType);
+                    for (int c = 0; c < fields.Length && c < rowValues.Count; c++)
+                    {
+                        fields[c].SetValue(rowInstance, ConvertCellValue(rowValues[c], fields[c].FieldType, fields[c].Name, sheet));
+                    }
+
+                    newList.Add(rowInstance);
+                }
+            }
+            catch (Exception ex)
+            {
+                error = $"데이터 {rowIndex + 1}번째 행을 변환하지 못했어요: {ex.Message}";
+                return false;
+            }
+
+            object oldList = dataListField.GetValue(tableAsset);
+            bool swapped = false;
+            try
+            {
+                string before = JsonUtility.ToJson(tableAsset);
+                dataListField.SetValue(tableAsset, newList);
+                swapped = true;
+                if (JsonUtility.ToJson(tableAsset) == before)
+                {
+                    dataListField.SetValue(tableAsset, oldList);
+                    return true;
+                }
+
+                // Dictionary 모드 테이블은 역직렬화 때 DataMap을 만들므로, 목록을 바꾼 뒤 직접 다시 만든다.
+                if (tableAsset is ISerializationCallbackReceiver receiver)
+                {
+                    receiver.OnAfterDeserialize();
+                }
+            }
+            catch (Exception ex)
+            {
+                // 교체 뒤 처리에서 오류가 나면 이전 목록으로 되돌려 결과(실패)와 메모리 상태를 맞춘다.
+                if (swapped)
+                {
+                    RestoreDataList(tableAsset, dataListField, oldList);
+                }
+
+                error = $"목록 교체 후 처리 중 오류가 나서 이전 데이터로 되돌렸어요: {ex.Message}";
+                return false;
+            }
+
+            changed = true;
+            EditorUtility.SetDirty(tableAsset);
+            Debug.Log($"[ScriptableExporter] Replaced {sheet.Rows.Count} rows -> {AssetDatabase.GetAssetPath(tableAsset)}");
+            return true;
+        }
+
+        private static void RestoreDataList(ScriptableObject tableAsset, FieldInfo dataListField, object oldList)
+        {
+            dataListField.SetValue(tableAsset, oldList);
+            if (tableAsset is ISerializationCallbackReceiver receiver)
+            {
+                try
+                {
+                    receiver.OnAfterDeserialize();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[ScriptableExporter] {tableAsset.name}: 이전 목록으로 되돌린 뒤 DataMap 재구성에 실패했어요: {ex.Message}");
+                }
+            }
+        }
+
         public static Type FindTypeByName(string typeName)
         {
             return AppDomain.CurrentDomain.GetAssemblies()
