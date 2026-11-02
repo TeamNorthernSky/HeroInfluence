@@ -3,6 +3,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class MobileEnemyRaidController : MonoBehaviour
 {
+    private const string RaidSfxKey = "Explore_Arnold_Destroy";
+
     public static MobileEnemyRaidController Instance { get; private set; }
 
     [Header("Raid Settings")]
@@ -75,6 +77,7 @@ public class MobileEnemyRaidController : MonoBehaviour
             return false;
 
         ApplyResourcePenalties();
+        AudioManager.Instance?.PlaySfx(RaidSfxKey);
         RemoveEnemy(enemy);
         return true;
     }

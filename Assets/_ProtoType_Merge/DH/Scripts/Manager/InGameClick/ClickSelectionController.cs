@@ -4,6 +4,8 @@ using UnityEngine.EventSystems;
 
 public class ClickSelectionController : MonoBehaviour
 {
+    private const string InvalidObjectClickSfxKey = "Button_Click_Fail";
+
     [Header("References")]
     [SerializeField] private Camera mainCamera;
     [SerializeField] private GridManager gridManager;
@@ -195,7 +197,10 @@ public class ClickSelectionController : MonoBehaviour
 
         Vector2Int clickedGrid = gridManager.WorldToGrid(landHit.point);
         if (gridManager.HasObstacle(clickedGrid))
+        {
+            AudioManager.Instance?.PlaySfx(InvalidObjectClickSfxKey);
             return;
+        }
 
         if (moveCommandPreviewController.TryConfirmMoveAtGrid(clickedGrid, activeMover))
         {
