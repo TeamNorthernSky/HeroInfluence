@@ -11,6 +11,7 @@ namespace JC.Tutorial
     {
         private const string Prefix = "jc.explore.guide.v2.";
         private const string PublicityCompletedKey = "KJ.Tutorial.Publicity.AfterFirstVictory";
+        private const string MissionClearSfxKey = "Tutorial_Clear";
         [Header("홍보 이후 점령전·협회 안내")]
         public TutorialOutpostObject captureOutpost;
         [SerializeField, Tooltip("레벨 재생성 후 점령 대상을 다시 찾을 기존 건물 식별자입니다.")]
@@ -277,6 +278,14 @@ namespace JC.Tutorial
         }
         private bool Seen(string key) => repository != null && repository.IsMessageSeen(Prefix + key);
         private void Mark(string key) { repository?.MarkMessageSeen(Prefix + key); }
+        private void PlayMissionClear(string mission)
+        {
+            if (!Application.isPlaying || repository == null) return;
+            string key = "mission-clear-sfx-" + mission;
+            if (Seen(key)) return;
+            Mark(key);
+            AudioManager.Instance?.PlaySfx(MissionClearSfxKey);
+        }
         private void Update() => RefreshPresentation(Time.unscaledTime);
 
         public void RefreshPresentation(float time)
@@ -305,7 +314,11 @@ namespace JC.Tutorial
             if (movementGaugePulse != null) movementGaugePulse.Suspend(false);
             if (releaseShieldPending) return;
             if (RefreshAutomaticTurnGuide(party, time)) return;
-            if (Seen("first-combat")) { RefreshPostBattleGuidance(party, time); return; }
+            if (Seen("first-combat"))
+            {
+                if (repository.LastCombatResult == CombatResult.Victory) PlayMissionClear("first-combat");
+                RefreshPostBattleGuidance(party, time); return;
+            }
             bool learningMovement = repository.CurrentTurn == 1 && !Seen("exhausted") && !Seen("restored");
             SetTurnAvailable(!learningMovement);
             if (explanationKey != null)
@@ -334,6 +347,7 @@ namespace JC.Tutorial
             if (moving) { ShowAction("moving", JcTutorialText.Get("exploreguide.004", "탐사 · 이동"), JcTutorialText.Get("explore.movingText", movingText)); HideMarker(); return; }
             if (movement.CurrentOrder >= 2 && !Seen("early-camera-explanation"))
             {
+                PlayMissionClear("first-move");
                 Explain("early-camera-explanation", JcTutorialText.Get("exploreguide.005", "카메라 이동"), JcTutorialText.Get("exploreguide.006", "마우스를 화면 가장자리로 옮기면 카메라가 이동합니다.\nW A S D 키로도 위·왼쪽·아래·오른쪽을 볼 수 있습니다.\n영웅의 이동은 목표 위치를 마우스로 클릭하세요."), null, time);
                 return;
             }
@@ -355,6 +369,7 @@ namespace JC.Tutorial
                 ShowAction("move", JcTutorialText.Get("exploreguide.012", "탐사 · 이동"), instruction);
                 ShowMarker(target, time); return;
             }
+            if (movement.CurrentOrder > 1) PlayMissionClear("movement-targets");
             int collected = 0; ItemTarget nearest = null; float distance = float.MaxValue;
             var cell = party.GetCurrentGrid();
             foreach (var item in items)
@@ -378,6 +393,7 @@ namespace JC.Tutorial
                 ShowMarker(nearest.cell, time);
                 return;
             }
+            if (items.Count > 0) PlayMissionClear("resource-collection");
             var enemies = TutorialEnemyRegistry.Instance; TutorialEnemyObject enemy = null;
             if (enemies != null)
                 foreach (var candidate in enemies.Enemies)
@@ -425,6 +441,7 @@ namespace JC.Tutorial
                     foreach (var selection in FindObjectsByType<ClickSelectionController>(FindObjectsSortMode.None))
                         if (selection.gameObject.scene == gameObject.scene) selection.ClearMovePreview();
                     selectedSince = -1; Mark("restored");
+                    PlayMissionClear("new-turn");
                 }
                 SetTurnAvailable(true);
                 if (Application.isPlaying && !Seen("new-turn-camera-view") && initialCameraMove == null)
@@ -459,6 +476,7 @@ namespace JC.Tutorial
                 state == TutorialOutpostClaimState.HeroClaimed;
             if (claimed)
             {
+                PlayMissionClear("outpost-capture");
                 JcBuildingSilhouetteFeature.SetTutorialHighlight(this, captureOutpost.transform, view.accent);
                 var associationFocus = TutorialBuildingFocusTarget.Resolve(this, captureOutpost.transform,
                     view.focusFrame != null ? view.focusFrame.rectTransform.parent as RectTransform : null);
@@ -521,6 +539,7 @@ namespace JC.Tutorial
                     return;
                 }
                 Mark("camera-scroll-practice");
+                PlayMissionClear("camera-scroll-practice");
             }
             SetTurnAvailable(true);
             if (!Seen("capture-move-explanation"))

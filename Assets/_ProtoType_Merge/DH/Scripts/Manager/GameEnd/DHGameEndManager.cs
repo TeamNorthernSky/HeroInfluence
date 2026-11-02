@@ -9,6 +9,8 @@ public enum DHGameEndResult
 
 public class DHGameEndManager : MonoBehaviour
 {
+    private const string GameOverSfxKey = "Explore_Defeat";
+
     [Header("Panels")]
     [SerializeField] private GameObject clearPanel;
     [SerializeField] private GameObject gameOverPanel;
@@ -33,7 +35,10 @@ public class DHGameEndManager : MonoBehaviour
         if (result == DHGameEndResult.Clear)
             LoadClearEndingNow();
         else
+        {
+            AudioManager.Instance?.PlaySfx(GameOverSfxKey);
             ShowPanel(gameOverPanel);
+        }
     }
 
     public void ReturnToTitleNow()

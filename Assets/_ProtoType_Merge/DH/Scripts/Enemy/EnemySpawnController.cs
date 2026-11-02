@@ -4,6 +4,8 @@ using UnityEngine.Serialization;
 
 public class EnemySpawnController : MonoBehaviour
 {
+    private const string SpawnWarningSfxKey = "PopupWarning";
+
     private enum SpawnGroupSource
     {
         None,
@@ -76,7 +78,10 @@ public class EnemySpawnController : MonoBehaviour
         SpawnGroupResolution groupResolution = ResolveSpawnEnemyGroupKey(zoneId, enemyGroupKey);
         if (groupResolution.IsValid &&
             TrySpawnAtGrid(spawnGrid, placementKey, groupResolution, MapProgressKey.NormalizeSegment(zoneId), out spawnedEnemy))
+        {
+            AudioManager.Instance?.PlaySfx(SpawnWarningSfxKey);
             return true;
+        }
 
         placementKey = string.Empty;
         spawnedEnemy = null;
