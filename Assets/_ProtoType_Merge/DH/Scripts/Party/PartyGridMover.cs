@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(PartyComposition))]
 public class PartyGridMover : MonoBehaviour
 {
-    private const string MoveLoopSfxKey = "Explore_Move";
+    private const string MoveSfxKey = "Explore_Move";
 
     [Header("References")]
     [SerializeField] private GridManager gridManager;
@@ -18,6 +18,10 @@ public class PartyGridMover : MonoBehaviour
     [SerializeField] private int maxMovePoints = 10;
     [SerializeField] private bool usePersistentState = true;
 
+    [Header("Move Audio")]
+    [SerializeField, Min(0.01f)] private float footstepDuration = 0.25f;
+    [SerializeField, Min(0.01f)] private float footstepInterval = 0.3f;
+
     private readonly Queue<Vector2Int> pathQueue = new Queue<Vector2Int>();
     private bool isMoving;
     private bool stopRequested;
@@ -27,6 +31,7 @@ public class PartyGridMover : MonoBehaviour
     private PartyIdentity cachedIdentity;
     private bool restoredPersistentPosition;
     private bool canRefreshHeroUnionStartAfterLevelLoad;
+    private Coroutine footstepRoutine;
     private const string ScenePartyPrefabKey = "scene";
     private const string DefaultStartHeroUnionZoneId = "zone_001";
 
@@ -62,7 +67,7 @@ public class PartyGridMover : MonoBehaviour
     {
         LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
         LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
-        StopMoveLoopSfx();
+        StopMoveFootsteps();
     }
 
     // [JC 추가 260511] 위치 영속화: PartyPersistentData.LastGrid가 있으면 그 위치로 복원
@@ -566,21 +571,30 @@ public class PartyGridMover : MonoBehaviour
 
         isMoving = moving;
         if (isMoving)
-            PlayMoveLoopSfx();
+            footstepRoutine = StartCoroutine(PlayMoveFootsteps());
         else
-            StopMoveLoopSfx();
+            StopMoveFootsteps();
 
         MovementStateChanged?.Invoke(isMoving);
     }
 
-    private static void PlayMoveLoopSfx()
+    private IEnumerator PlayMoveFootsteps()
     {
-        AudioManager.Instance?.PlayLoopingSfx(MoveLoopSfxKey);
+        var interval = new WaitForSeconds(Mathf.Max(0.01f, footstepInterval));
+        while (isMoving && isActiveAndEnabled)
+        {
+            if (Time.timeScale > 0f)
+                AudioManager.Instance?.PlaySfxForDuration(MoveSfxKey, footstepDuration);
+            yield return interval;
+        }
+        footstepRoutine = null;
     }
 
-    private static void StopMoveLoopSfx()
+    private void StopMoveFootsteps()
     {
-        AudioManager.Instance?.StopLoopingSfx(MoveLoopSfxKey);
+        if (footstepRoutine != null)
+            StopCoroutine(footstepRoutine);
+        footstepRoutine = null;
     }
 
     private void NotifyPathUpdated()
