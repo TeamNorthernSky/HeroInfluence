@@ -4,12 +4,16 @@ using UnityEngine;
 /// <summary>Maps exploration character templates to the dialogue table's independent hero IDs.</summary>
 public static class ExplorationHeroDialogue
 {
+    public enum Situation { GateOpened = 6, Idle = 7, BaseArrival = 8 }
     private static Dictionary<int, string[]> rows;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Reset() => rows = null;
 
     public static string GetMovementMessage(PartyUnitState unit) => GetMessage(unit, 1);
+
+    public static string GetSituationMessage(PartyUnitState unit, Situation situation)
+        => GetMessage(unit, (int)situation);
 
     public static string GetResourceMessage(PartyUnitState unit, ResourceType type)
     {
@@ -23,23 +27,33 @@ public static class ExplorationHeroDialogue
         }
     }
 
+    public static int GetTemplateId(PartyUnitState unit)
+    {
+        if (unit == null) return 0;
+        int storedId = GetTemplateId(unit.UnitIndex);
+        if (storedId > 0) return storedId;
+        string key = unit.UnitTemplateKey;
+        return int.TryParse(key, out int templateId) ? templateId : 0;
+    }
+
+    public static int GetTemplateId(int unitIndex)
+    {
+        var repo = PersistentUnitRepository.Instance;
+        return repo != null && repo.TryGetUnit(unitIndex, out var data) && data != null &&
+            int.TryParse(data.UnitTemplateKey, out int templateId) ? templateId : 0;
+    }
+
     private static string GetMessage(PartyUnitState unit, int column)
     {
-        if (unit == null) return null;
-        string key = unit.UnitTemplateKey;
-        var repo = PersistentUnitRepository.Instance;
-        if (string.IsNullOrWhiteSpace(key) && repo != null && repo.TryGetUnit(unit.UnitIndex, out var data) && data != null)
-            key = data.UnitTemplateKey;
-
-        if (!int.TryParse(key, out int templateId)) return null;
+        int templateId = GetTemplateId(unit);
         int heroId;
-        // PlayerUnitDataTable.ClassIndex: Justice, Lumina, Black Bullet, Nekoming.
+        // Use the same hero keys as the party panel portrait lookup.
         switch (templateId)
         {
             case 10001: heroId = 0; break;
-            case 10004: heroId = 1; break;
-            case 10002: heroId = 2; break;
-            case 10003: heroId = 3; break;
+            case 10002: heroId = 1; break;
+            case 10003: heroId = 2; break;
+            case 10004: heroId = 3; break;
             default: return null;
         }
 

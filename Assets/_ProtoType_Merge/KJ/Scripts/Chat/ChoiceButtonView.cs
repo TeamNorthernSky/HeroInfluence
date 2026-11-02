@@ -17,10 +17,17 @@ public class ChoiceButtonView : MonoBehaviour
     [SerializeField] private Sprite plainSprite;
     [SerializeField] private Image endConversationIcon;
 
+    private const float EndIconFrameDuration = 0.4f;
+    private GameObject endIconPressed;
+    private float endIconAnimationStartedAt;
+    private bool animateEndIcon;
+
     public string Text => label != null ? label.text : string.Empty;
 
     public void SetIndex(int index)
     {
+        animateEndIcon = false;
+        SetEndIconPressed(false);
         if (endConversationIcon != null) endConversationIcon.gameObject.SetActive(false);
         bool numbered = index > 0;
         if (indexLabel != null)
@@ -48,11 +55,49 @@ public class ChoiceButtonView : MonoBehaviour
     public void ShowEndConversationIcon()
     {
         if (endConversationIcon == null) return;
+        SetEndIconPressed(false);
+        endIconAnimationStartedAt = Time.unscaledTime;
+        animateEndIcon = endIconPressed != null;
         endConversationIcon.gameObject.SetActive(true);
         var layout = GetComponent<VerticalLayoutGroup>();
         if (layout != null)
             layout.padding = new RectOffset(128, layout.padding.right,
                 layout.padding.top, layout.padding.bottom);
+    }
+
+    private void OnEnable()
+    {
+        endIconAnimationStartedAt = Time.unscaledTime;
+        SetEndIconPressed(false);
+    }
+
+    private void OnDisable()
+    {
+        SetEndIconPressed(false);
+    }
+
+    private void Update()
+    {
+        if (!animateEndIcon) return;
+        if (endConversationIcon == null || !endConversationIcon.gameObject.activeInHierarchy)
+        {
+            SetEndIconPressed(false);
+            return;
+        }
+
+        int frame = Mathf.FloorToInt((Time.unscaledTime - endIconAnimationStartedAt) / EndIconFrameDuration);
+        SetEndIconPressed(frame % 2 != 0);
+    }
+
+    private void SetEndIconPressed(bool pressed)
+    {
+        if (endIconPressed == null)
+        {
+            var target = transform.Find("EndConversationIcon_Pressed");
+            if (target != null) endIconPressed = target.gameObject;
+        }
+        if (endIconPressed != null && endIconPressed.activeSelf != pressed)
+            endIconPressed.SetActive(pressed);
     }
 
     /// <summary>숫자 단축키도 실제 버튼의 활성 조건과 클릭 이벤트를 사용한다.</summary>

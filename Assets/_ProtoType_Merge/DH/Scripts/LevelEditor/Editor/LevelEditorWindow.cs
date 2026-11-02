@@ -303,6 +303,7 @@ public class LevelEditorWindow : EditorWindow
         if (brushType == LevelEditorBrushType.GateBlocker)
         {
             DrawGatePrefabSelector(serializedController);
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateFlipModel180"), new GUIContent("Flip Model 180"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateId"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateFirstZoneId"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateSecondZoneId"));
@@ -1416,7 +1417,8 @@ public class LevelEditorWindow : EditorWindow
                 context.SelectedGateSecondZoneId,
                 anchor,
                 context.SelectedGatePrefabKey,
-                gateFootprint);
+                gateFootprint,
+                context.SelectedGateFlipModel180);
             sceneStatus = $"Placed Gate '{context.SelectedGateId}' ({context.SelectedGatePrefabKey}) at {anchor}.";
             CommitLevelDataChange(context);
             return;
@@ -1623,6 +1625,7 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedWorldEventType = controller.SelectedWorldEventType;
         context.SelectedWorldEventRotation = controller.SelectedWorldEventRotation;
         context.SelectedGatePrefabKey = controller.SelectedGatePrefabKey;
+        context.SelectedGateFlipModel180 = controller.SelectedGateFlipModel180;
         context.SelectedGateId = controller.SelectedGateId;
         context.SelectedGateFirstZoneId = controller.SelectedGateFirstZoneId;
         context.SelectedGateSecondZoneId = controller.SelectedGateSecondZoneId;
@@ -2984,6 +2987,7 @@ public class LevelEditorWindow : EditorWindow
         public DHWorldEventType SelectedWorldEventType;
         public WorldEventRotation SelectedWorldEventRotation;
         public string SelectedGatePrefabKey;
+        public bool SelectedGateFlipModel180;
         public string SelectedGateId;
         public string SelectedGateFirstZoneId;
         public string SelectedGateSecondZoneId;

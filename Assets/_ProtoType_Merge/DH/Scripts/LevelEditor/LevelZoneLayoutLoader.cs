@@ -352,6 +352,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 Vector2Int anchorGrid = placement.GridPosition + offset;
                 Vector3 worldPosition = gatePrefab.GetRootPositionForAnchor(gridManager, anchorGrid);
                 GateFootprint gateVisual = Instantiate(gatePrefab, worldPosition, gatePrefab.transform.rotation, gateRootObject.transform);
+                if (gateVisual.TryGetComponent(out GateVisualController visualController))
+                    visualController.SetModelFlipped(placement.FlipModel180);
                 gateVisual.SyncAnchorFromTransform();
                 blockers.Add(gateVisual.gameObject);
             }

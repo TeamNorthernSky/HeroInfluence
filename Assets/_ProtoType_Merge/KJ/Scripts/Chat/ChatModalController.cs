@@ -352,7 +352,8 @@ public class ChatModalController : MonoBehaviour
         if (waitingForRewardClose)
         {
             if (Time.frameCount == briefingEndShownFrame || ModalManager.Top != gameObject) return;
-            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape) ||
+                (Input.GetMouseButtonDown(0) && IsOutsideChatPanel(Input.mousePosition)))
                 briefingEndButton?.ClickFromShortcut();
             return;
         }
@@ -368,6 +369,16 @@ public class ChatModalController : MonoBehaviour
         if (IsPointerOverControl()) return; // 버튼·스크롤바 조작은 대사 진행으로 취급하지 않음
 
         RunChatAction(() => manager.Advance());
+    }
+
+    private bool IsOutsideChatPanel(Vector2 screenPosition)
+    {
+        var panel = scrollRect != null ? scrollRect.transform.parent as RectTransform : null;
+        if (panel == null || !panel.gameObject.activeInHierarchy) return false;
+        var canvas = panel.GetComponentInParent<Canvas>();
+        var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera : null;
+        return !RectTransformUtility.RectangleContainsScreenPoint(panel, screenPosition, camera);
     }
 
     private void HandleChoiceShortcut()

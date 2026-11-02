@@ -10,6 +10,8 @@ public sealed class GateCameraFocusController : MonoBehaviour
     [SerializeField, Min(0f)] private float moveDuration = 0.35f;
     [SerializeField, Min(0f)] private float holdDuration = 0.5f;
     [SerializeField, Min(0f)] private float returnDuration = 0.35f;
+    [Tooltip("World-space offset along screen up on the ground plane. Positive values frame the gate lower on screen.")]
+    [SerializeField] private float focusVerticalOffset = 2f;
 
     private sealed class Change
     {
@@ -128,7 +130,7 @@ public sealed class GateCameraFocusController : MonoBehaviour
                 if (cameraFollower != null && focusGate != null)
                 {
                     ownsCameraFocus = true;
-                    yield return cameraFollower.PlayTemporaryFocus(focusGate.GetFocusWorldPosition(),
+                    yield return cameraFollower.PlayTemporaryFocus(GetPresentationFocus(focusGate),
                         moveDuration, holdDuration, returnDuration, () => current.Reveal(true),
                         () => !isActiveAndEnabled || DHGameEndState.IsEnding ||
                               SceneFadeController.HideCursorDuringTransition,
@@ -156,6 +158,12 @@ public sealed class GateCameraFocusController : MonoBehaviour
             (party != null && party.IsMoving) ||
             (cameraFollower != null && (cameraFollower.IsExternalInputLocked ||
                                        cameraFollower.IsEventFocusMoving || cameraFollower.IsTemporaryFocusActive));
+    }
+
+    private Vector3 GetPresentationFocus(GateRuntimeController gate)
+    {
+        Vector3 screenUpOnGround = Vector3.ProjectOnPlane(cameraFollower.transform.up, Vector3.up).normalized;
+        return gate.GetFocusWorldPosition() + screenUpOnGround * focusVerticalOffset;
     }
 
     private GateRuntimeController SelectFocusGate(Change change)
