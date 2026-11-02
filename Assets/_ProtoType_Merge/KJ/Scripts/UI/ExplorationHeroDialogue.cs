@@ -4,12 +4,16 @@ using UnityEngine;
 /// <summary>Maps exploration character templates to the dialogue table's independent hero IDs.</summary>
 public static class ExplorationHeroDialogue
 {
+    public enum Situation { GateOpened = 6, Idle = 7, BaseArrival = 8 }
     private static Dictionary<int, string[]> rows;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Reset() => rows = null;
 
     public static string GetMovementMessage(PartyUnitState unit) => GetMessage(unit, 1);
+
+    public static string GetSituationMessage(PartyUnitState unit, Situation situation)
+        => GetMessage(unit, (int)situation);
 
     public static string GetResourceMessage(PartyUnitState unit, ResourceType type)
     {

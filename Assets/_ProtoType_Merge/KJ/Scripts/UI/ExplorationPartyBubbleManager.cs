@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>Shows exploration party notices for rejected moves and field item interactions.</summary>
+/// <summary>Shows hero-specific exploration notices for movement, resources, gates, idle time, and base arrivals.</summary>
 [DisallowMultipleComponent]
 public sealed class ExplorationPartyBubbleManager : MonoBehaviour
 {
@@ -18,8 +18,9 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
     private float expiresAt;
     private string currentMessage;
     private int movementBalloonTemplateId;
-    private readonly Queue<(PartyGridMover party, ResourceType type)> pendingResources =
-        new Queue<(PartyGridMover party, ResourceType type)>();
+    private readonly ExplorationBubbleConditions conditions = new ExplorationBubbleConditions();
+    private readonly Queue<(PartyGridMover party, ResourceType? type, ExplorationHeroDialogue.Situation? situation)> pendingNotices =
+        new Queue<(PartyGridMover party, ResourceType? type, ExplorationHeroDialogue.Situation? situation)>();
 
     public int LastSpeakerUnitIndex { get; private set; }
     public bool IsShowingInPartyPanel => panelBubble.IsShowing;
@@ -59,7 +60,8 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
     {
         MoveCommandPreviewController.AnyDestinationUnreachable -= OnDestinationUnreachable;
         PartyInteractionController.FieldResourceCollected -= NotifyResourceInteraction;
-        ClearResourceNotices();
+        ClearPendingNotices();
+        conditions.Reset();
         HideCurrent();
     }
 
@@ -88,16 +90,20 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
 
     private void Update()
     {
+        conditions.Tick(QueueSituation);
         if (ClickSelectionController.Active == null)
         {
             HideCurrent();
-            ClearResourceNotices();
+            ClearPendingNotices();
             return;
         }
-        if (visibleBubble == null && pendingResources.Count > 0)
+        if (visibleBubble == null && pendingNotices.Count > 0 && !ExplorationBubbleConditions.IsBlocked())
         {
-            var notice = pendingResources.Dequeue();
-            ShowForParty(notice.party, null, notice.type);
+            var notice = pendingNotices.Dequeue();
+            bool valid = !notice.situation.HasValue || conditions.IsCurrent(notice.party, notice.situation.Value);
+            bool shown = valid && ShowForParty(notice.party, null, notice.type, notice.situation);
+            if (notice.situation.HasValue)
+                conditions.NoticeFinished(notice.party, notice.situation.Value, shown);
         }
         if (Time.unscaledTime < nextRefresh) return;
         nextRefresh = Time.unscaledTime + .5f;
@@ -139,12 +145,15 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
     {
         if (!isActiveAndEnabled || ClickSelectionController.Active == null ||
             party == null || !party.gameObject.activeInHierarchy) return;
-        pendingResources.Enqueue((party, type));
+        pendingNotices.Enqueue((party, type, null));
     }
 
-    private void ClearResourceNotices()
+    private void QueueSituation(PartyGridMover party, ExplorationHeroDialogue.Situation situation)
+        => pendingNotices.Enqueue((party, null, situation));
+
+    private void ClearPendingNotices()
     {
-        pendingResources.Clear();
+        pendingNotices.Clear();
     }
 
     public static string ResourceMessage(ResourceType type)
@@ -156,7 +165,8 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
     public bool ShowForParty(PartyGridMover party, string message = null)
         => ShowForParty(party, message, null);
 
-    private bool ShowForParty(PartyGridMover party, string message, ResourceType? resourceType)
+    private bool ShowForParty(PartyGridMover party, string message, ResourceType? resourceType,
+        ExplorationHeroDialogue.Situation? situation = null)
     {
         HideCurrent();
         currentMessage = message;
@@ -175,11 +185,16 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
         movementBalloonTemplateId = ExplorationHeroDialogue.GetTemplateId(speaker);
         if (string.IsNullOrWhiteSpace(currentMessage))
         {
-            currentMessage = resourceType.HasValue
+            currentMessage = situation.HasValue
+                ? ExplorationHeroDialogue.GetSituationMessage(speaker, situation.Value)
+                : resourceType.HasValue
                 ? ExplorationHeroDialogue.GetResourceMessage(speaker, resourceType.Value)
                 : ExplorationHeroDialogue.GetMovementMessage(speaker);
             if (string.IsNullOrWhiteSpace(currentMessage))
+            {
+                if (situation.HasValue) { HideCurrent(); return false; }
                 currentMessage = resourceType.HasValue ? ResourceMessage(resourceType.Value) : visibleBubble.Bubble.movementMessage;
+            }
         }
         candidates.Clear();
         visibleCandidates.Clear();
