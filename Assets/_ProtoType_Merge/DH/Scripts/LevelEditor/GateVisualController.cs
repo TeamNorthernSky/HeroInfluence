@@ -5,6 +5,7 @@ using UnityEngine;
 public sealed class GateVisualController : MonoBehaviour
 {
     [SerializeField] private Animator animator;
+    [SerializeField] private Transform modelRoot;
     [SerializeField] private string openState = "Open";
     [SerializeField] private string closedState = "Close";
 
@@ -13,6 +14,12 @@ public sealed class GateVisualController : MonoBehaviour
     private bool targetOpen;
 
     public bool IsAnimating { get; private set; }
+
+    public void SetModelFlipped(bool flipped)
+    {
+        if (modelRoot != null)
+            modelRoot.localRotation = Quaternion.Euler(0f, flipped ? 180f : 0f, 0f);
+    }
 
     public void SetOpen(bool open, bool immediate)
     {

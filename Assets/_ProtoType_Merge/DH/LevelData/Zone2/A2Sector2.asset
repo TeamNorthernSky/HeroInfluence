@@ -13915,6 +13915,7 @@ MonoBehaviour:
     blockerCells:
     - {x: 2, y: 19}
     - {x: 2, y: 20}
+    flipModel180: 1
   enemySpawnPointPlacements:
   - gridPosition: {x: 38, y: 26}
     zoneId: zone_002

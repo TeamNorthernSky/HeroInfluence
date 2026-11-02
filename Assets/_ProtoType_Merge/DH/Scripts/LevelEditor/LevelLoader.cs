@@ -210,6 +210,8 @@ public class LevelLoader : MonoBehaviour
             {
                 Vector3 worldPosition = gatePrefab.GetRootPositionForAnchor(gridManager, placement.GridPosition);
                 GateFootprint gateVisual = Instantiate(gatePrefab, worldPosition, gatePrefab.transform.rotation, gateRootObject.transform);
+                if (gateVisual.TryGetComponent(out GateVisualController visualController))
+                    visualController.SetModelFlipped(placement.FlipModel180);
                 gateVisual.SyncAnchorFromTransform();
                 blockers.Add(gateVisual.gameObject);
             }

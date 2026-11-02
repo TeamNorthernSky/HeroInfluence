@@ -47,6 +47,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private DHWorldEventType selectedWorldEventType = DHWorldEventType.Consume;
     [SerializeField] private WorldEventRotation selectedWorldEventRotation;
     [SerializeField] private string selectedGatePrefabKey = "horizon";
+    [SerializeField] private bool selectedGateFlipModel180;
     [SerializeField] private string selectedGateId = "gate_001";
     [SerializeField] private string selectedGateFirstZoneId = "zone_001";
     [SerializeField] private string selectedGateSecondZoneId = "zone_002";
@@ -124,6 +125,7 @@ public class LevelEditorController : MonoBehaviour
         : selectedWorldEventType;
     public string SelectedGatePrefabKey => string.IsNullOrWhiteSpace(selectedGatePrefabKey) ? string.Empty : selectedGatePrefabKey.Trim();
     public string SelectedGateId => selectedGateId;
+    public bool SelectedGateFlipModel180 => selectedGateFlipModel180;
     public string SelectedGateFirstZoneId => selectedGateFirstZoneId;
     public string SelectedGateSecondZoneId => selectedGateSecondZoneId;
     public string SelectedEnemySpawnZoneId => EnemySpawnPoint.NormalizeSpawnZoneId(selectedEnemySpawnZoneId);
@@ -331,7 +333,8 @@ public class LevelEditorController : MonoBehaviour
             selectedGateSecondZoneId,
             grid,
             SelectedGatePrefabKey,
-            blockerCells);
+            blockerCells,
+            selectedGateFlipModel180);
     }
 
     private void OnDrawGizmos()
