@@ -247,10 +247,10 @@ MonoBehaviour:
     UnitMaxHP: 100
     UnitATK: 7
     UnitDEF: 6
-    CriticalRate: 0.25
+    CriticalRate: 0.2
     CounterRate: 0.2
     ReduceRate: 0.2
-    Speed: 1
+    Speed: 3
     EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
       {EnemySkill1Value} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
@@ -307,10 +307,10 @@ MonoBehaviour:
     UnitMaxHP: 100
     UnitATK: 7
     UnitDEF: 6
-    CriticalRate: 0.25
+    CriticalRate: 0.2
     CounterRate: 0.2
     ReduceRate: 0.2
-    Speed: 1
+    Speed: 3
     EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
       {EnemySkill1Value} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
@@ -366,10 +366,10 @@ MonoBehaviour:
     UnitMaxHP: 100
     UnitATK: 7
     UnitDEF: 6
-    CriticalRate: 0.25
+    CriticalRate: 0.2
     CounterRate: 0.2
     ReduceRate: 0.2
-    Speed: 1
+    Speed: 3
     EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
       {EnemySkill1Value} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
@@ -426,10 +426,10 @@ MonoBehaviour:
     UnitMaxHP: 100
     UnitATK: 7
     UnitDEF: 6
-    CriticalRate: 0.25
+    CriticalRate: 0.2
     CounterRate: 0.2
     ReduceRate: 0.2
-    Speed: 1
+    Speed: 3
     EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
       {EnemySkill1Value} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
