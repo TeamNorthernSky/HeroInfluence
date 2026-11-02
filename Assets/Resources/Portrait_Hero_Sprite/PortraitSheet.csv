@@ -47,7 +47,7 @@ Speaker,소년,UI_Sprite/UI_Chatting/UI_profile_NPC_boy
 Speaker,할머니,UI_Sprite/UI_Chatting/UI_profile_NPC_grandma
 Speaker,검문소빌런,Portrait_Enemy_Sprite/UI_profile_villian_zako
 Speaker,겁많은빌런,Portrait_Enemy_Sprite/UI_profile_villian_zako
-Speaker,겁에질린인질,Portrait_Hero_Sprite/UI_profile_hero_unselected
+Speaker,겁에질린인질,UI_Sprite/UI_Chatting/UI_profile_NPC_female
 Speaker,경비시스템,Portrait_Hero_Sprite/UI_profile_hero_unselected
 Speaker,고용빌런,Portrait_Enemy_Sprite/UI_profile_villian_zako
 Speaker,공돌이,Portrait_Enemy_Sprite/UI_profile_villian_zako
@@ -68,9 +68,9 @@ Speaker,시위대대표,Portrait_Enemy_Sprite/UI_profile_villian_zako
 Speaker,식당주인,Portrait_Hero_Sprite/UI_profile_hero_unselected
 Speaker,아는척하는빌런,Portrait_Enemy_Sprite/UI_profile_villian_zako
 Speaker,약탈꾼,Portrait_Enemy_Sprite/UI_profile_villian_zako
-Speaker,어이가없는인질,Portrait_Hero_Sprite/UI_profile_hero_unselected
+Speaker,어이가없는인질,UI_Sprite/UI_Chatting/UI_profile_NPC_male
 Speaker,은행빌런,Portrait_Enemy_Sprite/UI_profile_villian_zako
-Speaker,인질,Portrait_Hero_Sprite/UI_profile_hero_unselected
+Speaker,인질,UI_Sprite/UI_Chatting/UI_profile_NPC_male
 Speaker,진압대장,Portrait_Hero_Sprite/UI_profile_hero_unselected
 Speaker,치를떠는빌런,Portrait_Enemy_Sprite/UI_profile_villian_zako
 Speaker,편의점빌런,Portrait_Enemy_Sprite/UI_profile_villian_zako

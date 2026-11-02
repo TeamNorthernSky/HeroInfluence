@@ -5,6 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(PartyUnitState))]
 public sealed class ExplorationUnitBubble : MonoBehaviour
 {
+    [Tooltip("캐릭터의 로컬 좌표 기준 말풍선 위치입니다. 캐릭터의 회전과 크기를 따르며, 표시 중에도 조절할 수 있습니다.")]
+    public Vector3 PositionOffset = new Vector3(-1f, 1.5f, 0.4f);
+
     private ExplorationActionPointBubble bubble;
 
     public ExplorationActionPointBubble Bubble => bubble;
@@ -36,10 +39,10 @@ public sealed class ExplorationUnitBubble : MonoBehaviour
         return true;
     }
 
-    public bool Show(Camera camera, string message = null)
+    public bool Show(Camera camera, string message = null, int movementTemplateId = 0)
     {
         if (bubble == null || camera == null || !gameObject.activeInHierarchy) return false;
-        bubble.Present(transform, camera, message);
+        bubble.Present(transform, camera, message, movementTemplateId);
         return true;
     }
 

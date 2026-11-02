@@ -97,6 +97,28 @@ public class TutorialCutSceneManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>The visible skip popup owns Space/Enter, regardless of the selected button.</summary>
+    public static bool TryGetSkipConfirmButton(out Button confirmButton)
+    {
+        confirmButton = null;
+        foreach (var cutscene in FindObjectsByType<TutorialCutSceneManager>(FindObjectsSortMode.None))
+        {
+            if (!cutscene.isActiveAndEnabled || cutscene.gameObject.scene != SceneManager.GetActiveScene() ||
+                (cutscene.currentCutSceneState != CutScene.Opening && cutscene.currentCutSceneState != CutScene.Ending) ||
+                cutscene.skipPopup == null || !cutscene.skipPopup.activeInHierarchy) continue;
+
+            if (!cutscene.transitioning)
+                foreach (var button in cutscene.skipPopup.GetComponentsInChildren<Button>(true))
+                    if (button.name == "Accept Button")
+                    {
+                        confirmButton = button;
+                        break;
+                    }
+            return true;
+        }
+        return false;
+    }
+
     private bool IsPointerOverButton()
     {
         if (EventSystem.current == null) return false;

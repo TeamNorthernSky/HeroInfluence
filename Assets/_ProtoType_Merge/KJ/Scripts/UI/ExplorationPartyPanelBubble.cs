@@ -41,7 +41,7 @@ public sealed class ExplorationPartyPanelBubble
             if (Application.isPlaying) Object.DontDestroyOnLoad(bubble.gameObject);
         }
         UnitIndex = unitIndex;
-        bubble.PresentBesideProfile(profile, message);
+        bubble.PresentBesideProfile(profile, message, ExplorationHeroDialogue.GetTemplateId(unitIndex));
         return IsShowing;
     }
 
