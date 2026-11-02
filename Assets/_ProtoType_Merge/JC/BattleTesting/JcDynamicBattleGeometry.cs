@@ -87,6 +87,64 @@ namespace JC.BattleTesting
             var result=new List<Vertex>();if(input.Count==0)return result;var a=input[input.Count-1];bool insideA=greater?a.p[axis]>=boundary:a.p[axis]<=boundary;
             foreach(var b in input){bool insideB=greater?b.p[axis]>=boundary:b.p[axis]<=boundary;if(insideA!=insideB)result.Add(Vertex.Lerp(a,b,(boundary-a.p[axis])/(b.p[axis]-a.p[axis])));if(insideB)result.Add(b);a=b;insideA=insideB;}return result;
         }
+        // Distances are in field space, before the encounter's rotation and scale.
+        static Vector3 RoadwardOffset(Vector3 foot, float width, JcDynamicBattleSource.Road[] roads)
+        {
+            Vector2 position = new Vector2(foot.x, foot.z);
+            Vector2 nearest = Vector2.zero;
+            float best = float.PositiveInfinity;
+            Vector2 horizontal = Vector2.zero, vertical = Vector2.zero;
+            foreach (var road in roads)
+            {
+                float half = road.size * .5f;
+                if (half <= 0f) continue;
+                Vector2 delta = new Vector2(
+                    Mathf.Clamp(position.x, road.center.x - half, road.center.x + half),
+                    Mathf.Clamp(position.y, road.center.z - half, road.center.z + half)) - position;
+                float distance = delta.magnitude;
+                if (distance < best) { best = distance; nearest = delta; }
+                if (delta.y == 0 && (horizontal == Vector2.zero || distance < horizontal.magnitude))
+                    horizontal = delta;
+                if (delta.x == 0 && (vertical == Vector2.zero || distance < vertical.magnitude))
+                    vertical = delta;
+            }
+            // Adjacent perpendicular road edges describe the same intersection corner.
+            if (best > 0 && horizontal != Vector2.zero && vertical != Vector2.zero &&
+                Mathf.Max(horizontal.magnitude, vertical.magnitude) <= best + width)
+                nearest = horizontal.normalized + vertical.normalized;
+            Vector2 offset = nearest.normalized * width;
+            return new Vector3(offset.x, 0, offset.y);
+        }
+
+        static Matrix4x4 BattlePropMatrix(JcDynamicBattleSource.Part part, Matrix4x4 fieldToBattle,
+            JcDynamicBattleSource.Road[] roads, Vector3[] vertices)
+        {
+            var placement = part.matrix;
+            if (part.name == "Streetlight")
+            {
+                Vector3 foot = placement.MultiplyPoint3x4(Vector3.zero);
+                foot.y = part.bounds.min.y;
+                float baseTop = foot.y + part.bounds.size.y * .02f;
+                // The square footplate is centred on the pole. Its corner radius gives
+                // its side length irrespective of the lamp's orientation.
+                float radiusSquared = 0f;
+                foreach (var vertex in vertices)
+                {
+                    Vector3 point = placement.MultiplyPoint3x4(vertex);
+                    if (point.y > baseTop) continue;
+                    float x = point.x - foot.x, z = point.z - foot.z;
+                    radiusSquared = Mathf.Max(radiusSquared, x * x + z * z);
+                }
+                const float previousScale = .6f;
+                const float lampScale = previousScale * .7f;
+                float previousWidth = Mathf.Sqrt(2f * radiusSquared) * previousScale;
+                Vector3 offset = RoadwardOffset(foot, previousWidth, roads);
+                placement = Matrix4x4.TRS(foot * (1f - lampScale) + offset, Quaternion.identity,
+                    Vector3.one * lampScale) * placement;
+            }
+            return fieldToBattle * placement;
+        }
+
         static Mesh Terrain(JcDynamicBattleSource.Part part,Matrix4x4 transform,float extent)
         {
             var src=part.mesh;var verts=src.vertices;var normals=src.normals;var uv=src.uv;var data=new List<Vector4>();src.GetUVs(1,data);var colors=src.colors;
@@ -223,7 +281,7 @@ namespace JC.BattleTesting
                 {
                     Mesh mesh;
                     if(part.terrain)mesh=Terrain(part,transform*part.matrix,extent);
-                    else {mesh=UnityEngine.Object.Instantiate(part.mesh);var v=mesh.vertices;var matrix=transform*part.matrix;for(int i=0;i<v.Length;i++)v[i]=matrix.MultiplyPoint3x4(v[i]);mesh.vertices=v;var normals=mesh.normals;var normalMatrix=matrix.inverse.transpose;for(int i=0;i<normals.Length;i++)normals[i]=normalMatrix.MultiplyVector(normals[i]).normalized;mesh.normals=normals;mesh.RecalculateBounds();mesh.RecalculateTangents();}
+                    else {mesh=UnityEngine.Object.Instantiate(part.mesh);var v=mesh.vertices;var matrix=BattlePropMatrix(part,transform,source.roads,v);for(int i=0;i<v.Length;i++)v[i]=matrix.MultiplyPoint3x4(v[i]);mesh.vertices=v;var normals=mesh.normals;var normalMatrix=matrix.inverse.transpose;for(int i=0;i<normals.Length;i++)normals[i]=normalMatrix.MultiplyVector(normals[i]).normalized;mesh.normals=normals;mesh.RecalculateBounds();mesh.RecalculateTangents();}
                     if(mesh==null)continue;output.Add(part.name,mesh,part.materials,part.terrain,part.renderer);
                 }
                 output.Report=$"조우 {settings.encounterPosition} → 기준점 {p} / 이동 {Vector3.Distance(new Vector3(settings.encounterPosition.x,p.y,settings.encounterPosition.z),p):F2} / 방향 {(placement.alongX?"X":"Z")} / 동일 확대 {scale:F2} / 원형 보존 외형 {selected.Length}";

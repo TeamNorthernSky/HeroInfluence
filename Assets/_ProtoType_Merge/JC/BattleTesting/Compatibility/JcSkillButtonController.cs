@@ -199,7 +199,11 @@ public class JcSkillButtonController : MonoBehaviour
                 bool wired = shown != null && !locked && unit.availableSkills != null &&
                     unit.availableSkills.Exists(s => s != null && s.skillIndex == shown.skillIndex && s.acquireLevel <= unit.Level);
                 if (slot.button != null) slot.button.interactable = wired && !locked;
-                if (slot.name != null) slot.name.text = shown != null ? shown.skillName : "-";
+                if (slot.name != null)
+                {
+                    slot.name.text = shown != null ? shown.skillName : "-";
+                    slot.name.fontStyle = shown != null && !locked && wired ? FontStyles.Bold : FontStyles.Normal;
+                }
                 if (slot.icon != null)
                 {
                     // '+' 변형은 별도 스킬 ID이며 협회 강화 단계와 혼용하지 않습니다.

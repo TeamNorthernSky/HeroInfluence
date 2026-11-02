@@ -54,7 +54,7 @@ namespace JC.Environment {
    BattleSource=Resources.Load<JcOutdoorBattleLightingProfile>(JcOutdoorBattleLightingProfile.ResourceName);
    if(BattleSource==null){Debug.LogError("야외 전투 보정 프로필 누락",this);return;}
    BattleDraft=Instantiate(BattleSource);
-   BattleDraft.hideFlags=HideFlags.HideAndDontSave;
+   BattleDraft.hideFlags=HideFlags.DontSave;
   }
   bool battle, indoor, windowInitialized;
   float windowLevel, windowTarget, windowFrom, windowElapsed;

@@ -27,13 +27,13 @@ MonoBehaviour:
     screenTint: {r: 1, g: 1, b: 1, a: 1}
   - sunlight: 1
     sunlightTint: {r: 1, g: 1, b: 1, a: 1}
-    ambient: 1
+    ambient: 1.6
     characterBrightness: 1
-    exposure: 0
-    screenTint: {r: 1, g: 1, b: 1, a: 1}
-  - sunlight: 1
+    exposure: 0.25
+    screenTint: {r: 0.9025157, g: 0.9153941, b: 1, a: 1}
+  - sunlight: 0.95
     sunlightTint: {r: 1, g: 1, b: 1, a: 1}
-    ambient: 1
-    characterBrightness: 1
-    exposure: 0
-    screenTint: {r: 1, g: 1, b: 1, a: 1}
+    ambient: 1.61
+    characterBrightness: 1.17
+    exposure: 0.12
+    screenTint: {r: 0.8459119, g: 0.84997636, b: 1, a: 1}
