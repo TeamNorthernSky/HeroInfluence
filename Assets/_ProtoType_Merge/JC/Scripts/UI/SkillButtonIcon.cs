@@ -12,6 +12,8 @@ public class SkillButtonIcon : MonoBehaviour
     [SerializeField] private SkillButtonType skillType = SkillButtonType.ClassSkill;
     [Tooltip("비우면 같은 GameObject의 Image 사용")]
     [SerializeField] private Image iconImage;
+    [Tooltip("현재 아군이 장착한 코어의 스킬명을 표시할 버튼 제목입니다.")]
+    [SerializeField] private TMPro.TMP_Text weaponSkillTitle;
     [SerializeField] private BattleFlowManager battleFlowManager;
 
     private void Awake()
@@ -41,6 +43,8 @@ public class SkillButtonIcon : MonoBehaviour
     private void ApplyIcon(BattleCharactor unit)
     {
         if (iconImage == null || unit == null || !unit.IsPlayer) return;
+        if (skillType == SkillButtonType.WeaponSkill && weaponSkillTitle != null)
+            weaponSkillTitle.text = unit.EquippedWeaponData?.WeaponSkillName ?? string.Empty;
         Sprite sp = Resolve(unit);
         // 장착 정보나 리소스가 없으면 이전 캐릭터의 아이콘을 남기지 않습니다.
         iconImage.sprite = sp;
@@ -65,12 +69,6 @@ public class SkillButtonIcon : MonoBehaviour
 
         WeaponData wd = unit.EquippedWeaponData;
         if (wd == null || wd.WeaponSkillIndex <= 0) return null;
-        int wIdx = unit.EquippedWeaponIndex > 0
-            ? unit.EquippedWeaponIndex
-            : (unit.SourceData != null ? unit.SourceData.CurrentWeaponIndex : 0);
-        int wl = (!unit.UsesTutorialEquipment && gm != null && gm.Workshop != null && uIdx > 0)
-            ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(wIdx))
-            : 1;
-        return Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl);
+        return Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, unit.EquippedWeaponLevel);
     }
 }
