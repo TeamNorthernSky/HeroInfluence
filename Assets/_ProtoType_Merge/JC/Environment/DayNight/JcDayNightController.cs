@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 namespace JC.Environment {
  [ExecuteAlways,DisallowMultipleComponent]
  public sealed class JcDayNightController : MonoBehaviour {
+  private const string TurnEndSfxKey="Explore_TurnEnd";
   public const string ScenePath="Assets/_ProtoType_Merge/Scenes/DHScene_3.unity";
   [SerializeField,Tooltip("시작 시각, 턴당 시간, 연출 길이와 시간대 조명 설정입니다.")] public JcDayNightProfile profile;
   [SerializeField,Tooltip("편집 모드에서만 아래 시각을 미리 봅니다. 해제하면 원래 환경을 복원합니다.")] public bool preview;
@@ -131,6 +132,7 @@ namespace JC.Environment {
    var timeline=Settings.BuildTransitionTimeline(from,to);int segment=1;
    float duration=timeline[timeline.Length-1];
    try{
+    AudioManager.Instance?.PlaySfxForDuration(TurnEndSfxKey,duration);
     ApplyHour(from);
     while(elapsed<duration){
      if(!isActiveAndEnabled || DHGameEndState.IsEnding || SceneManager.GetActiveScene()!=gameObject.scene)yield break;
