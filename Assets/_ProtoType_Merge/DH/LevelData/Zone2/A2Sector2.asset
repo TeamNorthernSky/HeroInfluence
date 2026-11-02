@@ -12738,29 +12738,8 @@ MonoBehaviour:
   eventPlacements: []
   enemyPlacements: []
   decorativeObjectPlacements:
-  - gridPosition: {x: 32, y: 30}
-    prefabKey: BGHigh001
-    rotation: 0
   - gridPosition: {x: 32, y: 28}
     prefabKey: BGOffice001
-    rotation: 0
-  - gridPosition: {x: 39, y: 22}
-    prefabKey: BGOffice001
-    rotation: 0
-  - gridPosition: {x: 33, y: 22}
-    prefabKey: BGOffice001
-    rotation: 0
-  - gridPosition: {x: 30, y: 22}
-    prefabKey: BGOffice002
-    rotation: 0
-  - gridPosition: {x: 36, y: 22}
-    prefabKey: BGOffice002
-    rotation: 0
-  - gridPosition: {x: 27, y: 30}
-    prefabKey: BGHigh002
-    rotation: 0
-  - gridPosition: {x: 27, y: 27}
-    prefabKey: BGHigh001
     rotation: 0
   - gridPosition: {x: 27, y: 24}
     prefabKey: BGOffice001
@@ -12779,21 +12758,6 @@ MonoBehaviour:
     rotation: 0
   - gridPosition: {x: 16, y: 30}
     prefabKey: BGHigh002
-    rotation: 0
-  - gridPosition: {x: 7, y: 25}
-    prefabKey: BGHigh002
-    rotation: 0
-  - gridPosition: {x: 13, y: 25}
-    prefabKey: BGHigh002
-    rotation: 0
-  - gridPosition: {x: 10, y: 25}
-    prefabKey: BGHigh001
-    rotation: 0
-  - gridPosition: {x: 17, y: 25}
-    prefabKey: BGHigh001
-    rotation: 0
-  - gridPosition: {x: 22, y: 25}
-    prefabKey: BGHigh001
     rotation: 0
   - gridPosition: {x: 22, y: 30}
     prefabKey: BGHigh002
@@ -12827,39 +12791,6 @@ MonoBehaviour:
     rotation: 0
   - gridPosition: {x: 6, y: 6}
     prefabKey: BGStore002
-    rotation: 0
-  - gridPosition: {x: 17, y: 17}
-    prefabKey: BGHouse001
-    rotation: 0
-  - gridPosition: {x: 22, y: 14}
-    prefabKey: BGHouse001
-    rotation: 0
-  - gridPosition: {x: 17, y: 11}
-    prefabKey: BGHouse001
-    rotation: 0
-  - gridPosition: {x: 17, y: 14}
-    prefabKey: BGHouse002
-    rotation: 0
-  - gridPosition: {x: 22, y: 17}
-    prefabKey: BGHouse002
-    rotation: 0
-  - gridPosition: {x: 22, y: 11}
-    prefabKey: BGHouse002
-    rotation: 0
-  - gridPosition: {x: 30, y: 17}
-    prefabKey: BGOffice001
-    rotation: 0
-  - gridPosition: {x: 36, y: 17}
-    prefabKey: BGOffice001
-    rotation: 0
-  - gridPosition: {x: 39, y: 17}
-    prefabKey: BGOffice002
-    rotation: 0
-  - gridPosition: {x: 33, y: 17}
-    prefabKey: BGOffice002
-    rotation: 0
-  - gridPosition: {x: 27, y: 17}
-    prefabKey: BGOffice002
     rotation: 0
   - gridPosition: {x: 27, y: 14}
     prefabKey: BGStore001
@@ -13800,6 +13731,78 @@ MonoBehaviour:
   - gridPosition: {x: 42, y: 5}
     prefabKey: Streetlight
     rotation: 0
+  - gridPosition: {x: 22, y: 17}
+    prefabKey: BGHouse002
+    rotation: 90
+  - gridPosition: {x: 22, y: 11}
+    prefabKey: BGHouse002
+    rotation: 90
+  - gridPosition: {x: 17, y: 14}
+    prefabKey: BGHouse002
+    rotation: 270
+  - gridPosition: {x: 22, y: 14}
+    prefabKey: BGHouse001
+    rotation: 90
+  - gridPosition: {x: 17, y: 11}
+    prefabKey: BGHouse001
+    rotation: 270
+  - gridPosition: {x: 17, y: 17}
+    prefabKey: BGHouse001
+    rotation: 270
+  - gridPosition: {x: 10, y: 25}
+    prefabKey: BGHigh001
+    rotation: 180
+  - gridPosition: {x: 17, y: 25}
+    prefabKey: BGHigh001
+    rotation: 180
+  - gridPosition: {x: 7, y: 25}
+    prefabKey: BGHigh002
+    rotation: 180
+  - gridPosition: {x: 13, y: 25}
+    prefabKey: BGHigh002
+    rotation: 180
+  - gridPosition: {x: 22, y: 25}
+    prefabKey: BGHigh001
+    rotation: 180
+  - gridPosition: {x: 27, y: 27}
+    prefabKey: BGHigh001
+    rotation: 270
+  - gridPosition: {x: 32, y: 30}
+    prefabKey: BGHigh001
+    rotation: 270
+  - gridPosition: {x: 27, y: 30}
+    prefabKey: BGHigh002
+    rotation: 270
+  - gridPosition: {x: 33, y: 22}
+    prefabKey: BGOffice001
+    rotation: 180
+  - gridPosition: {x: 39, y: 22}
+    prefabKey: BGOffice001
+    rotation: 180
+  - gridPosition: {x: 30, y: 22}
+    prefabKey: BGOffice002
+    rotation: 180
+  - gridPosition: {x: 36, y: 22}
+    prefabKey: BGOffice002
+    rotation: 180
+  - gridPosition: {x: 33, y: 17}
+    prefabKey: BGOffice002
+    rotation: 180
+  - gridPosition: {x: 27, y: 17}
+    prefabKey: BGOffice002
+    rotation: 180
+  - gridPosition: {x: 39, y: 17}
+    prefabKey: BGOffice002
+    rotation: 180
+  - gridPosition: {x: 30, y: 17}
+    prefabKey: BGOffice001
+    rotation: 180
+  - gridPosition: {x: 36, y: 17}
+    prefabKey: BGOffice001
+    rotation: 180
+  - gridPosition: {x: 13, y: 17}
+    prefabKey: Streetlight
+    rotation: 180
   tutorialObjectPlacements: []
   mainEventPlacements:
   - gridPosition: {x: 4, y: 27}

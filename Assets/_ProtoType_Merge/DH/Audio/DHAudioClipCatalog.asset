@@ -269,3 +269,143 @@ MonoBehaviour:
     defaultVolume: 0.6
     loop: 0
     allowOverlap: 1
+  - key: Popup
+    clip: {fileID: 8300000, guid: 4851e099e95e9ac4d801b6170d258f7f, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Popup_Drag
+    clip: {fileID: 8300000, guid: 578f9075e177ad646a0fa1b9aa3242f8, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: ChangeScene
+    clip: {fileID: 8300000, guid: 1cb191b3797bfa24dae7b79f8bb0b063, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_SkillSelect
+    clip: {fileID: 8300000, guid: ec7073404e55791419bb54bbb56794b2, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_SkillSelectCancel
+    clip: {fileID: 8300000, guid: b4e2612a037511a45b07e86bd9f0b63a, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_BarCounting01
+    clip: {fileID: 8300000, guid: 0990d8ad425a86c44853a2413df1daaa, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_BarCounting02
+    clip: {fileID: 8300000, guid: a23b005359235e844b1c655e6c1a5720, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_Retire
+    clip: {fileID: 8300000, guid: 0be3466fa65088348884b23e5253d2ee, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_Ulia_Skill01
+    clip: {fileID: 8300000, guid: d655a96d3ddc10c4d8c1091aaadc581b, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_Ulia_Skill02
+    clip: {fileID: 8300000, guid: 0dde5d8b06617684692dbff06b450307, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_Ulia_Skill03
+    clip: {fileID: 8300000, guid: 192022ed13b20c040861e8b5e420f765, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_Ulia_Attacked
+    clip: {fileID: 8300000, guid: 0d297d0fbfea000499ec02140ca174ea, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_Arnold_Move
+    clip: {fileID: 8300000, guid: 1b9b2d656ee4c824b9db2089d68d8dde, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_Arnold_Destroy
+    clip: {fileID: 8300000, guid: 80f8bee1fe4b05b44ad96b17d973b2ae, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_MoveFail
+    clip: {fileID: 8300000, guid: 8ecda5945a20bd144a6696ffa7c8535d, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: PopupWarning
+    clip: {fileID: 8300000, guid: 628845ea69f53644db050397e3aba5d3, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_Defeat
+    clip: {fileID: 8300000, guid: be69085073e9d614cb80832b3339b9b5, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_TurnEnd
+    clip: {fileID: 8300000, guid: 9ca50b93dc8b9b445a793d743678622c, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_TextBubbleNPC
+    clip: {fileID: 8300000, guid: 8f483bb7a3df25848bafeb5f3e345e2d, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_TextBubbleCar
+    clip: {fileID: 8300000, guid: 1078f4aa04e5e9a4085245389319141c, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_TextBubbleBox
+    clip: {fileID: 8300000, guid: 5de94d3b6f745444e8bc2ee9c4b98afa, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_Barricade_Up
+    clip: {fileID: 8300000, guid: a4bfc2cafbe92b34185b17cabc7f1b07, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Explore_Barricade_Down
+    clip: {fileID: 8300000, guid: f700e572e56d9274783a47f8c02871a3, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Tutorial_Clear
+    clip: {fileID: 8300000, guid: 81bf1e66f6a322a4e848e449eff41645, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Tutorial_TextBubble
+    clip: {fileID: 8300000, guid: bf8c43e3a2a71a04ab12c33b01bf191d, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Association_Build
+    clip: {fileID: 8300000, guid: a37cf7f2be4311d43a4d50eeeb25a745, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_Move
+    clip: {fileID: 8300000, guid: 89434139bc9e73e46a20a153864f486e, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_Ulia_Skill04
+    clip: {fileID: 8300000, guid: 37a972de367833b44ac285143373a586, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1

@@ -6,7 +6,10 @@ public class MobileEnemyRaidController : MonoBehaviour
     public static MobileEnemyRaidController Instance { get; private set; }
 
     [Header("Raid Settings")]
-    [SerializeField, Min(0)] private int moneyPenalty = 500;
+    [SerializeField, Min(0)] private int moneyPenalty = 2000;
+    [SerializeField, Min(0)] private int chipPenalty = 3;
+    [SerializeField, Min(0)] private int crystalPenalty = 3;
+    [SerializeField, Min(0)] private int supplyPenalty = 3;
     [SerializeField] private bool destroyEnemyAfterRaid = true;
 
     [Header("References")]
@@ -71,22 +74,29 @@ public class MobileEnemyRaidController : MonoBehaviour
         if (gridManager == null || !gridManager.IsAdjacentToHeroUnion(enemy.GetCurrentGrid(), heroUnion))
             return false;
 
-        ApplyMoneyPenalty();
+        ApplyResourcePenalties();
         RemoveEnemy(enemy);
         return true;
     }
 
-    private void ApplyMoneyPenalty()
+    private void ApplyResourcePenalties()
     {
-        if (moneyPenalty <= 0)
-            return;
-
         EconomyManager economy = GameManager.Instance != null ? GameManager.Instance.Economy : null;
         if (economy == null)
             return;
 
-        int currentMoney = economy.Get(ResourceType.Money);
-        economy.Set(ResourceType.Money, Mathf.Max(0, currentMoney - moneyPenalty));
+        ApplyPenalty(economy, ResourceType.Money, moneyPenalty);
+        ApplyPenalty(economy, ResourceType.Chip, chipPenalty);
+        ApplyPenalty(economy, ResourceType.Crystal, crystalPenalty);
+        ApplyPenalty(economy, ResourceType.Supply, supplyPenalty);
+    }
+
+    private static void ApplyPenalty(EconomyManager economy, ResourceType type, int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        economy.Set(type, Mathf.Max(0, economy.Get(type) - amount));
     }
 
     private void RemoveEnemy(EnemyGridMover enemy)
