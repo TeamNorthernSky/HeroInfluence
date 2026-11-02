@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 6207889040856470142}
   - component: {fileID: 2382002667043095403}
   - component: {fileID: 5130905012270186966}
+  - component: {fileID: 1595895910837032353}
   m_Layer: 8
   m_Name: Unit_Blaster_10002
   m_TagString: Untagged
@@ -612,3 +613,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name:
   m_EditorClassIdentifier:
+--- !u!114 &1595895910837032353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210115611748303271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ba2819a26fea5b479c246cbca04e9da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blendSeconds: 0.25

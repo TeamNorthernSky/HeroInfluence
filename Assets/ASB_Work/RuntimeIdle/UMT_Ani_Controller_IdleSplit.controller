@@ -52,23 +52,6 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!114 &-8090348129670822592
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b27026a40671544aa119ca80dec256f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetLayerName: IdleUpperBody
-  activeStateNames:
-  - Idle
-  blendInSeconds: 0.15
-  blendOutSeconds: 0.15
 --- !u!1102 &-7712224063118235126
 AnimatorState:
   serializedVersion: 6
@@ -90,33 +73,6 @@ AnimatorState:
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
   m_Motion: {fileID: 1827226128182048838, guid: 97cd8db16ad7fbf4ba1f154af9041b88,
-    type: 3}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
---- !u!1102 &-7550623502967439963
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Idle_Upper
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 1827226128182048838, guid: 45b03afa4f184aa46abc3a48fff137ed,
     type: 3}
   m_Tag: 
   m_SpeedParameter: 
@@ -202,28 +158,6 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1107 &-4806256280303800591
-AnimatorStateMachine:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: IdleUpperBody
-  m_ChildStates:
-  - serializedVersion: 1
-    m_State: {fileID: -7550623502967439963}
-    m_Position: {x: 200, y: 0, z: 0}
-  m_ChildStateMachines: []
-  m_AnyStateTransitions: []
-  m_EntryTransitions: []
-  m_StateMachineTransitions: {}
-  m_StateMachineBehaviours: []
-  m_AnyStatePosition: {x: 50, y: 20, z: 0}
-  m_EntryPosition: {x: 50, y: 120, z: 0}
-  m_ExitPosition: {x: 800, y: 120, z: 0}
-  m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: -7550623502967439963}
 --- !u!1102 &-4777925664477478673
 AnimatorState:
   serializedVersion: 6
@@ -245,7 +179,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: b8f1fa9d6979ebb49bbab6196de16c55, type: 2}
+  m_Motion: {fileID: 7400000, guid: 5249b9e2ec9655f498ea789ad1d4e279, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -378,6 +312,12 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
+  - m_Name: TurnIdle
+    m_Type: 1
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -392,6 +332,67 @@ AnimatorController:
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
   - serializedVersion: 5
+    m_Name: IdleUpperBody
+    m_StateMachine: {fileID: 2453795453341713144}
+    m_Mask: {fileID: 31900000, guid: 824027aa4865dbe4e81b97a429b8892d, type: 2}
+    m_Motions:
+    - serializedVersion: 2
+      m_State: {fileID: -4777925664477478673}
+      m_Motion: {fileID: 2696047219421144715}
+    - serializedVersion: 2
+      m_State: {fileID: -748023593815680882}
+      m_Motion: {fileID: 1827226128182048838, guid: c14c4a9a3cf9def47bce6683df484de8,
+        type: 3}
+    - serializedVersion: 2
+      m_State: {fileID: 3369468470026703319}
+      m_Motion: {fileID: 1827226128182048838, guid: 7bb18492668c57e42b79a0fc1526aafd,
+        type: 3}
+    - serializedVersion: 2
+      m_State: {fileID: 4977751589087454409}
+      m_Motion: {fileID: 7400000, guid: 9aefbcdbfea20d744a7e8918c1c30efe, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: -5487721832922942535}
+      m_Motion: {fileID: 7400000, guid: c9861354363ac3f498f7250a90622cdf, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: -999661766892828352}
+      m_Motion: {fileID: 7400000, guid: f76799e2c94758445bad2f097563f4cf, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: 9206375157783771001}
+      m_Motion: {fileID: 7400000, guid: 33ca7766708351340a03e62f199fed77, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: 4628125448253456567}
+      m_Motion: {fileID: 7400000, guid: c42a8346e2230a044b85f63034685045, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: -5916318258499745130}
+      m_Motion: {fileID: 7400000, guid: 77c2b6db3fb3e5e479c6124af2f19c28, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: -5560176892940785564}
+      m_Motion: {fileID: 7400000, guid: 54466ea8fde4d904c89a89cecbbebf19, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: -8868793084276902251}
+      m_Motion: {fileID: 7400000, guid: 782ef9dbdd385fc4bb6b1e200ba45f41, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: -8404499542992936912}
+      m_Motion: {fileID: 7400000, guid: 94a60ab5abdcee94e9194f8eb06c9a79, type: 2}
+    - serializedVersion: 2
+      m_State: {fileID: -7712224063118235126}
+      m_Motion: {fileID: 1827226128182048838, guid: 97cd8db16ad7fbf4ba1f154af9041b88,
+        type: 3}
+    - serializedVersion: 2
+      m_State: {fileID: 247458038495323647}
+      m_Motion: {fileID: 1827226128182048838, guid: a08b912756fc5f64e9ef10923ddd730d,
+        type: 3}
+    - serializedVersion: 2
+      m_State: {fileID: 5713286656916070781}
+      m_Motion: {fileID: 7400000, guid: 5914733a19ec45945903a544748ad0e0, type: 2}
+    m_Behaviours: []
+    m_BlendingMode: 0
+    m_SyncedLayerIndex: 0
+    m_DefaultWeight: 1
+    m_IKPass: 0
+    m_SyncedLayerAffectsTiming: 1
+    m_Controller: {fileID: 9100000}
+  - serializedVersion: 5
     m_Name: FixWrist
     m_StateMachine: {fileID: -4528496506328560971}
     m_Mask: {fileID: 31900000, guid: a82b214b4609de74d99abf54cd2ca99e, type: 2}
@@ -400,18 +401,6 @@ AnimatorController:
     m_BlendingMode: 0
     m_SyncedLayerIndex: -1
     m_DefaultWeight: 1
-    m_IKPass: 0
-    m_SyncedLayerAffectsTiming: 0
-    m_Controller: {fileID: 9100000}
-  - serializedVersion: 5
-    m_Name: IdleUpperBody
-    m_StateMachine: {fileID: -4806256280303800591}
-    m_Mask: {fileID: 31900000, guid: 824027aa4865dbe4e81b97a429b8892d, type: 2}
-    m_Motions: []
-    m_Behaviours: []
-    m_BlendingMode: 0
-    m_SyncedLayerIndex: -1
-    m_DefaultWeight: 0
     m_IKPass: 0
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
@@ -501,13 +490,44 @@ AnimatorStateMachine:
   - {fileID: 9176881418349759531}
   m_EntryTransitions: []
   m_StateMachineTransitions: {}
-  m_StateMachineBehaviours:
-  - {fileID: -8090348129670822592}
+  m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 730, y: 230, z: 0}
   m_EntryPosition: {x: -20, y: 170, z: 0}
   m_ExitPosition: {x: -270, y: 220, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: -4777925664477478673}
+--- !u!206 &2696047219421144715
+BlendTree:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: UpperIdle_TurnBlend
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 1827226128182048838, guid: 45b03afa4f184aa46abc3a48fff137ed,
+      type: 3}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: Blend
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 3250495d957b9da48be9991cbb8203ea, type: 2}
+    m_Threshold: 1
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: Blend
+    m_Mirror: 0
+  m_BlendParameter: TurnIdle
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 1
+  m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
 --- !u!1102 &3369468470026703319
 AnimatorState:
   serializedVersion: 6
