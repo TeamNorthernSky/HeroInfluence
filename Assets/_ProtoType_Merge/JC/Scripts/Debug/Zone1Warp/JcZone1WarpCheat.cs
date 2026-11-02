@@ -19,7 +19,9 @@ namespace JC.DebugTools
         [Tooltip("Shift를 누른 채 Q를 세 번 누를 수 있는 제한 시간입니다.")]
         [SerializeField, Min(.1f)] float shortcutSeconds = 1f;
         static JcZone1WarpCheat instance;
-        int taps, sceneHandle;
+        int taps, sceneHandle, zoneNumber;
+        KeyCode previousKey;
+        int tapScene;
         int plannedZoneEnemyLevel;
         float firstTap;
         bool active, choosingCell, applying;
@@ -66,7 +68,15 @@ namespace JC.DebugTools
             }
             // 미발동 상태에서는 읽기 전용 키 조회와 치트 내부 카운터만 사용합니다. Input.ResetInputAxes 등 입력 소비/변경 금지.
             if (!Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift)) { taps = 0; return; }
-            if (!Input.GetKeyDown(KeyCode.Q)) return;
+            var scene = SceneManager.GetActiveScene();
+            if (scene.name != "DHScene_3") { taps = 0; return; }
+            bool q = Input.GetKeyDown(KeyCode.Q), p = Input.GetKeyDown(KeyCode.P);
+            if (!q && !p) return;
+            if (q && p) { taps = 0; return; }
+            var key = q ? KeyCode.Q : KeyCode.P;
+            if (previousKey != key || scene.handle != tapScene) taps = 0;
+            previousKey = key;
+            tapScene = scene.handle;
             var focused = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             if (focused != null && (focused.GetComponent<TMPro.TMP_InputField>() != null || focused.GetComponent<UnityEngine.UI.InputField>() != null))
             { taps = 0; return; }
@@ -74,14 +84,14 @@ namespace JC.DebugTools
             if (taps == 0 || now - firstTap > shortcutSeconds) { taps = 0; firstTap = now; }
             if (++taps < 3) return;
             taps = 0;
-            try { Open(); }
+            try { Open(key == KeyCode.P); }
             catch (Exception e) { Debug.LogWarning($"[JC 구간 테스트] {e.Message}"); Close(false); }
         }
 
         // Shift+Q 3회가 충족된 뒤에만 호출합니다. 일반 탐험 초기화나 다른 기능에서 호출하지 마세요.
-        void Open()
+        void Open(bool raiseRank)
         {
-            if (ModalManager.HasAny || WorldInputGate.IsTurnResolving || SceneFadeController.HideCursorDuringTransition || DHGameEndState.IsEnding)
+            if (GateCameraFocusController.IsBusy || DHGameStateRestoreService.IsRestoring || ModalManager.HasAny || WorldInputGate.IsTurnResolving || SceneFadeController.HideCursorDuringTransition || DHGameEndState.IsEnding)
                 throw new InvalidOperationException("탐험 중 다른 창을 닫고 대기 상태에서 사용해 주세요.");
             if (ChatManager.Instance != null && ChatManager.Instance.IsRunning ||
                 DHWorldEventRuntimeManager.Instance != null && DHWorldEventRuntimeManager.Instance.IsRunning ||
@@ -99,15 +109,19 @@ namespace JC.DebugTools
             if (EventScriptCatalog.Instance == null || DHEventStateRepository.Instance == null ||
                 MapProgressRepository.Instance == null || PersistentUnitRepository.Instance == null || PartyPersistentRepository.Instance == null)
                 throw new InvalidOperationException("진행 데이터가 준비되지 않았습니다.");
-            if (DHEventStateRepository.Instance.GetFlag("Flag_MainQuestBoss1Complete"))
-                throw new InvalidOperationException("이 치트는 1구역 점령전 완료 전에만 사용할 수 있습니다.");
             ResolveZone();
-            if (!zoneBounds.Contains(party.GetCurrentGrid())) throw new InvalidOperationException("1구역 안에서만 사용할 수 있습니다.");
+
             var id = party.GetComponent<PartyIdentity>();
             if (id == null || !PartyPersistentRepository.Instance.TryGetParty(id.PartyId, out partyData) || partyData.UnitIndices.Count == 0)
                 throw new InvalidOperationException("전투 파티 데이터를 찾을 수 없습니다.");
+            if (raiseRank)
+            {
+                RaisePartyRank();
+                return;
+            }
+            bool warpOnly = DHEventStateRepository.Instance.GetFlag($"Flag_MainQuestBoss{zoneNumber}Complete");
             foreach (int unit in partyData.UnitIndices)
-                if (!PersistentUnitRepository.Instance.TryGetUnit(unit, out var data) || data == null || data.IsIncapacitated || data.CurrentHp <= 0)
+                if (!PersistentUnitRepository.Instance.TryGetUnit(unit, out var data) || data == null || (!warpOnly && (data.IsIncapacitated || data.CurrentHp <= 0)))
                     throw new InvalidOperationException("파티 전원을 회복시킨 후 사용해 주세요. 생략 전투는 전원 생존 승리 기준입니다.");
             viewCamera = Camera.main;
             if (viewCamera == null) throw new InvalidOperationException("탐사 카메라를 찾을 수 없습니다.");
@@ -131,28 +145,62 @@ namespace JC.DebugTools
             ShowChoices();
         }
 
+        void RaisePartyRank()
+        {
+            var growth = DHCsvTemplateCatalog.Instance?.GetUnitGrowthTemplates();
+            int target = int.MaxValue;
+            if (growth != null)
+                foreach (var row in growth)
+                    if (row != null && row.Rank == "SSS") target = Mathf.Min(target, row.Level);
+            if (target == int.MaxValue) throw new InvalidOperationException("최고 랭크 성장 데이터를 찾을 수 없습니다.");
+            var repo = PersistentUnitRepository.Instance;
+            foreach (int id in partyData.UnitIndices)
+                if (!repo.TryGetUnit(id, out var unit) || unit == null)
+                    throw new InvalidOperationException("파티원 성장 데이터를 찾을 수 없습니다.");
+            bool changed = false;
+            foreach (int id in partyData.UnitIndices)
+            {
+                repo.TryGetUnit(id, out var unit);
+                if (unit.Level >= target) continue;
+                float missingHp = Mathf.Max(0f, unit.IngameStats.HP - unit.CurrentHp);
+                bool down = unit.IsIncapacitated || unit.CurrentHp <= 0f;
+                repo.ApplyLevelUp(id, target - unit.Level);
+                // 정식 직접 레벨업은 완전 회복도 수행합니다. 랭크 치트에서는 기존 부상을 보존합니다.
+                float damage = down ? unit.CurrentHp : Mathf.Min(unit.CurrentHp, missingHp);
+                if (damage > 0f) repo.ApplyEventRewardStats(id, 0, 0, 0, 0, -damage);
+                changed = true;
+            }
+            if (!changed) return;
+            PartyRepositorySync.ApplyUnitsToScene(partyData.UnitIndices);
+            foreach (var hud in FindObjectsByType<ExplorationHeroBoxController>(FindObjectsSortMode.None)) hud.Refresh();
+            DHTurnStartSnapshotStore.CaptureTurnStartSnapshot();
+            Debug.Log($"[JC 탐사 치트] 현재 파티 최고 랭크 적용 (Lv.{target}).");
+        }
+
         void ResolveZone()
         {
             var layout = FindFirstObjectByType<LevelZoneLayoutLoader>();
-            if (layout == null) throw new InvalidOperationException("1구역 레이아웃을 찾을 수 없습니다.");
+            if (layout == null) throw new InvalidOperationException("구역 레이아웃을 찾을 수 없습니다.");
             foreach (var zone in layout.LoadedZones)
             {
-                if (EnemySpawnPoint.ResolveZoneNumber(zone.ZoneId) != 1) continue;
+                int number = EnemySpawnPoint.ResolveZoneNumber(zone.ZoneId);
+                if (number != 1 && number != 2 || !new RectInt(zone.Anchor, zone.Size).Contains(party.GetCurrentGrid())) continue;
+                zoneNumber = number;
                 level = zone.LevelData; anchor = zone.Anchor; zoneBounds = new RectInt(zone.Anchor, zone.Size);
                 if (level != null) return;
             }
-            throw new InvalidOperationException("로드된 1구역 데이터가 없습니다.");
+            throw new InvalidOperationException("현재 파티가 있는 구역을 찾을 수 없습니다.");
         }
 
         void ShowChoices()
         {
-            int stage = JcZone1WarpRoute.NextStage(Flag);
+            int stage = JcZone1WarpRoute.NextStage(Flag, zoneNumber);
             if (stage == 0) { BeginDestination(); return; }
             var options = new List<JcZone1WarpRoute>();
-            foreach (var route in JcZone1WarpRoute.Routes)
-                if (route.Stage == stage && !MapProgressRepository.Instance.IsMainEventCompleted(route.EventKey) && FindEvent(route.EventKey) != null)
+            foreach (var route in zoneNumber == 2 ? JcZone1WarpRoute.Zone2Routes : JcZone1WarpRoute.Routes)
+                if (route.Stage == stage && route.AllowsChoice(Flag) && !MapProgressRepository.Instance.IsMainEventCompleted(route.EventKey) && FindEvent(route.EventKey) != null)
                     options.Add(route);
-            ui.ShowChoices($"1구역 구간 테스트 · 분기 {stage}", BuildSummary(), options, route =>
+            ui.ShowChoices($"{zoneNumber}구역 구간 테스트 · 분기 {stage}", BuildSummary(), options, route =>
             {
                 try { selected.Add(route); RebuildPlan(); ShowChoices(); }
                 catch (Exception e) { selected.Remove(route); RebuildPlan(); ui.SetStatus(e.Message); }
@@ -166,7 +214,7 @@ namespace JC.DebugTools
                 RebuildPlan(); BuildCells();
                 if (safeCells.Count == 0) throw new InvalidOperationException("안전하게 이동할 수 있는 셀이 없습니다.");
                 choosingCell = true; ShowOverview();
-                ui.ShowMap(BuildSummary(), () => { choosingCell = false; ClearCells(); RestoreCamera(false); ShowChoicesWithoutAutoAdvance(); });
+                ui.ShowMap(zoneNumber, BuildSummary(), () => { choosingCell = false; ClearCells(); RestoreCamera(false); ShowChoicesWithoutAutoAdvance(); });
             }
             catch (Exception e) { ui.SetStatus(e.Message); }
         }
@@ -174,7 +222,7 @@ namespace JC.DebugTools
         void ShowChoicesWithoutAutoAdvance()
         {
             selected.Clear(); RebuildPlan();
-            if (JcZone1WarpRoute.NextStage(Flag) == 0) BeginDestination();
+            if (JcZone1WarpRoute.NextStage(Flag, zoneNumber) == 0) BeginDestination();
             else ShowChoices();
         }
 

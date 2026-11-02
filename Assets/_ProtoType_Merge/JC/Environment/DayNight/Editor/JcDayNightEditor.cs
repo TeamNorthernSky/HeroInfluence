@@ -27,8 +27,8 @@ namespace JC.Environment.Editor {
    JcDayNightProfileButtons.Draw(c);p=c.Settings;p.EnsureSegments();EditorGUILayout.LabelField("구간 "+(slot.index+1),EditorStyles.boldLabel);
    EditorGUILayout.HelpBox("다음 구간까지 실제 시간 간격으로 보간합니다. 조절값은 현재 시각에 즉시 반영됩니다. 종료 전 저장 버튼을 누르세요.",MessageType.Info);
    var so=new SerializedObject(p);so.Update();var item=so.FindProperty("segments").GetArrayElementAtIndex(slot.index);
-   string[] fields={"hour","lightColor","lightIntensity","shadowMultiplier","sky","horizon","ground","ambientMultiplier","reflectionTint","reflectionMultiplier","waterMultiplier","partyFillEnabled","characterFill","npcFillEnabled","npcFill","enemyFillEnabled","enemyFill","screenColorEnabled","screenColorStrength","screenColorFilter","screenSaturation","screenContrast","screenExposure"};
-   string[] labels={"기준 시각","방향광 색상","방향광 강도","그림자 강도 배율","하늘 상부 색상","수평선·안개 색상","지면 방향 색상","물체 환경광 배율","환경 반사 색상","환경 반사 강도 배율","수면 밝기 배율","파티 밝기 보정 사용","파티 보조 밝기","NPC 밝기 보정 사용","NPC 보조 밝기","필드 적 밝기 보정 사용","필드 적 보조 밝기","화면 색보정 사용","색보정 적용 강도","화면 색상 필터","화면 채도","화면 대비","화면 노출"};
+   string[] fields={"hour","lightColor","lightIntensity","shadowMultiplier","sky","horizon","ground","ambientMultiplier","reflectionTint","reflectionMultiplier","waterMultiplier","partyFillEnabled","characterFill","occludedPartyClarity","npcFillEnabled","npcFill","enemyFillEnabled","enemyFill","screenColorEnabled","screenColorStrength","screenColorFilter","screenSaturation","screenContrast","screenExposure"};
+   string[] labels={"기준 시각","방향광 색상","방향광 강도","그림자 강도 배율","하늘 상부 색상","수평선·안개 색상","지면 방향 색상","물체 환경광 배율","환경 반사 색상","환경 반사 강도 배율","수면 밝기 배율","파티 밝기 보정 사용","파티 보조 밝기","건물 뒤 파티 선명도 (%)","NPC 밝기 보정 사용","NPC 보조 밝기","필드 적 밝기 보정 사용","필드 적 보조 밝기","화면 색보정 사용","색보정 적용 강도","화면 색상 필터","화면 채도","화면 대비","화면 노출"};
    for(int i=0;i<fields.Length;i++)EditorGUILayout.PropertyField(item.FindPropertyRelative(fields[i]),new GUIContent(labels[i],item.FindPropertyRelative(fields[i]).tooltip));
    if(so.ApplyModifiedProperties())p.NotifyChanged();
    if(!p.ValidSegmentTimes())EditorGUILayout.HelpBox("구간 1→2→3→4→1이 중복 없이 24시간을 한 번 순환하도록 설정하세요. 유효하지 않은 동안에는 기본 시각 순서를 사용합니다.",MessageType.Error);

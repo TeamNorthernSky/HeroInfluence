@@ -28,19 +28,52 @@ namespace JC.DebugTools
             new JcZone1WarpRoute(2, "메인 2-3", "MainQuest2-3", "BE123", 12802),
         };
 
+        public static readonly JcZone1WarpRoute[] Zone2Routes =
+        {
+            new JcZone1WarpRoute(3, "메인 3-1 — 시위대 지원", "MainQuest3-1", "BE401", 40302),
+            new JcZone1WarpRoute(3, "메인 3-1 — 양측 제압", "MainQuest3-1", "BE402", 40302),
+            new JcZone1WarpRoute(3, "메인 3-2", "MainQuest3-2", "BE412", 40701),
+            new JcZone1WarpRoute(3, "메인 3-3 — 기술자 동행", "MainQuest3-3", "BE413", 41101),
+            new JcZone1WarpRoute(4, "메인 4-1", "MainQuest4-1", "BE422", 41590),
+            new JcZone1WarpRoute(4, "메인 4-2", "MainQuest4-2", "BE425", 41990),
+        };
+
+        public string ChoiceFlag => BattleKey == "BE401" ? "Flag_MainQuest3-1HelpProtesters" :
+            BattleKey == "BE402" ? "Flag_MainQuest3-1Subjugation" : null;
+
+        public bool AllowsChoice(Func<string, bool> flag)
+        {
+            if (Stage != 3) return true;
+            if (flag("Flag_MainQuest3-1HelpProtesters")) return BattleKey == "BE401";
+            if (flag("Flag_MainQuest3-1Subjugation")) return BattleKey == "BE402";
+            return true;
+        }
+
+        public string ResolveBattleKey(Func<string, bool> flag)
+        {
+            if (EventKey == "MainQuest4-1")
+            {
+                if (flag("Flag_MainQuest3-3EngineerAccompany")) return "BE424";
+                if (flag("Flag_MainQuest3-1HelpProtesters")) return "BE423";
+            }
+            if (EventKey == "MainQuest4-2" && flag("Flag_MainQuest3-2Complete")) return "BE421";
+            return BattleKey;
+        }
+
         public static bool IsStageComplete(int stage, Func<string, bool> flag)
         {
             if (flag($"Flag_MainQuest{stage}Complete")) return true;
-            for (int i = 1; i <= (stage == 1 ? 2 : 3); i++)
+            for (int i = 1; i <= (stage == 1 || stage == 4 ? 2 : 3); i++)
                 if (flag($"Flag_MainQuest{stage}-{i}Complete")) return true;
             return false;
         }
 
-        public static int NextStage(Func<string, bool> flag)
+        public static int NextStage(Func<string, bool> flag, int zone = 1)
         {
             // 후속 분기를 먼저 수행한 저장 상태에서도 이전 선택을 소급하여 바꾸지 않습니다.
-            if (IsStageComplete(2, flag)) return 0;
-            return IsStageComplete(1, flag) ? 2 : 1;
+            int first = zone == 2 ? 3 : 1;
+            if (flag($"Flag_MainQuestBoss{zone}Complete") || IsStageComplete(first + 1, flag)) return 0;
+            return IsStageComplete(first, flag) ? first + 1 : first;
         }
 
         public static bool Matches(DHEventBranchTemplate row, Func<string, bool> flag)
@@ -64,7 +97,7 @@ namespace JC.DebugTools
 
         public DHEventBranchTemplate ResolveCompletion(EventScriptCatalog catalog, Func<string, bool> flag)
         {
-            if (!catalog.TryGetBranchOptionTemplates(1, BranchId, out var rows))
+            if (!catalog.TryGetBranchOptionTemplates(Stage >= 3 ? 2 : 1, BranchId, out var rows))
                 throw new InvalidOperationException($"완료 분기 데이터를 찾지 못했습니다: {BranchId}");
             foreach (var row in rows) if (Matches(row, flag)) return row;
             throw new InvalidOperationException("현재 경로에 맞는 완료 분기가 없습니다.");

@@ -48,7 +48,9 @@ public class MoveRangeController : MonoBehaviour
 
     private PartyGridMover currentMover;
     private Coroutine pendingDelayedRefreshCoroutine;
-    private bool isMoverMoving;
+    private bool npcDialogueWasOpen;
+    private static bool IsNpcDialogueOpen =>
+        DHWorldEventRuntimeManager.Instance?.CurrentRequest?.SourceType == DHWorldEventSourceType.Npc;
     private bool movementRefreshRequested;
     private bool occupancyRefreshRequested;
     private static event System.Action OccupancyChanged;
@@ -129,6 +131,7 @@ public class MoveRangeController : MonoBehaviour
             return;
         }
         OccupancyChanged += HandleOccupancyChanged;
+        npcDialogueWasOpen = IsNpcDialogueOpen;
         RefreshForCurrentParty();
         RequestRefreshAfterSceneSetup();
     }
@@ -166,6 +169,15 @@ public class MoveRangeController : MonoBehaviour
 
     private void LateUpdate()
     {
+        bool dialogueOpen = IsNpcDialogueOpen;
+        if (dialogueOpen != npcDialogueWasOpen)
+        {
+            npcDialogueWasOpen = dialogueOpen;
+            if (dialogueOpen)
+                Hide();
+            else
+                occupancyRefreshRequested = true;
+        }
         if (occupancyRefreshRequested)
             RefreshForCurrentParty();
         else if (movementRefreshRequested)
@@ -256,7 +268,6 @@ public class MoveRangeController : MonoBehaviour
         movementRefreshRequested = false;
         occupancyRefreshRequested = false;
         BindMover(mover);
-        isMoverMoving = mover != null && mover.IsMoving;
 
         if (!IsMoveRangeActive || mover == null || gridManager == null)
         {
@@ -266,7 +277,7 @@ public class MoveRangeController : MonoBehaviour
         }
 
         RebuildRange(mover);
-        if (isMoverMoving)
+        if (mover.IsMoving || IsNpcDialogueOpen)
             Hide();
         else
             RenderRange();
@@ -306,25 +317,32 @@ public class MoveRangeController : MonoBehaviour
 
         if (currentMover != null)
         {
+            currentMover.MovementStateChanged -= HandleMovementStateChanged;
             currentMover.GridEntered -= HandleMoverGridEntered;
             currentMover.MoveCompleted -= HandleMoverMoveCompleted;
         }
 
         currentMover = mover;
-        isMoverMoving = false;
 
         if (currentMover != null)
         {
+            currentMover.MovementStateChanged += HandleMovementStateChanged;
             currentMover.GridEntered += HandleMoverGridEntered;
             currentMover.MoveCompleted += HandleMoverMoveCompleted;
         }
     }
 
+    private void HandleMovementStateChanged(bool moving)
+    {
+        if (moving)
+            Hide();
+        else
+            movementRefreshRequested = true;
+    }
+
     private void HandleMoverGridEntered(Vector2Int _)
     {
         movementRefreshRequested = true;
-        if (currentMover != null && currentMover.IsMoving)
-            Hide();
     }
 
     private void HandleOccupancyChanged()

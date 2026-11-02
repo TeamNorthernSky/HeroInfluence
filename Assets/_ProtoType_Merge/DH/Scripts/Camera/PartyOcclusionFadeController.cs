@@ -21,6 +21,17 @@ public class PartyOcclusionFadeController : MonoBehaviour
         return found;
     }
 
+    public static PartyGridMover FadedParty(UnityEngine.SceneManagement.Scene scene)
+    {
+        foreach (var controller in ActiveControllers)
+        {
+            if (!controller || controller.gameObject.scene != scene || !controller.partyRegistry) continue;
+            if (controller.fadedObjects.Count != 0 || controller.fadedTargets.Count != 0)
+                return controller.partyRegistry.PlayerParty;
+        }
+        return null;
+    }
+
     [Header("References")]
     [SerializeField] private Camera targetCamera;
     [SerializeField] private PartyRegistry partyRegistry;
