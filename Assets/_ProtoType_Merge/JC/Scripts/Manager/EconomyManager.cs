@@ -32,10 +32,10 @@ public class EconomyManager : MonoBehaviour
         //        resources[type] = 0;
         //    }
         //}
-        resources[ResourceType.Money] = initialMoney;
-        resources[ResourceType.Chip] = initialChip;
-        resources[ResourceType.Crystal] = initialCrystal;
-        resources[ResourceType.Supply] = initialSupply;
+        resources[ResourceType.Money] = Mathf.Max(0, initialMoney);
+        resources[ResourceType.Chip] = Mathf.Max(0, initialChip);
+        resources[ResourceType.Crystal] = Mathf.Max(0, initialCrystal);
+        resources[ResourceType.Supply] = Mathf.Max(0, initialSupply);
 
     }
 
@@ -46,6 +46,7 @@ public class EconomyManager : MonoBehaviour
      
     public void Set(ResourceType type, int value)
     {
+        value = Mathf.Max(0, value);
         int oldValue = Get(type);
         resources[type] = value;
         Debug.Log($"[Economy] {type}: {oldValue} → {value}");
