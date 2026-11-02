@@ -92,10 +92,10 @@ namespace JC.DebugTools
             status = Label("상태", options.Count == 0 ? "선택 가능한 미수행 이벤트가 없습니다. 현재 상태로 이동할 수 있습니다." : "현재 선택하지 않은 단계와 이후 이벤트는 맵에 남습니다.", 870, 90, 21);
         }
 
-        public void ShowMap(string summary, Action back)
+        public void ShowMap(int zoneNumber, string summary, Action back)
         {
             ResetPanel(true);
-            Label("제목", "1구역 · 목적지 선택", 24, 65, 30);
+            Label("제목", $"{zoneNumber}구역 · 목적지 선택", 24, 65, 30);
             Label("요약", summary, 100, 450, 23);
             Label("설명", "초록색 셀을 클릭하면 적용 후 이동합니다.\n\n전투 조우·자원·이벤트·다리 트리거 셀은 선택할 수 없습니다.\n\n턴과 이동력은 소비하지 않습니다.", 570, 180, 22);
             Button("분기 선택 처음부터", 760, back);

@@ -43,7 +43,11 @@ namespace JC.DebugTools.Editor
                 var zone = new EventScriptZone { zoneId = 1, zoneLabel = "검증" };
                 foreach (var field in typeof(EventScriptZone).GetFields())
                     if (typeof(UnityEngine.Object).IsAssignableFrom(field.FieldType)) field.SetValue(zone, Reference(block, field.Name, field.FieldType));
-                Set(catalog, "zones", new List<EventScriptZone> { zone });
+                var zone2 = new EventScriptZone { zoneId = 2, zoneLabel = "검증" };
+                string zone2Block = block.Substring(block.IndexOf("- zoneId: 2", StringComparison.Ordinal));
+                foreach (var field in typeof(EventScriptZone).GetFields())
+                    if (typeof(UnityEngine.Object).IsAssignableFrom(field.FieldType)) field.SetValue(zone2, Reference(zone2Block, field.Name, field.FieldType));
+                Set(catalog, "zones", new List<EventScriptZone> { zone, zone2 });
                 Set(catalog, "mainSubEventRewardTable", Reference(block, "mainSubEventRewardTable", typeof(MainSubEventRewardDataTable)));
                 SetInstance(typeof(EventScriptCatalog), catalog); catalog.Reload();
                 var csv = root.AddComponent<DHCsvTemplateCatalog>();
@@ -93,6 +97,25 @@ namespace JC.DebugTools.Editor
                 foreach (var route in JcZone1WarpRoute.Routes.Where(r => r.Stage == 2))
                     Check(route.ResolveCompletion(catalog, flags.Contains) != null, "기존 진행 기본 경로 누락");
 
+                foreach (var first in JcZone1WarpRoute.Zone2Routes.Where(r => r.Stage == 3))
+                foreach (var second in JcZone1WarpRoute.Zone2Routes.Where(r => r.Stage == 4))
+                {
+                    flags.Clear();
+                    flags.Add("Flag_MainQuestBoss1Complete");
+                    Check(JcZone1WarpRoute.NextStage(flags.Contains, 1) == 0, "귀환 시 완료 분기 재실행");
+                    foreach (var route in new[] { first, second })
+                    {
+                        Check(JcZone1WarpRoute.NextStage(flags.Contains, 2) == route.Stage, "2구역 선택 단계 오류");
+                        if (route.ChoiceFlag != null) flags.Add(route.ChoiceFlag);
+                        Check(EnemySpawnPlanBuilder.TryBuildFromEventBattleKey(2, route.ResolveBattleKey(flags.Contains), 1, out _, out var error), error);
+                        foreach (var token in DHEventEffectRuntimeManager.ParseEffects(route.ResolveCompletion(catalog, flags.Contains).TriggerEffect))
+                        {
+                            if (token.kind == DHEventEffectKind.SetFlag) flags.Add(token.payload);
+                            if (token.kind == DHEventEffectKind.Reward) Check(catalog.TryGetEventRewardTemplate(int.Parse(token.payload), out _), "2구역 보상 없음");
+                        }
+                    }
+                    Check(JcZone1WarpRoute.NextStage(flags.Contains, 2) == 0 && !flags.Contains("Flag_MainQuestBoss2Complete"), "2구역 보스 직전 경계 오류");
+                }
                 var units = root.AddComponent<PersistentUnitRepository>();
                 var lookup = (Dictionary<int, UnitPersistentData>)typeof(PersistentUnitRepository).GetField("unitLookup", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(units);
                 for (int i = 1; i <= 4; i++)
@@ -109,6 +132,13 @@ namespace JC.DebugTools.Editor
                     units.ApplyEventRewardStats(i, 0, 0, 0, 5, 0);
                     units.ApplyEventRewardStats(i, 0, 0, 0, -7, 0);
                     Check(data.CurrentInfluence == 0, "IP 증감 순서/하한 처리 실패");
+                }
+                int highest = csv.GetUnitGrowthTemplates().First(r => r.Rank == "SSS").Level;
+                foreach (var unit in lookup.Values)
+                {
+                    Check(units.ApplyLevelUp(unit.UnitIndex, highest - unit.Level), "랭크 상승 실패");
+                    Check(UnitRankLookup.ResolveRank(csv.GetUnitGrowthTemplates(), unit.Level) == "SSS", "최고 랭크 미도달");
+                    Check(csv.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out var hero) && csv.GetCurrentClassSkills(hero.ClassIndex, unit.Level).Count == 4, "4개 스킬 해금 실패");
                 }
                 var shader = Resources.Load<Shader>("JcZone1WarpCells");
                 Check(shader != null && !ShaderUtil.ShaderHasError(shader), "착지 셀 셰이더 오류");
