@@ -156,7 +156,7 @@ namespace JC.BattleTesting
             Place("CoreSkillPanel/Button_Skill_2", 16, 0, -32, height, true);
             Place("CoreSkillPanel/Title", 104, 0, -120, height, true);
             var title = Rect("CoreSkillPanel/Title").GetComponent<TMP_Text>();
-            title.text = "젬 파워"; title.alignment = TextAlignmentOptions.MidlineLeft;
+            title.alignment = TextAlignmentOptions.MidlineLeft;
             Place("HeroSkillPanel", 0, -302, 0, height * 4 + gap * 3, true);
             string[] paths = { "CoreSkillPanel/Button_Skill_2", "HeroSkillPanel/Button_Skill", "HeroSkillPanel/HeroSkillSlot_2", "HeroSkillPanel/HeroSkillSlot_3", "HeroSkillPanel/HeroSkillSlot_4" };
             var face = skillButtonFace ? skillButtonFace : surface;
