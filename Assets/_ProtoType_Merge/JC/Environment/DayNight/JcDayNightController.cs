@@ -34,7 +34,7 @@ namespace JC.Environment {
    if(workingProfile!=null)DestroyObject(workingProfile);
    workingSource=profile;
    workingProfile=profile!=null?Instantiate(profile):null;
-   if(workingProfile!=null){workingProfile.hideFlags=HideFlags.HideAndDontSave;workingProfile.name=profile.name+" (조절 중)";workingProfile.NotifyChanged();}
+   if(workingProfile!=null){workingProfile.hideFlags=HideFlags.DontSave;workingProfile.name=profile.name+" (조절 중)";workingProfile.NotifyChanged();}
 #endif
    appliedRevision=-1;appliedProfile=null;
   }
@@ -44,6 +44,9 @@ namespace JC.Environment {
   public static float CloudSpeed => IsTransitioning ? owner.Settings.cloudSpeedMultiplier : 1;
   public static float WaterBrightness => owner!=null && owner.applied ? Mathf.Lerp(owner.Settings.nightWaterBrightness,1,owner.daylight)*owner.waterMultiplier : 1;
   public static bool IsActive => owner!=null && owner.applied;
+  float partyWallReduction;
+  public static float PartyWallReduction(Scene scene) =>
+   owner != null && owner.applied && !owner.battle && owner.gameObject.scene == scene ? owner.partyWallReduction : 0f;
   bool transitioning,applied;
   public bool OutdoorBattle => battle && !indoor;
   public static bool OwnsOutdoorLighting(Scene scene) =>
@@ -193,6 +196,7 @@ namespace JC.Environment {
    Capture();if(Application.isPlaying)specialWindows.Scan(gameObject.scene);shownHours=hours;appliedProfile=Settings;appliedRevision=Settings.revision;var k=Settings.Evaluate(hours);daylight=k.daylight;
    var look=Settings.SampleSegment(hours);var baseline=Settings.SampleSegment(hours,true);
    PrepareBattleProfile();
+   partyWallReduction=Mathf.Clamp01(look.occludedPartyClarity * .01f);
    float characterBrightness=OutdoorBattle && BattleDraft!=null ? BattleDraft.Apply(Settings,hours,look) : 1;
    waterMultiplier=look.waterMultiplier;
    // 방위각은 광원의 위치입니다. 방향광의 forward는 빛의 진행 방향이므로 반대쪽을 향합니다.

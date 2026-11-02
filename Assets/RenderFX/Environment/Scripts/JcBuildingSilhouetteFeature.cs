@@ -45,6 +45,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
     private CompositePass tutorialCompositePass;
     private MaskPass maskPass;
     private CompositePass compositePass;
+    private PartyShadowPass partyShadows;
     private ShadowRemovalPass shadowRemovalPass;
 
     public override void Create()
@@ -54,13 +55,15 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         maskPass?.Dispose();
         tutorialMaskPass?.Dispose();
         shadowRemovalPass?.Dispose();
+        partyShadows?.Dispose();
         tutorialMaskPass = new MaskPass("_JcTutorialBuildingMask");
         tutorialMaskPass.renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 2);
         tutorialCompositePass = new CompositePass(tutorialMaskPass);
         tutorialCompositePass.renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 1);
         maskPass = new MaskPass();
         compositePass = new CompositePass(maskPass);
-        shadowRemovalPass = new ShadowRemovalPass(maskPass);
+        partyShadows = new PartyShadowPass();
+        shadowRemovalPass = new ShadowRemovalPass(maskPass, partyShadows);
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -80,8 +83,16 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         renderer.EnqueuePass(maskPass);
         var scene = type == CameraType.SceneView ? UnityEngine.SceneManagement.SceneManager.GetActiveScene()
             : renderingData.cameraData.camera.gameObject.scene;
-        if (!PartyOcclusionFadeController.TryHasFadedObjects(scene, out bool hasFaded) || hasFaded)
+        bool known = PartyOcclusionFadeController.TryHasFadedObjects(scene, out bool hasFaded);
+        var party = hasFaded ? PartyOcclusionFadeController.FadedParty(scene) : null;
+        if (partyShadows.Prepare(party, ref renderingData))
+            renderer.EnqueuePass(partyShadows);
+        if (!known || hasFaded)
             renderer.EnqueuePass(shadowRemovalPass);
+        float reduction = JC.Environment.JcDayNightController.PartyWallReduction(scene);
+        maskPass.party = reduction > 0 ? party : null;
+        maskPass.partyMaterial = silhouetteMaterial;
+        maskPass.partyReduction = reduction;
         renderer.EnqueuePass(compositePass);
         // 튜토리얼 안내가 있으면 일반 호버보다 우선한다. 외곽선 합성은 같은 패스를 사용한다.
         bool tutorial = tutorialOwner != null && tutorialTarget != null && tutorialTarget.gameObject.scene == scene;
@@ -115,10 +126,15 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         maskPass?.Dispose();
         tutorialMaskPass?.Dispose();
         shadowRemovalPass?.Dispose();
+        partyShadows?.Dispose();
     }
 
     private sealed class MaskPass : ScriptableRenderPass
     {
+        public PartyGridMover party;
+        public Material partyMaterial;
+        public float partyReduction;
+        private readonly System.Collections.Generic.List<Renderer> partyMeshes = new System.Collections.Generic.List<Renderer>();
         private static readonly ShaderTagId MaskTag = new ShaderTagId("JcBuildingSilhouetteMask");
         private static readonly int TuningId = Shader.PropertyToID("_JcBuildingTuning");
         private static readonly int FillId = Shader.PropertyToID("_JcBuildingFill");
@@ -283,6 +299,31 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             draw.perObjectData = PerObjectData.None;
             FilteringSettings filter = new FilteringSettings(RenderQueueRange.transparent);
             context.DrawRenderers(renderingData.cullResults, ref draw, ref filter);
+            if (!party) return;
+
+            // The building owns RGB. Only visible party surfaces write the reduction to A.
+            int partyPass = partyMaterial.FindPass("VisiblePartyCoverage");
+            if (partyPass < 0) return;
+            var coverage = CommandBufferPool.Get("JC Visible Party Coverage");
+            try
+            {
+                coverage.SetGlobalFloat("_JcPartyWallReduction", partyReduction);
+                party.GetComponentsInChildren(false, partyMeshes);
+                int layers = renderingData.cameraData.camera.cullingMask;
+                foreach (var target in partyMeshes)
+                {
+                    if (!target.enabled || target.forceRenderingOff || (layers & (1 << target.gameObject.layer)) == 0) continue;
+                    Mesh mesh = null;
+                    if (target is SkinnedMeshRenderer skin) mesh = skin.sharedMesh;
+                    else if (target is MeshRenderer && target.GetComponentInParent<UnitVisualMotionController>() &&
+                             target.TryGetComponent<MeshFilter>(out var mf)) mesh = mf.sharedMesh;
+                    if (!mesh) continue;
+                    for (int i = 0; i < mesh.subMeshCount; ++i)
+                        coverage.DrawRenderer(target, partyMaterial, i, partyPass);
+                }
+                context.ExecuteCommandBuffer(coverage);
+            }
+            finally { CommandBufferPool.Release(coverage); }
         }
 
         public void Dispose()
@@ -290,6 +331,98 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             Mask?.Release();
             Mask = null;
         }
+    }
+
+    // Use the camera's own cascade layout so the receiver uses the same shadow
+    // strength, bias, distance fade and soft sampling on both sides of the wall.
+    private sealed class PartyShadowPass : ScriptableRenderPass
+    {
+        private readonly ShadowSliceData[] slices = new ShadowSliceData[4];
+        private readonly System.Collections.Generic.List<Renderer> renderers = new System.Collections.Generic.List<Renderer>();
+        private readonly System.Collections.Generic.List<Material> materials = new System.Collections.Generic.List<Material>();
+        private RTHandle atlas;
+        private int width, height, cascades;
+        public RTHandle ReadyAtlas { get; private set; }
+
+        public PartyShadowPass()
+        {
+            renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.AfterRenderingOpaques + 1);
+        }
+
+        public bool Prepare(PartyGridMover party, ref RenderingData data)
+        {
+            ReadyAtlas = null;
+            if (!party || !data.shadowData.supportsMainLightShadows ||
+                data.cameraData.maxShadowDistance <= 0 || data.lightData.mainLightIndex < 0) return false;
+            var light = data.lightData.visibleLights[data.lightData.mainLightIndex].light;
+            if (!light || light.type != LightType.Directional || light.shadows == LightShadows.None ||
+                light.shadowStrength <= 0) return false;
+            party.GetComponentsInChildren(false, renderers);
+            cascades = data.shadowData.mainLightShadowCascadesCount;
+            width = data.shadowData.mainLightShadowmapWidth;
+            int fullHeight = data.shadowData.mainLightShadowmapHeight;
+            height = cascades == 2 ? fullHeight / 2 : fullHeight;
+            int tile = ShadowUtils.GetMaxTileResolutionInAtlas(width, fullHeight, cascades);
+            for (int i = 0; i < cascades; i++)
+                if (!ShadowUtils.ExtractDirectionalLightMatrix(ref data.cullResults, ref data.shadowData,
+                    data.lightData.mainLightIndex, i, width, height, tile, light.shadowNearPlane, out _, out slices[i]))
+                    return false;
+            return renderers.Count > 0;
+        }
+
+        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData data)
+        {
+            ShadowUtils.ShadowRTReAllocateIfNeeded(ref atlas, width, height, 16, name: "_JcPartyShadowAtlas");
+            ConfigureTarget(atlas);
+            ConfigureClear(ClearFlag.Depth, Color.black);
+        }
+
+        public override void Execute(ScriptableRenderContext context, ref RenderingData data)
+        {
+            var cmd = CommandBufferPool.Get("JC Party Directional Shadows");
+            int index = data.lightData.mainLightIndex;
+            var light = data.lightData.visibleLights[index];
+            const string punctual = "_CASTING_PUNCTUAL_LIGHT_SHADOW";
+            bool wasPunctual = Shader.IsKeywordEnabled(punctual);
+            try
+            {
+                cmd.DisableShaderKeyword(punctual);
+                cmd.SetGlobalDepthBias(1f, 2.5f);
+                for (int i = 0; i < cascades; i++)
+                {
+                    var slice = slices[i];
+                    var bias = ShadowUtils.GetShadowBias(ref light, index, ref data.shadowData,
+                        slice.projectionMatrix, slice.resolution);
+                    ShadowUtils.SetupShadowCasterConstantBuffer(cmd, ref light, bias);
+                    cmd.SetViewport(new Rect(slice.offsetX, slice.offsetY, slice.resolution, slice.resolution));
+                    cmd.SetViewProjectionMatrices(slice.viewMatrix, slice.projectionMatrix);
+                    foreach (var caster in renderers)
+                    {
+                        if (!caster || !caster.enabled || caster.forceRenderingOff ||
+                            caster.shadowCastingMode == ShadowCastingMode.Off ||
+                            (light.light.cullingMask & (1 << caster.gameObject.layer)) == 0) continue;
+                        if (!(caster is SkinnedMeshRenderer) &&
+                            !(caster is MeshRenderer && caster.GetComponentInParent<UnitVisualMotionController>())) continue;
+                        caster.GetSharedMaterials(materials);
+                        for (int slot = 0; slot < materials.Count; slot++)
+                        {
+                            var mat = materials[slot];
+                            if (!mat || !mat.GetShaderPassEnabled("ShadowCaster")) continue;
+                            int pass = mat.FindPass("ShadowCaster");
+                            if (pass >= 0) cmd.DrawRenderer(caster, mat, slot, pass);
+                        }
+                    }
+                }
+                cmd.SetGlobalDepthBias(0, 0);
+                CoreUtils.SetKeyword(cmd, punctual, wasPunctual);
+                cmd.SetViewProjectionMatrices(data.cameraData.GetViewMatrix(), data.cameraData.GetProjectionMatrix());
+                context.ExecuteCommandBuffer(cmd);
+                ReadyAtlas = atlas;
+            }
+            finally { CommandBufferPool.Release(cmd); }
+        }
+
+        public void Dispose() { atlas?.Release(); atlas = null; ReadyAtlas = null; }
     }
 
     /// <summary>원본 재질의 조명/텍스처는 유지하고 실시간 그림자만 제외한 색을 별도 타깃에 그린다.</summary>
@@ -306,10 +439,14 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         private RTHandle depth;
         private Material material;
 
-        public ShadowRemovalPass(MaskPass source)
+        private readonly PartyShadowPass partyShadows;
+        private static readonly int MainAtlas = Shader.PropertyToID("_MainLightShadowmapTexture");
+
+        public ShadowRemovalPass(MaskPass source, PartyShadowPass partyShadows)
         {
             this.source = source;
             renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.AfterRenderingOpaques + 2);
+            this.partyShadows = partyShadows;
             profilingSampler = new ProfilingSampler("JC Building Shadow Removal");
         }
 
@@ -336,12 +473,19 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             int pass = material.FindPass("ShadowlessComposite");
             if (pass < 0 || source.Mask == null) return;
             var cmd = CommandBufferPool.Get("JC Building Shadow Removal");
+            var originalAtlas = Shader.GetGlobalTexture(MainAtlas);
+            bool restoreParty = partyShadows.ReadyAtlas != null && originalAtlas != null;
             try
             {
                 for (int i = 0; i < ShadowKeywords.Length; i++)
                 {
                     previousKeywords[i] = Shader.IsKeywordEnabled(ShadowKeywords[i]);
                     cmd.DisableShaderKeyword(ShadowKeywords[i]);
+                }
+                if (restoreParty)
+                {
+                    cmd.SetGlobalTexture(MainAtlas, partyShadows.ReadyAtlas.nameID);
+                    CoreUtils.SetKeyword(cmd, ShadowKeywords[renderingData.shadowData.mainLightShadowCascadesCount > 1 ? 1 : 0], true);
                 }
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
@@ -356,6 +500,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             {
                 for (int i = 0; i < ShadowKeywords.Length; i++)
                     CoreUtils.SetKeyword(cmd, ShadowKeywords[i], previousKeywords[i]);
+                if (restoreParty) cmd.SetGlobalTexture(MainAtlas, originalAtlas);
                 cmd.SetGlobalTexture("_JcShadowRemovalMask", source.Mask.nameID);
                 Blitter.BlitCameraTexture(cmd, color, renderingData.cameraData.renderer.cameraColorTargetHandle,
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store, material, pass);
