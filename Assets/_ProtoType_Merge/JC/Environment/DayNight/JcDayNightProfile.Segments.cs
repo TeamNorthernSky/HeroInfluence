@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 namespace JC.Environment {
  public sealed partial class JcDayNightProfile {
@@ -52,7 +52,7 @@ namespace JC.Environment {
    float sum=0;for(int i=0;i<4;i++){if(segments[i]==null||float.IsNaN(segments[i].hour)||float.IsInfinity(segments[i].hour))return false;float span=Mathf.Repeat(segments[(i+1)%4].hour-segments[i].hour,24);if(span<.01f)return false;sum+=span;}
    return Mathf.Abs(sum-24)<.01f;
   }
-  void SegmentPair(double hours,out int a,out int b,out float t){
+  public void SegmentPair(double hours,out int a,out int b,out float t){
    EnsureSegments();float h=Mathf.Repeat((float)(hours%24),24);bool valid=ValidSegmentTimes();
    for(a=0;a<4;a++){b=(a+1)%4;float from=valid?segments[a].hour:DefaultHour(a);float to=valid?segments[b].hour:DefaultHour(b);float span=Mathf.Repeat(to-from,24);float elapsed=Mathf.Repeat(h-from,24);if(elapsed<span){t=elapsed/span;return;}}
    a=0;b=1;t=0;

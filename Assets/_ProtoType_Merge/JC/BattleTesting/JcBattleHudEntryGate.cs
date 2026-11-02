@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,7 +36,8 @@ namespace JC.BattleTesting
         public static void Install(Scene scene, BattleFlowManager flow)
         {
             if (flow == null || Find(scene) != null) return;
-            JC.Environment.JcDayNightController.EnsureBattle(scene,JC.Environment.JcDayNightController.CurrentHours,
+            if(!scene.GetRootGameObjects().Any(root => root.GetComponentInChildren<JC.Environment.JcDayNightController>(true)!=null))
+                JC.Environment.JcDayNightController.EnsureBattle(scene,JC.Environment.JcDayNightController.CurrentHours,
                 JC.Environment.JcDayNightController.CurrentProfile,
                 JcBankBattleBackground.Load()?.Matches(CombatContext.Instance)==true ||
                 JcBossBattleBackground.Load()?.Matches(CombatContext.Instance)==true);

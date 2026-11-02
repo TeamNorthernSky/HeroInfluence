@@ -19,6 +19,12 @@ namespace JC.BattleTesting
         [Serializable] public struct Road { public Vector3 center; public float size; }
         [Tooltip("탐사맵 전체에서 읽은 정적 외형입니다. 위치별 전투 배경은 포함하지 않습니다.")]
         public Part[] parts = Array.Empty<Part>();
+        public Mesh FindReadable(Mesh original)
+        {
+            foreach (var part in parts)
+                if (part.originalMesh == original && part.mesh && part.mesh.isReadable) return part.mesh;
+            return null;
+        }
         [Tooltip("도로 방향과 원본 폭을 측정하기 위한 위치 정보입니다. 전투 셀로 사용하지 않습니다.")]
         public Road[] roads = Array.Empty<Road>();
         [Tooltip("도로 표면의 원본 재질입니다.")]

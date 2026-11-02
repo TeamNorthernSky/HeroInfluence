@@ -173,6 +173,16 @@ public class DecorativeObjectPlacement : MonoBehaviour
         Gizmos.DrawLine(transform.position, anchorWorldPosition);
     }
 
+    public bool TryGetAppearanceBeforeFade(Renderer renderer, out Material[] materials, out MaterialPropertyBlock properties)
+    {
+        materials = null;
+        properties = null;
+        if (!fadeStates.TryGetValue(renderer, out var state) || !state.Active) return false;
+        materials = state.Materials;
+        properties = state.Properties;
+        return true;
+    }
+
     private sealed class RendererFadeState
     {
         private readonly MaterialPropertyBlock block = new MaterialPropertyBlock();
@@ -199,8 +209,21 @@ public class DecorativeObjectPlacement : MonoBehaviour
                 color = material.GetColor(ColorId);
         }
 
+        public bool Active { get; private set; }
+        public Material[] Materials { get; private set; }
+        public MaterialPropertyBlock Properties { get; } = new MaterialPropertyBlock();
+
+        void BeginFade(Renderer renderer)
+        {
+            if (Active) return;
+            Materials = renderer.sharedMaterials;
+            renderer.GetPropertyBlock(Properties);
+            Active = true;
+        }
+
         public void ApplyAlpha(Renderer renderer, float alpha)
         {
+            BeginFade(renderer);
             if (renderer == null)
                 return;
 
@@ -220,6 +243,7 @@ public class DecorativeObjectPlacement : MonoBehaviour
             if (renderer == null || overrideMaterial == null)
                 return;
 
+            BeginFade(renderer);
             Material[] materials = renderer.sharedMaterials;
             for (int i = 0; i < materials.Length; i++)
                 materials[i] = overrideMaterial;
@@ -231,6 +255,7 @@ public class DecorativeObjectPlacement : MonoBehaviour
             if (renderer == null)
                 return;
 
+            Active = false;
             if (originalSharedMaterials != null)
                 renderer.sharedMaterials = originalSharedMaterials;
 

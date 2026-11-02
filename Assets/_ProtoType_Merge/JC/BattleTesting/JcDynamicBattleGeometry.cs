@@ -30,7 +30,7 @@ namespace JC.BattleTesting
         }
 
         // 입력 씬이 살아 있는 동안 Capture 결과를 Build에 전달합니다. 결과는 자원을 독립 소유합니다.
-        public static JcDynamicBattleSource Capture(Scene scene, bool tutorial = false)
+        public static JcDynamicBattleSource Capture(Scene scene, bool tutorial = false, bool forCacheGeneration = false)
         {
             if(!scene.IsValid()||!scene.isLoaded)throw new InvalidOperationException("탐사 입력 씬이 로드되지 않았습니다.");
             var data=ScriptableObject.CreateInstance<JcDynamicBattleSource>();data.hideFlags=HideFlags.DontSave;data.sourceScene=scene.path;
@@ -46,12 +46,18 @@ namespace JC.BattleTesting
                 if(!ground&&!roots.Contains(f.transform.root.name))continue;
                 if(f.GetComponentInParent<JcDynamicBattleOutput>()!=null)continue;
                 var inputMesh=originalRoad?original.mesh:f.sharedMesh;
-                if(!Application.isEditor&&!inputMesh.isReadable)
+                // Edit-mode cache generation needs the imported source. Both player and
+                // editor Play Mode need writable vertex data to bake the battle transform.
+                if (!forCacheGeneration && !inputMesh.isReadable)
                 {
-                    var cache=Resources.Load<JcDynamicBattleSource>(tutorial ? "JC_Encounters/TutorialDynamicSource" : "JC_Encounters/DynamicSource");
-                    var readable=cache!=null?cache.parts.FirstOrDefault(part=>part.originalMesh==inputMesh&&part.mesh!=null&&part.mesh.isReadable):null;
-                    if(readable==null)throw new InvalidOperationException("읽기 가능한 외형 캐시를 갱신해 주세요: "+f.name);
-                    inputMesh=readable.mesh;
+                    var cache = Resources.Load<JcDynamicBattleSource>("JC_Encounters/DynamicSource");
+                    var readable = cache ? cache.FindReadable(inputMesh) : null;
+                    if (!readable && tutorial)
+                        readable = Resources.Load<JcDynamicBattleSource>("JC_Encounters/TutorialDynamicSource")?.FindReadable(inputMesh);
+                    if (!readable)
+                        readable = Resources.Load<JcDynamicBattleSource>("JC_Encounters/DecorationMeshes")?.FindReadable(inputMesh);
+                    if (!readable) throw new InvalidOperationException("읽기 가능한 외형 캐시 누락: " + f.name);
+                    inputMesh = readable;
                 }
                 var part=new JcDynamicBattleSource.Part{name=f.name,group=Group(f.transform),mesh=inputMesh,originalMesh=f.sharedMesh,materials=originalRoad?original.materials:r.sharedMaterials,matrix=f.transform.localToWorldMatrix,bounds=r.bounds,terrain=ground,renderer=r};
                 parts.Add(part);
@@ -200,8 +206,19 @@ namespace JC.BattleTesting
             var output=root.AddComponent<JcDynamicBattleOutput>();
             try
             {
-                float extent=Mathf.Max(settings.captureRadius*scale,settings.battleLength*.5f+6);
-                var selected=source.parts.Where(x=>x.mesh!=null&&x.bounds.SqrDistance(p)<settings.captureRadius*settings.captureRadius).ToArray();
+                // Leave room for attack-camera pullbacks beyond the placement cameras.
+                float extent = Mathf.Max(144f, settings.captureRadius * scale, settings.battleLength * .5f + 6);
+                float radius = extent / scale;
+                bool InView(JcDynamicBattleSource.Part part)
+                {
+                    var bounds = part.bounds;
+                    return bounds.min.x <= p.x + radius && bounds.max.x >= p.x - radius &&
+                           bounds.min.z <= p.z + radius && bounds.max.z >= p.z - radius;
+                }
+                var groups = new HashSet<string>(source.parts.Where(part => !part.terrain && InView(part))
+                    .Select(part => part.group).Where(group => !string.IsNullOrEmpty(group)));
+                var selected = source.parts.Where(part => part.mesh &&
+                    (InView(part) || (!part.terrain && groups.Contains(part.group)))).ToArray();
                 foreach(var part in selected)
                 {
                     Mesh mesh;
@@ -220,6 +237,8 @@ namespace JC.BattleTesting
                 if (settings.addBattleSurfaceDetails) JcBattleSurfaceDressing.Apply(root,Mathf.RoundToInt(settings.encounterPosition.x*1000)^Mathf.RoundToInt(settings.encounterPosition.z*7919),cameras);
                 else if (source.sourceScene != null && source.sourceScene.EndsWith("/TutorialExploreScene.unity", StringComparison.Ordinal))
                     JcBattleSurfaceDressing.ApplyAuthoredLineSpacing(root);
+                // Add after dressing so the distant ground never receives roads or scatter props.
+                output.AddDistantGround(source, transform);
                 Debug.Log(output.Report,root);
                 return root;
             }
