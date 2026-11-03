@@ -51,3 +51,4 @@ MonoBehaviour:
   summonBurstPeak: 1.22
   summonBurstRiseSeconds: 0.045
   summonBurstSettleSeconds: 0.115
+  dashSfxKey: Battle_Ulia_Skill03

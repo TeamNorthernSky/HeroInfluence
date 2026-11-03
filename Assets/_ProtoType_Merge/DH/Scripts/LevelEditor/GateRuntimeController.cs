@@ -13,12 +13,16 @@ public class GateRuntimeController : MonoBehaviour
     [FormerlySerializedAs("blockerObjects")]
     [SerializeField] private List<GameObject> gateVisualObjects = new List<GameObject>();
     [SerializeField] private List<Vector2Int> blockerCells = new List<Vector2Int>();
+    [SerializeField] private List<Vector2Int> exitCells = new List<Vector2Int>();
     [SerializeField] private bool isOpen;
+
+    private readonly List<Vector2Int> closedGateCells = new List<Vector2Int>();
 
     private bool registeredThreat;
     private bool registeredTeleport;
     private bool registeredLifecycle;
     private bool visualChangePending;
+    private bool hasSeparateExitCells;
 
     public string GateId => NormalizeId(gateId);
     public string FirstZoneId => NormalizeId(firstZoneId);
@@ -54,7 +58,8 @@ public class GateRuntimeController : MonoBehaviour
         string nextFirstZoneId,
         string nextSecondZoneId,
         IEnumerable<GameObject> nextBlockers,
-        IEnumerable<Vector2Int> nextBlockerCells)
+        IEnumerable<Vector2Int> nextBlockerCells,
+        Vector2Int? exitCellOffset = null)
     {
         UnregisterCurrentGateBlockers();
 
@@ -82,8 +87,35 @@ public class GateRuntimeController : MonoBehaviour
             }
         }
 
+        RebuildClosedGateCells(exitCellOffset);
         ApplyProgressOrInitialState();
         TryRegister();
+    }
+
+    private void RebuildClosedGateCells(Vector2Int? exitCellOffset)
+    {
+        exitCells.Clear();
+        closedGateCells.Clear();
+        hasSeparateExitCells = exitCellOffset.HasValue;
+        closedGateCells.AddRange(blockerCells);
+        if (exitCellOffset.HasValue)
+        {
+            bool valid = exitCellOffset.Value != Vector2Int.zero;
+            foreach (Vector2Int entrance in blockerCells)
+            {
+                Vector2Int exit = entrance + exitCellOffset.Value;
+                if (blockerCells.Contains(exit)) valid = false;
+                exitCells.Add(exit);
+            }
+
+            if (!valid)
+            {
+                Debug.LogError($"[GateRuntimeController] Exit cells overlap entrances for gate '{GateId}'. Check the prefab exit offset.", this);
+                exitCells.Clear();
+            }
+            else
+                closedGateCells.AddRange(exitCells);
+        }
     }
 
     public void RefreshFromProgress()
@@ -98,9 +130,15 @@ public class GateRuntimeController : MonoBehaviour
              string.Equals(SecondZoneId, normalizedZoneId, System.StringComparison.Ordinal));
     }
 
-    public bool ContainsBlockerCell(Vector2Int grid)
+    public bool ContainsEntranceCell(Vector2Int grid)
     {
+        // Exit occupants may leave after closing, so only entrances defer closure.
         return blockerCells.Contains(grid);
+    }
+
+    public bool ContainsExitCell(Vector2Int grid)
+    {
+        return exitCells.Contains(grid);
     }
 
     public bool TryGetOtherZoneId(string zoneId, out string otherZoneId)
@@ -160,18 +198,24 @@ public class GateRuntimeController : MonoBehaviour
         return false;
     }
 
-    public bool TryGetTeleportCellByIndex(int index, out Vector2Int cell)
+    public bool TryGetExitCellByIndex(int index, out Vector2Int cell)
     {
+        if (hasSeparateExitCells && exitCells.Count != blockerCells.Count)
+        {
+            cell = default;
+            return false;
+        }
         List<Vector2Int> cells = new List<Vector2Int>();
         CollectTeleportCells(cells);
-        if (cells.Count == 0)
+        if (index < 0 || index >= cells.Count)
         {
             cell = default;
             return false;
         }
 
-        int clampedIndex = Mathf.Clamp(index, 0, cells.Count - 1);
-        cell = cells[clampedIndex];
+        Vector2Int entrance = cells[index];
+        int entranceIndex = blockerCells.IndexOf(entrance);
+        cell = hasSeparateExitCells ? exitCells[entranceIndex] : entrance;
         return true;
     }
 
@@ -316,7 +360,7 @@ public class GateRuntimeController : MonoBehaviour
         if (gridManager == null)
             return;
 
-        gridManager.RegisterGateBlockerCells(blockerCells);
+        gridManager.RegisterGateBlockerCells(closedGateCells.Count > 0 ? closedGateCells : blockerCells);
     }
 
     private void UnregisterCurrentGateBlockers()
@@ -325,7 +369,7 @@ public class GateRuntimeController : MonoBehaviour
         if (gridManager == null)
             return;
 
-        gridManager.UnregisterGateBlockerCells(blockerCells);
+        gridManager.UnregisterGateBlockerCells(closedGateCells.Count > 0 ? closedGateCells : blockerCells);
     }
 
     private static int ResolveCurrentDay()

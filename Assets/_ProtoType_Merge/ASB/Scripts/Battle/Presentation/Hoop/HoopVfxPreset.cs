@@ -88,4 +88,8 @@ public sealed class HoopVfxPreset : ScriptableObject
     [Min(.001f)] public float summonBurstRiseSeconds = .045f;
     [Tooltip("원래 크기로 돌아오는 시간(전투 배속 기준 초). 시뮬레이션 0.115.")]
     [Min(.001f)] public float summonBurstSettleSeconds = .115f;
+
+    [Header("Sound")]
+    [Tooltip("충전이 끝나고 돌진을 시작할 때 재생할 효과음 키(DHAudioClipCatalog). 비우면 무음.")]
+    public string dashSfxKey;
 }

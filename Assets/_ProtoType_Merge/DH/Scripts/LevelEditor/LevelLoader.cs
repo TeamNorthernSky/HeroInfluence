@@ -203,11 +203,14 @@ public class LevelLoader : MonoBehaviour
 
             var blockers = new System.Collections.Generic.List<GameObject>();
             IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
+            Vector2Int? exitCellOffset = null;
             if (placement.HasPrefab &&
                 prefabRegistry != null &&
                 prefabRegistry.TryGetGatePrefab(placement.PrefabKey, out GateFootprint gatePrefab) &&
                 gatePrefab != null)
             {
+                if (gatePrefab.UseSeparateExitCells)
+                    exitCellOffset = gatePrefab.GetExitCellOffset(placement.FlipModel180);
                 Vector3 worldPosition = gatePrefab.GetRootPositionForAnchor(gridManager, placement.GridPosition);
                 GateFootprint gateVisual = Instantiate(gatePrefab, worldPosition, gatePrefab.transform.rotation, gateRootObject.transform);
                 if (gateVisual.TryGetComponent(out GateVisualController visualController))
@@ -222,7 +225,8 @@ public class LevelLoader : MonoBehaviour
                 placement.FirstZoneId,
                 placement.SecondZoneId,
                 blockers,
-                blockerCells);
+                blockerCells,
+                exitCellOffset);
         }
     }
 

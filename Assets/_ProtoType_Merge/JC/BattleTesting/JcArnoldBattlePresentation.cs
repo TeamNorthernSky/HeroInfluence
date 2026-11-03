@@ -20,6 +20,7 @@ namespace JC.BattleTesting
         bool moving, entered, cameraOnly;
         JcBankBattleBackground bankSettings;
         bool bossBackground;
+        JcBossCamera bossCamera;
         bool clearTutorialArenaTrees;
         double lightingHour;
         JC.Environment.JcDayNightProfile lightingProfile;
@@ -225,13 +226,30 @@ namespace JC.BattleTesting
             var enemies = roots.FirstOrDefault(r => r.name == "EnemyPlace");
             center = player != null && enemies != null ? (player.transform.position + enemies.transform.position) * .5f : Vector3.zero;
             originalPosition = battleCamera.transform.position; originalRotation = battleCamera.transform.rotation; originalFov = battleCamera.fieldOfView;
-            if (profile != null) SelectView(0);
+            var bossSettings = bossBackground ? JcBossBattleBackground.Load() : null;
+            if (bossSettings && bossSettings.glassProfile && background)
+            {
+                var materials = new GameObject("JC_BossBackgroundMaterials");
+                SceneManager.MoveGameObjectToScene(materials, scene);
+                materials.AddComponent<JcBossBackgroundMaterials>().Initialize(background, bossSettings.glassProfile);
+            }
+            var bossCameraProfile = bossSettings ? bossSettings.cameraProfile : null;
+            if (bossCameraProfile)
+            {
+                var controls = new GameObject("JC_BossCamera");
+                SceneManager.MoveGameObjectToScene(controls, scene);
+                bossCamera = controls.AddComponent<JcBossCamera>();
+                bossCamera.Initialize(bossCameraProfile, battleCamera, center, background.transform);
+                profile = bossCamera.Draft;
+            }
+            else if (profile != null) SelectView(0);
             Debug.Log("[JC Battle] 공통 뷰 적용: " + Report, this);
         }
 
         public void SelectView(int view)
         {
-            if (battleCamera == null || (view != 2 && profile == null)) return;
+            if (battleCamera == null || (view != 2 && profile == null) || (bossCamera && !bossCamera.CanCaptureBase)) return;
+            if (bossCamera) bossCamera.EndBasePreview();
             startPosition = battleCamera.transform.position; startRotation = battleCamera.transform.rotation; startFov = battleCamera.fieldOfView;
             if (view == 2) { endPosition = originalPosition; endRotation = originalRotation; endFov = originalFov; }
             else (view == 0 ? profile.viewA : profile.viewB).Resolve(center, out endPosition, out endRotation, out endFov);
@@ -265,8 +283,20 @@ namespace JC.BattleTesting
             if (Input.GetKeyDown(KeyCode.F8)) SelectView(2);
             if (!moving || battleCamera == null) return;
             elapsed += Time.unscaledDeltaTime; float t = Mathf.Clamp01(elapsed / .65f);
-            battleCamera.transform.SetPositionAndRotation(Vector3.Lerp(startPosition, endPosition, t), Quaternion.Lerp(startRotation, endRotation, t));
-            battleCamera.fieldOfView = Mathf.Lerp(startFov, endFov, t); moving = t < 1;
+            var pos = Vector3.Lerp(startPosition,endPosition,t);
+            var rot = Quaternion.Lerp(startRotation,endRotation,t);
+            float fov = Mathf.Lerp(startFov,endFov,t);
+            if (bossCamera)
+            {
+                if (!bossCamera.CanCaptureBase) { moving=false; return; }
+                bossCamera.ApplyPose(pos,rot,fov);
+            }
+            else
+            {
+                battleCamera.transform.SetPositionAndRotation(pos,rot);
+                battleCamera.fieldOfView = fov;
+            }
+            moving = t < 1;
         }
         void OnGUI()
         {

@@ -81,7 +81,7 @@ MonoBehaviour:
     ForceApproach: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
-    SfxKey: Explore_Move
+    SfxKey: Battle_Move
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 

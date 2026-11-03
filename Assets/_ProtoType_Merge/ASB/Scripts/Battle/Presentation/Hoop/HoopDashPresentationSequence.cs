@@ -49,6 +49,7 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
         {
             HoopVfxEffect.Spawn(preset, HoopEffectKind.Charge, visual.WheelCenter.position);
             yield return Wait(battleManager, preset.chargeSeconds);
+            UnitSfxProfile.PlayKey(DHAudioClipCatalog.NormalizeKey(preset.dashSfxKey));
 
             if (preset.dashArcPrefab != null)
             {

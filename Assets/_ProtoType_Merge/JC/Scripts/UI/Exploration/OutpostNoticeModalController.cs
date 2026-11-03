@@ -13,6 +13,7 @@ public class OutpostNoticeModalController : MonoBehaviour
     [SerializeField] private Image buildingImage;
     [SerializeField] private Image resourceImage;
     [SerializeField] private Button okButton;
+    private OutpostNoticeRequest currentRequest;
 
     private void Awake()
     {
@@ -20,11 +21,23 @@ public class OutpostNoticeModalController : MonoBehaviour
         if (root != null) root.SetActive(false);
     }
     private void OnEnable()  => ExplorationModalEvents.OutpostNoticeRequested += Show;
-    private void OnDisable() => ExplorationModalEvents.OutpostNoticeRequested -= Show;
+    private void OnDisable()
+    {
+        ExplorationModalEvents.OutpostNoticeRequested -= Show;
+        currentRequest = null;
+    }
+
+    private void LateUpdate()
+    {
+        // ESC and outside-click dismissal bypass the confirm button.
+        if (currentRequest != null && root != null && !root.activeSelf)
+            FinishNotice();
+    }
 
     private void Show(OutpostNoticeRequest r)
     {
         if (r == null) return;
+        currentRequest = r;
         if (titleText != null) titleText.text = r.title;
         if (descriptionText != null) descriptionText.text = r.description;
         if (amountText != null) amountText.text = r.amount.ToString();
@@ -32,6 +45,17 @@ public class OutpostNoticeModalController : MonoBehaviour
         Apply(resourceImage, r.resourceSprite);
         if (root != null) { root.transform.SetAsLastSibling(); root.SetActive(true); }
     }
-    private void Close() { if (root != null) root.SetActive(false); }
+    private void Close()
+    {
+        if (root != null) root.SetActive(false);
+        FinishNotice();
+    }
+
+    private void FinishNotice()
+    {
+        OutpostNoticeRequest request = currentRequest;
+        currentRequest = null;
+        request?.onClosed?.Invoke();
+    }
     private static void Apply(Image img, Sprite s) { if (img == null) return; img.sprite = s; img.enabled = s != null; }
 }

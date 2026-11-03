@@ -19,6 +19,9 @@ public class OutpostPanelUI : MonoBehaviour
         string name = GetOutpostDisplayName(entry, outpost.OutpostType);
         string resourceName = GetResourceDisplayName(entry, outpost.OutpostType);
         int amount = Mathf.Max(0, outpost.resourcePerTurn);
+        int chatId = outpost.PostClaimChatId;
+        int chatZoneId = outpost.PostClaimChatZoneId;
+        UnityEngine.SceneManagement.Scene scene = outpost.gameObject.scene;
 
         ExplorationModalEvents.RaiseOutpostNotice(new OutpostNoticeRequest {
             title       = $"{name} 해방",
@@ -26,6 +29,11 @@ public class OutpostPanelUI : MonoBehaviour
             amount         = amount,
             buildingSprite = entry.BuildingSprite,
             resourceSprite = entry.ResourceSprite,
+            onClosed = chatId > 0 ? (Action)(() =>
+            {
+                if (Application.isPlaying && scene.IsValid() && scene.isLoaded && !DHGameEndState.IsEnding)
+                    ChatModalController.Show(chatZoneId, chatId);
+            }) : null,
         });
     }
 

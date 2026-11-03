@@ -84,6 +84,10 @@ public class ChatModalController : MonoBehaviour
             return;
         }
 
+        // Restoring scene objects can emit capture-chat notifications before replay is ready.
+        if (BattleReturnAutoSave.IsRestoringCheckpoint) return;
+        BattleReturnAutoSave.BeforeChat(zoneId, startChatId);
+
         if (current == null)
         {
             current = FindFirstObjectByType<ChatModalController>();
@@ -163,6 +167,8 @@ public class ChatModalController : MonoBehaviour
     private void PlayEntrance()
     {
         PrepareEntrance();
+        PopupSoundService.InstallHierarchy(gameObject);
+        PopupSoundService.PlayPopup(gameObject);
         if (entranceTween.isAlive) entranceTween.Stop();
         Canvas.ForceUpdateCanvases();
         float distance = Mathf.Max(((RectTransform)transform).rect.height, entranceRoot.rect.height) + 100f;
@@ -217,7 +223,9 @@ public class ChatModalController : MonoBehaviour
     private void OpenSkipConfirm()
     {
         if (isClosing || skipping) return;
-        if (skipConfirmPopup != null) skipConfirmPopup.SetActive(true);
+        if (skipConfirmPopup == null || skipConfirmPopup.activeSelf) return;
+        skipConfirmPopup.SetActive(true);
+        PopupSoundService.PlayPopup(skipConfirmPopup);
     }
 
     private void CloseSkipConfirm()
@@ -543,6 +551,7 @@ public class ChatModalController : MonoBehaviour
         if (bubblePrefab == null || contentRoot == null) return;
         ChatBubbleView bubble = Instantiate(bubblePrefab, contentRoot);
         bubble.Bind(chat.CharacterName, chat.MessageText, chat.ChatType, chat.CharacterProfile);
+        PopupSoundService.PlayChatBubble();
         if (bubble.HasSameSpeaker(previousSpeakerBubble)) bubble.JoinPreviousSpeaker(previousSpeakerBubble);
         previousSpeakerBubble = bubble;
         if (chat.ChatType != 2) StartCoroutine(PlayBubbleSideEntrance(bubble, chat.ChatType == 1));

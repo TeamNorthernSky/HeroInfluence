@@ -124,7 +124,8 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
         // Backtracking through an open gate remains allowed even while the new-zone path is restricted.
         return Instance.allowedPathCells.Contains(grid) ||
-            GateTeleportController.IsOpenGateTeleportCell(grid);
+            GateTeleportController.IsOpenGateTeleportCell(grid) ||
+            GateTeleportController.IsOpenGateExitCell(grid);
     }
 
     public static bool IsRequiredHeroUnion(HeroUnionUnit heroUnion)

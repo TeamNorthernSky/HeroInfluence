@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 4491695532318287345}
   - component: {fileID: 9101334684557027301}
   - component: {fileID: 8324067554148143859}
+  - component: {fileID: 7214305518630040505}
   m_Layer: 9
   m_Name: Unit_VillanDrone_20001
   m_TagString: Untagged
@@ -571,3 +572,21 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 5906127423495382397}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7214305518630040505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4367654367480254008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364c29faed0a54446adbcf26e4c5e978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SummonSfxKey: 
+  DeathSfxKey: Battle_Retire
+  DeathSfxDelaySeconds: 0
+  GuardSwapSfxKey: 
+  GuardBlockSfxKey: 
+  ImmuneHitSfxKey: 

@@ -1,14 +1,15 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>Maps exploration character templates to the dialogue table's independent hero IDs.</summary>
 public static class ExplorationHeroDialogue
 {
+    public const string ResourceName = "WorldHeroDialogueDataTable";
     public enum Situation { GateOpened = 6, Idle = 7, BaseArrival = 8 }
-    private static Dictionary<int, string[]> rows;
+    private static WorldHeroDialogueDataTable table;
+    private static bool warnedMissing;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void Reset() => rows = null;
+    private static void Reset() { table = null; warnedMissing = false; }
 
     public static string GetMovementMessage(PartyUnitState unit) => GetMessage(unit, 1);
 
@@ -47,43 +48,29 @@ public static class ExplorationHeroDialogue
     {
         int templateId = GetTemplateId(unit);
         int heroId;
-        // Use the same hero keys as the party panel portrait lookup.
+        // Hero IDs follow the workbook's field definitions, independently of template order.
         switch (templateId)
         {
             case 10001: heroId = 0; break;
-            case 10002: heroId = 1; break;
-            case 10003: heroId = 2; break;
-            case 10004: heroId = 3; break;
+            case 10002: heroId = 2; break;
+            case 10003: heroId = 3; break;
+            case 10004: heroId = 1; break;
             default: return null;
         }
 
-        EnsureLoaded();
-        return rows.TryGetValue(heroId, out var row) && column < row.Length
-            && !string.IsNullOrWhiteSpace(row[column]) ? row[column] : null;
-    }
-
-    private static void EnsureLoaded()
-    {
-        if (rows != null) return;
-        rows = new Dictionary<int, string[]>();
-        var source = Resources.Load<TextAsset>("ExplorationHeroDialogue");
-        if (source == null)
+        if (table == null) table = Resources.Load<WorldHeroDialogueDataTable>(ResourceName);
+        if (table == null)
         {
-            Debug.LogWarning("[HeroDialogue] Missing Resources/ExplorationHeroDialogue.csv; using existing bubble messages.");
-            return;
+            if (!warnedMissing) Debug.LogWarning("[HeroDialogue] Missing world dialogue data table.");
+            warnedMissing = true;
+            return null;
         }
-        var lines = source.text.Split('\n');
-        for (int i = 1; i < lines.Length; i++)
+        foreach (var row in table.DataList)
         {
-            if (string.IsNullOrWhiteSpace(lines[i])) continue;
-            // This table contains plain comma-separated cells, without quoted fields.
-            var cells = lines[i].TrimEnd('\r').Split(',');
-            if (cells.Length != 9 || !int.TryParse(cells[0], out int heroId) || rows.ContainsKey(heroId))
-            {
-                Debug.LogWarning($"[HeroDialogue] Invalid or duplicate row {i + 1}; using existing messages for missing entries.");
-                continue;
-            }
-            rows.Add(heroId, cells);
+            if (row == null || row.hero_id != heroId) continue;
+            string message = row.GetDialogue(column);
+            return !string.IsNullOrWhiteSpace(message) ? message : null;
         }
+        return null;
     }
 }

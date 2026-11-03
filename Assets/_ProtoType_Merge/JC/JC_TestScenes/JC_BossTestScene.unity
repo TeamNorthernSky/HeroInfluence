@@ -6556,6 +6556,9 @@ GameObject:
   m_Component:
   - component: {fileID: 529692847}
   - component: {fileID: 529692846}
+  - component: {fileID: 801465901}
+  - component: {fileID: 801465902}
+  - component: {fileID: 801465903}
   m_Layer: 0
   m_Name: JC_OriginalDataCatalog
   m_TagString: Untagged
@@ -6575,18 +6578,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerUnitDataTable: {fileID: 11400000, guid: e6c8877c70aaa8c47a9b46bb87dec069,
+  playerUnitDataTable: {fileID: 11400000, guid: 82be87431bb79154da39acda1d4805b4,
     type: 2}
-  enemyUnitInfoDataTable: {fileID: 0}
-  playerWeaponDataTable: {fileID: 11400000, guid: e94e37bebb96a814ab4d0bac4007f2ec,
+  enemyUnitInfoDataTable: {fileID: 11400000, guid: 84e0b75a34f164443b7bb5addf696deb,
     type: 2}
-  classSkillDataTable: {fileID: 11400000, guid: 9a086d8f8427e404cad97d1371c38396,
+  playerWeaponDataTable: {fileID: 11400000, guid: 73400c927726ef04a882c4c069a303b4,
     type: 2}
-  unitGrowthExpDataTable: {fileID: 11400000, guid: 553a4c165c3d0424ea3947a429526c7b,
+  classSkillDataTable: {fileID: 11400000, guid: fcb0693ae3b57504a988fd8928453ac3,
     type: 2}
-  enemyGroupDataTable: {fileID: 0}
-  loadOnAwake: 1
-  dontDestroyOnLoad: 0
+  unitGrowthExpDataTable: {fileID: 11400000, guid: 3002617db5b3c4b45962369c19a07c95,
+    type: 2}
+  enemyGroupDataTable: {fileID: 11400000, guid: 57bae4e9670486e438f28ceb78ffd0b0,
+    type: 2}
+  loadOnAwake: 0
+  dontDestroyOnLoad: 1
   cachedPlayerTemplates:
   - Index: 10001
     UnitType: "\uD30C\uC774\uD130"
@@ -6596,7 +6601,7 @@ MonoBehaviour:
       Atk: 9
       DEF: 5
       Luck: 0
-      Speed: 0
+      Speed: 1
       CriticalRate: 0.15
       CritMultiplier: 1.5
       CounterRate: 0.15
@@ -6622,7 +6627,7 @@ MonoBehaviour:
       Atk: 12
       DEF: 4
       Luck: 0
-      Speed: 2
+      Speed: 3
       CriticalRate: 0.3
       CritMultiplier: 1.5
       CounterRate: 0.1
@@ -6648,7 +6653,7 @@ MonoBehaviour:
       Atk: 12
       DEF: 2
       Luck: 0
-      Speed: 3
+      Speed: 2
       CriticalRate: 0.2
       CritMultiplier: 1.5
       CounterRate: 0.05
@@ -6674,7 +6679,7 @@ MonoBehaviour:
       Atk: 8
       DEF: 6
       Luck: 0
-      Speed: 1
+      Speed: 2
       CriticalRate: 0.1
       CritMultiplier: 1.5
       CounterRate: 0.1
@@ -6692,10 +6697,186 @@ MonoBehaviour:
       AvoidRate: 0
       influence: 0
     IsEnemyRow: 0
-  cachedEnemyTemplates: []
+  cachedEnemyTemplates:
+  - Index: 20001
+    UnitType: 
+    Name: "\uB9C8\uC5D0\uC2A4\uD2B8\uB85C\uBD07"
+    baseStats:
+      HP: 5
+      Atk: 10
+      DEF: 5
+      Luck: 0
+      Speed: 2
+      CriticalRate: 0.1
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.1
+      influence: 0
+    levelupStats:
+      HP: 1
+      Atk: 4
+      DEF: 1
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(1\uD134) \uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uD788\uC5B4\uB85C 1\uBA85\uC744
+      \uD45C\uC801\uC73C\uB85C \uC9C0\uC815 (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC774
+      \uB458 \uC774\uC0C1\uC77C \uACBD\uC6B0 \uB300\uC0C1\uC740 \uB79C\uB364)\n(2\uD134)
+      \uD574\uB2F9 \uC720\uB2DB\uC5D0\uAC8C '\uC790\uD3ED' \uC2E4\uD589 - \uB300\uBBF8\uC9C0
+      \uACC4\uC0B0 \uD6C4 \uB9C8\uC5D0\uC2A4\uD2B8\uB85C\uBD07 \uC804\uC7A5 \uC81C\uAC70"
+    ExperiencePoint: 15
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 20002
+    UnitType: 
+    Name: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uCD1D\uC218"
+    baseStats:
+      HP: 8
+      Atk: 6
+      DEF: 6
+      Luck: 0
+      Speed: 3
+      CriticalRate: 0.1
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.1
+      influence: 0
+    levelupStats:
+      HP: 3
+      Atk: 4
+      DEF: 1
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(\uB9E4 \uD134) '\uC6D0\uAC70\uB9AC \uC0AC\uACA9' \uC2E4\uD589\n\uC6B0\uC120
+      \uC21C\uC704\n1. \uAC19\uC740 \uD589\uC5D0 \uC788\uB294 \uD788\uC5B4\uB85C\uB97C
+      \uC6B0\uC120 \uD45C\uC801\uC73C\uB85C \uC0BC\uB294\uB2E4.\n2. \uAC19\uC740
+      \uD589 \uD45C\uC801\uC774 \uC5EC\uB7FF\uC774\uBA74 \uD604\uC7AC \uCCB4\uB825\uC774
+      \uB0AE\uC740 \uD788\uC5B4\uB85C\uB97C \uC120\uD0DD\uD55C\uB2E4.\n3. \uAC19\uC740
+      \uD589\uC5D0 \uD45C\uC801\uC774 \uC5C6\uC73C\uBA74 \uAC00\uC7A5 \uAC00\uAE4C\uC6B4
+      \uD788\uC5B4\uB85C\uB97C \uC0AC\uACA9\uD55C\uB2E4. (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4
+      \uC720\uB2DB\uC774 \uB458 \uC774\uC0C1\uC77C \uACBD\uC6B0 \uB300\uC0C1\uC740
+      \uB79C\uB364)"
+    ExperiencePoint: 30
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 20003
+    UnitType: 
+    Name: "\uBE4C\uB7F0\uC5F0\uD569 \uBC29\uD328\uBCD1"
+    baseStats:
+      HP: 6
+      Atk: 6
+      DEF: 8
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0.1
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.1
+      influence: 0
+    levelupStats:
+      HP: 2
+      Atk: 3
+      DEF: 3
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(\uB9E4 \uD134) \n- \uC544\uAD70 \uC720\uB2DB \uC911, \uCCB4\uB825 30%
+      \uBBF8\uB9CC \uC720\uB2DB\uC774 1\uBA85 \uC774\uC0C1 \uC788\uB294 \uACBD\uC6B0,
+      '\uB300\uC2E0 \uB9DE\uAE30' \uC2E4\uD589\n- \uC544\uB2CC \uACBD\uC6B0 \uAC00\uC7A5
+      \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC5D0\uAC8C '\uBC29\uD328 \uCE58\uAE30' \uC2E4\uD589"
+    ExperiencePoint: 30
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 20004
+    UnitType: 
+    Name: "\uBB34\uC778 \uC911\uD3EC\uD0D1"
+    baseStats:
+      HP: 6
+      Atk: 12
+      DEF: 6
+      Luck: 0
+      Speed: 2
+      CriticalRate: 0.2
+      CritMultiplier: 1.5
+      CounterRate: 0.15
+      AvoidRate: 0.15
+      influence: 0
+    levelupStats:
+      HP: 3
+      Atk: 4
+      DEF: 3
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(\uB9E4 \uD134) \uB79C\uB364 \uD788\uC5B4\uB85C 1\uBA85\uC744 \uB300\uC0C1\uC73C\uB85C
+      '\uCDA9\uC804 \uD3EC\uACA9' \uC2E4\uD589"
+    ExperiencePoint: 60
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 20005
+    UnitType: 
+    Name: "\uBE4C\uB7F0\uC5F0\uD569 \uAC15\uD654\uBCD1"
+    baseStats:
+      HP: 10
+      Atk: 6
+      DEF: 6
+      Luck: 0
+      Speed: 1
+      CriticalRate: 0.25
+      CritMultiplier: 1.5
+      CounterRate: 0.2
+      AvoidRate: 0.2
+      influence: 0
+    levelupStats:
+      HP: 7
+      Atk: 5
+      DEF: 3
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(\uB9E4 \uD134)\n- \uAC19\uC740 \uD589\uC5D0 \uD788\uC5B4\uB85C\uAC00
+      \uC5C6\uB294 \uACBD\uC6B0, '\uBC1C\uD1B1 \uD6C4\uB9AC\uAE30' \uC2E4\uD589\n-
+      \uAC19\uC740 \uD589\uC5D0 \uD788\uC5B4\uB85C\uAC00 1\uBA85 \uC788\uB294 \uACBD\uC6B0,
+      '\uBC1C\uD1B1 \uD6C4\uB9AC\uAE30' \uC2E4\uD589\n- \uAC19\uC740 \uD589\uC5D0
+      \uD788\uC5B4\uB85C\uAC00 2\uBA85 \uC788\uB294 \uACBD\uC6B0, '\uBC15\uCE58\uAE30'
+      \uC2E4\uD589"
+    ExperiencePoint: 80
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
   cachedWeapons:
   - WeaponIndex: 1
-    weaponKey: HC001
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uAE30\uBCF8 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uAC00\uC7A5
@@ -6709,8 +6890,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 1
-    weaponSkillKey: HCS001
+    WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uD30C\uC6CC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801
       1\uBA85\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
@@ -6725,7 +6906,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.8
     WeaponSkillSubValue: 0
   - WeaponIndex: 2
-    weaponKey: HC002
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uAD11\uC5ED \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uB113\uAC8C
@@ -6738,8 +6919,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 2
-    weaponSkillKey: HCS002
+    WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uC775\uC2A4\uD50C\uB85C\uC804"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uD3ED\uBC1C\uC2DC\uCF1C
       \uBAA8\uB4E0 \uC801\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C
@@ -6755,7 +6936,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 3
-    weaponKey: HC003
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uBC29\uC5B4 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
@@ -6768,8 +6949,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 3
-    weaponSkillKey: HCS003
+    WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uC2E4\uB4DC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
       \uC0DD\uC131\uD55C\uB2E4. \uC0AC\uC6A9\uD55C \uD788\uC5B4\uB85C\uAC00 \uB2E4\uC74C
@@ -6786,7 +6967,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 4
-    weaponKey: HC004
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uD68C\uBCF5 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uCE58\uC720
@@ -6799,8 +6980,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 4
-    weaponSkillKey: HCS004
+    WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uB9AC\uCEE4\uBC84\uB9AC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC544\uAD70
       1\uBA85\uC758 \uCCB4\uB825\uC744 {WeaponSkillValue} \uD68C\uBCF5\uD55C\uB2E4."
@@ -6815,7 +6996,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 5
-    weaponKey: HC005
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uC704\uC555 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801\uC758
@@ -6828,8 +7009,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 5
-    weaponSkillKey: HCS005
+    WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uD504\uB808\uC154"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC555\uBC15\uD558\uC5EC
       \uBAA8\uB4E0 \uC801\uC758 \uBC29\uC5B4\uB825\uC744 1\uD134 \uB3D9\uC548 {WeaponSkillValue}
@@ -6844,6 +7025,95 @@ MonoBehaviour:
     WeaponSkillMultiTargetCount: 0
     WeaponSkillValue: 0.1
     WeaponSkillSubValue: 0
+--- !u!114 &801465901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529692845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76daf4ac3de77a148a51130eee8e9a2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  zones:
+  - zoneId: 1
+    zoneLabel: "1\uAD6C\uC5ED"
+    chatMainTable: {fileID: 11400000, guid: cc516af73d5a5ff4aa0f25adf30e2969, type: 2}
+    chatSubTable: {fileID: 11400000, guid: dc46515d99a20aa43bc0454f417f691c, type: 2}
+    branchMainTable: {fileID: 11400000, guid: 9965e1b11932dab4a889cc0850870a34, type: 2}
+    branchSubTable: {fileID: 11400000, guid: f576d04fb7468e5429fd65912debfcad, type: 2}
+    enemyBattleGroupTable: {fileID: 11400000, guid: 57ab13dc33fd17f4495930929162e22b,
+      type: 2}
+    enemyBattleUnitTable: {fileID: 11400000, guid: 3b7473e3dcec23e4a9459d245dac1fda,
+      type: 2}
+  - zoneId: 2
+    zoneLabel: "2\uAD6C\uC5ED"
+    chatMainTable: {fileID: 11400000, guid: 65effe05b0d60624a82a4e21f1a2f20e, type: 2}
+    chatSubTable: {fileID: 11400000, guid: 1204d582156b8124590e96794622593c, type: 2}
+    branchMainTable: {fileID: 11400000, guid: af93f3d4e2ed0b64f92238b78cfd4733, type: 2}
+    branchSubTable: {fileID: 11400000, guid: 19f865d5eb4b1a841bfe4d5617570f8f, type: 2}
+    enemyBattleGroupTable: {fileID: 11400000, guid: 0622e59eeea540e419bfe0198159e49f,
+      type: 2}
+    enemyBattleUnitTable: {fileID: 11400000, guid: 7cee3e7df27a69d4bbcc98db13924adf,
+      type: 2}
+  mainSubEventRewardTable: {fileID: 11400000, guid: 402b3d833cd119449a5ff30a77b2d79f,
+    type: 2}
+  loadOnAwake: 1
+  dontDestroyOnLoad: 1
+--- !u!114 &801465902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529692845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82642162af683574a8c09b857ae70252, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildTable: {fileID: 11400000, guid: d5e8a78022a5418ba9e503adaa67c791, type: 2}
+  workshopTable: {fileID: 11400000, guid: 68b950514c24430681cd8df956e6ae81, type: 2}
+  workshopEnforceTable: {fileID: 11400000, guid: c1b0848ef6f544c39f69c6bd44a09d15,
+    type: 2}
+  exchangeTable: {fileID: 11400000, guid: b4485461fff244199e3bde07710971d9, type: 2}
+  labTable: {fileID: 11400000, guid: 854effc1517c430c831d154349764d2f, type: 2}
+  fundTable: {fileID: 11400000, guid: b88f005453384f9bb9fc40133ff64ed9, type: 2}
+  promotionTable: {fileID: 11400000, guid: f989183a06e2414697a04fa9666cf728, type: 2}
+  trainingTable: {fileID: 11400000, guid: 67b1c122cc2444bd9461fc2aa4037a11, type: 2}
+  infirmaryTable: {fileID: 11400000, guid: 4b79209eba244dd0ae886d376bb29172, type: 2}
+  loadOnAwake: 1
+  dontDestroyOnLoad: 1
+--- !u!114 &801465903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529692845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dc01e21d3ac7b44ea8dca3fe1e48ef9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  consumeNpcTableV16: {fileID: 11400000, guid: 35a44669e0b70a448b73b858f5c78e84, type: 2}
+  consumeConditionTableV16: {fileID: 11400000, guid: d968f8c0e9e76b843b377a87f08f8aa0,
+    type: 2}
+  consumeResultTable: {fileID: 11400000, guid: bbee4582cfc1c4345a44e29d9c362905, type: 2}
+  rewardNpcTableV16: {fileID: 11400000, guid: f0b582ed963ef34468449ccc8fb7bb29, type: 2}
+  rewardConditionTableV16: {fileID: 11400000, guid: 52e8b45cab5839143be77892c0c222ec,
+    type: 2}
+  choiceNpcTableV16: {fileID: 11400000, guid: 2ee93f13beb50484e98e404293181e57, type: 2}
+  choiceConditionTableV16: {fileID: 11400000, guid: 3ca38f409fffe2f4995fa5e909c6988c,
+    type: 2}
+  choiceOptionTableV16: {fileID: 11400000, guid: 69d28da1315143f4e824924d08eb67a2,
+    type: 2}
+  choiceResultTableV16: {fileID: 11400000, guid: d2eb32a820bc7b64e91a26b759ff5e16,
+    type: 2}
+  loadOnAwake: 1
+  dontDestroyOnLoad: 1
 --- !u!4 &529692847
 Transform:
   m_ObjectHideFlags: 0
@@ -25985,7 +26255,7 @@ MonoBehaviour:
     allies:
     - unitKey: 10001
       slot: 5
-      level: 3
+      level: 8
       hpRatio: 1
       initialIP: 100
       weaponKey: 
@@ -25995,7 +26265,7 @@ MonoBehaviour:
       skillLevels: 02000000020000000200000002000000
     - unitKey: 10002
       slot: 1
-      level: 3
+      level: 8
       hpRatio: 1
       initialIP: 100
       weaponKey: 
@@ -26005,7 +26275,7 @@ MonoBehaviour:
       skillLevels: 02000000020000000200000002000000
     - unitKey: 10003
       slot: 3
-      level: 3
+      level: 8
       hpRatio: 1
       initialIP: 100
       weaponKey: 
@@ -26015,7 +26285,7 @@ MonoBehaviour:
       skillLevels: 02000000020000000200000002000000
     - unitKey: 10004
       slot: 2
-      level: 3
+      level: 8
       hpRatio: 1
       initialIP: 100
       weaponKey: 

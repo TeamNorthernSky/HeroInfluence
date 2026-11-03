@@ -28,6 +28,8 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
     private bool hovered;
     private float hoverStarted;
     private readonly Vector3[] corners = new Vector3[4];
+    private RectTransform sharedEquipFrame;
+    private Transform equipIconPlace;
 
     private void Awake()
     {
@@ -83,6 +85,7 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
 
     private void LateUpdate()
     {
+        if (equipped) RefreshEquipFrame();
         bool interactive = button != null && button.IsInteractable();
         if (hoverImage != null)
         {
@@ -129,7 +132,45 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
     {
         this.equipped = equipped;
         if (background != null) background.sprite = equipped ? equippedSprite : normalSprite;
-        if (equippedFrame != null) equippedFrame.gameObject.SetActive(equipped);
+        RefreshEquipFrame();
         if (orbitImage != null) orbitImage.gameObject.SetActive(equipped);
+    }
+
+    private void RefreshEquipFrame()
+    {
+        var row = transform.parent;
+        if (row == null) return;
+        if (sharedEquipFrame == null)
+        {
+            sharedEquipFrame = (row.Find("frame") ?? row.Find("Frame")) as RectTransform;
+            if (sharedEquipFrame != null)
+            {
+                // The indicator shares the card row but must not occupy a card slot.
+                var layout = sharedEquipFrame.GetComponent<LayoutElement>() ??
+                    sharedEquipFrame.gameObject.AddComponent<LayoutElement>();
+                layout.ignoreLayout = true;
+            }
+        }
+        if (sharedEquipFrame == null)
+        {
+            if (equippedFrame != null) equippedFrame.gameObject.SetActive(equipped);
+            return;
+        }
+
+        WorkshopCoreCardView equippedCard = null;
+        foreach (Transform child in row)
+        {
+            var card = child.GetComponent<WorkshopCoreCardView>();
+            if (card != null && card.equipped)
+            {
+                equippedCard = card;
+                break;
+            }
+        }
+        if (equippedCard != null && equippedCard.equipIconPlace == null)
+            equippedCard.equipIconPlace = equippedCard.transform.Find("Icon/EquipIconPlace");
+        var place = equippedCard != null ? equippedCard.equipIconPlace : null;
+        sharedEquipFrame.gameObject.SetActive(place != null);
+        if (place != null) sharedEquipFrame.position = place.position;
     }
 }
