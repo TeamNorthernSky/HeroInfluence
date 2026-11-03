@@ -340,6 +340,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
             List<GameObject> blockers = new List<GameObject>();
             List<Vector2Int> gateBlockerCells = new List<Vector2Int>();
+            Vector2Int? exitCellOffset = null;
             IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
             for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
                 gateBlockerCells.Add(blockerCells[cellIndex] + offset);
@@ -350,6 +351,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 gatePrefab != null)
             {
                 Vector2Int anchorGrid = placement.GridPosition + offset;
+                if (gatePrefab.UseSeparateExitCells)
+                    exitCellOffset = gatePrefab.GetExitCellOffset(placement.FlipModel180);
                 Vector3 worldPosition = gatePrefab.GetRootPositionForAnchor(gridManager, anchorGrid);
                 GateFootprint gateVisual = Instantiate(gatePrefab, worldPosition, gatePrefab.transform.rotation, gateRootObject.transform);
                 if (gateVisual.TryGetComponent(out GateVisualController visualController))
@@ -364,7 +367,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 placement.FirstZoneId,
                 placement.SecondZoneId,
                 blockers,
-                gateBlockerCells);
+                gateBlockerCells,
+                exitCellOffset);
         }
     }
 

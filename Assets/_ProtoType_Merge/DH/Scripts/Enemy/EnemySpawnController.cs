@@ -37,6 +37,7 @@ public class EnemySpawnController : MonoBehaviour
     [Tooltip("Fallback CSV enemy group key used only when the spawn point's event battle group key is missing or invalid.")]
     [SerializeField] private string runtimeEnemyGroupKey = "FEP002";
     [SerializeField, Min(1)] private int nextRuntimeEnemySequence = 1;
+    private PartyRegistry partyRegistry;
 
     private void OnEnable()
     {
@@ -242,13 +243,21 @@ public class EnemySpawnController : MonoBehaviour
         if (gridManager == null)
             return false;
 
-        if (gridManager.CanOccupyCell(preferredGrid, null, true))
+        if (partyRegistry == null)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        PartyGridMover playerParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        bool hasPlayerGrid = playerParty != null && playerParty.gameObject.activeInHierarchy;
+        Vector2Int playerGrid = hasPlayerGrid ? playerParty.GetCurrentGrid() : default;
+
+        if ((!hasPlayerGrid || preferredGrid != playerGrid) &&
+            gridManager.CanOccupyCell(preferredGrid, null, true))
             return true;
 
         for (int i = 0; i < GridManager.Directions8.Length; i++)
         {
             Vector2Int candidate = preferredGrid + GridManager.Directions8[i];
-            if (!gridManager.CanOccupyCell(candidate, null, true))
+            if ((hasPlayerGrid && candidate == playerGrid) ||
+                !gridManager.CanOccupyCell(candidate, null, true))
                 continue;
 
             resolvedGrid = candidate;
