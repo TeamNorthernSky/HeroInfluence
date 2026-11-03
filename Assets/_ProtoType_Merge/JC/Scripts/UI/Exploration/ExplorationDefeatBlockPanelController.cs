@@ -89,17 +89,19 @@ public class ExplorationDefeatBlockPanelController : MonoBehaviour
         if ((PNL_PressNextTurn != null && PNL_PressNextTurn.activeSelf) || pendingSpawnCoroutine != null) return;
         if (IsEnemyTurnInProgress()) return;
 
-        if (IsChatOpen())
-        {
-            pendingSpawnCoroutine = StartCoroutine(SpawnAfterChatEnds());
-            return;
-        }
-
-        SpawnPanel();
+        // 복귀 대기 알림 뒤 같은 프레임에 후속 채팅이 시작될 수 있다.
+        pendingSpawnCoroutine = StartCoroutine(SpawnAfterChatEnds());
     }
 
     private static bool IsChatOpen()
         => (ChatManager.Instance != null && ChatManager.Instance.IsRunning) || ChatModalController.IsOpen;
+
+    private static bool IsFollowupPending()
+        => IsChatOpen() || DHGameStateRestoreService.IsRestoring || BattleReturnAutoSave.IsRestoringCheckpoint ||
+            (DHWorldEventConditionRuntimeManager.Instance != null && DHWorldEventConditionRuntimeManager.Instance.IsCheckPending) ||
+            (DHWorldEventRuntimeManager.Instance != null && DHWorldEventRuntimeManager.Instance.IsRunning) ||
+            (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) ||
+            ModalManager.HasAny;
 
     /// <summary>
     /// [KJ 260730] 적 턴 중 패배면 패널을 띄우지 않는다.
@@ -125,9 +127,14 @@ public class ExplorationDefeatBlockPanelController : MonoBehaviour
 
     private System.Collections.IEnumerator SpawnAfterChatEnds()
     {
-        // 채팅 모달은 pausesGame일 수 있으므로 timeScale에 의존하지 않는 프레임 대기를 쓴다.
-        while (IsChatOpen())
+        // 다음 프레임부터 확인해 채팅 시작·종료 콜백으로 이어지는 후속 처리도 기다린다.
+        // 채팅 종료 연출 중에도 IsOpen은 true이므로 화면에서 완전히 사라질 때까지 기다린다.
+        int quietFrames = 0;
+        while (quietFrames < 2)
+        {
             yield return null;
+            quietFrames = IsFollowupPending() ? 0 : quietFrames + 1;
+        }
 
         pendingSpawnCoroutine = null;
 
