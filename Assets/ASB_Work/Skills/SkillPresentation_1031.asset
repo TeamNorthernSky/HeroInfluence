@@ -88,7 +88,7 @@ MonoBehaviour:
     ForceApproach: 0
     AnimationStateName: Base Layer.Dash
     BlendInSeconds: 0.1
-    SfxKey: Explore_Move
+    SfxKey: Battle_Move
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -156,7 +156,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
     BlendInSeconds: 0
-    SfxKey: Explore_Move
+    SfxKey: Battle_Move
   Post:
     Enabled: 1
     AnimationStateName: 
