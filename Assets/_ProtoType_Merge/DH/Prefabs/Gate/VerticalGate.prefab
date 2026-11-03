@@ -88,6 +88,8 @@ MonoBehaviour:
   useOccupiedCellsAsTeleportCells: 1
   customTeleportOffsets:
   - {x: 0, y: 0}
+  useSeparateExitCells: 1
+  exitCellOffset: {x: -1, y: 0}
   gridManager: {fileID: 0}
   drawGizmos: 1
   drawOnlyWhenSelected: 0

@@ -68,6 +68,21 @@ public class GateTeleportController : MonoBehaviour
         return controller.TryFindOpenGateAtCell(grid, out _, out _);
     }
 
+    public static bool IsOpenGateExitCell(Vector2Int grid)
+    {
+        GateTeleportController controller = Instance;
+        if (controller == null)
+            return false;
+
+        for (int i = 0; i < controller.gates.Count; i++)
+        {
+            GateRuntimeController gate = controller.gates[i];
+            if (gate != null && gate.IsOpen && gate.ContainsExitCell(grid))
+                return true;
+        }
+        return false;
+    }
+
     public void RegisterGate(GateRuntimeController gate)
     {
         if (gate == null || gates.Contains(gate))
@@ -117,7 +132,7 @@ public class GateTeleportController : MonoBehaviour
         if (!TryFindDestinationGate(sourceGate, out GateRuntimeController destinationGate))
             return;
 
-        if (!destinationGate.TryGetTeleportCellByIndex(sourceCellIndex, out Vector2Int destinationGrid))
+        if (!destinationGate.TryGetExitCellByIndex(sourceCellIndex, out Vector2Int destinationGrid))
             return;
 
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();

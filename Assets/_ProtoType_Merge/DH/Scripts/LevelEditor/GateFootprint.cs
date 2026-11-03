@@ -49,6 +49,12 @@ public sealed class GateFootprint : MonoBehaviour
     [SerializeField] private bool useOccupiedCellsAsTeleportCells = true;
     [SerializeField] private List<Vector2Int> customTeleportOffsets = new List<Vector2Int> { Vector2Int.zero };
 
+    [Header("Exit Cells")]
+    [Tooltip("Use separate arrival cells without changing the occupied footprint or model placement.")]
+    [SerializeField] private bool useSeparateExitCells;
+    [Tooltip("Offset from each entrance to its exit. A flipped model reverses this offset.")]
+    [SerializeField] private Vector2Int exitCellOffset = Vector2Int.left;
+
     [Header("Debug Preview")]
     [SerializeField] private GridManager gridManager;
     [SerializeField] private bool drawGizmos = true;
@@ -66,6 +72,12 @@ public sealed class GateFootprint : MonoBehaviour
     public Vector2Int AnchorGrid => anchorGrid;
     public Vector2Int AnchorOffsetFromObjectGrid => anchorOffsetFromObjectGrid;
     public bool UseOccupiedCellsAsTeleportCells => useOccupiedCellsAsTeleportCells;
+    public bool UseSeparateExitCells => useSeparateExitCells;
+
+    public Vector2Int GetExitCellOffset(bool flipped)
+    {
+        return flipped ? -exitCellOffset : exitCellOffset;
+    }
 
     private void Awake()
     {
@@ -196,6 +208,13 @@ public sealed class GateFootprint : MonoBehaviour
 
         if (!useOccupiedCellsAsTeleportCells)
             DrawCells(resolvedAnchorGrid, GetTeleportOffsets(), cellSize * 0.58f, y + 0.02f, teleportCellColor, teleportCellColor);
+
+        if (useSeparateExitCells)
+        {
+            bool flipped = TryGetComponent(out GateVisualController visual) && visual.IsModelFlipped;
+            DrawCells(resolvedAnchorGrid + GetExitCellOffset(flipped), GetOccupiedOffsets(), cellSize,
+                y + 0.02f, teleportCellColor, teleportCellColor);
+        }
 
         if (drawObjectToAnchorOffset)
             DrawObjectAnchorOffset(objectGrid, resolvedAnchorGrid, cellSize, y);

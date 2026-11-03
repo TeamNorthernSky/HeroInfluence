@@ -909,7 +909,7 @@ public class GateThreatController : MonoBehaviour
             GateRuntimeController gate = gates[i];
             if (gate != null &&
                 gate.ContainsZone(normalizedZoneId) &&
-                gate.ContainsBlockerCell(partyGrid))
+                gate.ContainsEntranceCell(partyGrid))
             {
                 return true;
             }

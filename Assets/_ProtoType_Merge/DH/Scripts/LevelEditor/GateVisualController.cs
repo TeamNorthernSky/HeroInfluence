@@ -14,6 +14,8 @@ public sealed class GateVisualController : MonoBehaviour
     private bool targetOpen;
 
     public bool IsAnimating { get; private set; }
+    public bool IsModelFlipped => modelRoot != null &&
+        Vector3.Dot(modelRoot.localRotation * Vector3.right, Vector3.right) < 0f;
 
     public void SetModelFlipped(bool flipped)
     {
