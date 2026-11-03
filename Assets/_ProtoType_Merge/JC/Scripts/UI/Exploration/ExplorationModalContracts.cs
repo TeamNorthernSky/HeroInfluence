@@ -17,6 +17,7 @@ public sealed class MapEventModalRequest
 
 public sealed class OutpostNoticeRequest
 {
+    public Action onClosed;
     public string title;             // "{이름} 해방"
     public string description;       // 다중행
     public int    amount;

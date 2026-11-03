@@ -18,6 +18,7 @@ public class TutorialCutSceneManager : MonoBehaviour
 
     public List<GameObject> CutScenes;
     [SerializeField] private GameObject skipPopup;
+    [SerializeField, Min(0f)] private float cutFadeInDuration = 0.35f;
     private readonly List<RaycastResult> pointerHits = new List<RaycastResult>();
     private int popupClosedFrame = -1;
     // 다음에 표시할 컷의 인덱스. 표시 중인 마지막 컷은 currentIndex - 1이다.
@@ -34,9 +35,28 @@ public class TutorialCutSceneManager : MonoBehaviour
         {
             item.gameObject.SetActive(false);
         }
+        PrepareCutFadeIns();
         currentIndex = 0;
         currentImage = null;
         if (CutScenes.Count > 0) GoNextCutScene();
+    }
+
+    private void PrepareCutFadeIns()
+    {
+        foreach (var item in CutScenes)
+        {
+            if (item == null) continue;
+            foreach (var image in item.GetComponentsInChildren<Image>(true))
+            {
+                // Sprite.name에는 확장자가 없다. 말풍선과 설명은 대상에서 제외한다.
+                if (!image.name.StartsWith("CutScene", System.StringComparison.Ordinal) ||
+                    image.sprite == null || !image.sprite.name.EndsWith("cut", System.StringComparison.OrdinalIgnoreCase))
+                    continue;
+                var fade = image.GetComponent<CutSceneFadeIn>();
+                if (fade == null) fade = image.gameObject.AddComponent<CutSceneFadeIn>();
+                fade.SetDuration(cutFadeInDuration);
+            }
+        }
     }
 
     // Update is called once per frame

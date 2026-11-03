@@ -51,8 +51,10 @@ public class GameLoadGate : MonoBehaviour
         // [KJ 260714] 이어하기 여부 확정 후 플래그 소비(재진입/새게임 시 stale 방지).
         bool isContinue = SaveSlotRepository.IsContinue;
         SaveSlotRepository.IsContinue = false;
+        BattleReturnAutoSave.CancelPendingFollowup();
 
         GameSaveData restoreData = null;
+        GameSaveData.BattleReturnCheckpoint battleCheckpoint = null;
         if (isContinue)
         {
             restoreData = LoadSaveData(SaveSlotRepository.CurrentSlot);
@@ -70,6 +72,7 @@ public class GameLoadGate : MonoBehaviour
             // [KJ 260714] 복원 모드: DHScene 로드 전에 DDOL 리포/전역 상태를 저장 데이터로 채운다.
             // 부트스트랩(PartyUnitBootstrap)이 ContainsParty==true를 감지 → 기본값 재시드 대신 복원값 동기화.
             Debug.Log($"[GameLoadGate] 이어하기 복원 — 슬롯 {SaveSlotRepository.CurrentSlot} (day {restoreData.currentDay}).");
+            BattleReturnAutoSave.BeginCheckpointRestore(restoreData.battleReturnCheckpoint);
             DHGameStateRestoreService.BeginRestoreSession();
             DHGameStateRestoreService.RestoreFromGameSaveData(restoreData);
         }
@@ -133,6 +136,7 @@ public class GameLoadGate : MonoBehaviour
             // ChatFlags는 턴 시작 스냅샷에 없어 별도 복원(F008).
             // 복원 세션 종료 + 현재 상태를 새 턴 시작 스냅샷으로 캡처(이후 수동 저장이 이 시점 기준).
             DHGameStateRestoreService.CompleteRestoreSession(captureTurnStartSnapshot: true);
+            battleCheckpoint = restoreData.battleReturnCheckpoint;
             UnityEngine.Object.Destroy(restoreData);
             restoreData = null;
             Debug.Log("[GameLoadGate] 이어하기 복원 완료.");
@@ -168,6 +172,8 @@ public class GameLoadGate : MonoBehaviour
         // TurnManager는 이 준비 완료 이후 홍보 초기 지급 → 첫 스냅샷 → 최초 저장 순서로 진행한다.
         if (entryOwner != null) entryOwner.CompleteExplorationEntry(entryVersion);
         entryPending = false;
+
+        if (isContinue) BattleReturnAutoSave.Restore(battleCheckpoint);
 
         yield return SceneManager.UnloadSceneAsync(gameObject.scene);
     }

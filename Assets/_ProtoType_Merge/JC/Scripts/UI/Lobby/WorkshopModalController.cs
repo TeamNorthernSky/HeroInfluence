@@ -331,7 +331,7 @@ public class WorkshopModalController : MonoBehaviour
         if (costMoneyText != null) costMoneyText.text = costKnown ? $"{money:N0}" : NoValue;
         if (goldBadge != null) goldBadge.SetActive(lackMoney);
         if (costCrystalText != null) costCrystalText.text = costKnown ? $"{crystal:N0}" : NoValue;
-        UpdateRequiredWorkshopLevelText(costKnown ? reqLevel : 0, deptLevel);
+        UpdateRequiredWorkshopLevelText(costKnown ? reqLevel : 0, deptLevel, lackMoney);
         if (crystalBadge != null) crystalBadge.SetActive(lackCrystal);
         if (btnConfirmLabel != null) btnConfirmLabel.text = primary;
         if (btnConfirm != null) btnConfirm.interactable = enabled;
@@ -352,12 +352,13 @@ public class WorkshopModalController : MonoBehaviour
         }
     }
 
-    private void UpdateRequiredWorkshopLevelText(int requiredLevel, int currentLevel)
+    private void UpdateRequiredWorkshopLevelText(int requiredLevel, int currentLevel, bool lackMoney)
     {
         if (requiredWorkshopLevelText == null) return;
         bool levelTooLow = requiredLevel > 0 && currentLevel < requiredLevel;
-        requiredWorkshopLevelText.gameObject.SetActive(levelTooLow);
-        requiredWorkshopLevelText.text = levelTooLow ? "부서 레벨이 부족합니다" : "";
+        requiredWorkshopLevelText.gameObject.SetActive(levelTooLow || lackMoney);
+        requiredWorkshopLevelText.text = levelTooLow ? "부서 레벨이 부족합니다"
+            : lackMoney ? "강화에 필요한 자원이 부족합니다" : "";
         requiredWorkshopLevelText.fontStyle = FontStyles.Bold;
         requiredWorkshopLevelText.color = Color.red;
     }
