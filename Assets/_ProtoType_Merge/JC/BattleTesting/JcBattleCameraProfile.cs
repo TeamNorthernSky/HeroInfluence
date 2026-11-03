@@ -37,7 +37,7 @@ namespace JC.BattleTesting
         }
     }
     [CreateAssetMenu(menuName = "JC/전투 테스트/카메라 프로필")]
-    public sealed class JcBattleCameraProfile : ScriptableObject
+    public class JcBattleCameraProfile : ScriptableObject
     {
         [Tooltip("F6 구도입니다. 플레이 중에는 세션 초안을 편집한 뒤 명시적으로 저장하세요.")]
         public JcBattleCameraPose viewA = new JcBattleCameraPose { position = new Vector3(13.322f, 15.563f, -9.328f), rotation = new Vector3(45f, -55f, 0f) };

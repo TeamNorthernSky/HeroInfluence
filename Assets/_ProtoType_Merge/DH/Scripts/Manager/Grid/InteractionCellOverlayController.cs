@@ -42,6 +42,67 @@ public class InteractionCellOverlayController : MonoBehaviour
     private readonly Dictionary<object, ExternalOverlaySet> externalOverlaySets = new Dictionary<object, ExternalOverlaySet>();
     private readonly List<Vector2Int> removalBuffer = new List<Vector2Int>();
 
+    // Group the tiles emitted by each combat source before testing the inner 80% of its whole footprint.
+    private struct EncounterCell
+    {
+        public Behaviour owner;
+        public Vector2Int grid;
+        public OverlayCellType type;
+    }
+    private readonly List<EncounterCell> encounterCells = new List<EncounterCell>();
+    private readonly Dictionary<Behaviour, Bounds> encounterBounds = new Dictionary<Behaviour, Bounds>();
+
+    private void AddEncounterCell(Behaviour owner, Vector2Int cell, OverlayCellType type)
+    {
+        encounterCells.Add(new EncounterCell { owner = owner, grid = cell, type = type });
+        TrySetDesiredCell(cell, type);
+    }
+
+    private void CacheVisibleEncounterCells()
+    {
+        encounterBounds.Clear();
+        int kept = 0;
+        float width = Mathf.Max(.01f, gridManager.CellSize * Mathf.Max(1f, cellScale));
+        for (int i = 0; i < encounterCells.Count; i++)
+        {
+            var cell = encounterCells[i];
+            if (!desiredCells.TryGetValue(cell.grid, out var visible) || visible != cell.type ||
+                !activeOverlays.TryGetValue(cell.grid, out var tile) || !tile.GameObject.activeInHierarchy) continue;
+            var bounds = new Bounds(tile.GameObject.transform.position, new Vector3(width, 0, width));
+            if (encounterBounds.TryGetValue(cell.owner, out var previous)) bounds.Encapsulate(previous);
+            encounterBounds[cell.owner] = bounds;
+            encounterCells[kept++] = cell;
+        }
+        encounterCells.RemoveRange(kept, encounterCells.Count - kept);
+    }
+
+    public Component PickEncounter(Ray ray, float maxDistance, out float nearest)
+    {
+        nearest = maxDistance;
+        if (gridManager == null || !isActiveAndEnabled || Mathf.Abs(ray.direction.y) < .0001f) return null;
+        Behaviour best = null;
+        float bestCenterDistance = float.PositiveInfinity;
+        foreach (var cell in encounterCells)
+        {
+            if (cell.owner == null || !cell.owner.isActiveAndEnabled) continue;
+            var tile = activeOverlays[cell.grid].GameObject.transform;
+            float t = (tile.position.y - ray.origin.y) / ray.direction.y;
+            if (t < 0 || t > nearest) continue;
+            var point = ray.GetPoint(t);
+            var local = tile.InverseTransformPoint(point);
+            if (Mathf.Abs(local.x) > .5f || Mathf.Abs(local.z) > .5f) continue;
+            var bounds = encounterBounds[cell.owner];
+            var delta = point - bounds.center;
+            if (Mathf.Abs(delta.x) > bounds.extents.x * .8f || Mathf.Abs(delta.z) > bounds.extents.z * .8f) continue;
+            float centerDistance = delta.x * delta.x + delta.z * delta.z;
+            if (t == nearest && centerDistance >= bestCenterDistance) continue;
+            best = cell.owner;
+            nearest = t;
+            bestCenterDistance = centerDistance;
+        }
+        return best;
+    }
+
     private float nextRefreshTime;
     private Mesh generatedMesh;
     private Material generatedMaterial;
@@ -141,11 +202,13 @@ public class InteractionCellOverlayController : MonoBehaviour
         BuildDesiredZones();
         HideRemovedZones();
         ShowDesiredZones();
+        CacheVisibleEncounterCells();
     }
 
     private void BuildDesiredZones()
     {
         desiredCells.Clear();
+        encounterCells.Clear();
         externalDesiredCellColors.Clear();
         AddMainEventInteractionCells();
         AddEnemyEncounterCells();
@@ -169,6 +232,8 @@ public class InteractionCellOverlayController : MonoBehaviour
                 if (TrySetDesiredCell(grid, OverlayCellType.External))
                 {
                     externalDesiredCellColors[grid] = set.Color;
+                    if (pair.Key is TutorialEnemyObject tutorialEnemy)
+                        encounterCells.Add(new EncounterCell { owner = tutorialEnemy, grid = grid, type = OverlayCellType.External });
                 }
             }
         }
@@ -190,7 +255,7 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
-                TrySetDesiredCell(grid, OverlayCellType.MainEvent);
+                AddEncounterCell(mainEvent, grid, OverlayCellType.MainEvent);
             }
 
             MultiGridOccupant occupant = mainEvent.GetComponent<MultiGridOccupant>();
@@ -198,11 +263,11 @@ public class InteractionCellOverlayController : MonoBehaviour
             {
                 IReadOnlyList<Vector2Int> occupiedCells = occupant.GetOccupiedCells();
                 for (int cellIndex = 0; cellIndex < occupiedCells.Count; cellIndex++)
-                    TrySetVisibleDesiredCell(occupiedCells[cellIndex], OverlayCellType.MainEvent);
+                    AddEncounterCell(mainEvent, occupiedCells[cellIndex], OverlayCellType.MainEvent);
             }
             else
             {
-                TrySetVisibleDesiredCell(mainEvent.GetCurrentGrid(gridManager), OverlayCellType.MainEvent);
+                AddEncounterCell(mainEvent, mainEvent.GetCurrentGrid(gridManager), OverlayCellType.MainEvent);
             }
         }
     }
@@ -220,7 +285,7 @@ public class InteractionCellOverlayController : MonoBehaviour
                 continue;
 
             Vector2Int enemyGrid = enemy.GetCurrentGrid();
-            TrySetVisibleDesiredCell(enemyGrid, OverlayCellType.Enemy);
+            AddEncounterCell(enemy, enemyGrid, OverlayCellType.Enemy);
 
             for (int y = -1; y <= 1; y++)
             {
@@ -240,15 +305,10 @@ public class InteractionCellOverlayController : MonoBehaviour
                     OverlayCellType type = state == EnemyEncounterZoneState.OverlappedEnemyZone
                         ? OverlayCellType.OverlappedEnemy
                         : OverlayCellType.Enemy;
-                    TrySetDesiredCell(grid, type);
+                    AddEncounterCell(enemy, grid, type);
                 }
             }
         }
-    }
-
-    private bool TrySetVisibleDesiredCell(Vector2Int grid, OverlayCellType type)
-    {
-        return TrySetDesiredCell(grid, type);
     }
 
     private void AddOutpostInteractionCells()
@@ -429,6 +489,8 @@ public class InteractionCellOverlayController : MonoBehaviour
 
     private void ClearActiveOverlays()
     {
+        encounterCells.Clear();
+        encounterBounds.Clear();
         foreach (KeyValuePair<Vector2Int, OverlayInstance> pair in activeOverlays)
             ReleaseOverlay(pair.Value);
 

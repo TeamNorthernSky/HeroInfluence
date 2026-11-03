@@ -6,7 +6,7 @@ float _JcBuildingHighlight;
 
 half JcOutlineVisibility(float2 uv, float2 radius, float bias)
 {
-    if (_JcBuildingHighlight < .5) return 1;
+    if (_JcBuildingHighlight < .5 || _JcBuildingHighlight > 1.5) return 1;
     // 포인트 샘플은 건물 자기 깊이를 이웃의 경사 깊이와 섞지 않는다.
     float inverseDepth = SAMPLE_TEXTURE2D_X(_JcBuildingShapeDepth, sampler_PointClamp, uv).g;
     if (inverseDepth <= 0)

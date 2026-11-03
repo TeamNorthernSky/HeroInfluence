@@ -8,6 +8,8 @@ namespace JC.BattleTesting
     {
         [Tooltip("전투 판정 없이 무대·바닥·기둥 외형만 포함하는 프리팹입니다.")]
         public GameObject visualPrefab;
+        public JcBossCameraProfile cameraProfile;
+        public Material glassProfile;
         [Tooltip("보스전 이벤트 구역 번호입니다.")] public int zoneId = 2;
         [Tooltip("이 배경을 사용할 전투 키입니다. Start_ 접두어는 자동으로 제외합니다.")]
         public string battleKey = "BE490";

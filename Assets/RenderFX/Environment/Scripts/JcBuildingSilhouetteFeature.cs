@@ -41,6 +41,25 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
     public static void ClearHoverHighlight(UnityEngine.Object owner)
     { if (hoverOwner == owner) { hoverOwner = null; hoverTarget = null; } }
 
+    private static JC.Indicators.JcInteractionHoverOutlineController interactionOwner;
+    private static Transform interactionTarget;
+    private static Renderer[] interactionRenderers;
+
+    public static void SetInteractionHighlight(JC.Indicators.JcInteractionHoverOutlineController owner, Transform target, Renderer[] meshes)
+    {
+        interactionOwner = owner;
+        interactionTarget = target;
+        interactionRenderers = meshes;
+    }
+
+    public static void ClearInteractionHighlight(JC.Indicators.JcInteractionHoverOutlineController owner)
+    {
+        if (interactionOwner != owner) return;
+        interactionOwner = null;
+        interactionTarget = null;
+        interactionRenderers = null;
+    }
+
     private MaskPass tutorialMaskPass;
     private CompositePass tutorialCompositePass;
     private MaskPass maskPass;
@@ -97,21 +116,40 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         // 튜토리얼 안내가 있으면 일반 호버보다 우선한다. 외곽선 합성은 같은 패스를 사용한다.
         bool tutorial = tutorialOwner != null && tutorialTarget != null && tutorialTarget.gameObject.scene == scene;
         bool hover = hoverOwner != null && hoverTarget != null && hoverTarget.gameObject.scene == scene;
-        if (tutorial || hover)
+        bool interaction = !tutorial && !hover && interactionOwner != null && interactionTarget != null && interactionTarget.gameObject.scene == scene;
+        if (tutorial || hover || interaction)
         {
-            JC.Indicators.JcBuildingHoverOutlineController.Resolve(scene, out var hoverColor, out var hoverTuning, out var hoverShape);
+            Color hoverColor;
+            Vector3 hoverTuning, hoverShape;
+            float width = 9f, smoothing;
+            if (interaction)
+            {
+                var v = interactionOwner.Values;
+                hoverColor = v.outlineColor;
+                hoverTuning = new Vector3(v.outlineIntensity, v.highlightSpeed, v.highlightIntensity);
+                hoverShape = new Vector3(v.highlightRange, v.highlightSmoothing, v.whiteOutlineWidth);
+                width = v.outlineWidth;
+                smoothing = v.edgeSmoothing;
+            }
+            else
+            {
+                JC.Indicators.JcBuildingHoverOutlineController.Resolve(scene, out hoverColor, out hoverTuning, out hoverShape);
+                JC.Indicators.JcBuildingHoverOutlineController.ResolveAntialiasing(scene, out smoothing);
+            }
             var highlight = JcBuildingSilhouetteSettings.Default;
             float pulse = .5f + .5f * Mathf.Sin(Time.unscaledTime * Mathf.PI * 2 / 1.6f);
             highlight.opacity = 0;
             highlight.outlineColor = tutorial ? Color.Lerp(tutorialColor, Color.white, pulse) : hoverColor;
             highlight.outlineOpacity = 1;
             highlight.outlineWidthMode = JcBuildingOutlineWidthMode.ScreenPixels;
-            highlight.outlineWidth = tutorial ? Mathf.Lerp(9, 15, pulse) : 9f;
+            highlight.outlineWidth = tutorial ? Mathf.Lerp(9, 15, pulse) : width;
             tutorialMaskPass.Setup(true, highlight, renderingData.cameraData.camera);
-            tutorialMaskPass.explicitRenderers = tutorial ? tutorialRenderers : hoverRenderers;
-            if (!tutorial) tutorialMaskPass.SetHoverOrbit(renderingData.cameraData.camera, hoverRenderers, hoverTuning, hoverShape);
-            JC.Indicators.JcBuildingHoverOutlineController.ResolveAntialiasing(scene, out float smoothing);
+            tutorialMaskPass.explicitRenderers = tutorial ? tutorialRenderers : interaction ? interactionRenderers : hoverRenderers;
+            if (!tutorial) tutorialMaskPass.SetHoverOrbit(renderingData.cameraData.camera, tutorialMaskPass.explicitRenderers, hoverTuning, hoverShape);
+            tutorialMaskPass.throughWalls = interaction;
             tutorialMaskPass.SetAntialiasing(smoothing);
+            tutorialMaskPass.renderPassEvent = !interaction ? (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 2) : RenderPassEvent.AfterRenderingTransparents;
+            tutorialCompositePass.renderPassEvent = (RenderPassEvent)((int)tutorialMaskPass.renderPassEvent + 1);
             tutorialMaskPass.overrideMaterial = silhouetteMaterial;
             tutorialCompositePass.Setup(silhouetteMaterial, compositeIndex);
             renderer.EnqueuePass(tutorialMaskPass);
@@ -152,6 +190,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         private Vector4 pixelSize;
         public RTHandle Mask { get; private set; }
         public Renderer[] explicitRenderers;
+        public bool throughWalls;
         public Material overrideMaterial;
         private readonly string maskName;
         private static readonly int EdgeSmoothingId = Shader.PropertyToID("_JcBuildingEdgeSmoothing");
@@ -209,7 +248,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
         public void WriteTuning(CommandBuffer cmd)
         {
-            cmd.SetGlobalFloat("_JcBuildingHighlight", overrideMaterial != null && explicitRenderers != null ? 1f : 0f);
+            cmd.SetGlobalFloat("_JcBuildingHighlight", overrideMaterial != null && explicitRenderers != null ? (throughWalls ? 2f : 1f) : 0f);
             if (Mask != null) cmd.SetGlobalTexture("_JcBuildingShapeDepth", Mask.nameID);
             cmd.SetGlobalFloat(EdgeSmoothingId, edgeSmoothing);
             cmd.SetGlobalVector(OrbitBoundsId, orbitBounds);
