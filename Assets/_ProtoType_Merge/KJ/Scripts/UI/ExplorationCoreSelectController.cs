@@ -14,6 +14,10 @@ public class ExplorationCoreSelectController : MonoBehaviour
     private UnityAction[] clickHandlers;
     private bool refreshing;
 
+    public Sprite GetCoreIcon(int coreIndex)
+        => coreIcons != null && coreIndex > 0 && coreIndex <= coreIcons.Length
+            ? coreIcons[coreIndex - 1] : null;
+
     private void Awake()
     {
         clickHandlers = new UnityAction[cards.Length];
