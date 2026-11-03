@@ -97,4 +97,31 @@ public class GameSaveData : ScriptableObject
     // DHEventStateSnapshotSection 스냅샷(Set_Flag_* 효과/분기 조건).
     public List<DHEventFlagState> chatFlags = new List<DHEventFlagState>();
     public List<DHEventNumericState> eventNumericStates = new List<DHEventNumericState>();
+
+    [Serializable]
+    public sealed class BattleReturnCheckpoint
+    {
+        public int zoneId;
+        public int chatId;
+        public string sourceMainEventKey;
+        public string sourceSubEventKey;
+        public string victoryEnemyPlacementKey;
+        public string heroUnionChatKey;
+        public string defeatedPartyId;
+        public EnemyTurnCheckpoint enemyTurn;
+    }
+
+    [Serializable]
+    public sealed class EnemyTurnCheckpoint
+    {
+        // Names match EnemyTurnSessionRepository's serialized session fields.
+        public bool isActive;
+        public bool shouldResumeAfterCombat;
+        public string currentEnemyPlacementKey;
+        public string currentEnemyId;
+        public int remainingMovePoints;
+        public List<string> processedEnemyPlacementKeys = new List<string>();
+    }
+
+    public BattleReturnCheckpoint battleReturnCheckpoint;
 }
