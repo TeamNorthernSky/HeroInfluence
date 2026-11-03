@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c65d6a9bbe0e1a545b146f54e7797a8d, type: 3}
   m_Name: JC_BossBattleBackground
   m_EditorClassIdentifier: 
-  visualPrefab: {fileID: 729960545371821083, guid: a49c257236e5b684ca9862f57c375116,
+  visualPrefab: {fileID: 4975732683661938459, guid: 2f0bbfb4bb0d1c846bad759cff51c9ad,
     type: 3}
+  cameraProfile: {fileID: 11400000, guid: a8b00b86ef8962a49bfd8c3ea7f2ce6c, type: 2}
+  glassProfile: {fileID: 2100000, guid: 000ffbad2aba4dc4aa0a939a31cd5db3, type: 2}
   zoneId: 2
   battleKey: BE490

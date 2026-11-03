@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdcd9ae491a24e90b7aa07e678c0f4fa, type: 3}
+  m_Name: JC_BossCamera_Captured
+  m_EditorClassIdentifier: 
+  viewA:
+    position: {x: 6.1, y: 8.18, z: -20.47}
+    rotation: {x: 20.69, y: 333, z: 0.00000046327375}
+    fieldOfView: 36
+    perspectiveStrength: 0.648
+  viewB:
+    position: {x: 7.981912, y: 6.8285604, z: 6.1162143}
+    rotation: {x: 30.150019, y: 218.19978, z: 0}
+    fieldOfView: 60.000004
+    perspectiveStrength: 0.5
+  aim:
+    pose:
+      position: {x: 7.81, y: 9.51, z: -19.04083}
+      rotation: {x: 23.8, y: -24, z: 0}
+      fieldOfView: 35
+      perspectiveStrength: 1
+    actorAnchor: {x: 0.54, y: 0.15}
+    actorTolerance: {x: 0.03, y: 0.03}
+    targetAnchor: {x: 0.555, y: 0.68}
+    targetTolerance: {x: 0.125, y: 0.07}
+    targetHeight: 1.1
+    maxFov: 38
+  rightWallX: 19
+  rightMargin: 3

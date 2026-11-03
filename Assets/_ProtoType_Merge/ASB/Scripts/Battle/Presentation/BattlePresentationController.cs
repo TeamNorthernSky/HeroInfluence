@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using JC.BattleTesting;
@@ -106,6 +106,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     private IDisposable turnFlowLock;
     private int turnCameraView = -1;
     private bool attackZoomActive;
+    public bool IsAttackCameraActive => attackZoomActive;
+    public JcBossCamera BossCamera { get; set; }
     private Vector3 attackCameraPosition;
     private Quaternion attackCameraRotation;
     private float attackCameraFov, attackCameraOrthoSize;
@@ -190,11 +192,14 @@ public sealed class BattlePresentationController : MonoBehaviour
     {
         if (!attackZoomActive || !followAttackFocus || previewCamera == null || attackFocusActor == null) return;
         nekoHealProjectiles.RemoveAll(projectile => projectile == null);
-        Vector3 direction = AttackFocusPosition - previewCamera.transform.position;
+        var position = previewCamera.transform.position;
+        var rotation = previewCamera.transform.rotation;
+        float fov = previewCamera.fieldOfView;
+        Vector3 direction = AttackFocusPosition - position;
         if (direction.sqrMagnitude > .001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
-            previewCamera.transform.rotation = projectileFocusLatched
+            rotation = projectileFocusLatched
                 ? Quaternion.RotateTowards(previewCamera.transform.rotation, targetRotation,
                     projectileFocusSpeed * Time.unscaledDeltaTime)
                 : Quaternion.Slerp(previewCamera.transform.rotation, targetRotation,
@@ -203,10 +208,22 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (focusNekoBarrage || (frameRangedPair && attackFocusTarget != null) || (focusNekoHeal && (nekoHealProjectiles.Count > 0 || nekoHealTargets.Count > 0)))
         {
             float neededFov = Mathf.Max(attackZoomBaseFov,
-                RequiredPairFov(previewCamera.transform.position, previewCamera.transform.rotation));
-            previewCamera.fieldOfView = Mathf.Lerp(previewCamera.fieldOfView, neededFov,
+                RequiredPairFov(position, rotation));
+            fov = Mathf.Lerp(fov, neededFov,
                 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
         }
+        ApplyCameraPose(position,rotation,fov);
+    }
+
+    private void ApplyCameraPose(Vector3 position, Quaternion rotation, float fov)
+    {
+        if (BossCamera)
+        {
+            BossCamera.ApplyPose(position,rotation,fov);
+            return;
+        }
+        previewCamera.transform.SetPositionAndRotation(position,rotation);
+        previewCamera.fieldOfView = fov;
     }
 
     private Vector3 AttackFocusPosition
@@ -480,21 +497,20 @@ public sealed class BattlePresentationController : MonoBehaviour
     public void SelectView(int view)
     {
         if (previewCamera == null) return;
+        if (BossCamera) BossCamera.EndBasePreview();
         CancelTurnPresentation();
         if (cameraMotion != null) StopCoroutine(cameraMotion);
         cameraMotion = null;
         turnCameraView = -1;
         if (view == 2)
         {
-            previewCamera.transform.SetPositionAndRotation(savedPosition, savedRotation);
-            previewCamera.fieldOfView = savedFov;
+            ApplyCameraPose(savedPosition, savedRotation, savedFov);
             return;
         }
         if (cameraProfile == null || playerPlace == null || enemyPlace == null) return;
         var pose = view == 0 ? cameraProfile.viewA : cameraProfile.viewB;
         pose.Resolve((playerPlace.position + enemyPlace.position) * .5f, out var position, out var rotation, out var fov);
-        previewCamera.transform.SetPositionAndRotation(position, rotation);
-        previewCamera.fieldOfView = fov;
+        ApplyCameraPose(position, rotation, fov);
     }
 
     // 시작 직후에는 레이아웃 계산 전이라 패널 폭이 작게 잡힐 수 있어 충분한 최소 거리를 확보합니다.
@@ -566,6 +582,7 @@ public sealed class BattlePresentationController : MonoBehaviour
     {
         if (previewCamera == null || cameraProfile == null || playerPlace == null || enemyPlace == null) return;
         int view = playerTurn ? 0 : 1;
+        if (BossCamera) BossCamera.EndBasePreview();
         if (turnCameraView == view) return;
         turnCameraView = view;
         var pose = playerTurn ? cameraProfile.viewA : cameraProfile.viewB;
@@ -608,12 +625,10 @@ public sealed class BattlePresentationController : MonoBehaviour
             Vector3 focus = Vector3.Lerp(startFocus, endFocus, t);
             Quaternion arcRotation = Quaternion.LookRotation(focus - arcPosition) *
                 Quaternion.Slerp(startFraming, endFraming, t);
-            previewCamera.transform.SetPositionAndRotation(arcPosition, arcRotation);
-            previewCamera.fieldOfView = Mathf.Lerp(startFov, fov, t);
+            ApplyCameraPose(arcPosition, arcRotation, Mathf.Lerp(startFov, fov, t));
             yield return null;
         }
-        previewCamera.transform.SetPositionAndRotation(position, rotation);
-        previewCamera.fieldOfView = fov;
+        ApplyCameraPose(position, rotation, fov);
         cameraMotion = null;
     }
 
@@ -625,6 +640,7 @@ public sealed class BattlePresentationController : MonoBehaviour
     public System.Collections.IEnumerator RunAttackWithZoom(BattleCharactor actor, BattleCharactor target,
         SkillData skill, System.Collections.IEnumerator attack, bool counter = false)
     {
+        if (BossCamera) BossCamera.EndBasePreview();
         bool shouldFocusDebuffTarget = skill != null && skill.skillKey == "HCS005" &&
             target != null && !target.IsDead;
         int family = skill != null ? HeroSkillRules.FamilyId(skill.skillIndex) : 0;
@@ -632,9 +648,11 @@ public sealed class BattlePresentationController : MonoBehaviour
             (family == 4010 || family == 4030);
         bool shouldFocusNekoPaw = actor != null && actor.PresentationIndex == "10004" && family == 4020;
         bool shouldFocusNekoBarrage = actor != null && actor.PresentationIndex == "10004" && family == 4040;
+        bool bossAim = BossCamera && actor && (target || enemyPlace) && actor.IsPlayer && actor.PresentationIndex == "10003" &&
+            (family == 3010 || family == 3020 || family == 3030 || family == 3040);
         bool shouldFocusShieldGuard = actor != null && skill != null && skill.skillIndex == 200032;
         bool shouldFrameRifleBarrage = actor != null && skill != null && skill.skillIndex == 200022;
-        if ((useTurnCamera && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage && !shouldFrameRifleBarrage && !shouldFocusShieldGuard) || (!useAttackZoom && !shouldFocusShieldGuard) || previewCamera == null ||
+        if ((useTurnCamera && !bossAim && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage && !shouldFrameRifleBarrage && !shouldFocusShieldGuard) || (!useAttackZoom && !shouldFocusShieldGuard) || previewCamera == null ||
             actor == null || (attackZoomAmount <= 0f && !shouldFocusShieldGuard) || attackZoomActive)
         {
             yield return ShowSkillSpeech(actor, skill, counter);
@@ -680,13 +698,20 @@ public sealed class BattlePresentationController : MonoBehaviour
             Vector3 zoomPosition = corner + approach.normalized * Mathf.Min(attackZoomApproach, approach.magnitude * .5f);
             attackZoomBaseFov = Mathf.Max(1f, attackCameraFov * scale);
             float zoomFov = attackZoomBaseFov;
-            if (frameRangedPair)
+            Quaternion zoomRotation = attackCameraRotation;
+            if (bossAim)
+            {
+                BossCamera.BeginAim(actor.transform, target ? target.transform : enemyPlace);
+                BossCamera.ResolveAim(out zoomPosition,out zoomRotation,out zoomFov);
+                corner = (attackCameraPosition + zoomPosition) * .5f;
+            }
+            else if (frameRangedPair)
                 zoomFov = Mathf.Max(zoomFov, RequiredPairFov(zoomPosition,
                     Quaternion.LookRotation(AttackFocusPosition - zoomPosition)));
             // 아래로 내려간 뒤 캐릭터 쪽으로 접근하며, ㄴ자 모서리를 곡선으로 부드럽게 연결합니다.
-            yield return AnimateAttackZoom(zoomPosition, corner, attackCameraRotation,
-                zoomFov, attackCameraOrthoSize * scale, attackZoomInSeconds, true);
-            followAttackFocus = true;
+            yield return AnimateAttackZoom(zoomPosition, corner, zoomRotation,
+                zoomFov, attackCameraOrthoSize * scale, attackZoomInSeconds, !bossAim);
+            followAttackFocus = !bossAim;
             yield return ShowSkillSpeech(actor, skill, counter);
             yield return WaitForLuminaCast(actor, skill);
             yield return attack;
@@ -729,8 +754,7 @@ public sealed class BattlePresentationController : MonoBehaviour
                 2f * (1f - t) * t * corner + t * t * position;
             if (focusActor && attackFocusActor != null)
                 rotation = Quaternion.LookRotation(AttackFocusPosition - cameraPosition);
-            previewCamera.transform.SetPositionAndRotation(cameraPosition, Quaternion.Slerp(startRotation, rotation, t));
-            previewCamera.fieldOfView = Mathf.Lerp(startFov, fov, t);
+            ApplyCameraPose(cameraPosition, Quaternion.Slerp(startRotation, rotation, t), Mathf.Lerp(startFov, fov, t));
             previewCamera.orthographicSize = Mathf.Lerp(startSize, orthoSize, t);
             yield return null;
         }
@@ -738,8 +762,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         {
             if (focusActor && attackFocusActor != null)
                 rotation = Quaternion.LookRotation(AttackFocusPosition - position);
-            previewCamera.transform.SetPositionAndRotation(position, rotation);
-            previewCamera.fieldOfView = fov;
+            ApplyCameraPose(position, rotation, fov);
             previewCamera.orthographicSize = orthoSize;
         }
     }
@@ -749,11 +772,11 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (!attackZoomActive) return;
         if (previewCamera != null)
         {
-            previewCamera.transform.SetPositionAndRotation(attackCameraPosition, attackCameraRotation);
-            previewCamera.fieldOfView = attackCameraFov;
+            ApplyCameraPose(attackCameraPosition, attackCameraRotation, attackCameraFov);
             previewCamera.orthographicSize = attackCameraOrthoSize;
         }
         attackZoomActive = false;
+        if (BossCamera) BossCamera.EndAttack();
         followAttackFocus = false;
         focusShieldGuard = false;
         shieldGuardEffects.Clear();
