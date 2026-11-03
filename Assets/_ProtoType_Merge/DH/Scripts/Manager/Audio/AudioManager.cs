@@ -234,6 +234,8 @@ public sealed class AudioManager : MonoBehaviour
         }
 
         sfxSource.PlayOneShot(entry.Clip, GetSfxPlaybackVolume(entry));
+        if (string.Equals(normalizedKey, "Button_Click_Fail", System.StringComparison.OrdinalIgnoreCase))
+            MouseClickSfx.NotifyClickFailPlayed();
     }
 
     public void PlaySfxForDuration(string key, float durationSeconds)
