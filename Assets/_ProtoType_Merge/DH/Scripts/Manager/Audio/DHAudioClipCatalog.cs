@@ -114,12 +114,14 @@ public struct DHAudioClipEntry
 {
     [SerializeField] private string key;
     [SerializeField] private AudioClip clip;
+    [SerializeField] private AudioClip introClip;
     [SerializeField, Range(0f, 1f)] private float defaultVolume;
     [SerializeField] private bool loop;
     [SerializeField] private bool allowOverlap;
 
     public string Key => DHAudioClipCatalog.NormalizeKey(key);
     public AudioClip Clip => clip;
+    public AudioClip IntroClip => introClip;
     public float DefaultVolume => defaultVolume <= 0f ? 1f : defaultVolume;
     public bool Loop => loop;
     public bool AllowOverlap => allowOverlap;
@@ -133,6 +135,7 @@ public struct DHAudioClipEntry
     {
         this.key = DHAudioClipCatalog.NormalizeKey(key);
         this.clip = clip;
+        this.introClip = null;
         this.defaultVolume = Mathf.Clamp01(defaultVolume);
         this.loop = loop;
         this.allowOverlap = allowOverlap;

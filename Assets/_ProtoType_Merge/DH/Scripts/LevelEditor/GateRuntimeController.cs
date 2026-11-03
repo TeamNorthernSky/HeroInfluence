@@ -4,6 +4,9 @@ using UnityEngine.Serialization;
 
 public class GateRuntimeController : MonoBehaviour
 {
+    private const string OpenSfxKey = "Explore_Barricade_Up";
+    private const string CloseSfxKey = "Explore_Barricade_Down";
+
     [SerializeField] private string gateId;
     [SerializeField] private string firstZoneId;
     [SerializeField] private string secondZoneId;
@@ -21,6 +24,7 @@ public class GateRuntimeController : MonoBehaviour
     public string FirstZoneId => NormalizeId(firstZoneId);
     public string SecondZoneId => NormalizeId(secondZoneId);
     public bool IsOpen => isOpen;
+    public bool IsVisiblyOpen => isOpen && !visualChangePending && !IsVisualAnimating;
 
     private void OnEnable()
     {
@@ -231,6 +235,9 @@ public class GateRuntimeController : MonoBehaviour
                 if (gateVisualObjects[i].TryGetComponent(out GateVisualController visual))
                     visual.SetOpen(isOpen, !animate);
             }
+
+        if (animate && Application.isPlaying)
+            AudioManager.Instance?.PlaySfx(isOpen ? OpenSfxKey : CloseSfxKey);
     }
 
     public Vector3 GetFocusWorldPosition()

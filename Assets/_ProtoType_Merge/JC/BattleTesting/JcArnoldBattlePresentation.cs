@@ -129,7 +129,7 @@ namespace JC.BattleTesting
             bridge.profile = cameraProfile; bridge.destination = battleScene;
             bridge.cameraOnly = cameraOnly;
             bridge.lightingHour=JC.Environment.JcDayNightController.CurrentHours;
-            bridge.lightingProfile=JC.Environment.JcDayNightController.CurrentProfile;
+            bridge.lightingProfile=JC.Environment.JcDayNightController.SnapshotForBattle();
             bridge.createdAt = Time.realtimeSinceStartup; pending = bridge;
             SceneManager.sceneLoaded += bridge.Loaded;
 
@@ -277,6 +277,6 @@ namespace JC.BattleTesting
             if (GUI.Button(new Rect(Screen.width - 206, 8, 96, 24), "B [F7]")) SelectView(1);
             if (GUI.Button(new Rect(Screen.width - 106, 8, 96, 24), "F8")) SelectView(2);
         }
-        void OnDestroy() { SceneManager.sceneLoaded -= Loaded; if (pending == this) pending = null; }
+        void OnDestroy() { if(lightingProfile!=null)Destroy(lightingProfile); SceneManager.sceneLoaded -= Loaded; if (pending == this) pending = null; }
     }
 }

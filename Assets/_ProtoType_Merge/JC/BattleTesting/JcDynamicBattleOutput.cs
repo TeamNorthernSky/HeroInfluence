@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 namespace JC.BattleTesting
 {
@@ -14,11 +14,21 @@ namespace JC.BattleTesting
         {
             mesh.hideFlags=HideFlags.DontSave;owned.Add(mesh);
             var go=new GameObject(label){hideFlags=HideFlags.DontSave};go.transform.SetParent(transform,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;
+            MaterialPropertyBlock beforeFade = null;
+            if (sourceRenderer)
+            {
+                var decoration = sourceRenderer.GetComponentInParent<DecorativeObjectPlacement>();
+                var target = sourceRenderer.GetComponentInParent<PartyOcclusionFadeTarget>();
+                Material[] originalSlots;
+                if ((decoration && decoration.TryGetAppearanceBeforeFade(sourceRenderer, out originalSlots, out beforeFade)) ||
+                    (target && target.TryGetAppearanceBeforeFade(sourceRenderer, out originalSlots, out beforeFade)))
+                    source = originalSlots;
+            }
             var result=new Material[source.Length];
             for(int i=0;i<source.Length;i++)
             {
                 var original=source[i];if(original==null)continue;
-                var block=new MaterialPropertyBlock();if(sourceRenderer!=null){sourceRenderer.GetPropertyBlock(block,i);if(block.isEmpty)sourceRenderer.GetPropertyBlock(block);}
+                var block=new MaterialPropertyBlock();if(sourceRenderer!=null){sourceRenderer.GetPropertyBlock(block,i);if(block.isEmpty){if(beforeFade!=null)block=beforeFade;else sourceRenderer.GetPropertyBlock(block);}}
                 if(!block.isEmpty||!materials.TryGetValue(original,out var material))
                 {
                     material=new Material(original){hideFlags=HideFlags.DontSave};if(block.isEmpty)materials[original]=material;owned.Add(material);
@@ -57,6 +67,41 @@ namespace JC.BattleTesting
             var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=result;
             if(terrain)TerrainRenderers.Add(renderer);
         }
+        internal void AddDistantGround(JcDynamicBattleSource source, Matrix4x4 fieldToBattle)
+        {
+            Material grass = null;
+            float bottom = 0;
+            foreach (var part in source.parts)
+            {
+                if (!part.terrain) continue;
+                bottom = Mathf.Min(bottom, fieldToBattle.MultiplyPoint3x4(part.bounds.min).y);
+                if (grass || part.materials == null) continue;
+                foreach (var material in part.materials)
+                {
+                    if (!material || !material.HasProperty("_BaseMap")) continue;
+                    var texture = material.GetTexture("_BaseMap");
+                    if (texture && (texture.name == "Grass_Color" || texture.name == "tilemap_04"))
+                    {
+                        grass = material;
+                        break;
+                    }
+                }
+            }
+            var surface = grass ? grass : source.roadMaterial;
+            if (!surface) return;
+            // Below the lowest terrain, to keep water and authored roads fully visible.
+            const float half = 2048f;
+            float y = bottom - .25f;
+            var mesh = new Mesh { name = "Distant field ground" };
+            mesh.vertices = new[] { new Vector3(-half,y,-half), new Vector3(-half,y,half),
+                new Vector3(half,y,half), new Vector3(half,y,-half) };
+            mesh.uv = new[] { Vector2.zero, Vector2.up*512, Vector2.one*512, Vector2.right*512 };
+            mesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            Add("JC_DistantFieldGround", mesh, new[] { surface }, false);
+        }
+
         void OnDestroy(){foreach(var value in owned)if(value!=null){if(value is RenderTexture rendered)rendered.Release();if(Application.isPlaying)Destroy(value);else DestroyImmediate(value);}owned.Clear();}
     }
 }

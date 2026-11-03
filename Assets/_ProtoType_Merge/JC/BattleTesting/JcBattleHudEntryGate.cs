@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,7 +36,8 @@ namespace JC.BattleTesting
         public static void Install(Scene scene, BattleFlowManager flow)
         {
             if (flow == null || Find(scene) != null) return;
-            JC.Environment.JcDayNightController.EnsureBattle(scene,JC.Environment.JcDayNightController.CurrentHours,
+            if(!scene.GetRootGameObjects().Any(root => root.GetComponentInChildren<JC.Environment.JcDayNightController>(true)!=null))
+                JC.Environment.JcDayNightController.EnsureBattle(scene,JC.Environment.JcDayNightController.CurrentHours,
                 JC.Environment.JcDayNightController.CurrentProfile,
                 JcBankBattleBackground.Load()?.Matches(CombatContext.Instance)==true ||
                 JcBossBattleBackground.Load()?.Matches(CombatContext.Instance)==true);
@@ -177,7 +179,10 @@ namespace JC.BattleTesting
             if (!Alive) yield break;
             CaptureHud(); Canvas.ForceUpdateCanvases();
             var presentation = BattlePresentationController.FindInScene(gameObject.scene);
-            presentation?.PrepareEntryHud();
+            bool showPlayerPanel = flow.CurrentUnit != null && flow.CurrentUnit.IsPlayer;
+            presentation?.PrepareEntryHud(showPlayerPanel);
+            // 적 선턴에는 좌측 패널을 숨김 위치에 두고 첫 아군 턴의 연출에 맡깁니다.
+            if (!showPlayerPanel) left = null;
             if (left != null) leftHome = left.anchoredPosition;
             if (right != null) rightHome = right.anchoredPosition;
             revealing = true;

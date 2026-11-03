@@ -108,6 +108,7 @@ MonoBehaviour:
     reflectionTint: {r: 1, g: 1, b: 1, a: 1}
     reflectionMultiplier: 1
     characterFill: 0.16
+    occludedPartyClarity: 55
     partyFillEnabled: 1
     npcFillEnabled: 1
     npcFill: 0.16
@@ -131,6 +132,7 @@ MonoBehaviour:
     reflectionTint: {r: 1, g: 1, b: 1, a: 1}
     reflectionMultiplier: 1
     characterFill: 0.16
+    occludedPartyClarity: 55
     partyFillEnabled: 1
     npcFillEnabled: 1
     npcFill: 0.16
@@ -154,6 +156,7 @@ MonoBehaviour:
     reflectionTint: {r: 1, g: 1, b: 1, a: 1}
     reflectionMultiplier: 1
     characterFill: 0.16
+    occludedPartyClarity: 90
     partyFillEnabled: 1
     npcFillEnabled: 1
     npcFill: 0.16
@@ -177,11 +180,12 @@ MonoBehaviour:
     reflectionTint: {r: 1, g: 1, b: 1, a: 1}
     reflectionMultiplier: 1
     characterFill: 0.228
+    occludedPartyClarity: 90
     partyFillEnabled: 1
     npcFillEnabled: 1
-    npcFill: 0.231
+    npcFill: 0.21
     enemyFillEnabled: 1
-    enemyFill: 0.199
+    enemyFill: 0.5
     screenColorEnabled: 1
     screenColorStrength: 0.396
     screenColorFilter: {r: 0.2924527, g: 0.597815, b: 1, a: 1}

@@ -30,7 +30,7 @@
             half4 ComposeOutline(Varyings input) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                float3 maskData = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord).rgb;
+                float4 maskData = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
                 half mask = maskData.r;
                 if (mask <= 0.0001h) return 0;
                 half4 fill = _JcBuildingTuning.x > 0.5 ? _JcBuildingFill : _FillColor;
@@ -93,6 +93,7 @@
                 // 경계의 AA를 프리멀티플라이드 색으로 보간한 뒤 한 번만 합성한다.
                 // 채움 0 / 윤곽선 1도 가능하고, 두 알파가 같으면 기존 결과와 같다.
                 half fillWeight = saturate(1 - edge - whiteEdge) * fillOpacity;
+                if (_JcBuildingHighlight < .5) fillWeight *= 1 - saturate(maskData.a);
                 half outlineWeight = edge * saturate(outlineOpacity);
                 half alpha = fillWeight + outlineWeight;
                 // 서로 겹치지 않는 띠를 한 번에 합성하여 흰색 선의 폭과 색을 보존한다.

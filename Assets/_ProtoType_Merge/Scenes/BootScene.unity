@@ -230,19 +230,23 @@ MonoBehaviour:
   stopBgmWhenSceneHasNoBinding: 0
   sceneBgmBindings:
   - sceneName: TitleScene
-    bgmKey: TitleScene
+    bgmKey: Title
   - sceneName: DHScene_3
-    bgmKey: ExploreScene
+    bgmKey: Explore
   - sceneName: HQLobbyScene
-    bgmKey: UnionScene
+    bgmKey: Lobby
   - sceneName: TmpBattleScene
-    bgmKey: BattleScene
+    bgmKey: NormalBattle
   - sceneName: TutorialExploreScene
-    bgmKey: ExploreScene
+    bgmKey: Explore
   - sceneName: TutorialBattleScene
-    bgmKey: BattleScene
+    bgmKey: NormalBattle
   - sceneName: TutorialUnionScene
-    bgmKey: UnionScene
+    bgmKey: Lobby
+  - sceneName: Opening CutScene
+    bgmKey: Title
+  - sceneName: Ending CutScene
+    bgmKey: Ending
   dontDestroyOnLoad: 1
 --- !u!4 &1434841220
 Transform:

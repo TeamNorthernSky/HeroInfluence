@@ -100,6 +100,11 @@ public class BattleFlowManager : MonoBehaviour
     public bool IsEndingBattle => ShouldEndBattle();
     public bool IsBattleEnded => battleEnded;
 
+    /// <summary>모의전 전용 턴 선택. null이면 메인과 같은 순서이며 일반 전투에는 적용하지 않습니다.</summary>
+    public Predicate<BattleCharactor> SimulationTurnFilter { get; set; }
+    /// <summary>모의전의 수동 적 스킬 실행. 일반 전투는 기존 AI를 사용합니다.</summary>
+    public Func<BattleCharactor, IEnumerator> SimulationEnemyTurnOverride { get; set; }
+
     /// <summary>
     /// UI가 조회하는 행동 진행 상태입니다. 아군은 수동·자동 행동 점유 후 완료 통지 전,
     /// 적은 AI 판단 대기부터 공격·반격 처리가 반환될 때까지를 포함합니다.
@@ -128,6 +133,8 @@ public class BattleFlowManager : MonoBehaviour
 
     private void OnDisable()
     {
+        SimulationTurnFilter = null;
+        SimulationEnemyTurnOverride = null;
         turnPresentationPending = false;
         turnBanner?.Hide();
         enemyTurnRunning = false;
@@ -304,6 +311,8 @@ public class BattleFlowManager : MonoBehaviour
     {
         var ordered = participants
             .Where(u => u != null && !u.IsDead)
+            .Where(u => CombatContext.Instance == null || !CombatContext.Instance.IsSimulation ||
+                        SimulationTurnFilter == null || SimulationTurnFilter(u))
             .OrderByDescending(u => u.FinalStats.Speed)
             .ThenByDescending(u => u.IsPlayer)
             .ThenByDescending(u => GetRowTurnPriority(u))
@@ -379,7 +388,9 @@ public class BattleFlowManager : MonoBehaviour
         while (turnQueue != null && turnQueue.Count > 0)
         {
             BattleCharactor unit = turnQueue.Dequeue();
-            if (unit != null && !unit.IsDead)
+            if (unit != null && !unit.IsDead &&
+                (CombatContext.Instance == null || !CombatContext.Instance.IsSimulation ||
+                 SimulationTurnFilter == null || SimulationTurnFilter(unit)))
             {
                 return unit;
             }
@@ -744,6 +755,11 @@ public class BattleFlowManager : MonoBehaviour
         OnTurnActionCommitted?.Invoke(enemyUnit);
         try
         {
+            if (CombatContext.Instance != null && CombatContext.Instance.IsSimulation && SimulationEnemyTurnOverride != null)
+            {
+                yield return SimulationEnemyTurnOverride(enemyUnit);
+                yield break;
+            }
             EnemyScript enemyScript = enemyUnit.GetComponent<EnemyScript>();
             if (enemyScript != null)
             {

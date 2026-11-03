@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 namespace JC.Environment {
  public sealed partial class JcDayNightProfile {
@@ -14,6 +14,7 @@ namespace JC.Environment {
    [ColorUsage(false,true),Tooltip("환경 반사에 곱하는 색상입니다. 물체 원본 재질은 변경하지 않습니다.")] public Color reflectionTint=Color.white;
    [Min(0),Tooltip("기존 환경 반사의 강도에 곱하는 배율입니다.")] public float reflectionMultiplier=1;
    [Range(0,.5f),Tooltip("플레이어 파티의 야간 보조 발광 강도입니다.")] public float characterFill=.16f;
+   [Range(0,100),Tooltip("파티와 겹치는 반투명 건물의 채움을 줄이는 비율입니다. 100이면 해당 픽셀의 채움만 사라집니다.")] public float occludedPartyClarity;
    [Tooltip("플레이어 파티의 보조 밝기를 사용합니다.")] public bool partyFillEnabled=true;
    [Tooltip("필드 NPC의 보조 밝기를 사용합니다.")] public bool npcFillEnabled=true;
    [Range(0,.5f),Tooltip("필드 NPC의 야간 보조 발광 강도입니다.")] public float npcFill=.16f;
@@ -52,7 +53,7 @@ namespace JC.Environment {
    float sum=0;for(int i=0;i<4;i++){if(segments[i]==null||float.IsNaN(segments[i].hour)||float.IsInfinity(segments[i].hour))return false;float span=Mathf.Repeat(segments[(i+1)%4].hour-segments[i].hour,24);if(span<.01f)return false;sum+=span;}
    return Mathf.Abs(sum-24)<.01f;
   }
-  void SegmentPair(double hours,out int a,out int b,out float t){
+  public void SegmentPair(double hours,out int a,out int b,out float t){
    EnsureSegments();float h=Mathf.Repeat((float)(hours%24),24);bool valid=ValidSegmentTimes();
    for(a=0;a<4;a++){b=(a+1)%4;float from=valid?segments[a].hour:DefaultHour(a);float to=valid?segments[b].hour:DefaultHour(b);float span=Mathf.Repeat(to-from,24);float elapsed=Mathf.Repeat(h-from,24);if(elapsed<span){t=elapsed/span;return;}}
    a=0;b=1;t=0;
@@ -63,6 +64,7 @@ namespace JC.Environment {
    return new Segment{lightColor=Color.Lerp(x.lightColor,y.lightColor,t),lightIntensity=Mathf.Lerp(x.lightIntensity,y.lightIntensity,t),shadowMultiplier=Mathf.Lerp(x.shadowMultiplier,y.shadowMultiplier,t),
     sky=Color.Lerp(x.sky,y.sky,t),horizon=Color.Lerp(x.horizon,y.horizon,t),ground=Color.Lerp(x.ground,y.ground,t),ambientMultiplier=Mathf.Lerp(x.ambientMultiplier,y.ambientMultiplier,t),
     reflectionTint=Color.Lerp(x.reflectionTint,y.reflectionTint,t),reflectionMultiplier=Mathf.Lerp(x.reflectionMultiplier,y.reflectionMultiplier,t),characterFill=Mathf.Lerp(x.partyFillEnabled?x.characterFill:0,y.partyFillEnabled?y.characterFill:0,t),
+    occludedPartyClarity=Mathf.Lerp(x.occludedPartyClarity,y.occludedPartyClarity,t),
     npcFill=Mathf.Lerp(x.npcFillEnabled?x.npcFill:0,y.npcFillEnabled?y.npcFill:0,t),enemyFill=Mathf.Lerp(x.enemyFillEnabled?x.enemyFill:0,y.enemyFillEnabled?y.enemyFill:0,t),
     screenColorEnabled=true,screenColorStrength=Mathf.Lerp(x.screenColorEnabled?x.screenColorStrength:0,y.screenColorEnabled?y.screenColorStrength:0,t),
     screenColorFilter=Color.Lerp(x.screenColorFilter,y.screenColorFilter,t),screenSaturation=Mathf.Lerp(x.screenSaturation,y.screenSaturation,t),screenContrast=Mathf.Lerp(x.screenContrast,y.screenContrast,t),screenExposure=Mathf.Lerp(x.screenExposure,y.screenExposure,t),waterMultiplier=Mathf.Lerp(x.waterMultiplier,y.waterMultiplier,t)};

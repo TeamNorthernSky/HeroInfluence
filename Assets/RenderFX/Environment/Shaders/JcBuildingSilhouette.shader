@@ -230,6 +230,39 @@ Shader "JC/Environment/Building Silhouette"
             }
             ENDHLSL
         }
+        Pass
+        {
+            Name "VisiblePartyCoverage"
+            Tags { "LightMode"="JcVisiblePartyCoverage" }
+            Cull Off ZWrite Off ZTest Always ColorMask A
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile_instancing
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            float _JcPartyWallReduction;
+            struct Attributes { float4 vertex : POSITION; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            struct Varyings { float4 pos : SV_POSITION; UNITY_VERTEX_OUTPUT_STEREO };
+            Varyings Vert(Attributes v)
+            {
+                Varyings o;
+                UNITY_SETUP_INSTANCE_ID(v);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+                o.pos = TransformObjectToHClip(v.vertex.xyz);
+                return o;
+            }
+            half4 Frag(Varyings i) : SV_Target
+            {
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+                float depth = SampleSceneDepth(GetNormalizedScreenSpaceUV(i.pos));
+                // Match the actual opaque surface, including holes in cutout materials.
+                // Compare device depths in both projections and tolerate depth-buffer rounding.
+                clip(max(0.0000002, abs(depth) * 0.000002) - abs(i.pos.z - depth));
+                return half4(0, 0, 0, _JcPartyWallReduction);
+            }
+            ENDHLSL
+        }
     }
     Fallback Off
 }

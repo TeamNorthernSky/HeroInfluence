@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 namespace JC.Environment {
  [ExecuteAlways,DisallowMultipleComponent]
  public sealed class JcDayNightController : MonoBehaviour {
+  private const string TurnEndSfxKey="Explore_TurnEnd";
   public const string ScenePath="Assets/_ProtoType_Merge/Scenes/DHScene_3.unity";
   [SerializeField,Tooltip("시작 시각, 턴당 시간, 연출 길이와 시간대 조명 설정입니다.")] public JcDayNightProfile profile;
   [SerializeField,Tooltip("편집 모드에서만 아래 시각을 미리 봅니다. 해제하면 원래 환경을 복원합니다.")] public bool preview;
@@ -33,7 +34,7 @@ namespace JC.Environment {
    if(workingProfile!=null)DestroyObject(workingProfile);
    workingSource=profile;
    workingProfile=profile!=null?Instantiate(profile):null;
-   if(workingProfile!=null){workingProfile.hideFlags=HideFlags.HideAndDontSave;workingProfile.name=profile.name+" (조절 중)";workingProfile.NotifyChanged();}
+   if(workingProfile!=null){workingProfile.hideFlags=HideFlags.DontSave;workingProfile.name=profile.name+" (조절 중)";workingProfile.NotifyChanged();}
 #endif
    appliedRevision=-1;appliedProfile=null;
   }
@@ -43,7 +44,22 @@ namespace JC.Environment {
   public static float CloudSpeed => IsTransitioning ? owner.Settings.cloudSpeedMultiplier : 1;
   public static float WaterBrightness => owner!=null && owner.applied ? Mathf.Lerp(owner.Settings.nightWaterBrightness,1,owner.daylight)*owner.waterMultiplier : 1;
   public static bool IsActive => owner!=null && owner.applied;
+  float partyWallReduction;
+  public static float PartyWallReduction(Scene scene) =>
+   owner != null && owner.applied && !owner.battle && owner.gameObject.scene == scene ? owner.partyWallReduction : 0f;
   bool transitioning,applied;
+  public bool OutdoorBattle => battle && !indoor;
+  public static bool OwnsOutdoorLighting(Scene scene) =>
+   owner != null && owner.applied && owner.OutdoorBattle && owner.gameObject.scene == scene;
+  public JcOutdoorBattleLightingProfile BattleSource { get; private set; }
+  public JcOutdoorBattleLightingProfile BattleDraft { get; private set; }
+  void PrepareBattleProfile(){
+   if(!OutdoorBattle || BattleDraft != null)return;
+   BattleSource=Resources.Load<JcOutdoorBattleLightingProfile>(JcOutdoorBattleLightingProfile.ResourceName);
+   if(BattleSource==null){Debug.LogError("야외 전투 보정 프로필 누락",this);return;}
+   BattleDraft=Instantiate(BattleSource);
+   BattleDraft.hideFlags=HideFlags.DontSave;
+  }
   bool battle, indoor, windowInitialized;
   float windowLevel, windowTarget, windowFrom, windowElapsed;
   readonly JcDayNightScreenColor screenColor=new JcDayNightScreenColor();
@@ -52,11 +68,21 @@ namespace JC.Environment {
   double nextCharacterScan;
   readonly List<(Light light,float intensity)> extraLights=new List<(Light,float)>();
   public static double CurrentHours => owner!=null && owner.applied ? owner.shownHours : (CurrentProfile!=null?CurrentProfile.HoursForTurn(GameManager.Instance!=null?GameManager.Instance.CurrentDay:1):8.5);
+  public static JcDayNightProfile SnapshotForBattle(){
+   var current=owner!=null && owner.applied?owner.Settings:CurrentProfile;
+   if(current==null)return null;
+   var snapshot=Instantiate(current);
+   snapshot.hideFlags=HideFlags.HideAndDontSave;
+   return snapshot;
+  }
   public static JcDayNightProfile CurrentProfile => owner!=null?owner.profile:Resources.Load<JcDayNightProfile>("JC_DayNight_Default");
   public static JcDayNightController EnsureBattle(Scene scene,double hours,JcDayNightProfile settings,bool isIndoor){
    if(scene.name!="TmpBattleScene" && scene.name!="TutorialBattleScene")return null;
    foreach(var root in scene.GetRootGameObjects()){
-    var found=root.GetComponentInChildren<JcDayNightController>(true);if(found!=null)return found;
+    var found=root.GetComponentInChildren<JcDayNightController>(true);if(found!=null){
+     if(settings!=null){found.profile=settings;found.battle=true;found.indoor=isIndoor;found.shownHours=hours;found.ApplyHour(hours);}
+     return found;
+    }
    }
    var go=new GameObject("JC_BattleDayNight");SceneManager.MoveGameObjectToScene(go,scene);
    var c=go.AddComponent<JcDayNightController>();c.profile=settings;c.battle=true;c.indoor=isIndoor;c.shownHours=hours;c.ApplyHour(hours);return c;
@@ -97,7 +123,7 @@ namespace JC.Environment {
   }
   void SceneChanged(Scene oldScene,Scene newScene){if(newScene!=gameObject.scene)Cancel();}
   void OnDisable(){SceneManager.activeSceneChanged-=SceneChanged;Cancel();}
-  void OnDestroy(){Cancel();}
+  void OnDestroy(){Cancel();DestroyObject(BattleDraft);}
   public static void CancelForScene(Scene scene){if(owner!=null && owner.gameObject.scene==scene)owner.Cancel();}
   void LateUpdate(){
    if(Settings==null || SceneManager.GetActiveScene()!=gameObject.scene)return;
@@ -131,6 +157,7 @@ namespace JC.Environment {
    var timeline=Settings.BuildTransitionTimeline(from,to);int segment=1;
    float duration=timeline[timeline.Length-1];
    try{
+    AudioManager.Instance?.PlaySfxForDuration(TurnEndSfxKey,duration);
     ApplyHour(from);
     while(elapsed<duration){
      if(!isActiveAndEnabled || DHGameEndState.IsEnding || SceneManager.GetActiveScene()!=gameObject.scene)yield break;
@@ -167,7 +194,11 @@ namespace JC.Environment {
   public void ApplyHour(double hours){
    if(Settings==null||SceneManager.GetActiveScene()!=gameObject.scene)return;
    Capture();if(Application.isPlaying)specialWindows.Scan(gameObject.scene);shownHours=hours;appliedProfile=Settings;appliedRevision=Settings.revision;var k=Settings.Evaluate(hours);daylight=k.daylight;
-   var look=Settings.SampleSegment(hours);var baseline=Settings.SampleSegment(hours,true);waterMultiplier=look.waterMultiplier;
+   var look=Settings.SampleSegment(hours);var baseline=Settings.SampleSegment(hours,true);
+   PrepareBattleProfile();
+   partyWallReduction=Mathf.Clamp01(look.occludedPartyClarity * .01f);
+   float characterBrightness=OutdoorBattle && BattleDraft!=null ? BattleDraft.Apply(Settings,hours,look) : 1;
+   waterMultiplier=look.waterMultiplier;
    // 방위각은 광원의 위치입니다. 방향광의 forward는 빛의 진행 방향이므로 반대쪽을 향합니다.
    if(sun!=null){sun.transform.rotation=indoor?oldRotation:Quaternion.Euler(k.elevation,k.azimuth+180f,0);sun.color=indoor?Color.Lerp(oldLightColor,new Color(.70f,.79f,1),.25f*(1-daylight)):k.lightColor;sun.intensity=indoor?oldIntensity*Mathf.Lerp(.7f,1,daylight):k.intensity*Mathf.Lerp(Settings.nightLightBoost,1,daylight);sun.shadowStrength=Mathf.Lerp(.45f,oldShadow,daylight);}
    if(sun!=null){sun.color=JcDayNightProfile.CorrectColor(sun.color,look.lightColor,baseline.lightColor);sun.intensity*=look.lightIntensity/Mathf.Max(.0001f,baseline.lightIntensity);sun.shadowStrength=Mathf.Clamp01(sun.shadowStrength*look.shadowMultiplier);}
@@ -191,7 +222,7 @@ namespace JC.Environment {
    RenderSettings.reflectionIntensity=oldReflectionIntensity*look.reflectionMultiplier;
    foreach(var state in probes)if(state.probe!=null)state.probe.intensity=state.intensity*look.reflectionMultiplier;
    Shader.SetGlobalVector("_JcDayNight",new Vector4(1,daylight,Settings.nightBankFloor,WaterBrightness));
-   Shader.SetGlobalVector("_JcNightReadability",new Vector4(look.characterFill,indoor?1:Mathf.Lerp(.66f,1,daylight),look.npcFill,look.enemyFill));
+   Shader.SetGlobalVector("_JcNightReadability",new Vector4(look.characterFill,indoor?1:Mathf.Lerp(.66f,1,daylight)*characterBrightness,look.npcFill,look.enemyFill));
    screenColor.Apply(gameObject.scene,look);
    if(!battle && Time.realtimeSinceStartupAsDouble>=nextCharacterScan){characters.ScanCharacters(gameObject.scene);nextCharacterScan=Time.realtimeSinceStartupAsDouble+1;}
    float target=Settings.WindowsOn(hours)?1:0;

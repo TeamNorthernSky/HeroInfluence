@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -26,6 +26,7 @@ namespace JC.BattleTesting
         public Sprite border;
         [Tooltip("미습득 스킬의 아이콘 중앙에 표시할 자물쇠입니다.")]
         public Sprite lockedSkillSprite;
+        public Sprite skillButtonFace;
         [Range(.5f, 1f), Tooltip("우상단 메뉴·자동·배속·도주 버튼 묶음의 크기입니다. 0.8이면 기존 대비 가로·세로 80%로 표시합니다.")]
         public float topRightButtonScale = .8f;
 
@@ -155,9 +156,10 @@ namespace JC.BattleTesting
             Place("CoreSkillPanel/Button_Skill_2", 16, 0, -32, height, true);
             Place("CoreSkillPanel/Title", 104, 0, -120, height, true);
             var title = Rect("CoreSkillPanel/Title").GetComponent<TMP_Text>();
-            title.text = "젬 파워"; title.alignment = TextAlignmentOptions.MidlineLeft;
+            title.alignment = TextAlignmentOptions.MidlineLeft;
             Place("HeroSkillPanel", 0, -302, 0, height * 4 + gap * 3, true);
             string[] paths = { "CoreSkillPanel/Button_Skill_2", "HeroSkillPanel/Button_Skill", "HeroSkillPanel/HeroSkillSlot_2", "HeroSkillPanel/HeroSkillSlot_3", "HeroSkillPanel/HeroSkillSlot_4" };
+            var face = skillButtonFace ? skillButtonFace : surface;
             for (int i = 0; i < paths.Length; i++)
             {
                 string path = paths[i]; var row = Rect(path); if (row == null) continue;
@@ -171,12 +173,12 @@ namespace JC.BattleTesting
                     text.enableAutoSizing = true; text.fontSize = text.fontSizeMax = 22; text.fontSizeMin = 16;
                 }
                 var baseImage = row.GetComponent<Image>();
-                if(baseImage != null) { baseImage.overrideSprite = null; baseImage.material = null; baseImage.sprite = surface; baseImage.type = Image.Type.Sliced; baseImage.preserveAspect = false; baseImage.color = new Color(.035f,.065f,.13f,1f); }
+                if(baseImage != null) { baseImage.overrideSprite = null; baseImage.material = null; baseImage.sprite = face; baseImage.type = skillButtonFace ? Image.Type.Simple : Image.Type.Sliced; baseImage.preserveAspect = false; baseImage.color = skillButtonFace ? Color.white : new Color(.035f,.065f,.13f,1f); }
                 foreach (var toggle in row.GetComponents<ToggleButton>())
-                    toggle.SetVisualSprites(surface, surface);
+                    toggle.SetVisualSprites(face, face);
                 var button = row.GetComponent<Button>();
                 if (button != null && button.transition == Selectable.Transition.SpriteSwap)
-                    button.spriteState = new SpriteState { highlightedSprite = surface, pressedSprite = surface, selectedSprite = surface, disabledSprite = surface };
+                    button.spriteState = new SpriteState { highlightedSprite = face, pressedSprite = face, selectedSprite = face, disabledSprite = face };
                 foreach(var image in row.GetComponentsInChildren<Image>(true))
                 {
                     if(image.name == "InsetShadow" || image.name == "InsetHighlight") { image.enabled = false; continue; }
@@ -189,7 +191,13 @@ namespace JC.BattleTesting
                     }
                     if(image.name == "AvailableSkillEffect" || image.name == "SelectedSkillFrame" || image.name == "SkillButtonFrame" || image.name == "SelectedOverlay")
                     {
-                        // 스윕/선택 효과는 씬에 등록된 원본 스프라이트·재질·Image 타입을 유지합니다.
+                        // 사용 가능 스윕은 버튼 바탕의 실루엣을 따라 흐르게 합니다.
+                        if (image.name == "AvailableSkillEffect")
+                        {
+                            image.overrideSprite = null;
+                            image.sprite = face;
+                            image.type = Image.Type.Simple;
+                        }
                         if (image.name != "AvailableSkillEffect" && image.name != "SelectedSkillFrame")
                         {
                             image.overrideSprite = null;
@@ -201,6 +209,7 @@ namespace JC.BattleTesting
                     }
                 }
                 var outline = Decoration(row, "HudButtonOutline", border, new Color(.12f,.68f,.93f,.85f));
+                outline.enabled = !skillButtonFace;
                 outline.transform.SetAsLastSibling();
                 var padlock = Rect(path + "/LockedOverlay/Padlock");
                 if (padlock != null && lockedSkillSprite != null)

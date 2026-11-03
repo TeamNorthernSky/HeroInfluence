@@ -30,7 +30,7 @@ namespace JC.BattleTesting
         }
 
         // 입력 씬이 살아 있는 동안 Capture 결과를 Build에 전달합니다. 결과는 자원을 독립 소유합니다.
-        public static JcDynamicBattleSource Capture(Scene scene, bool tutorial = false)
+        public static JcDynamicBattleSource Capture(Scene scene, bool tutorial = false, bool forCacheGeneration = false)
         {
             if(!scene.IsValid()||!scene.isLoaded)throw new InvalidOperationException("탐사 입력 씬이 로드되지 않았습니다.");
             var data=ScriptableObject.CreateInstance<JcDynamicBattleSource>();data.hideFlags=HideFlags.DontSave;data.sourceScene=scene.path;
@@ -46,12 +46,18 @@ namespace JC.BattleTesting
                 if(!ground&&!roots.Contains(f.transform.root.name))continue;
                 if(f.GetComponentInParent<JcDynamicBattleOutput>()!=null)continue;
                 var inputMesh=originalRoad?original.mesh:f.sharedMesh;
-                if(!Application.isEditor&&!inputMesh.isReadable)
+                // Edit-mode cache generation needs the imported source. Both player and
+                // editor Play Mode need writable vertex data to bake the battle transform.
+                if (!forCacheGeneration && !inputMesh.isReadable)
                 {
-                    var cache=Resources.Load<JcDynamicBattleSource>(tutorial ? "JC_Encounters/TutorialDynamicSource" : "JC_Encounters/DynamicSource");
-                    var readable=cache!=null?cache.parts.FirstOrDefault(part=>part.originalMesh==inputMesh&&part.mesh!=null&&part.mesh.isReadable):null;
-                    if(readable==null)throw new InvalidOperationException("읽기 가능한 외형 캐시를 갱신해 주세요: "+f.name);
-                    inputMesh=readable.mesh;
+                    var cache = Resources.Load<JcDynamicBattleSource>("JC_Encounters/DynamicSource");
+                    var readable = cache ? cache.FindReadable(inputMesh) : null;
+                    if (!readable && tutorial)
+                        readable = Resources.Load<JcDynamicBattleSource>("JC_Encounters/TutorialDynamicSource")?.FindReadable(inputMesh);
+                    if (!readable)
+                        readable = Resources.Load<JcDynamicBattleSource>("JC_Encounters/DecorationMeshes")?.FindReadable(inputMesh);
+                    if (!readable) throw new InvalidOperationException("읽기 가능한 외형 캐시 누락: " + f.name);
+                    inputMesh = readable;
                 }
                 var part=new JcDynamicBattleSource.Part{name=f.name,group=Group(f.transform),mesh=inputMesh,originalMesh=f.sharedMesh,materials=originalRoad?original.materials:r.sharedMaterials,matrix=f.transform.localToWorldMatrix,bounds=r.bounds,terrain=ground,renderer=r};
                 parts.Add(part);
@@ -81,6 +87,64 @@ namespace JC.BattleTesting
             var result=new List<Vertex>();if(input.Count==0)return result;var a=input[input.Count-1];bool insideA=greater?a.p[axis]>=boundary:a.p[axis]<=boundary;
             foreach(var b in input){bool insideB=greater?b.p[axis]>=boundary:b.p[axis]<=boundary;if(insideA!=insideB)result.Add(Vertex.Lerp(a,b,(boundary-a.p[axis])/(b.p[axis]-a.p[axis])));if(insideB)result.Add(b);a=b;insideA=insideB;}return result;
         }
+        // Distances are in field space, before the encounter's rotation and scale.
+        static Vector3 RoadwardOffset(Vector3 foot, float width, JcDynamicBattleSource.Road[] roads)
+        {
+            Vector2 position = new Vector2(foot.x, foot.z);
+            Vector2 nearest = Vector2.zero;
+            float best = float.PositiveInfinity;
+            Vector2 horizontal = Vector2.zero, vertical = Vector2.zero;
+            foreach (var road in roads)
+            {
+                float half = road.size * .5f;
+                if (half <= 0f) continue;
+                Vector2 delta = new Vector2(
+                    Mathf.Clamp(position.x, road.center.x - half, road.center.x + half),
+                    Mathf.Clamp(position.y, road.center.z - half, road.center.z + half)) - position;
+                float distance = delta.magnitude;
+                if (distance < best) { best = distance; nearest = delta; }
+                if (delta.y == 0 && (horizontal == Vector2.zero || distance < horizontal.magnitude))
+                    horizontal = delta;
+                if (delta.x == 0 && (vertical == Vector2.zero || distance < vertical.magnitude))
+                    vertical = delta;
+            }
+            // Adjacent perpendicular road edges describe the same intersection corner.
+            if (best > 0 && horizontal != Vector2.zero && vertical != Vector2.zero &&
+                Mathf.Max(horizontal.magnitude, vertical.magnitude) <= best + width)
+                nearest = horizontal.normalized + vertical.normalized;
+            Vector2 offset = nearest.normalized * width;
+            return new Vector3(offset.x, 0, offset.y);
+        }
+
+        static Matrix4x4 BattlePropMatrix(JcDynamicBattleSource.Part part, Matrix4x4 fieldToBattle,
+            JcDynamicBattleSource.Road[] roads, Vector3[] vertices)
+        {
+            var placement = part.matrix;
+            if (part.name == "Streetlight")
+            {
+                Vector3 foot = placement.MultiplyPoint3x4(Vector3.zero);
+                foot.y = part.bounds.min.y;
+                float baseTop = foot.y + part.bounds.size.y * .02f;
+                // The square footplate is centred on the pole. Its corner radius gives
+                // its side length irrespective of the lamp's orientation.
+                float radiusSquared = 0f;
+                foreach (var vertex in vertices)
+                {
+                    Vector3 point = placement.MultiplyPoint3x4(vertex);
+                    if (point.y > baseTop) continue;
+                    float x = point.x - foot.x, z = point.z - foot.z;
+                    radiusSquared = Mathf.Max(radiusSquared, x * x + z * z);
+                }
+                const float previousScale = .6f;
+                const float lampScale = previousScale * .7f;
+                float previousWidth = Mathf.Sqrt(2f * radiusSquared) * previousScale;
+                Vector3 offset = RoadwardOffset(foot, previousWidth, roads);
+                placement = Matrix4x4.TRS(foot * (1f - lampScale) + offset, Quaternion.identity,
+                    Vector3.one * lampScale) * placement;
+            }
+            return fieldToBattle * placement;
+        }
+
         static Mesh Terrain(JcDynamicBattleSource.Part part,Matrix4x4 transform,float extent)
         {
             var src=part.mesh;var verts=src.vertices;var normals=src.normals;var uv=src.uv;var data=new List<Vector4>();src.GetUVs(1,data);var colors=src.colors;
@@ -200,13 +264,24 @@ namespace JC.BattleTesting
             var output=root.AddComponent<JcDynamicBattleOutput>();
             try
             {
-                float extent=Mathf.Max(settings.captureRadius*scale,settings.battleLength*.5f+6);
-                var selected=source.parts.Where(x=>x.mesh!=null&&x.bounds.SqrDistance(p)<settings.captureRadius*settings.captureRadius).ToArray();
+                // Leave room for attack-camera pullbacks beyond the placement cameras.
+                float extent = Mathf.Max(144f, settings.captureRadius * scale, settings.battleLength * .5f + 6);
+                float radius = extent / scale;
+                bool InView(JcDynamicBattleSource.Part part)
+                {
+                    var bounds = part.bounds;
+                    return bounds.min.x <= p.x + radius && bounds.max.x >= p.x - radius &&
+                           bounds.min.z <= p.z + radius && bounds.max.z >= p.z - radius;
+                }
+                var groups = new HashSet<string>(source.parts.Where(part => !part.terrain && InView(part))
+                    .Select(part => part.group).Where(group => !string.IsNullOrEmpty(group)));
+                var selected = source.parts.Where(part => part.mesh &&
+                    (InView(part) || (!part.terrain && groups.Contains(part.group)))).ToArray();
                 foreach(var part in selected)
                 {
                     Mesh mesh;
                     if(part.terrain)mesh=Terrain(part,transform*part.matrix,extent);
-                    else {mesh=UnityEngine.Object.Instantiate(part.mesh);var v=mesh.vertices;var matrix=transform*part.matrix;for(int i=0;i<v.Length;i++)v[i]=matrix.MultiplyPoint3x4(v[i]);mesh.vertices=v;var normals=mesh.normals;var normalMatrix=matrix.inverse.transpose;for(int i=0;i<normals.Length;i++)normals[i]=normalMatrix.MultiplyVector(normals[i]).normalized;mesh.normals=normals;mesh.RecalculateBounds();mesh.RecalculateTangents();}
+                    else {mesh=UnityEngine.Object.Instantiate(part.mesh);var v=mesh.vertices;var matrix=BattlePropMatrix(part,transform,source.roads,v);for(int i=0;i<v.Length;i++)v[i]=matrix.MultiplyPoint3x4(v[i]);mesh.vertices=v;var normals=mesh.normals;var normalMatrix=matrix.inverse.transpose;for(int i=0;i<normals.Length;i++)normals[i]=normalMatrix.MultiplyVector(normals[i]).normalized;mesh.normals=normals;mesh.RecalculateBounds();mesh.RecalculateTangents();}
                     if(mesh==null)continue;output.Add(part.name,mesh,part.materials,part.terrain,part.renderer);
                 }
                 output.Report=$"조우 {settings.encounterPosition} → 기준점 {p} / 이동 {Vector3.Distance(new Vector3(settings.encounterPosition.x,p.y,settings.encounterPosition.z),p):F2} / 방향 {(placement.alongX?"X":"Z")} / 동일 확대 {scale:F2} / 원형 보존 외형 {selected.Length}";
@@ -220,6 +295,8 @@ namespace JC.BattleTesting
                 if (settings.addBattleSurfaceDetails) JcBattleSurfaceDressing.Apply(root,Mathf.RoundToInt(settings.encounterPosition.x*1000)^Mathf.RoundToInt(settings.encounterPosition.z*7919),cameras);
                 else if (source.sourceScene != null && source.sourceScene.EndsWith("/TutorialExploreScene.unity", StringComparison.Ordinal))
                     JcBattleSurfaceDressing.ApplyAuthoredLineSpacing(root);
+                // Add after dressing so the distant ground never receives roads or scatter props.
+                output.AddDistantGround(source, transform);
                 Debug.Log(output.Report,root);
                 return root;
             }
