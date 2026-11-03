@@ -520,6 +520,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SummonSfxKey: 
-  DeathSfxKey: 
+  DeathSfxKey: Battle_Retire
+  DeathSfxDelaySeconds: 0.4
   GuardSwapSfxKey: Explore_Move
   GuardBlockSfxKey: Battle_Shield

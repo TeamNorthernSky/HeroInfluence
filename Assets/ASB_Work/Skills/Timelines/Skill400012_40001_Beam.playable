@@ -486,7 +486,9 @@ MonoBehaviour:
   m_Children: []
   m_Clips: []
   m_Markers:
-    m_Objects: []
+    m_Objects:
+    - {fileID: 7214305518630040111}
+    - {fileID: 7214305518630040112}
   role: 4
 --- !u!114 &8904612624364423433
 MonoBehaviour:
@@ -527,3 +529,33 @@ MonoBehaviour:
   _cueName: trajectory_beam
   _cueId: 805d3c2cf5bb4f358f2c1439e39e1a75
   _targetSlot: 0
+--- !u!114 &7214305518630040111
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.02
+  _sfxKey: Battle_Ulia_Skill01
+  _durationSeconds: 0
+--- !u!114 &7214305518630040112
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.45
+  _sfxKey: Battle_Ulia_Skill03
+  _durationSeconds: 0
