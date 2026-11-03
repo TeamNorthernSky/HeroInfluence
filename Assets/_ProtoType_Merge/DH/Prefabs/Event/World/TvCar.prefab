@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1584787769325567780}
   - component: {fileID: 5599997819208144057}
+  - component: {fileID: 9000000000000001024}
   - component: {fileID: 6027066284904223765}
   m_Layer: 0
   m_Name: Point Light (1)
@@ -128,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4810893359711365174}
   - component: {fileID: 4471035695762949116}
+  - component: {fileID: 9000000000000001025}
   - component: {fileID: 560233517453599164}
   m_Layer: 0
   m_Name: Spot Light
@@ -279,6 +281,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7510511111380643815}
   - component: {fileID: 4169592981949120906}
+  - component: {fileID: 9000000000000001026}
   - component: {fileID: 9123591122425413994}
   m_Layer: 0
   m_Name: Point Light
@@ -520,3 +523,48 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &9000000000000001024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 91737269448271481}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58b3ecc718fbbfb44b4fcde86c00b728, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  targetLight: {fileID: 5599997819208144057}
+  onHour: 18.5
+  offHour: 6.5
+--- !u!114 &9000000000000001025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4007805690276805504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58b3ecc718fbbfb44b4fcde86c00b728, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  targetLight: {fileID: 4471035695762949116}
+  onHour: 18.5
+  offHour: 6.5
+--- !u!114 &9000000000000001026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9178246904688053741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58b3ecc718fbbfb44b4fcde86c00b728, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  targetLight: {fileID: 4169592981949120906}
+  onHour: 18.5
+  offHour: 6.5
