@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 5998102975508959671}
   - component: {fileID: 7577465741819127906}
   - component: {fileID: 5874899340245157692}
+  - component: {fileID: 7214305518630040508}
   m_Layer: 9
   m_Name: Unit_VillanTurret_20004
   m_TagString: Untagged
@@ -482,3 +483,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name:
   m_EditorClassIdentifier:
+--- !u!114 &7214305518630040508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5258239332256075357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364c29faed0a54446adbcf26e4c5e978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SummonSfxKey: 
+  DeathSfxKey: Battle_Retire
+  DeathSfxDelaySeconds: 0
+  GuardSwapSfxKey: 
+  GuardBlockSfxKey: 
+  ImmuneHitSfxKey: 

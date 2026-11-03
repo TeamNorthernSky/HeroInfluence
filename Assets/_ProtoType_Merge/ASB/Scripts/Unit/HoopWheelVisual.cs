@@ -306,7 +306,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
         _awaitingSummonReveal = false;
         CancelSummonBurst();
         _deadVisual = true;   // 이후 LateUpdate는 부유·회전을 멈춘다(중심광은 그 자리에서).
-        UnitSfxProfile.Play(owner, UnitSfxEvent.Death);
+        // 사망 효과음은 BattleCharactor.Die가 같은 프레임에 재생한다(중복 재생 방지).
         // 연기를 중심광과 같은 프레임에 시작해 두 재료가 하나의 파괴로 이어지게 한다.
         // 납품 폭발은 시뮬레이션처럼 부풀기가 끝난 뒤(BreakWheel) 터진다.
         if (preset.productionExplosionPrefab == null) SpawnBreakEffect();

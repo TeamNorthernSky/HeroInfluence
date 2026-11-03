@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 6649407477595948855}
   - component: {fileID: -2660051310548020101}
   - component: {fileID: 3203287709638174943}
+  - component: {fileID: 7214305518630040501}
   m_Layer: 8
   m_Name: Unit_Fighter_10001
   m_TagString: Untagged
@@ -674,3 +675,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blendSeconds: 0.25
+--- !u!114 &7214305518630040501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7563937201503599213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364c29faed0a54446adbcf26e4c5e978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SummonSfxKey: 
+  DeathSfxKey: Battle_Retire
+  DeathSfxDelaySeconds: 0.07
+  GuardSwapSfxKey: 
+  GuardBlockSfxKey: 
+  ImmuneHitSfxKey: 

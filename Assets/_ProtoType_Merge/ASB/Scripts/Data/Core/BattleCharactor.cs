@@ -647,6 +647,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         // 진행 중인 자신의 Timeline 연출(반격으로 시전 중 사망하는 경우 등)을 Dead CrossFade보다 먼저 멈춘다.
         RequestPresentationInterrupt(PresentationInterruptReason.Dead);
         Anim?.PlayGenericAnimation("Die");
+        // 쓰러짐 효과음(UnitSfxProfile.DeathSfxKey, DeathSfxDelaySeconds만큼 늦춤). 키가 없는 유닛(증폭기 등)은 무음.
+        UnitSfxProfile.PlayDeath(this);
         OnDied?.Invoke(this);
         DisableVisuals();
     }

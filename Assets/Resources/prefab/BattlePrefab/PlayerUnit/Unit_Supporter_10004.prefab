@@ -50,6 +50,7 @@ GameObject:
   - component: {fileID: 7492354908920613927}
   - component: {fileID: 2740047586603078928}
   - component: {fileID: 8706185070874256565}
+  - component: {fileID: 7214305518630040504}
   m_Layer: 8
   m_Name: Unit_Supporter_10004
   m_TagString: Untagged
@@ -737,3 +738,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blendSeconds: 0.25
+--- !u!114 &7214305518630040504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6290960558266015020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364c29faed0a54446adbcf26e4c5e978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SummonSfxKey: 
+  DeathSfxKey: Battle_Retire
+  DeathSfxDelaySeconds: 0.07
+  GuardSwapSfxKey: 
+  GuardBlockSfxKey: 
+  ImmuneHitSfxKey: 

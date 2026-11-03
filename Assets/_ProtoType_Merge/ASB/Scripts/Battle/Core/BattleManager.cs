@@ -251,7 +251,10 @@ public class BattleManager : MonoBehaviour
         float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         context.Target.TakeDamage(finalDamage);
         if (context.Target.IsDamageImmune)
+        {
             context.Target.GetComponent<YuliaStasisVfx>()?.PlayShieldHit(context.Caster.transform.position);
+            UnitSfxProfile.Play(context.Target, UnitSfxEvent.ImmuneHit);
+        }
         float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
         bool isDeadAfter = context.Target.IsDead;
         Debug.Log($"[Combat] {context.Caster.UnitName} -> {context.Target.UnitName} dmg={finalDamage:F1} (Crit: {context.IsCritical})");
@@ -322,8 +325,12 @@ public class BattleManager : MonoBehaviour
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
         context.Target.TakeDamage(predicted.Damage);
-        if (context.Target.IsDamageImmune && context.Caster != null)
-            context.Target.GetComponent<YuliaStasisVfx>()?.PlayShieldHit(context.Caster.transform.position);
+        if (context.Target.IsDamageImmune)
+        {
+            if (context.Caster != null)
+                context.Target.GetComponent<YuliaStasisVfx>()?.PlayShieldHit(context.Caster.transform.position);
+            UnitSfxProfile.Play(context.Target, UnitSfxEvent.ImmuneHit);
+        }
         bool isDeadAfter = context.Target.IsDead;
 
         predicted.AppliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);

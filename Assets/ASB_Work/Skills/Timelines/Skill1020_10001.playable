@@ -114,6 +114,7 @@ MonoBehaviour:
     m_Objects:
     - {fileID: -811595278863410164}
     - {fileID: -5506318565069389871}
+    - {fileID: 7214305518630040301}
   role: 4
 --- !u!114 &-4779126231471553252
 MonoBehaviour:
@@ -991,3 +992,18 @@ MonoBehaviour:
   m_Loop: 0
   m_Version: 1
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &7214305518630040301
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 1.2033333966135977
+  _sfxKey: Battle_Hit03
+  _durationSeconds: 0
