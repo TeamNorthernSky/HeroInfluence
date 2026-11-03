@@ -13,10 +13,11 @@ public sealed class ExplorationUnitBubble : MonoBehaviour
     public ExplorationActionPointBubble Bubble => bubble;
     public int UnitIndex => GetComponent<PartyUnitState>().UnitIndex;
 
-    /// <summary>Tests the main camera's frustum and rendering layers, not other cameras or scene-view visibility.</summary>
+    /// <summary>Requires a visible character and a bubble anchor inside the HUD-free exploration field.</summary>
     public bool IsVisibleTo(Camera camera)
     {
         if (camera == null || !camera.isActiveAndEnabled || !gameObject.activeInHierarchy) return false;
+        if (!ExplorationBubbleFieldArea.Contains(camera, transform.TransformPoint(PositionOffset))) return false;
         var planes = GeometryUtility.CalculateFrustumPlanes(camera);
         foreach (var renderer in GetComponentsInChildren<Renderer>())
         {
