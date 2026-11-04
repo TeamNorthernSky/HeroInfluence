@@ -437,6 +437,7 @@ public class WorkshopModalController : MonoBehaviour
             Debug.LogWarning($"[WorkshopModalController] {(owned ? "강화" : "제작")} 실패 — 자원 환불 (weaponIndex={wi})");
             return;
         }
+        if (owned) MouseClickSfx.PlayUpgradeSuccess();
         Refresh();
     }
 

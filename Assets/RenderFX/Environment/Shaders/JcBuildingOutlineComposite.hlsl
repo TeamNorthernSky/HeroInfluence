@@ -32,11 +32,12 @@
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 float4 maskData = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
                 half mask = maskData.r;
-                if (mask <= 0.0001h) return 0;
+                bool exterior = _JcBuildingHighlight > 1.5;
+                if (exterior ? mask >= .9999h : mask <= .0001h) return 0;
                 half4 fill = _JcBuildingTuning.x > 0.5 ? _JcBuildingFill : _FillColor;
                 half4 outline = _JcBuildingTuning.x > 0.5 ? _JcBuildingOutline : _OutlineColor;
                 float width = _JcBuildingTuning.x > 0.5 ? _JcBuildingTuning.w : _OutlineWidth;
-                float fillOpacity = _JcBuildingTuning.x > 0.5 ? _JcBuildingTuning.y : maskData.g / mask;
+                float fillOpacity = _JcBuildingTuning.x > 0.5 ? _JcBuildingTuning.y : maskData.g / max(mask, .0001h);
                 fillOpacity = saturate(fillOpacity * fill.a);
                 float outlineOpacity = _JcBuildingTuning.x > 0.5 ? _JcBuildingOutlineSettings.x : fillOpacity;
                 if (_JcBuildingTuning.x > 0.5 && _JcBuildingOutlineSettings.z < 0.5)
@@ -46,26 +47,45 @@
                     float distanceScale = _JcBuildingPixelSize.w > 0.5 ? 1.0 : buildingDepth;
                     width = _JcBuildingOutlineSettings.y * _JcBuildingPixelSize.z / distanceScale;
                 }
-                half inner = mask;
-                half whiteInner = mask;
                 float whiteWidth = _JcBuildingTuning.x > 0.5 && _JcBuildingOrbit.x > 0.5 ? _JcBuildingOrbit.w : 0;
-                if (width > 0.0 || whiteWidth > 0.0)
+                half edge, whiteEdge;
+                if (exterior)
                 {
-                    // 원형 이웃으로 마스크를 축소하여 경계 안쪽 띠를 얻는다.
-                    // 개별 메시의 노멀/깊이를 쓰지 않으므로 부품 경계가 다시 나타나지 않는다.
+                    // 두 띠 모두 그룹 전체의 실루엣 밖에 그린다. 흰 선이 표면에 접한다.
+                    float totalWidth = whiteWidth + width;
+                    float2 pad = _JcBuildingPixelSize.xy * (totalWidth + 1);
+                    if (any((abs(input.texcoord - _JcBuildingOrbitBounds.xy) - pad) * _JcBuildingOrbitBounds.zw > 1))
+                        return 0;
+                    half nearMask = 0, farMask = 0;
                     [unroll] for (int i = 0; i < 16; i++)
                     {
                         float angle = i * (6.28318530718 / 16.0);
-                        float2 direction = float2(cos(angle), sin(angle));
-                        inner = min(inner, ReadMask(input.texcoord + direction * _JcBuildingPixelSize.xy * width));
-                        if (whiteWidth > 0.0)
-                            whiteInner = min(whiteInner, ReadMask(input.texcoord + direction * _JcBuildingPixelSize.xy * (width + whiteWidth)));
+                        float2 offset = float2(cos(angle), sin(angle)) * _JcBuildingPixelSize.xy;
+                        if (whiteWidth > 0) nearMask = max(nearMask, ReadMask(input.texcoord + offset * whiteWidth));
+                        if (width > 0) farMask = max(farMask, ReadMask(input.texcoord + offset * totalWidth));
                     }
+                    whiteEdge = nearMask;
+                    edge = saturate(farMask - nearMask);
+                    fillOpacity = 0;
+                    mask = 1; // 바깥 띠의 알파는 확장된 마스크로 결정한다.
                 }
-                // 바깥쪽 색상 띠와 그 안쪽의 흰색 테두리를 분리한다.
-                // 색상 인텐시티가 최대여도 흰색 띠를 덮어 없애지 않는다.
-                half whiteEdge = whiteWidth > 0 ? saturate((inner - whiteInner) / mask) : 0;
-                half edge = saturate((mask - inner) / mask);
+                else
+                {
+                    half inner = mask, whiteInner = mask;
+                    if (width > 0 || whiteWidth > 0)
+                    {
+                        [unroll] for (int i = 0; i < 16; i++)
+                        {
+                            float angle = i * (6.28318530718 / 16.0);
+                            float2 direction = float2(cos(angle), sin(angle));
+                            inner = min(inner, ReadMask(input.texcoord + direction * _JcBuildingPixelSize.xy * width));
+                            if (whiteWidth > 0)
+                                whiteInner = min(whiteInner, ReadMask(input.texcoord + direction * _JcBuildingPixelSize.xy * (width + whiteWidth)));
+                        }
+                    }
+                    whiteEdge = whiteWidth > 0 ? saturate((inner - whiteInner) / mask) : 0;
+                    edge = saturate((mask - inner) / mask);
+                }
                 if (_JcBuildingTuning.x > 0.5 && _JcBuildingOrbit.x > 0.5)
                 {
                     // 스킬 버튼과 같은 사각 둘레 좌표: 서로 반대편인 두 머리와 꼬리.

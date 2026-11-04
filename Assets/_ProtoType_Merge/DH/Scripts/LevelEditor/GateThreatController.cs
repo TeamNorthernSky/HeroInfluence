@@ -5,6 +5,7 @@ using UnityEngine;
 public class GateThreatController : MonoBehaviour
 {
     private const string DefaultStartZoneId = "zone_001";
+    private const string SpawnWarningSfxKey = "PopupWarning";
 
     [System.Serializable]
     private struct ZoneGateOpenCondition
@@ -27,6 +28,7 @@ public class GateThreatController : MonoBehaviour
     private readonly List<GateRuntimeController> gates = new List<GateRuntimeController>();
     private readonly List<EnemySpawnPoint> spawnPoints = new List<EnemySpawnPoint>();
     private readonly HashSet<string> gateBlockerDeferredThreatZones = new HashSet<string>();
+    private readonly HashSet<string> presentingThreatZones = new HashSet<string>();
     private string currentPartyZoneId;
     private bool initialThreatTimerEnsured;
     private DHEventStateRepository eventStateRepository;
@@ -613,25 +615,51 @@ public class GateThreatController : MonoBehaviour
             yield break;
         }
 
-        if (TrySpawnThreatEnemy(normalizedZoneId, out string placementKey, out EnemySpawnPoint spawnPoint))
+        if (TryPrepareThreatEnemy(normalizedZoneId, out EnemySpawnController.GateThreatSpawnPlan plan,
+                out EnemySpawnPoint spawnPoint))
         {
-            // Close the connected gates only after a threat enemy was actually spawned.
-            CloseGatesForZone(normalizedZoneId);
-            gateBlockerDeferredThreatZones.Remove(normalizedZoneId);
-            repository.ClearZoneThreatSpawnPending(normalizedZoneId);
-            repository.SetZoneThreatEnemy(normalizedZoneId, placementKey);
-            yield return GateCameraFocusController.WaitForIdle();
-            if (DHGameEndState.IsEnding) yield break;
-            bool chatClosed = false;
-            // Spawn chat is optional; when present, enemy movement waits until the modal closes.
-            if (TryShowSpawnChat(spawnPoint, placementKey, () => chatClosed = true))
+            bool spawned = false;
+            presentingThreatZones.Add(normalizedZoneId);
+            try
             {
-                yield return new WaitUntil(() => chatClosed);
-                // ChatModalController destroys its modal at the end of the close frame.
-                // Give it one frame before the enemy turn can open the encounter chat.
-                yield return null;
-            }
+                EnemyTurnController enemyTurn = FindFirstObjectByType<EnemyTurnController>();
+                // Another deferred zone may have just presented an enemy and retained its focus.
+                if (enemyTurn != null) enemyTurn.ReleaseSpawnPresentationFocus();
+                CloseGatesForZone(normalizedZoneId, () => AudioManager.Instance?.PlaySfx(SpawnWarningSfxKey));
+                yield return GateCameraFocusController.WaitForIdle();
+                if (DHGameEndState.IsEnding) yield break;
 
+                bool chatClosed = false;
+                if (TryShowSpawnChat(spawnPoint, () => chatClosed = true))
+                {
+                    yield return new WaitUntil(() => chatClosed || DHGameEndState.IsEnding);
+                    // Let the closing modal release its input/camera ownership before the appearance.
+                    yield return null;
+                }
+                if (DHGameEndState.IsEnding) yield break;
+
+                if (!enemySpawnController.TrySpawnPreparedGateThreatEnemy(plan, out string placementKey,
+                        out EnemyGridMover enemy))
+                {
+                    Debug.LogWarning($"Gate threat spawn could not complete after its announcement: '{normalizedZoneId}'.", this);
+                    yield break;
+                }
+
+                spawned = true;
+                ApplySpawnPointEventEncounter(spawnPoint, placementKey, enemy);
+                repository.SetZoneThreatEnemy(normalizedZoneId, placementKey);
+                repository.ClearZoneThreatSpawnPending(normalizedZoneId);
+                gateBlockerDeferredThreatZones.Remove(normalizedZoneId);
+
+                if (enemyTurn != null)
+                    yield return enemyTurn.PresentSpawnedEnemy(enemy);
+            }
+            finally
+            {
+                presentingThreatZones.Remove(normalizedZoneId);
+                if (!spawned && !DHGameEndState.IsEnding)
+                    RefreshGateOpenStateForZone(normalizedZoneId);
+            }
             yield break;
         }
 
@@ -681,9 +709,10 @@ public class GateThreatController : MonoBehaviour
         return false;
     }
 
-    private bool TrySpawnThreatEnemy(string zoneId, out string placementKey, out EnemySpawnPoint usedSpawnPoint)
+    private bool TryPrepareThreatEnemy(string zoneId, out EnemySpawnController.GateThreatSpawnPlan plan,
+        out EnemySpawnPoint usedSpawnPoint)
     {
-        placementKey = string.Empty;
+        plan = null;
         usedSpawnPoint = null;
         List<EnemySpawnPoint> candidates = new List<EnemySpawnPoint>();
         string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
@@ -710,20 +739,19 @@ public class GateThreatController : MonoBehaviour
             if (spawnPoint == null)
                 continue;
 
-            if (enemySpawnController.TrySpawnGateThreatEnemy(
+            if (enemySpawnController.TryPrepareGateThreatEnemy(
                     normalizedZoneId,
                     spawnPoint.GridPosition,
                     spawnPoint.EnemyGroupKey,
-                    out placementKey,
-                    out EnemyGridMover spawnedEnemy))
+                    cell => IsClosingGateCell(normalizedZoneId, cell),
+                    out plan))
             {
-                ApplySpawnPointEventEncounter(spawnPoint, placementKey, spawnedEnemy);
                 usedSpawnPoint = spawnPoint;
                 return true;
             }
         }
 
-        placementKey = string.Empty;
+        plan = null;
         usedSpawnPoint = null;
         return false;
     }
@@ -747,7 +775,7 @@ public class GateThreatController : MonoBehaviour
         return false;
     }
 
-    private bool TryShowSpawnChat(EnemySpawnPoint spawnPoint, string placementKey, System.Action onClosed = null)
+    private bool TryShowSpawnChat(EnemySpawnPoint spawnPoint, System.Action onClosed = null)
     {
         if (spawnPoint == null || spawnPoint.SpawnChatZoneId <= 0 || spawnPoint.SpawnChatId <= 0)
             return false;
@@ -757,7 +785,7 @@ public class GateThreatController : MonoBehaviour
             return false;
 
         ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, onClosed);
-        return true;
+        return ChatModalController.IsOpen;
     }
 
     private static void ApplySpawnPointEventEncounter(
@@ -801,7 +829,8 @@ public class GateThreatController : MonoBehaviour
             if (gate == null || !gate.ContainsZone(normalizedZoneId))
                 continue;
 
-            if (HasLiveThreatEnemyConnectedToGate(gate))
+            if (presentingThreatZones.Contains(gate.FirstZoneId) || presentingThreatZones.Contains(gate.SecondZoneId) ||
+                HasLiveThreatEnemyConnectedToGate(gate))
                 gate.CloseGate(day, presentChange);
             // FirstZoneId owns this gate's unlock condition; either connected zone may block it.
             else if (IsZoneClearedForGateOpen(gate.FirstZoneId))
@@ -846,16 +875,40 @@ public class GateThreatController : MonoBehaviour
         return false;
     }
 
-    private void CloseGatesForZone(string zoneId)
+    private void CloseGatesForZone(string zoneId, System.Action onClosingStarted = null)
     {
         int day = ResolveCurrentDay();
         string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        bool hasOpenGate = false;
+        bool notified = false;
+        System.Action notifyOnce = () =>
+        {
+            if (notified || DHGameEndState.IsEnding) return;
+            notified = true;
+            onClosingStarted?.Invoke();
+        };
         for (int i = 0; i < gates.Count; i++)
         {
             GateRuntimeController gate = gates[i];
             if (gate != null && gate.ContainsZone(normalizedZoneId))
-                gate.CloseGate(day);
+            {
+                hasOpenGate |= gate.IsOpen;
+                gate.CloseGate(day, true, notifyOnce);
+            }
         }
+        if (!hasOpenGate) notifyOnce();
+    }
+
+    private bool IsClosingGateCell(string zoneId, Vector2Int cell)
+    {
+        for (int i = 0; i < gates.Count; i++)
+        {
+            GateRuntimeController gate = gates[i];
+            if (gate != null && gate.ContainsZone(zoneId) &&
+                (gate.ContainsEntranceCell(cell) || gate.ContainsExitCell(cell)))
+                return true;
+        }
+        return false;
     }
 
     private void EndThreatForZone(string zoneId)

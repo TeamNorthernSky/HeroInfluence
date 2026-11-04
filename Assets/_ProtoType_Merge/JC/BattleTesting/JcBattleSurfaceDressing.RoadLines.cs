@@ -224,6 +224,21 @@ namespace JC.BattleTesting
             if (width <= 0 || length <= 0 || gap <= 0) return;
             var side = Vector3.Cross(Vector3.up, line.direction) * (width * .5f);
             float period = Mathf.Max(.2f, length + gap);
+            // URP가 한 렌더러에 먼 가로등까지 배정하지 않도록 전투용 도색을 짧게 묶습니다.
+            float maxChunkLength = explorationLines
+                ? (gameObject.scene.name == "DHScene_3" ? JC.EnvironmentDetail.JcLampSurfaceChunks.CellSize : float.PositiveInfinity)
+                : 8f;
+            float chunkStart = 0;
+            Material material = null;
+            void FlushChunk()
+            {
+                if (vertices.Count == 0) return;
+                if (!material) material = CreateLineMaterial(line, profile);
+                AddLineChunk(vertices, uv, triangles, material);
+                vertices.Clear();
+                uv.Clear();
+                triangles.Clear();
+            }
             foreach (var span in spans)
             {
                 // 점선 공백에는 깊이/노멀 패스에도 면을 남기지 않습니다.
@@ -242,6 +257,8 @@ namespace JC.BattleTesting
                 for (float begin = first; begin + length <= limit + .001f; begin += period)
                 {
                     float end = begin + length;
+                    if (end - chunkStart > maxChunkLength) FlushChunk();
+                    if (vertices.Count == 0) chunkStart = begin;
                     var a = line.origin + line.direction * begin + Vector3.up * .008f;
                     var b = line.origin + line.direction * end + Vector3.up * .008f;
                     int start = vertices.Count;
@@ -254,10 +271,11 @@ namespace JC.BattleTesting
                     triangles.AddRange(new[] { start, start + 1, start + 2, start, start + 2, start + 3 });
                 }
             }
-            if (vertices.Count == 0) return;
-            var mesh = new Mesh { name = "Connected road markings", hideFlags = HideFlags.DontSave, indexFormat = IndexFormat.UInt32 };
-            mesh.SetVertices(vertices); mesh.SetUVs(0, uv); mesh.SetTriangles(triangles, 0);
-            mesh.RecalculateNormals(); mesh.RecalculateBounds(); mesh.RecalculateTangents(); lineOwned.Add(mesh);
+            FlushChunk();
+        }
+
+        Material CreateLineMaterial(RoadLine line, JcBattleSurfaceProfile profile)
+        {
             var material = new Material(line.material) { name = "Connected road markings", hideFlags = HideFlags.DontSave };
             material.shader = profile.roadShader;
             material.SetTexture("_BaseMap", profile.plainAsphalt); material.SetTexture("_PlainMap", profile.plainAsphalt);
@@ -267,6 +285,14 @@ namespace JC.BattleTesting
             material.SetVector("_LineWorld", line.direction); material.SetFloat("_TileMeters", profile.lineWidth * 2);
             material.SetFloat("_LineWidth", profile.lineWidth); material.SetFloat("_DashLength", profile.dashLength);
             material.SetFloat("_DashGap", profile.dashGap); lineOwned.Add(material);
+            return material;
+        }
+
+        void AddLineChunk(List<Vector3> vertices, List<Vector2> uv, List<int> triangles, Material material)
+        {
+            var mesh = new Mesh { name = "Connected road markings", hideFlags = HideFlags.DontSave, indexFormat = IndexFormat.UInt32 };
+            mesh.SetVertices(vertices); mesh.SetUVs(0, uv); mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals(); mesh.RecalculateBounds(); mesh.RecalculateTangents(); lineOwned.Add(mesh);
             var node = new GameObject("JC_ConnectedRoadLine") { hideFlags = HideFlags.DontSave, layer = gameObject.layer };
             lineNodes.Add(node);
             node.transform.SetParent(transform, false);

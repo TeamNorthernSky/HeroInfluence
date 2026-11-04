@@ -133,6 +133,15 @@ public sealed class PopupSoundService : MonoBehaviour
         MouseClickSfx.NotifyChatBubbleCreated();
         Emit("Explore_TextBubbleNPC");
     }
+
+    public static void PlayWorldEventBubble(int npcType)
+    {
+        MouseClickSfx.NotifyChatBubbleCreated();
+        // WorldEventNpcPrefabCatalog: 0-3 citizens, 4 advertising car, 5 first aid kit.
+        string key = npcType == 4 ? "Explore_TextBubbleCar"
+            : npcType == 5 ? "Explore_TextBubbleBox" : "Explore_TextBubbleNPC";
+        Emit(key);
+    }
     public static void Forget(GameObject source)
     {
         if (source != null) playedFrame.Remove(source);

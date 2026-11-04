@@ -14,24 +14,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   segments:
   - sunlight: 1
+    sunShadow: 1
+    secondarySun: 1
     sunlightTint: {r: 1, g: 1, b: 1, a: 1}
     ambient: 1
     characterBrightness: 1
     exposure: 0
     screenTint: {r: 1, g: 1, b: 1, a: 1}
   - sunlight: 1
+    sunShadow: 1
+    secondarySun: 1
     sunlightTint: {r: 1, g: 1, b: 1, a: 1}
     ambient: 1
     characterBrightness: 1
     exposure: 0
     screenTint: {r: 1, g: 1, b: 1, a: 1}
   - sunlight: 1
+    sunShadow: 1.6
+    secondarySun: 0.55
     sunlightTint: {r: 1, g: 1, b: 1, a: 1}
     ambient: 1.6
     characterBrightness: 1
     exposure: 0.25
     screenTint: {r: 0.9025157, g: 0.9153941, b: 1, a: 1}
   - sunlight: 0.95
+    sunShadow: 1.6
+    secondarySun: 0.55
     sunlightTint: {r: 1, g: 1, b: 1, a: 1}
     ambient: 1.61
     characterBrightness: 1.17

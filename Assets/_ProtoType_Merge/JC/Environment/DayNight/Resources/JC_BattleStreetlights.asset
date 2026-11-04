@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 055e0bc19e0c44249e46b3f701ee82d0, type: 3}
+  m_Name: JC_BattleStreetlights
+  m_EditorClassIdentifier: 
+  lampPrefab: {fileID: 3916928473630270592, guid: 80808c17f13ac0c40b96875aa0b8c949, type: 3}
+  segments:
+  - lit: 0
+    color: {r: 1, g: 0.87, b: 0.7, a: 1}
+    range: 12
+    core:
+      intensity: 2
+      angle: 60
+      softness: 0.6
+    spill:
+      intensity: 0.6
+      angle: 100
+      softness: 0.85
+  - lit: 0
+    color: {r: 1, g: 0.87, b: 0.7, a: 1}
+    range: 12
+    core:
+      intensity: 2
+      angle: 60
+      softness: 0.6
+    spill:
+      intensity: 0.6
+      angle: 100
+      softness: 0.85
+  - lit: 1
+    color: {r: 1, g: 0.87, b: 0.7, a: 1}
+    range: 1000
+    core:
+      intensity: 2
+      angle: 60
+      softness: 0.6
+    spill:
+      intensity: 46.5
+      angle: 179
+      softness: 0.85
+  - lit: 1
+    color: {r: 1, g: 0.87, b: 0.7, a: 1}
+    range: 12
+    core:
+      intensity: 2
+      angle: 60
+      softness: 0.6
+    spill:
+      intensity: 0.6
+      angle: 100
+      softness: 0.85

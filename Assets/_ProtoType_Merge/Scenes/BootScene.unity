@@ -241,7 +241,7 @@ MonoBehaviour:
     bgmKey: Explore
   - sceneName: TutorialBattleScene
     bgmKey: NormalBattle
-  - sceneName: TutorialUnionScene
+  - sceneName: TutorialLobbyScene
     bgmKey: Lobby
   - sceneName: Opening CutScene
     bgmKey: Title

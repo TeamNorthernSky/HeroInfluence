@@ -18,6 +18,7 @@ public sealed class GateCameraFocusController : MonoBehaviour
         public string Key;
         public readonly List<GateRuntimeController> Gates = new List<GateRuntimeController>();
         public bool Revealed;
+        public System.Action OnRevealed;
 
         public bool IsAnimating => Gates.Exists(gate => gate != null && gate.IsVisualAnimating);
 
@@ -27,10 +28,14 @@ public sealed class GateCameraFocusController : MonoBehaviour
             Revealed = true;
             for (int i = 0; i < Gates.Count; i++)
                 if (Gates[i] != null) Gates[i].ApplyPendingVisualState(animate);
+            System.Action callback = OnRevealed;
+            OnRevealed = null;
+            callback?.Invoke();
         }
 
         public void FinishImmediately()
         {
+            OnRevealed = null;
             Revealed = true;
             for (int i = 0; i < Gates.Count; i++)
                 if (Gates[i] != null) Gates[i].ApplyPendingVisualState();
@@ -49,7 +54,7 @@ public sealed class GateCameraFocusController : MonoBehaviour
     private LevelZoneLayoutLoader layoutLoader;
     private GridManager gridManager;
 
-    public static bool TryQueue(GateRuntimeController gate)
+    public static bool TryQueue(GateRuntimeController gate, System.Action onRevealed = null)
     {
         if (!Application.isPlaying || DHGameEndState.IsEnding || DHGameStateRestoreService.IsRestoring ||
             gate == null || !gate.gameObject.scene.isLoaded)
@@ -67,7 +72,7 @@ public sealed class GateCameraFocusController : MonoBehaviour
         }
 
         if (!Instance.isActiveAndEnabled) return false;
-        Instance.QueueChange(gate);
+        Instance.QueueChange(gate, onRevealed);
         return true;
     }
 
@@ -96,7 +101,7 @@ public sealed class GateCameraFocusController : MonoBehaviour
             presentation = StartCoroutine(PresentChanges());
     }
 
-    private void QueueChange(GateRuntimeController gate)
+    private void QueueChange(GateRuntimeController gate, System.Action onRevealed)
     {
         string key = string.IsNullOrWhiteSpace(gate.GateId) ? gate.GetInstanceID().ToString() : gate.GateId;
         Change change;
@@ -109,6 +114,7 @@ public sealed class GateCameraFocusController : MonoBehaviour
             pending.Enqueue(change);
         }
         if (!change.Gates.Contains(gate)) change.Gates.Add(gate);
+        change.OnRevealed += onRevealed;
     }
 
     private IEnumerator PresentChanges()
@@ -137,6 +143,8 @@ public sealed class GateCameraFocusController : MonoBehaviour
                         () => current != null && current.IsAnimating);
                     ownsCameraFocus = false;
                 }
+                if (!current.Revealed && !DHGameEndState.IsEnding && !SceneFadeController.HideCursorDuringTransition)
+                    current.Reveal(true);
                 current.FinishImmediately();
                 current = null;
             }

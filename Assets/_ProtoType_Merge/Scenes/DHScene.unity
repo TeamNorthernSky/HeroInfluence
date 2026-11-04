@@ -801,8 +801,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &22429401
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1553,8 +1551,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &47495846
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2630,8 +2626,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: TurnChange
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5f69c5816e143a844a9475d47bb04245, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4496,8 +4492,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -6682,8 +6678,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &205551539
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6790,6 +6784,7 @@ MonoBehaviour:
   turnStateText: {fileID: 2071582394}
   outpostRegistry: {fileID: 337973925}
   gateThreatController: {fileID: 0}
+  autoEndTurnWhenMovePointsDepleted: 0
 --- !u!4 &207868835
 Transform:
   m_ObjectHideFlags: 0
@@ -9329,8 +9324,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &261523777
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -11079,8 +11072,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -11518,8 +11511,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &323858490
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -12473,8 +12464,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &364549344
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -12700,8 +12689,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &365469129
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -13765,6 +13752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -15759,8 +15747,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Money : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -16511,6 +16499,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -16740,8 +16729,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &474910806
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -17702,8 +17689,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &497096855
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -18940,6 +18925,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -19494,8 +19480,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Yes
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5f69c5816e143a844a9475d47bb04245, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -20878,8 +20864,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &576817360
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -22622,8 +22606,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &612825528
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -24422,6 +24404,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -25491,8 +25474,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &682165096
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -27714,8 +27695,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &747534820
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -28056,8 +28035,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: No
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5f69c5816e143a844a9475d47bb04245, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -28285,8 +28264,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &758195579
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -28522,8 +28499,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Crystal : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -28749,6 +28726,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -29923,8 +29901,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &794815507
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -31608,8 +31584,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &854472861
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -32034,6 +32008,9 @@ MonoBehaviour:
   moveSpeed: 4
   arriveThreshold: 0.01
   maxMovePoints: 10
+  usePersistentState: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!4 &866700046
 Transform:
   m_ObjectHideFlags: 0
@@ -35210,8 +35187,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: OK
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5f69c5816e143a844a9475d47bb04245, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -37284,8 +37261,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseId: villain_union_base_001
-  defenderEnemyGroupKey: FEP001
-  defenderEnemyId: 
   zoneId: 
   resolvedEnemyLevel: 1
   defenderCombatChatId: 0
@@ -39500,8 +39475,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1074650946
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -39842,8 +39815,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Chip : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -40062,8 +40035,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Day : 1'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -41478,8 +41451,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1119637572
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -41714,13 +41685,6 @@ MonoBehaviour:
   edgeScrollEnabled: 1
   keyboardPanEnabled: 1
   keyboardPanSpeed: 20
-  edgeThresholdX: 40
-  edgeThresholdY: 40
-  edgeMinSpeed: 5
-  edgeMaxSpeed: 30
-  edgeAcceleration: 10
-  edgeDeceleration: 35
-  snapStopWhenLeavingEdge: 0
   edgeLimitRange: 50
   invertVerticalEdgeScroll: 0
   clampToMapBounds: 1
@@ -41736,6 +41700,7 @@ MonoBehaviour:
   blockCameraInputDuringCombatPrompt: 1
   combatPromptService: {fileID: 0}
   resetKey: 121
+  recenterKey: 32
 --- !u!1 &1129557380
 GameObject:
   m_ObjectHideFlags: 0
@@ -44194,8 +44159,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1197587413
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -46075,8 +46038,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1255583730
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -46300,6 +46261,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -46730,8 +46692,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Supply : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -47398,8 +47360,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1289545025
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -47940,8 +47900,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1305367124
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -48272,8 +48230,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1313601648
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -50676,6 +50632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -52554,8 +52511,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1455099520
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -54984,6 +54939,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -55841,6 +55797,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -56825,12 +56782,12 @@ MonoBehaviour:
   outpostType: 0
   resourcePerTurn: 1000
   outpostState: 0
-  enemyDefenderGroupKey: FEP001
-  defenderEnemyId: 
   zoneId: 
   resolvedEnemyLevel: 1
   defenderCombatChatId: 0
   completionFlagName: 
+  postClaimChatZoneId: 1
+  postClaimChatId: 0
   targetRenderer: {fileID: 1563268113}
   unclaimedMaterial: {fileID: 2100000, guid: ed571a6ca3c5a964eadb92cf48f7366b, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 2a6d8d47be1070148a2c73069c86f78f,
@@ -58841,8 +58798,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1627932321
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -62209,12 +62164,12 @@ MonoBehaviour:
   outpostType: 1
   resourcePerTurn: 10
   outpostState: 0
-  enemyDefenderGroupKey: FEP001
-  defenderEnemyId: 
   zoneId: 
   resolvedEnemyLevel: 1
   defenderCombatChatId: 0
   completionFlagName: 
+  postClaimChatZoneId: 1
+  postClaimChatId: 0
   targetRenderer: {fileID: 1725215442}
   unclaimedMaterial: {fileID: 2100000, guid: ed571a6ca3c5a964eadb92cf48f7366b, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 2a6d8d47be1070148a2c73069c86f78f,
@@ -62778,8 +62733,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -66009,6 +65964,9 @@ MonoBehaviour:
   moveSpeed: 4
   arriveThreshold: 0.01
   maxMovePoints: 10
+  usePersistentState: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!4 &1826875708
 Transform:
   m_ObjectHideFlags: 0
@@ -66980,8 +66938,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -67728,6 +67686,8 @@ MonoBehaviour:
   rayDistance: 500
   cameraFollower: {fileID: 1128058705}
   pathPreviewRenderer: {fileID: 347558455}
+  zoneGuidanceArrowShader: {fileID: 0}
+  moveRangeController: {fileID: 0}
   uiInputBlocker: {fileID: 818742913}
   validMarkerColor: {r: 0, g: 1, b: 0, a: 1}
   invalidMarkerColor: {r: 1, g: 0, b: 0, a: 1}
@@ -67762,9 +67722,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   useLegacyObstacleColliderFallback: 0
-  eventLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
   playerLayerMask:
     serializedVersion: 2
     m_Bits: 256
@@ -67776,15 +67733,17 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   itemRegistry: {fileID: 1628434450}
+  tutorialItemRegistry: {fileID: 0}
   enemyRegistry: {fileID: 2000643499}
+  tutorialEnemyRegistry: {fileID: 0}
   heroUnionRegistry: {fileID: 1889454946}
   outpostRegistry: {fileID: 337973925}
   villainUnionBaseRegistry: {fileID: 106732308}
   multiGridOccupantRegistry: {fileID: 162291186}
   mapEventRegistry: {fileID: 216669508}
+  worldEventRegistry: {fileID: 0}
   mainEventRegistry: {fileID: 0}
   subEventRegistry: {fileID: 0}
-  restrictMovementToVisibleCells: 1
   obstacleCheckFill: 0.9
   drawDebugGizmos: 1
   drawGizmosOnlyWhenSelected: 0
@@ -68067,6 +68026,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -68189,6 +68149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eventKind: 0
   eventType: 0
   requireResource: 0
   requireAmount: 100
@@ -69242,8 +69203,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!135 &1930823661
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -73034,6 +72993,10 @@ MonoBehaviour:
   combatEncounterManager: {fileID: 408417867}
   combatPromptService: {fileID: 0}
   gridManager: {fileID: 1870279752}
+  layoutLoader: {fileID: 0}
+  mobileEnemyRaidController: {fileID: 0}
+  cameraFollower: {fileID: 0}
+  enemyCameraReturnDelay: 0.5
 --- !u!4 &2000643501
 Transform:
   m_ObjectHideFlags: 0
@@ -75476,8 +75439,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Player Turn
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -77336,7 +77299,6 @@ SceneRoots:
   - {fileID: 149696674}
   - {fileID: 347558454}
   - {fileID: 408417868}
-  - {fileID: 964046518}
   - {fileID: 1919126567}
   - {fileID: 1826875708}
   - {fileID: 866700046}

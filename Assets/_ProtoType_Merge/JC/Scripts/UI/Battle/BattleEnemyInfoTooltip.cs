@@ -117,8 +117,8 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
             battlefieldCamera != null ? battlefieldCamera : Camera.main);
         if (target != shownUnit) Bind(target);
         RefreshStats();
-        PlaceAtPointer(Input.mousePosition);
-        JC.Tutorial.JcTutorialBattleGuide.PlaceTooltip(gameObject.scene, panel);
+        if (!JC.Tutorial.JcTutorialBattleGuide.TryPlaceTooltip(gameObject.scene, panel))
+            PlaceAtPointer(Input.mousePosition);
     }
 
     private BattleCharactor FindHoveredUnit()
@@ -148,7 +148,8 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
                 var eventCamera = uiHits[0].module != null ? uiHits[0].module.eventCamera : null;
                 if (slot != null && slot.gameObject.scene == gameObject.scene &&
                     hoverLink.IsBadgeHit(slot, pointer, eventCamera)) hoveredTurnSlot = slot;
-                return slot != null && slot.gameObject.scene == gameObject.scene ? slot.DisplayedUnit : null;
+                // 슬롯의 사각 모서리는 배지 바깥입니다. 필드용 위치로 정보창이 열리지 않게 합니다.
+                return hoveredTurnSlot != null ? hoveredTurnSlot.DisplayedUnit : null;
             }
         }
 

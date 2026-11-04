@@ -31,6 +31,7 @@ public sealed class AudioManager : MonoBehaviour
     private readonly Dictionary<string, AudioSource> loopingSfxSources = new Dictionary<string, AudioSource>();
     private readonly Dictionary<string, Coroutine> loopingSfxStopCoroutines = new Dictionary<string, Coroutine>();
     private readonly List<AudioSource> timedSfxSources = new List<AudioSource>();
+    private readonly HashSet<UnityEngine.Object> bgmDuckRequests = new HashSet<UnityEngine.Object>();
     private string currentBgmKey;
     private float currentBgmDefaultVolume = 1f;
     private float sceneBgmFadeVolume = 1f;
@@ -79,6 +80,7 @@ public sealed class AudioManager : MonoBehaviour
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= HandleSceneLoaded;
+        bgmDuckRequests.Clear();
         if (Instance == this) StopBgm();
     }
 
@@ -389,6 +391,15 @@ public sealed class AudioManager : MonoBehaviour
         ApplyBgmSourceVolume();
     }
 
+    public void SetBgmDucking(UnityEngine.Object requester, bool active)
+    {
+        if (ReferenceEquals(requester, null)) return;
+        bool changed = active && requester != null
+            ? bgmDuckRequests.Add(requester)
+            : bgmDuckRequests.Remove(requester);
+        if (changed) ApplyBgmSourceVolume();
+    }
+
     public void SetSfxVolume(float volume)
     {
         sfxVolume = Mathf.Clamp01(volume);
@@ -426,11 +437,6 @@ public sealed class AudioManager : MonoBehaviour
                 }
             }
         }
-
-        // Preserve old authored bindings while accepting the current build scene name.
-        // An explicit TutorialLobbyScene binding above always takes precedence.
-        if (string.Equals(normalizedSceneName, "TutorialLobbyScene", System.StringComparison.OrdinalIgnoreCase))
-            return TryGetSceneBgmKey("TutorialUnionScene", out bgmKey);
 
         bgmKey = string.Empty;
         return false;
@@ -478,6 +484,10 @@ public sealed class AudioManager : MonoBehaviour
         if (Instance != this)
             return;
 
+        if (bgmDuckRequests.RemoveWhere(requester => requester == null ||
+                (requester is Behaviour behaviour && !behaviour.isActiveAndEnabled)) > 0)
+            ApplyBgmSourceVolume();
+
         if (mode == LoadSceneMode.Single && !string.Equals(overrideBgmScene, scene.name, System.StringComparison.OrdinalIgnoreCase))
             ClearSceneBgmOverride(overrideBgmScene);
 
@@ -513,10 +523,12 @@ public sealed class AudioManager : MonoBehaviour
 
     private void ApplyBgmSourceVolume()
     {
+        float volume = masterVolume * bgmVolume * currentBgmDefaultVolume * sceneBgmFadeVolume *
+            (bgmDuckRequests.Count > 0 ? 0.5f : 1f);
         if (bgmSource != null)
-            bgmSource.volume = masterVolume * bgmVolume * currentBgmDefaultVolume * sceneBgmFadeVolume;
+            bgmSource.volume = volume;
         if (bgmLoopSource != null)
-            bgmLoopSource.volume = masterVolume * bgmVolume * currentBgmDefaultVolume * sceneBgmFadeVolume;
+            bgmLoopSource.volume = volume;
     }
 
     private float GetSfxPlaybackVolume(DHAudioClipEntry entry)

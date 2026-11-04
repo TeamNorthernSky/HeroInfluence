@@ -48,6 +48,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void SetCurrentDayForDebug(int value)
+    {
+        // A cheat jump must not grant income or advance facility/publicity state.
+        currentDay = Mathf.Max(1, value);
+    }
+
     // [JC 260610] 로비 턴종료 → "나가기 + 탐사 턴종료" 위임 플래그.
     // 로비에서 CurrentDay를 직접 올리면 적 턴(EndPlayerTurn)을 건너뛰는 버그가 있어,
     // 탐사 진입 후 TurnManager.Start가 정상 EndPlayerTurn 하도록 위임한다.

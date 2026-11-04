@@ -9,7 +9,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
 {
     private const int MinCombatSlot = 1;
     private const int MaxCombatSlot = 6;
-    private const int MobileVisualUnitKey = 20005;
+    internal const int MobileVisualUnitKey = 20005;
 
     private static readonly Vector3[] ExplorationUnitLocalPositions =
     {
@@ -358,7 +358,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
         EnemyUnitState unitState = Instantiate(unitPrefab, transform);
         unitState.transform.localPosition = Vector3.zero;
-        unitState.transform.localRotation = Quaternion.identity;
         unitState.SetUnitTemplateKey(MobileVisualUnitKey.ToString());
         unitState.SetLevel(enemyLevel);
         unitState.SetIncapacitated(false);
@@ -663,7 +662,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
         EnemyUnitState unitState = Instantiate(unitPrefab, transform);
         unitState.transform.localPosition = Vector3.zero;
-        unitState.transform.localRotation = Quaternion.identity;
         unitState.SetUnitTemplateKey(templateKey);
         unitState.SetLevel(enemyLevel);
         unitState.InitializeFromTemplate(template);
@@ -682,7 +680,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
         EnemyUnitState unitState = Instantiate(unitPrefab, transform);
         unitState.transform.localPosition = Vector3.zero;
-        unitState.transform.localRotation = Quaternion.identity;
         unitState.SetUnitTemplateKey(member.UnitKey);
         unitState.SetLevel(enemyLevel);
         unitState.InitializeFromTemplate(template);

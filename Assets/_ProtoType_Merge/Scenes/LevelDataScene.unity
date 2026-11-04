@@ -346,9 +346,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 7242becc517c388478f346201d46c00c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1296,8 +1295,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &66965617
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1496,6 +1493,8 @@ MonoBehaviour:
   arriveThreshold: 0.01
   movePointsPerTurn: 5
   behaviorType: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!65 &74774656
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1627,8 +1626,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: TurnChange
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5f69c5816e143a844a9475d47bb04245, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2056,8 +2055,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &107493252
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2461,8 +2458,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &128622955
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2532,8 +2527,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &140081514
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2622,9 +2615,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC790\uAE08\uC744 100 \uC9C0\uBD88\uD558\uACE0"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2745,6 +2737,8 @@ MonoBehaviour:
   useOccupiedCellsAsTeleportCells: 1
   customTeleportOffsets:
   - {x: 0, y: 0}
+  useSeparateExitCells: 0
+  exitCellOffset: {x: -1, y: 0}
   gridManager: {fileID: 1870279752}
   drawGizmos: 1
   drawOnlyWhenSelected: 0
@@ -2962,8 +2956,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &184565349
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3033,8 +3025,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &184608064
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3115,8 +3105,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 9999
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3225,6 +3215,7 @@ MonoBehaviour:
   turnStateText: {fileID: 2071582394}
   outpostRegistry: {fileID: 337973925}
   gateThreatController: {fileID: 0}
+  autoEndTurnWhenMovePointsDepleted: 0
 --- !u!4 &207868835
 Transform:
   m_ObjectHideFlags: 0
@@ -3407,8 +3398,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3535,6 +3526,7 @@ MonoBehaviour:
   blockerCells:
   - {x: 24, y: 2}
   - {x: 25, y: 2}
+  exitCells: []
   isOpen: 0
 --- !u!1 &220495153
 GameObject:
@@ -4088,8 +4080,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &246170732
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4159,8 +4149,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &249146569
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4230,8 +4218,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &251228048
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4688,9 +4674,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4823,9 +4808,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5494,9 +5478,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD134\uB2F9 \uD68D\uB4DD \uC790\uC6D0"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5629,9 +5612,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 7242becc517c388478f346201d46c00c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -6184,8 +6166,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 99999
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -6620,8 +6602,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Money : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -7188,8 +7170,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &516008426
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7763,8 +7743,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &539732358
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7845,9 +7823,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC9C4\uD589"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: e38ef0b9324539b47b10fa4eed3fb29f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -8052,8 +8029,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &587124304
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8301,8 +8276,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -8530,8 +8505,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &595028767
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9278,6 +9251,7 @@ MonoBehaviour:
   blockerCells:
   - {x: 47, y: 20}
   - {x: 47, y: 21}
+  exitCells: []
   isOpen: 0
 --- !u!1 &621360323
 GameObject:
@@ -9433,8 +9407,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &624320813
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9693,8 +9665,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &629364772
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9924,6 +9894,8 @@ MonoBehaviour:
   arriveThreshold: 0.01
   movePointsPerTurn: 5
   behaviorType: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!65 &636595525
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10070,7 +10042,7 @@ MonoBehaviour:
   playerInteractionColor: {r: 0, g: 0.35, b: 1, a: 0.28}
   neutralInteractionColor: {r: 1, g: 0.85, b: 0, a: 0.28}
   mainEventInteractionColor: {r: 0.2, g: 0.9, b: 1, a: 0.32}
-  cellScale: 0.92
+  cellScale: 1
   yOffset: 0.035
   refreshInterval: 0.15
 --- !u!4 &639429862
@@ -11171,6 +11143,130 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
+--- !u!1 &708142063
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 708142064}
+  - component: {fileID: 708142065}
+  m_Layer: 0
+  m_Name: BGHigh002
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &708142064
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 708142063}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2028557090}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &708142065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 708142063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 94ebadf3e9ea97d4ba3bde58c2879437, type: 2}
+  profile: {fileID: 11400000, guid: 8ec9eb177d367ab40974084e76193dca, type: 2}
+  variantId: 
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!43 &716003341
 Mesh:
   m_ObjectHideFlags: 0
@@ -11914,9 +12010,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 7242becc517c388478f346201d46c00c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -12379,9 +12474,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uCDE8\uC18C"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: e38ef0b9324539b47b10fa4eed3fb29f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -12514,8 +12608,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Crystal : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -12774,8 +12868,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &778915767
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13216,12 +13308,12 @@ MonoBehaviour:
   outpostType: 2
   resourcePerTurn: 5
   outpostState: 1
-  enemyDefenderGroupKey: FEP004S1
-  defenderEnemyId: outpost_defender_outpost_14_34
   zoneId: 
   resolvedEnemyLevel: 1
   defenderCombatChatId: 0
   completionFlagName: 
+  postClaimChatZoneId: 1
+  postClaimChatId: 0
   targetRenderer: {fileID: 122447057}
   unclaimedMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9,
@@ -14153,6 +14245,8 @@ MonoBehaviour:
   arriveThreshold: 0.01
   movePointsPerTurn: 5
   behaviorType: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!65 &837618807
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -14305,8 +14399,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &855631889
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -14376,8 +14468,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &858285947
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -15449,9 +15539,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 7242becc517c388478f346201d46c00c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -15667,9 +15756,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD655\uC778"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: e38ef0b9324539b47b10fa4eed3fb29f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -15877,9 +15965,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 100
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -16540,19 +16627,13 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 957232788}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &957232790 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4540684396614563634, guid: c00e733ddc5513843a0de8cf9e960143,
-    type: 3}
-  m_PrefabInstance: {fileID: 957232788}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &957232791 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6839773271596741142, guid: c00e733ddc5513843a0de8cf9e960143,
     type: 3}
   m_PrefabInstance: {fileID: 957232788}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 957232790}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
@@ -16606,8 +16687,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &959754357
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16802,12 +16881,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f9201516cc032b44eb1e19cff09c7346, type: 3}
---- !u!1 &969394157 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 651920114551407001, guid: f9201516cc032b44eb1e19cff09c7346,
-    type: 3}
-  m_PrefabInstance: {fileID: 969394156}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &974691495
 GameObject:
   m_ObjectHideFlags: 0
@@ -17056,6 +17129,140 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &985170310
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 985170311}
+  - component: {fileID: 985170312}
+  m_Layer: 0
+  m_Name: BGStore004
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &985170311
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 985170310}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2028557090}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &985170312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 985170310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 103e81596830fe54fabf20cab343cca1, type: 2}
+  profile: {fileID: 11400000, guid: 53b47e92c19c93349a3a85f66e89c258, type: 2}
+  variantId: 
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 142.54832
+    lightness: 0.42747808
+    saturation: 21.878466
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 27.532671
+    lightness: 0.5108109
+    saturation: 44.991295
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 88.39558
+    lightness: 0.8228685
+    saturation: 39.5169
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - sign_green
+  - window
+  - sign_red
+  - floor
+  - roof_floor
+  - sign_yellow
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  - bollard_accent
+  - side_box
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!1 &1014036551
 GameObject:
   m_ObjectHideFlags: 0
@@ -17110,6 +17317,7 @@ MonoBehaviour:
   - {x: 45, y: 4}
   - {x: 46, y: 4}
   - {x: 45, y: 3}
+  exitCells: []
   isOpen: 0
 --- !u!1 &1019487632
 GameObject:
@@ -17544,8 +17752,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1069254012
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17626,8 +17832,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Chip : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -17826,6 +18032,8 @@ MonoBehaviour:
   arriveThreshold: 0.01
   movePointsPerTurn: 5
   behaviorType: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!65 &1091310886
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17887,8 +18095,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Day : 1'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -18477,8 +18685,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1112950922
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18663,13 +18869,6 @@ MonoBehaviour:
   edgeScrollEnabled: 1
   keyboardPanEnabled: 1
   keyboardPanSpeed: 20
-  edgeThresholdX: 100
-  edgeThresholdY: 100
-  edgeMinSpeed: 5
-  edgeMaxSpeed: 30
-  edgeAcceleration: 20
-  edgeDeceleration: 10
-  snapStopWhenLeavingEdge: 0
   edgeLimitRange: 50
   invertVerticalEdgeScroll: 0
   clampToMapBounds: 1
@@ -18685,6 +18884,7 @@ MonoBehaviour:
   blockCameraInputDuringCombatPrompt: 1
   combatPromptService: {fileID: 0}
   resetKey: 121
+  recenterKey: 32
 --- !u!1 &1148966135
 GameObject:
   m_ObjectHideFlags: 0
@@ -19003,8 +19203,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1181989196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -20975,8 +21173,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Supply : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -21124,6 +21322,8 @@ MonoBehaviour:
   useOccupiedCellsAsTeleportCells: 1
   customTeleportOffsets:
   - {x: 0, y: 0}
+  useSeparateExitCells: 0
+  exitCellOffset: {x: -1, y: 0}
   gridManager: {fileID: 1870279752}
   drawGizmos: 1
   drawOnlyWhenSelected: 0
@@ -21529,8 +21729,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1323436865
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -22072,9 +22270,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 7242becc517c388478f346201d46c00c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -22602,6 +22799,130 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1426023326
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1426023327}
+  - component: {fileID: 1426023328}
+  m_Layer: 0
+  m_Name: BGHigh001
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1426023327
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426023326}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2028557090}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1426023328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426023326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 5e2ef7abaf9796241af2fc434115382f, type: 2}
+  profile: {fileID: 11400000, guid: 20d89b5b1168eca42b1ad01e79cb591e, type: 2}
+  variantId: 
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!1 &1430965234
 GameObject:
   m_ObjectHideFlags: 0
@@ -22749,18 +23070,40 @@ MonoBehaviour:
   outpostRegistry: {fileID: 337973925}
   heroUnionRegistry: {fileID: 1889454946}
   villainUnionBaseRegistry: {fileID: 106732308}
+  enemyRegistry: {fileID: 0}
+  mainEventRegistry: {fileID: 0}
+  subEventRegistry: {fileID: 0}
   drawOnEnable: 1
   partyIconRefreshInterval: 0.1
   filterMode: 0
-  unexploredColor: {r: 0, g: 0, b: 0, a: 1}
   visibleColor: {r: 0.22, g: 0.28, b: 0.24, a: 1}
   fallbackColor: {r: 0.22, g: 0.28, b: 0.24, a: 1}
   obstacleColor: {r: 0, g: 0, b: 0, a: 1}
+  zoneViewCrops: []
   showStrategicObjects: 1
   playerBuildingColor: {r: 0, g: 0.35, b: 1, a: 1}
   enemyBuildingColor: {r: 1, g: 0, b: 0, a: 1}
   neutralOutpostColor: {r: 1, g: 0.85, b: 0, a: 1}
+  showStrategicObjectIcons: 1
+  strategicIconPrefab: {fileID: 0}
+  playerBuildingSprite: {fileID: 0}
+  enemyBuildingSprite: {fileID: 0}
+  neutralBuildingSprite: {fileID: 0}
+  eventOrStaticEnemySprite: {fileID: 0}
+  mobileEnemySprite: {fileID: 0}
+  subEventSprite: {fileID: 0}
+  gateSprite: {fileID: 0}
+  outpostIconScale: 1
+  heroUnionIconScale: 1
+  villainUnionIconScale: 1
+  mainEventIconScale: 1
+  staticEnemyIconScale: 1
+  mobileEnemyIconScale: 1
+  subEventIconScale: 1
+  gateIconScale: 1
   showPartyIcons: 1
+  playerPartySprite: {fileID: 0}
+  playerPartyIconScale: 1
   partyIconColor: {r: 0, g: 1, b: 0.1, a: 1}
   partyIconScale: 1
 --- !u!114 &1436526977
@@ -22817,6 +23160,7 @@ MonoBehaviour:
   levelZoneLayoutData: {fileID: 0}
   levelZoneLayoutLoader: {fileID: 0}
   gridManager: {fileID: 1870279752}
+  partyRegistry: {fileID: 0}
   drawEveryFrame: 1
   clampToMinimap: 1
   lineColor: {r: 0.1, g: 0.95, b: 1, a: 0.95}
@@ -22841,6 +23185,8 @@ MonoBehaviour:
   levelZoneLayoutLoader: {fileID: 0}
   gridManager: {fileID: 1870279752}
   cameraFollower: {fileID: 1128058705}
+  partyRegistry: {fileID: 0}
+  enableClickNavigation: 1
   enableDragNavigation: 1
   forceMinimapRaycastTarget: 1
 --- !u!1 &1441750664
@@ -24253,25 +24599,33 @@ MonoBehaviour:
     profile: {fileID: 2139984351}
     nameText: {fileID: 0}
     hpText: {fileID: 366928862}
+    hpFill: {fileID: 0}
     ipText: {fileID: 745585090}
+    ipMaxIcon: {fileID: 0}
   - root: {fileID: 1219888742}
     button: {fileID: 1219888743}
     profile: {fileID: 1658075756}
     nameText: {fileID: 0}
     hpText: {fileID: 930891621}
+    hpFill: {fileID: 0}
     ipText: {fileID: 3480483}
+    ipMaxIcon: {fileID: 0}
   - root: {fileID: 2038446613}
     button: {fileID: 2038446614}
     profile: {fileID: 1400232988}
     nameText: {fileID: 0}
     hpText: {fileID: 1657263521}
+    hpFill: {fileID: 0}
     ipText: {fileID: 2097818660}
+    ipMaxIcon: {fileID: 0}
   - root: {fileID: 817722125}
     button: {fileID: 817722126}
     profile: {fileID: 1019487634}
     nameText: {fileID: 0}
     hpText: {fileID: 1800388232}
+    hpFill: {fileID: 0}
     ipText: {fileID: 1387264697}
+    ipMaxIcon: {fileID: 0}
   targetPartyId: 
 --- !u!43 &1531732583
 Mesh:
@@ -24584,8 +24938,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f7c231b50362f04cbdcf8e416267e57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canBuildButton: {fileID: 957232790}
-  cannotBuildButton: {fileID: 969394157}
   canBuildClickTarget: {fileID: 957232791}
 --- !u!1 &1543654677
 GameObject:
@@ -25143,6 +25495,8 @@ MonoBehaviour:
   arriveThreshold: 0.01
   movePointsPerTurn: 5
   behaviorType: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!65 &1580236993
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -25372,6 +25726,8 @@ MonoBehaviour:
   arriveThreshold: 0.01
   movePointsPerTurn: 5
   behaviorType: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!65 &1587254543
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -26236,9 +26592,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 7242becc517c388478f346201d46c00c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -26435,8 +26790,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1661168593
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -26671,8 +27024,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1675760998
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -26694,6 +27045,130 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.8, y: 0.4, z: 0.8}
   m_Center: {x: 0, y: 0.2, z: 0}
+--- !u!1 &1676676315
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1676676316}
+  - component: {fileID: 1676676317}
+  m_Layer: 0
+  m_Name: BGStore002
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1676676316
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1676676315}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2028557090}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1676676317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1676676315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 0f14983c13904884fba0a65649f84896, type: 2}
+  profile: {fileID: 11400000, guid: ffc6f4a23ee4ad744a9a6bee58888332, type: 2}
+  variantId: 
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!1 &1684805935
 GameObject:
   m_ObjectHideFlags: 0
@@ -27369,8 +27844,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1729502038
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -27451,9 +27924,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "1\uD134   99\uC8FC   4\uC77C "
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 2d98d13bb434b6c4a8ee8b009d74fb41, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -27594,9 +28066,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 3
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -28761,9 +29232,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 7242becc517c388478f346201d46c00c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -29457,8 +29927,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1834336400
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -29800,9 +30268,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -29924,8 +30391,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1847351098
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30321,6 +30786,8 @@ MonoBehaviour:
   rayDistance: 500
   cameraFollower: {fileID: 1128058705}
   pathPreviewRenderer: {fileID: 347558455}
+  zoneGuidanceArrowShader: {fileID: 0}
+  moveRangeController: {fileID: 0}
   uiInputBlocker: {fileID: 818742913}
   validMarkerColor: {r: 0, g: 1, b: 0, a: 1}
   invalidMarkerColor: {r: 1, g: 0, b: 0, a: 1}
@@ -30355,9 +30822,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   useLegacyObstacleColliderFallback: 0
-  eventLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
   playerLayerMask:
     serializedVersion: 2
     m_Bits: 256
@@ -30369,15 +30833,17 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   itemRegistry: {fileID: 1628434450}
+  tutorialItemRegistry: {fileID: 0}
   enemyRegistry: {fileID: 2000643499}
+  tutorialEnemyRegistry: {fileID: 0}
   heroUnionRegistry: {fileID: 1889454946}
   outpostRegistry: {fileID: 337973925}
   villainUnionBaseRegistry: {fileID: 106732308}
   multiGridOccupantRegistry: {fileID: 162291186}
   mapEventRegistry: {fileID: 962885885}
+  worldEventRegistry: {fileID: 0}
   mainEventRegistry: {fileID: 0}
   subEventRegistry: {fileID: 0}
-  restrictMovementToVisibleCells: 1
   obstacleCheckFill: 0.9
   drawDebugGizmos: 1
   drawGizmosOnlyWhenSelected: 0
@@ -30416,12 +30882,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c5523433fa5aa6458695a080d4e6f3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  partyRegistry: {fileID: 1919126566}
-  enemyRegistry: {fileID: 2000643499}
-  heroUnionRegistry: {fileID: 1889454946}
-  villainUnionBaseRegistry: {fileID: 106732308}
-  uiController: {fileID: 778878701}
-  evaluateCurrentPositionsOnStart: 1
+  turnManager: {fileID: 0}
+  gameEndManager: {fileID: 0}
+  enableTurnLimitGameOver: 1
+  gameOverTurnLimit: 35
+  evaluateCurrentTurnOnStart: 1
+  enableFlagGameClear: 1
+  gameClearFlagNames: []
+  evaluateClearFlagsOnStart: 1
 --- !u!1001 &1874645207
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30605,8 +31073,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1884087736
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30807,6 +31273,8 @@ MonoBehaviour:
   useOccupiedCellsAsTeleportCells: 1
   customTeleportOffsets:
   - {x: 0, y: 0}
+  useSeparateExitCells: 0
+  exitCellOffset: {x: -1, y: 0}
   gridManager: {fileID: 1870279752}
   drawGizmos: 1
   drawOnlyWhenSelected: 0
@@ -30988,8 +31456,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &1918724028
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -31647,6 +32113,10 @@ MonoBehaviour:
   combatEncounterManager: {fileID: 408417867}
   combatPromptService: {fileID: 0}
   gridManager: {fileID: 1870279752}
+  layoutLoader: {fileID: 0}
+  mobileEnemyRaidController: {fileID: 0}
+  cameraFollower: {fileID: 0}
+  enemyCameraReturnDelay: 0.5
 --- !u!4 &2000643501
 Transform:
   m_ObjectHideFlags: 0
@@ -31686,6 +32156,130 @@ MonoBehaviour:
   enemyRoot: {fileID: 2000643501}
   runtimeEnemyGroupKey: 30002
   nextRuntimeEnemySequence: 1
+--- !u!1 &2005756823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2005756824}
+  - component: {fileID: 2005756825}
+  m_Layer: 0
+  m_Name: BGStore001
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2005756824
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005756823}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2028557090}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2005756825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005756823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: af144cc7d2e01a24cac57c52de2d8b12, type: 2}
+  profile: {fileID: 11400000, guid: 3ae3c233fe3ff73418064d0ce63750e8, type: 2}
+  variantId: 
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+  targetWorldPosition: {x: 0, y: 0, z: 0}
+  targetRadius: 0
 --- !u!1 &2016879487
 GameObject:
   m_ObjectHideFlags: 0
@@ -31836,6 +32430,60 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2021949147}
   m_CullTransparentMesh: 1
+--- !u!1 &2028557088
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2028557090}
+  - component: {fileID: 2028557089}
+  m_Layer: 0
+  m_Name: BG_ColorModifier_JC
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2028557089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2028557088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7879681bfd9cb0543ae4ed073bed3252, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  profile: {fileID: 11400000, guid: 042fb1cf82d10fc44b21df91941a27e5, type: 2}
+  targetRoot: {fileID: 0}
+  distributeVariants: 0
+  variantSeed: 260926
+  fixedVariants: []
+--- !u!4 &2028557090
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2028557088}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1426023327}
+  - {fileID: 708142064}
+  - {fileID: 2005756824}
+  - {fileID: 1676676316}
+  - {fileID: 985170311}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &2035789493
 Mesh:
   m_ObjectHideFlags: 0
@@ -32792,10 +33440,12 @@ MonoBehaviour:
   itemCatalog: {fileID: 0}
   outpostCatalog: {fileID: 0}
   eventCatalog: {fileID: 0}
+  worldEventNpcCatalog: {fileID: 0}
   heroUnionCatalog: {fileID: 0}
   villainUnionBasePrefab: {fileID: 7581908882623703925, guid: f21b9a302e7e7d946a5552b6e362f64c,
     type: 3}
   decorativeObjectCatalog: {fileID: 0}
+  tutorialObjectCatalog: {fileID: 0}
   gateCatalog: {fileID: 0}
   enemyCatalog: {fileID: 0}
   playerUnitCatalog: {fileID: 0}
@@ -32821,10 +33471,12 @@ MonoBehaviour:
   eventRoot: {fileID: 962885884}
   mainEventRoot: {fileID: 346286739}
   subEventRoot: {fileID: 428874094}
+  worldEventRoot: {fileID: 0}
   enemyRoot: {fileID: 2000643501}
   heroUnionRoot: {fileID: 1889454947}
   villainUnionRoot: {fileID: 106732309}
   decorativeObjectRoot: {fileID: 1466526124}
+  tutorialObjectRoot: {fileID: 0}
   gateRoot: {fileID: 1617649182}
   enemySpawnPointRoot: {fileID: 1729031364}
   loadOnStart: 1
@@ -32849,11 +33501,14 @@ MonoBehaviour:
   gridManager: {fileID: 1870279752}
   chunkSize: 16
   yOffset: 0.01
+  loweredSpriteYOffset: -0.6
+  raisedCubeHeight: 0.1
   obstacleTileKey: Obstacle
   obstacleYOffset: 0.025
   tileRoot: {fileID: 323568968}
   materialTemplate: {fileID: 0}
   generatedRootName: Generated Tile Meshes
+  markChunksReflectionProbeStatic: 1
 --- !u!114 &2062833428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32876,6 +33531,7 @@ MonoBehaviour:
   selectedOutpostType: 1
   selectedOutpostResourcePerTurn: 1000
   selectedOutpostInitialState: 1
+  selectedMapEventKind: 0
   selectedMapEventType: 0
   selectedMapEventRequireAmount: 100
   selectedMapEventEffectAmount: 3
@@ -32883,11 +33539,21 @@ MonoBehaviour:
   enemyBehaviorType: 1
   tileRegistry: {fileID: 11400000, guid: 49595da0b4c16a54bb3a3c6055d0f461, type: 2}
   selectedTileKey: tilemap_06
+  selectedTileMaterialKey: 
+  selectedTileRenderMode: 0
   selectedHeroUnionPrefabKey: HeroUnion
   selectedDecorativeObjectKey: 
+  selectedDecorativeObjectRotation: 0
+  selectedTutorialObjectPrefabKey: 
+  selectedTutorialEnemyPrefabKey: 
+  selectedTutorialItemPrefabKey: 
   selectedMainEventPrefabKey: 
   selectedSubEventPrefabKey: 
+  selectedWorldEventId: 
+  selectedWorldEventType: 1
+  selectedWorldEventRotation: 0
   selectedGatePrefabKey: VerticalGate
+  selectedGateFlipModel180: 0
   selectedGateId: gate_005
   selectedGateFirstZoneId: zone_003
   selectedGateSecondZoneId: zone_004
@@ -32914,6 +33580,7 @@ MonoBehaviour:
   heroUnionColor: {r: 0.95, g: 0.85, b: 0.25, a: 0.75}
   villainUnionColor: {r: 0.95, g: 0.25, b: 0.55, a: 0.75}
   decorativeObjectColor: {r: 0.95, g: 0.65, b: 0.25, a: 0.75}
+  tutorialObjectColor: {r: 0.55, g: 0.75, b: 1, a: 0.75}
   mainEventColor: {r: 0.2, g: 0.9, b: 1, a: 0.75}
   mainEventInteractionColor: {r: 0.2, g: 0.9, b: 1, a: 0.25}
   subEventColor: {r: 0.35, g: 0.95, b: 0.95, a: 0.75}
@@ -32980,8 +33647,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Player Turn
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -33122,8 +33789,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &2079092906
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -33204,9 +33869,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 7242becc517c388478f346201d46c00c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -33592,8 +34256,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
-  animator: {fileID: 0}
-  getAnimationDestroyDelay: 0.45
 --- !u!65 &2142390952
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -34041,6 +34703,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   turnWeekDayText: {fileID: 1731115495}
+  maxTurn: 0
   nextTurnButton: {fileID: 0}
   turnManager: {fileID: 207868834}
 --- !u!114 &8802002002002002002
@@ -34073,7 +34736,6 @@ SceneRoots:
   - {fileID: 149696674}
   - {fileID: 347558454}
   - {fileID: 408417868}
-  - {fileID: 964046518}
   - {fileID: 1919126567}
   - {fileID: 7445272768166758447}
   - {fileID: 2000643501}
@@ -34093,669 +34755,3 @@ SceneRoots:
   - {fileID: 1838598955}
   - {fileID: 639429862}
   - {fileID: 2028557090}
---- !u!114 &2005756825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2005756823}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: af144cc7d2e01a24cac57c52de2d8b12, type: 2}
-  profile: {fileID: 11400000, guid: 3ae3c233fe3ff73418064d0ce63750e8, type: 2}
-  parts:
-  - hue: 90
-    lightness: 1
-    saturation: 0.000009313226
-    ignoreSourceColorAndShading: 0
-  - hue: 73.58144
-    lightness: 0.75282323
-    saturation: 39.03917
-    ignoreSourceColorAndShading: 0
-  - hue: 256.43576
-    lightness: 0.5389753
-    saturation: 34.236553
-    ignoreSourceColorAndShading: 0
-  - hue: 133.6374
-    lightness: 0.35369703
-    saturation: 14.397416
-    ignoreSourceColorAndShading: 0
-  - hue: 91.5944
-    lightness: 0.7602642
-    saturation: 4.3492503
-    ignoreSourceColorAndShading: 0
-  - hue: 77.9899
-    lightness: 0.8435668
-    saturation: 16.645641
-    ignoreSourceColorAndShading: 0
-  - hue: 73.58144
-    lightness: 0.75282323
-    saturation: 39.03917
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 63.38495
-    lightness: 0.55545485
-    saturation: 25.118418
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  partIds:
-  - wall
-  - roof
-  - window
-  - foliage
-  - floor
-  - roof_floor
-  - entrance_awning
-  - pot
-  - soil
-  - accent
-  - door_frame
-  - vent_body
-  - vent_trim
-  - door_handle
-  showOriginal: 0
-  highlightedPart: -1
-  searchEntireScene: 0
---- !u!1 &1426023326
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1426023327}
-  - component: {fileID: 1426023328}
-  m_Layer: 0
-  m_Name: BGHigh001
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &1676676315
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1676676316}
-  - component: {fileID: 1676676317}
-  m_Layer: 0
-  m_Name: BGStore002
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &985170312
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 985170310}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: 103e81596830fe54fabf20cab343cca1, type: 2}
-  profile: {fileID: 11400000, guid: 53b47e92c19c93349a3a85f66e89c258, type: 2}
-  parts:
-  - hue: 90
-    lightness: 1
-    saturation: 0.000009313226
-    ignoreSourceColorAndShading: 0
-  - hue: 142.54832
-    lightness: 0.42747808
-    saturation: 21.878466
-    ignoreSourceColorAndShading: 0
-  - hue: 256.43576
-    lightness: 0.5389753
-    saturation: 34.236553
-    ignoreSourceColorAndShading: 0
-  - hue: 27.532671
-    lightness: 0.5108109
-    saturation: 44.991295
-    ignoreSourceColorAndShading: 0
-  - hue: 91.5944
-    lightness: 0.7602642
-    saturation: 4.3492503
-    ignoreSourceColorAndShading: 0
-  - hue: 77.9899
-    lightness: 0.8435668
-    saturation: 16.645641
-    ignoreSourceColorAndShading: 0
-  - hue: 88.39558
-    lightness: 0.8228685
-    saturation: 39.5169
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 63.38495
-    lightness: 0.55545485
-    saturation: 25.118418
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  partIds:
-  - wall
-  - sign_green
-  - window
-  - sign_red
-  - floor
-  - roof_floor
-  - sign_yellow
-  - pot
-  - soil
-  - accent
-  - door_frame
-  - vent_body
-  - vent_trim
-  - door_handle
-  - bollard_accent
-  - side_box
-  showOriginal: 0
-  highlightedPart: -1
-  searchEntireScene: 0
---- !u!1 &2005756823
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2005756824}
-  - component: {fileID: 2005756825}
-  m_Layer: 0
-  m_Name: BGStore001
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1676676316
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1676676315}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2028557090}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &708142063
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 708142064}
-  - component: {fileID: 708142065}
-  m_Layer: 0
-  m_Name: BGHigh002
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1426023327
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1426023326}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2028557090}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &985170311
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 985170310}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2028557090}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1426023328
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1426023326}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: 5e2ef7abaf9796241af2fc434115382f, type: 2}
-  profile: {fileID: 11400000, guid: 20d89b5b1168eca42b1ad01e79cb591e, type: 2}
-  parts:
-  - hue: 90
-    lightness: 1
-    saturation: 0.000009313226
-    ignoreSourceColorAndShading: 0
-  - hue: 73.58144
-    lightness: 0.75282323
-    saturation: 39.03917
-    ignoreSourceColorAndShading: 0
-  - hue: 256.43576
-    lightness: 0.5389753
-    saturation: 34.236553
-    ignoreSourceColorAndShading: 0
-  - hue: 133.6374
-    lightness: 0.35369703
-    saturation: 14.397416
-    ignoreSourceColorAndShading: 0
-  - hue: 91.5944
-    lightness: 0.7602642
-    saturation: 4.3492503
-    ignoreSourceColorAndShading: 0
-  - hue: 77.9899
-    lightness: 0.8435668
-    saturation: 16.645641
-    ignoreSourceColorAndShading: 0
-  - hue: 73.58144
-    lightness: 0.75282323
-    saturation: 39.03917
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 63.38495
-    lightness: 0.55545485
-    saturation: 25.118418
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  partIds:
-  - wall
-  - roof
-  - window
-  - foliage
-  - floor
-  - roof_floor
-  - entrance_awning
-  - pot
-  - soil
-  - accent
-  - door_frame
-  - vent_body
-  - vent_trim
-  - door_handle
-  showOriginal: 0
-  highlightedPart: -1
-  searchEntireScene: 0
---- !u!114 &1676676317
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1676676315}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: 0f14983c13904884fba0a65649f84896, type: 2}
-  profile: {fileID: 11400000, guid: ffc6f4a23ee4ad744a9a6bee58888332, type: 2}
-  parts:
-  - hue: 90
-    lightness: 1
-    saturation: 0.000009313226
-    ignoreSourceColorAndShading: 0
-  - hue: 73.58144
-    lightness: 0.75282323
-    saturation: 39.03917
-    ignoreSourceColorAndShading: 0
-  - hue: 256.43576
-    lightness: 0.5389753
-    saturation: 34.236553
-    ignoreSourceColorAndShading: 0
-  - hue: 133.6374
-    lightness: 0.35369703
-    saturation: 14.397416
-    ignoreSourceColorAndShading: 0
-  - hue: 91.5944
-    lightness: 0.7602642
-    saturation: 4.3492503
-    ignoreSourceColorAndShading: 0
-  - hue: 77.9899
-    lightness: 0.8435668
-    saturation: 16.645641
-    ignoreSourceColorAndShading: 0
-  - hue: 73.58144
-    lightness: 0.75282323
-    saturation: 39.03917
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 63.38495
-    lightness: 0.55545485
-    saturation: 25.118418
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  partIds:
-  - wall
-  - roof
-  - window
-  - foliage
-  - floor
-  - roof_floor
-  - entrance_awning
-  - pot
-  - soil
-  - accent
-  - door_frame
-  - vent_body
-  - vent_trim
-  - door_handle
-  showOriginal: 0
-  highlightedPart: -1
-  searchEntireScene: 0
---- !u!114 &708142065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 708142063}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: 94ebadf3e9ea97d4ba3bde58c2879437, type: 2}
-  profile: {fileID: 11400000, guid: 8ec9eb177d367ab40974084e76193dca, type: 2}
-  parts:
-  - hue: 90
-    lightness: 1
-    saturation: 0.000009313226
-    ignoreSourceColorAndShading: 0
-  - hue: 73.58144
-    lightness: 0.75282323
-    saturation: 39.03917
-    ignoreSourceColorAndShading: 0
-  - hue: 256.43576
-    lightness: 0.5389753
-    saturation: 34.236553
-    ignoreSourceColorAndShading: 0
-  - hue: 133.6374
-    lightness: 0.35369703
-    saturation: 14.397416
-    ignoreSourceColorAndShading: 0
-  - hue: 91.5944
-    lightness: 0.7602642
-    saturation: 4.3492503
-    ignoreSourceColorAndShading: 0
-  - hue: 77.9899
-    lightness: 0.8435668
-    saturation: 16.645641
-    ignoreSourceColorAndShading: 0
-  - hue: 73.58144
-    lightness: 0.75282323
-    saturation: 39.03917
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 63.38495
-    lightness: 0.55545485
-    saturation: 25.118418
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  - hue: 31.085646
-    lightness: 0.6647152
-    saturation: 3.073385
-    ignoreSourceColorAndShading: 0
-  - hue: 17.277885
-    lightness: 0.9053192
-    saturation: 1.6392047
-    ignoreSourceColorAndShading: 0
-  partIds:
-  - wall
-  - roof
-  - window
-  - foliage
-  - floor
-  - roof_floor
-  - entrance_awning
-  - pot
-  - soil
-  - accent
-  - door_frame
-  - vent_body
-  - vent_trim
-  - door_handle
-  showOriginal: 0
-  highlightedPart: -1
-  searchEntireScene: 0
---- !u!4 &708142064
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 708142063}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2028557090}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &2005756824
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2005756823}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2028557090}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &985170310
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 985170311}
-  - component: {fileID: 985170312}
-  m_Layer: 0
-  m_Name: BGStore004
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2028557090
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2028557088}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1426023327}
-  - {fileID: 708142064}
-  - {fileID: 2005756824}
-  - {fileID: 1676676316}
-  - {fileID: 985170311}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2028557089
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2028557088}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7879681bfd9cb0543ae4ed073bed3252, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  profile: {fileID: 11400000, guid: 042fb1cf82d10fc44b21df91941a27e5, type: 2}
-  targetRoot: {fileID: 0}
---- !u!1 &2028557088
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2028557090}
-  - component: {fileID: 2028557089}
-  m_Layer: 0
-  m_Name: BG_ColorModifier_JC
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1

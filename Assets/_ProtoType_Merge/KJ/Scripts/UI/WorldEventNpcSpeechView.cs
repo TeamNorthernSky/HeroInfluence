@@ -123,10 +123,13 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
         {
             bool restart = dialogueOwner != this || screenMessage.text != text;
             bool wasActive = screenDialogue.activeSelf;
+            bool wasVisible = screenDialogue.activeInHierarchy;
             dialogueOwner = this;
             screenMessage.text = text;
             screenDialogue.SetActive(true);
             if (wasActive && restart) screenPop?.Play();
+            if (screenDialogue.activeInHierarchy && (!wasVisible || restart) && lastRequest != null)
+                PopupSoundService.PlayWorldEventBubble(lastRequest.NpcType);
         }
         else HideScreenDialogue();
     }

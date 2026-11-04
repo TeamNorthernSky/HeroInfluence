@@ -163,7 +163,7 @@ public static class TutorialCombatUnitFactory
         return 0;
     }
 
-    private static string ResolveDefaultWeapon(
+    public static string ResolveDefaultWeapon(
         TutorialCatalog catalog,
         DHPlayerUnitTemplate template,
         out DHWeaponTemplate weaponTemplate)

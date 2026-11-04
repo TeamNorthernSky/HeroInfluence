@@ -14,6 +14,50 @@ namespace JC.Tutorial
         private JcTutorialHintIcon iconGraphic;
         private CanvasGroup hintGroup;
         private float hintStarted;
+        private Image badgeOutline;
+        private Sprite badgeCircle, badgeBox;
+        // 초상화 기준으로 파란 슬롯 프레임 바깥에 간격을 두고 두 안내 원을 맞춥니다.
+        internal const float BadgeInnerScale = 1.28f;
+        internal const float BadgeOuterScale = 1.38f;
+
+        // 안내 캔버스 좌표로 실제 배지 테두리를 따라간다. 같은 사각형으로 디밍 구멍도 계산한다.
+        public RectTransform ShowBadgeOutline(TurnSlotUI slot, bool circle)
+        {
+            if (hintRoot == null || slot == null)
+            {
+                if (badgeOutline != null) badgeOutline.enabled = false;
+                return null;
+            }
+            var target = slot.transform.Find("PortraitWhiteOutline") as RectTransform;
+            if (target == null) target = slot.transform as RectTransform;
+            var bounds = LocalBounds(target, hintRoot);
+            if (badgeOutline == null)
+            {
+                badgeOutline = HintRect("GuidedBadgeOutline", hintRoot, Vector2.one).gameObject.AddComponent<Image>();
+                badgeOutline.raycastTarget = false;
+                badgeCircle = Resources.Load<Sprite>("BattleEntry/GuideBadgeRing");
+                badgeBox = Resources.Load<Sprite>("BattleEntry/GuideBadgeBox");
+            }
+            float diameter = Mathf.Max(bounds.width, bounds.height) * BadgeOuterScale;
+            var size = Vector2.one * diameter;
+            var center = bounds.center;
+            if (!circle)
+            {
+                // 화살표 이동 폭은 화면 픽셀, 배지와 9슬라이스 테두리는 Canvas 단위입니다.
+                float scale = Mathf.Max(.01f, badgeOutline.canvas.rootCanvas.scaleFactor);
+                float arrowReach = JcBattleHoverRing.ArrowClearancePixels / scale;
+                float padding = 6f + 4f / scale;
+                size.x += arrowReach + 2f * padding;
+                size.y = Mathf.Max(diameter, 62f / scale) + 2f * padding;
+                center.x -= arrowReach * .5f;
+            }
+            badgeOutline.enabled = true;
+            badgeOutline.type = circle ? Image.Type.Simple : Image.Type.Sliced;
+            badgeOutline.sprite = circle ? badgeCircle : badgeBox;
+            badgeOutline.rectTransform.localPosition = center;
+            badgeOutline.rectTransform.sizeDelta = size;
+            return badgeOutline.rectTransform;
+        }
         private const float HintPeriod = 1.8f;
 
         public void SetActionHint(ActionHint value, RectTransform target = null)
