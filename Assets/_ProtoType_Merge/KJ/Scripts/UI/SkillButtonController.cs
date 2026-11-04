@@ -405,9 +405,7 @@ public class SkillButtonController : MonoBehaviour
             string text = string.Empty;
             if (skill != null)
             {
-                if (i == 0) text = HeroSkillRules.IsFamily(skill, 4020) ? "공격/회복" : skill.classSkillEffect switch { 0 => "공격", 1 => "회복", 2 => "부활", 3 => "버프", 4 => "디버프", _ => string.Empty };
-                if (i == 1) text = skill.classSkillRange switch { 0 => "근거리", 1 => "원거리", _ => string.Empty };
-                if (i == 2) text = skill.classSkillTarget switch { 0 => "단수", 1 => "복수", 2 => "전체", _ => string.Empty };
+                text = SkillTagText.Get(skill.skillIndex, skill.classSkillEffect, skill.classSkillRange, skill.classSkillTarget, i);
             }
             // 효과·사거리·대상 태그 모두 한 줄 높이를 온전히 사용합니다.
             var margin = label.margin;
