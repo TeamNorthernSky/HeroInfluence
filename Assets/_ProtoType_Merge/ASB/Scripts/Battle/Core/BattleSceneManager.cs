@@ -514,6 +514,11 @@ public class BattleSceneManager : MonoBehaviour
         allUnits.AddRange(playerBattleCharactors);
         allUnits.AddRange(enemyBattleCharactors);
 
+        // 로딩 화면이 덮여 있는 동안 스킬 Timeline 재생 그래프를 미리 한 번 만든다(에디터·빌드 공통).
+        // Timeline 패키지 제네릭 클래스의 첫 컴파일 멈춤이 첫 시전 중에 생겨 Timeline이 건너뛰는 것을 막는다.
+        PresentationTimelineWarmup.Run(battleFlowManager != null && battleFlowManager.BattleManager != null
+            ? battleFlowManager.BattleManager.PresentationCatalog : null, allUnits);
+
 #if !UNITY_EDITOR
         IsVisualPreparationPending = true;
         try { yield return BattleEffectWarmup.PrepareBattle(allUnits); }
