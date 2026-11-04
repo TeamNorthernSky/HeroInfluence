@@ -28,6 +28,16 @@ namespace JC.EnvironmentDetail
         HashSet<int> sourceIds = new HashSet<int>();
         GameObject output;
         JcBattleSurfaceDressing lines;
+        readonly List<JcLampSurfaceChunks> litSurfaces = new List<JcLampSurfaceChunks>();
+        readonly HashSet<int> checkedSurfaces = new HashSet<int>();
+        int surfaceReadyFrame;
+
+        protected override void OnEnable()
+        {
+            // 레벨 로드 직후 베이크 외형이 원본을 교체한 다음 보이는 표면만 분할합니다.
+            surfaceReadyFrame = Time.frameCount + 2;
+            base.OnEnable();
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetSources() => sourceRegistry.Clear();
@@ -37,9 +47,9 @@ namespace JC.EnvironmentDetail
 
         protected override void RefreshTargets(bool changed)
         {
-            var filters = gameObject.scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<MeshFilter>(true))
-                .Where(f => f.sharedMesh != null && f.gameObject.activeInHierarchy && f.GetComponentInParent<JcRoadMarkingControl>() == null)
-                .Where(f =>
+            var all = gameObject.scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<MeshFilter>(true))
+                .Where(f => f.name != JcLampSurfaceChunks.VisualName && f.sharedMesh != null && f.gameObject.activeInHierarchy && f.GetComponentInParent<JcRoadMarkingControl>() == null).ToArray();
+            var filters = all.Where(f =>
                 {
                     var renderer = f.GetComponent<MeshRenderer>();
                     if (renderer == null || renderer.forceRenderingOff) return false;
@@ -92,7 +102,49 @@ namespace JC.EnvironmentDetail
                 }
                 lines.SetRoadValues(Values, lineColor);
             }
+            if (Application.isPlaying && gameObject.scene.name == "DHScene_3" && Time.frameCount >= surfaceReadyFrame)
+                RefreshLampSurfaces(all, changed);
             Status = $"탐사 차선 {originals.Count}개 대상 / " + (Values == Vector3.one && lineColor == JcRoadMarkingProfile.DefaultColor ? "원본 외형 유지" : "원본 대비 배율 적용");
+        }
+
+        void RefreshLampSurfaces(MeshFilter[] all, bool changed)
+        {
+            List<Light> lamps = null;
+            foreach (var f in all)
+            {
+                if (!IsLampSurface(f.name) || checkedSurfaces.Contains(f.GetInstanceID())) continue;
+                var r = f.GetComponent<MeshRenderer>();
+                if (!r || !r.enabled || r.forceRenderingOff) continue;
+                if (lamps == null) lamps = gameObject.scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Light>(true))
+                    .Where(l => l.name == "LampSpotLight" && l.type == LightType.Spot).ToList();
+                if (lamps.Count == 0) break;
+                checkedSurfaces.Add(f.GetInstanceID());
+                JcLampSurfaceChunks.Build(f, lamps);
+                var split = f.GetComponent<JcLampSurfaceChunks>();
+                if (split) litSurfaces.Add(split);
+            }
+            litSurfaces.RemoveAll(s => !s);
+            foreach (var surface in litSurfaces)
+            {
+                if (changed) surface.SyncAppearance();
+                surface.SyncVisibility();
+            }
+        }
+
+        static bool IsLampSurface(string name)
+        {
+            if (name == "연속 연석: 보도·야지 경계") return true;
+            if (!(name.StartsWith("TileChunk_", StringComparison.Ordinal) || name.StartsWith("Detail_TileChunk_", StringComparison.Ordinal))) return false;
+            return name.Contains("_Road_") || name.EndsWith("_tilemap_01_RaisedCube", StringComparison.Ordinal) ||
+                name.EndsWith("_tilemap_04_FlatCube", StringComparison.Ordinal);
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            foreach (var surface in litSurfaces) if (surface) Dispose(surface);
+            litSurfaces.Clear();
+            checkedSurfaces.Clear();
         }
 
         protected override void RestoreTargets()

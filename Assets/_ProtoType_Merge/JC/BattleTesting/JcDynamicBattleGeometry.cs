@@ -37,6 +37,7 @@ namespace JC.BattleTesting
             var parts=new List<JcDynamicBattleSource.Part>();var roads=new List<JcDynamicBattleSource.Road>();
             foreach(var f in scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<MeshFilter>()))
             {
+                if (f.name == JC.EnvironmentDetail.JcLampSurfaceChunks.VisualName) continue;
                 var r=f.GetComponent<MeshRenderer>();if(r==null||f.sharedMesh==null||Character(f.transform)||Barricade(f.transform))continue;
                 if(f.GetComponentInParent<JC.EnvironmentDetail.JcRoadMarkingControl>()!=null)continue;
                 bool originalRoad=JC.EnvironmentDetail.JcExploreRoadMarkings.TryGetOriginal(r,out var original);
@@ -277,12 +278,30 @@ namespace JC.BattleTesting
                     .Select(part => part.group).Where(group => !string.IsNullOrEmpty(group)));
                 var selected = source.parts.Where(part => part.mesh &&
                     (InView(part) || (!part.terrain && groups.Contains(part.group)))).ToArray();
+                JC.Environment.JcBattleLampGroup lamps = null;
+                Matrix4x4 meshToBulb = Matrix4x4.identity;
                 foreach(var part in selected)
                 {
                     Mesh mesh;
                     if(part.terrain)mesh=Terrain(part,transform*part.matrix,extent);
-                    else {mesh=UnityEngine.Object.Instantiate(part.mesh);var v=mesh.vertices;var matrix=BattlePropMatrix(part,transform,source.roads,v);for(int i=0;i<v.Length;i++)v[i]=matrix.MultiplyPoint3x4(v[i]);mesh.vertices=v;var normals=mesh.normals;var normalMatrix=matrix.inverse.transpose;for(int i=0;i<normals.Length;i++)normals[i]=normalMatrix.MultiplyVector(normals[i]).normalized;mesh.normals=normals;mesh.RecalculateBounds();mesh.RecalculateTangents();}
-                    if(mesh==null)continue;output.Add(part.name,mesh,part.materials,part.terrain,part.renderer);
+                    else {mesh=UnityEngine.Object.Instantiate(part.mesh);var v=mesh.vertices;var matrix=BattlePropMatrix(part,transform,source.roads,v);
+                        if (part.name == "Streetlight")
+                        {
+                            if (!lamps)
+                            {
+                                var profile = Resources.Load<JC.Environment.JcBattleLampProfile>(JC.Environment.JcBattleLampProfile.ResourceName);
+                                var prefab = profile.lampPrefab;
+                                var original = prefab.GetComponentInChildren<MeshFilter>(true);
+                                var bulb = prefab.GetComponentInChildren<Light>(true);
+                                meshToBulb = original.transform.worldToLocalMatrix * bulb.transform.localToWorldMatrix;
+                                lamps = root.AddComponent<JC.Environment.JcBattleLampGroup>();
+                            }
+                            lamps.Add(matrix * meshToBulb);
+                        }
+                        for(int i=0;i<v.Length;i++)v[i]=matrix.MultiplyPoint3x4(v[i]);mesh.vertices=v;var normals=mesh.normals;var normalMatrix=matrix.inverse.transpose;for(int i=0;i<normals.Length;i++)normals[i]=normalMatrix.MultiplyVector(normals[i]).normalized;mesh.normals=normals;mesh.RecalculateBounds();mesh.RecalculateTangents();}
+                    if(mesh==null)continue;
+                    var renderer = output.Add(part.name,mesh,part.materials,part.terrain,part.renderer);
+                    if (part.name == "Streetlight" && lamps) lamps.BindLens(renderer);
                 }
                 output.Report=$"조우 {settings.encounterPosition} → 기준점 {p} / 이동 {Vector3.Distance(new Vector3(settings.encounterPosition.x,p.y,settings.encounterPosition.z),p):F2} / 방향 {(placement.alongX?"X":"Z")} / 동일 확대 {scale:F2} / 원형 보존 외형 {selected.Length}";
                 // 캐시 입력으로 생성하는 전투도 탐사와 같은 일방통행 차선 제외를 적용합니다.

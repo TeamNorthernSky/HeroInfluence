@@ -8,12 +8,14 @@ public sealed class JcBattleHoverRing : MaskableGraphic
     private JcBattleHoverArrow arrow;
     private readonly Vector3[] corners = new Vector3[4];
     private Image badgeCircle;
+    private bool guideRing;
     public const float ArrowClearancePixels = 80f;
 
     public void AlignToBadge(Image circle) { badgeCircle = circle; SetVerticesDirty(); }
 
-    public void Show(Color tint, float thickness, float progress = 0)
+    public void Show(Color tint, float thickness, float progress = 0, bool useGuideRing = false)
     {
+        if (guideRing != useGuideRing) { guideRing = useGuideRing; SetVerticesDirty(); }
         if (arrow == null)
         {
             var go = new GameObject("JC_HoverArrow", typeof(RectTransform), typeof(CanvasRenderer), typeof(JcBattleHoverArrow));
@@ -63,9 +65,17 @@ public sealed class JcBattleHoverRing : MaskableGraphic
             rect.height / Mathf.Max(.01f, Vector2.Distance(bottomLeft, topLeft)));
         // 흰 테두리의 안쪽 안티앨리어싱까지 붉은 불투명 코어로 덮습니다.
         inner -= pixel * 2f;
-        Band(vh, center, inner, inner + pixel * width, Color.white, Color.white);
+        var outer = inner + pixel * width;
+        if (guideRing)
+        {
+            center = rect.center;
+            var radius = Vector2.one * (.5f * Mathf.Max(rect.width, rect.height));
+            inner = radius * JC.Tutorial.JcTutorialGuideView.BadgeInnerScale;
+            outer = radius * JC.Tutorial.JcTutorialGuideView.BadgeOuterScale;
+        }
+        Band(vh, center, inner, outer, Color.white, Color.white);
         // 레이아웃이 갱신될 때만 화살표 기준점을 계산합니다. 원의 형상에는 위상을 사용하지 않습니다.
-        float referenceLeft = center.x - inner.x - pixel.x * 6f;
+        float referenceLeft = guideRing ? center.x - outer.x : center.x - inner.x - pixel.x * 6f;
         if (arrow != null)
             arrow.Configure(new Vector2(referenceLeft - pixel.x * 27f, center.y), pixel);
     }

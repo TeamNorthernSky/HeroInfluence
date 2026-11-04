@@ -9,6 +9,14 @@ public sealed class TutorialExploreHeroList : MonoBehaviour
     [SerializeField] private ExplorationHeroBoxController.HeroSlot[] slots =
         System.Array.Empty<ExplorationHeroBoxController.HeroSlot>();
 
+    private UnityEngine.UI.Image[] defeatedOverlays;
+    private void Awake()
+    {
+        defeatedOverlays = new UnityEngine.UI.Image[slots.Length];
+        for (int i = 0; i < slots.Length; i++)
+            defeatedOverlays[i] = ExplorationHeroBoxController.CreateDefeatedOverlay(slots[i]);
+    }
+
     private float nextRefresh;
 
     private void OnEnable() => Refresh();
@@ -50,6 +58,17 @@ public sealed class TutorialExploreHeroList : MonoBehaviour
             float maxIp = hasStats ? state.MaxIp : (template != null ? template.BaseStats.Influence : 0f);
             float ip = hasStats ? state.CurrentIp : maxIp;
 
+            if (defeatedOverlays != null && defeatedOverlays[i] != null)
+            {
+                bool defeated = hasStats && hp <= 0f;
+                defeatedOverlays[i].gameObject.SetActive(defeated);
+                if (defeated) defeatedOverlays[i].transform.SetAsLastSibling();
+            }
+            if (slot.root != null)
+            {
+                var rank = slot.root.GetComponentInChildren<HeroRankBadge>(true);
+                if (rank != null) rank.SetRank(UnitRankLookup.GetTutorialRank(state != null ? state.Level : 1, catalog));
+            }
             if (slot.profile != null)
             {
                 var portrait = Sprites.Portrait.Hero(key);

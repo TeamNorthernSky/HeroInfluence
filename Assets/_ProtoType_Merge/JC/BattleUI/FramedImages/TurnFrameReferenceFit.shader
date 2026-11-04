@@ -2,6 +2,8 @@ Shader "UI/JC/TurnFrameReferenceFit"
 {
  Properties {
  [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+ [Toggle] _SeparateBadgeFrames ("Use independent portrait frames", Float) = 0
+ _PointerDetail ("Inset pointer artwork", 2D) = "black" {}
  _Color ("Tint", Color) = (1,1,1,1)
  _StencilComp ("Stencil Comparison", Float) = 8
  _Stencil ("Stencil ID", Float) = 0
@@ -25,7 +27,8 @@ Shader "UI/JC/TurnFrameReferenceFit"
  #include "UnityUI.cginc"
  struct appdata { float4 vertex:POSITION; float4 color:COLOR; float2 uv:TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
  struct v2f { float4 vertex:SV_POSITION; fixed4 color:COLOR; float2 uv:TEXCOORD0; float4 world:TEXCOORD1; UNITY_VERTEX_OUTPUT_STEREO };
- sampler2D _MainTex; fixed4 _Color; fixed4 _TextureSampleAdd; float4 _ClipRect;
+ float _SeparateBadgeFrames;
+ sampler2D _MainTex, _PointerDetail; fixed4 _Color; fixed4 _TextureSampleAdd; float4 _ClipRect;
  v2f vert(appdata v){v2f o;UNITY_SETUP_INSTANCE_ID(v);UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);o.world=v.vertex;o.vertex=UnityObjectToClipPos(v.vertex);o.uv=v.uv;o.color=v.color*_Color;return o;}
  // User-approved 375x1069 layout. Recess regions use uniform scale; only blue gaps interpolate.
  float sourceY(float y){
@@ -48,7 +51,24 @@ Shader "UI/JC/TurnFrameReferenceFit"
  fixed4 frag(v2f i):SV_Target {
  float2 p=float2(i.uv.x*375,(1-i.uv.y)*1069);
  float2 uv=float2(((p.x-207)/0.56741573+433)/868,1-sourceY(p.y)/1811);
- fixed4 c=(tex2D(_MainTex,uv)+_TextureSampleAdd)*i.color;
+ float2 plateUV=uv;
+ if (_SeparateBadgeFrames > .5) {
+     // 배경에 인쇄된 다섯 원은 각 슬롯의 독립 프레임이 대신 그립니다.
+     float2 src=float2(uv.x*867,(1-uv.y)*1815);
+     float2 d=src-float2(433,330);
+     float waitY=clamp(round((src.y-694)/303.5),0,3)*303.5+694;
+     float2 w=src-float2(433,waitY);
+     if(dot(d,d)<178*178 || dot(w,w)<152*152)
+         plateUV=float2(433.0/867,1-(src.y<520 ? 330 : waitY)/1815);
+ }
+ // 원을 지운 영역의 UV 점프가 이웃 픽셀의 밉 레벨까지 낮추지 않도록 원래 UV의 변화율을 사용합니다.
+ fixed4 c=(tex2Dgrad(_MainTex,plateUV,ddx(uv),ddy(uv))+_TextureSampleAdd)*i.color;
+ // Replace just the inner chevron in source pixel coordinates, before tinting and clipping.
+ float2 patchUV = (float2(uv.x * 867, (1-uv.y) * 1815) - float2(112,236)) / float2(144,176);
+ if (all(patchUV >= 0) && all(patchUV <= 1)) {
+     fixed4 detail = tex2D(_PointerDetail, float2(patchUV.x, 1-patchUV.y));
+     c = lerp(c, fixed4(detail.rgb * i.color.rgb, i.color.a), detail.a);
+ }
  // Suppress isolated low-alpha fringe pixels without hardening the antialiased silhouette.
  c.a=smoothstep(0.10,0.85,c.a);
  if(any(uv<0)||any(uv>1))c.a=0;

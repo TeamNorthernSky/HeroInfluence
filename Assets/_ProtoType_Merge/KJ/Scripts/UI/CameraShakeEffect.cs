@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>Additive camera translation, restored when finished or disabled.</summary>
 [DisallowMultipleComponent]
@@ -12,6 +13,85 @@ public sealed class CameraShakeEffect : MonoBehaviour
     private Vector3 appliedOffset;
     private float elapsed;
     private bool shaking;
+    private Object impactOwner;
+    private float impactStart, impactStrength, impactDuration;
+    private float footRebound;
+    private Vector3 renderOffset;
+    public const float ImpactDuration = .14f;
+
+    public static CameraShakeEffect ForCamera(Camera camera)
+    {
+        if (camera == null) return null;
+        return camera.TryGetComponent<CameraShakeEffect>(out var effect)
+            ? effect : camera.gameObject.AddComponent<CameraShakeEffect>();
+    }
+
+    public void PlayImpact(Object owner, float strength, float seconds = ImpactDuration)
+    {
+        impactOwner = owner;
+        impactStrength = strength;
+        impactDuration = Mathf.Max(.01f, seconds);
+        impactStart = Time.unscaledTime;
+        footRebound = -1f;
+    }
+
+    public void PlayFootstep(Object owner, float strength, float seconds, float reboundPercent)
+    {
+        PlayImpact(owner, strength, seconds);
+        footRebound = Mathf.Clamp01(reboundPercent * .01f);
+    }
+
+    private static Vector2 FootstepOffset(float t, float rebound)
+    {
+        // Drop quickly, rise past rest, then settle more slowly.
+        float offset = t < .20f ? Mathf.SmoothStep(0f, -1f, t / .20f)
+            : t < .62f ? Mathf.SmoothStep(-1f, rebound, (t - .20f) / .42f)
+            : Mathf.SmoothStep(rebound, 0f, (t - .62f) / .38f);
+        return new Vector2(-.12f, 1f) * offset;
+    }
+
+    public void CancelImpact(Object owner)
+    {
+        if (impactOwner == owner) impactOwner = null;
+    }
+
+    // A quick downward hit followed by a smaller rebound, in screen coordinates.
+    public static Vector2 ImpactOffset(float seconds, float duration = ImpactDuration)
+    {
+        float t = Mathf.Clamp01(seconds / duration);
+        float wave = Mathf.Sin(2f * Mathf.PI * t) * (1f - t) * (1f - t);
+        return new Vector2(.12f, -1f) * (1.65f * wave);
+    }
+
+    private void OnEnable()
+    {
+        RenderPipelineManager.beginCameraRendering += BeginRender;
+        RenderPipelineManager.endCameraRendering += EndRender;
+    }
+
+    private void BeginRender(ScriptableRenderContext context, Camera camera)
+    {
+        if (camera.transform != transform || !impactOwner) return;
+        float age = Time.unscaledTime - impactStart;
+        if (age >= impactDuration) { impactOwner = null; return; }
+        // Move opposite to the desired image displacement. Restore before follow logic runs.
+        Vector2 offset = footRebound >= 0f ? FootstepOffset(age / impactDuration, footRebound)
+            : ImpactOffset(age, impactDuration);
+        renderOffset = -transform.TransformDirection((Vector3)offset) * impactStrength;
+        transform.position += renderOffset;
+    }
+
+    private void EndRender(ScriptableRenderContext context, Camera camera)
+    {
+        if (camera.transform == transform) RestoreRenderOffset();
+    }
+
+    private void RestoreRenderOffset()
+    {
+        if (renderOffset == Vector3.zero) return;
+        transform.position -= renderOffset;
+        renderOffset = Vector3.zero;
+    }
 
     public float Duration { get => duration; set => duration = Mathf.Max(0f, value); }
     public float Intensity { get => intensity; set => intensity = Mathf.Max(0f, value); }
@@ -57,5 +137,12 @@ public sealed class CameraShakeEffect : MonoBehaviour
         appliedOffset = Vector3.zero;
     }
 
-    private void OnDisable() => StopShake();
+    private void OnDisable()
+    {
+        RenderPipelineManager.beginCameraRendering -= BeginRender;
+        RenderPipelineManager.endCameraRendering -= EndRender;
+        RestoreRenderOffset();
+        impactOwner = null;
+        StopShake();
+    }
 }

@@ -10,7 +10,7 @@ namespace JC.BattleTesting
         readonly List<Object> owned=new List<Object>();
         readonly Dictionary<Material,Material> materials=new Dictionary<Material,Material>();
         readonly Dictionary<Texture,Texture> textures=new Dictionary<Texture,Texture>();
-        public void Add(string label,Mesh mesh,Material[] source,bool terrain,MeshRenderer sourceRenderer=null)
+        public MeshRenderer Add(string label,Mesh mesh,Material[] source,bool terrain,MeshRenderer sourceRenderer=null)
         {
             mesh.hideFlags=HideFlags.DontSave;owned.Add(mesh);
             var go=new GameObject(label){hideFlags=HideFlags.DontSave};go.transform.SetParent(transform,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;
@@ -66,6 +66,7 @@ namespace JC.BattleTesting
             }
             var renderer=go.AddComponent<MeshRenderer>();renderer.sharedMaterials=result;
             if(terrain)TerrainRenderers.Add(renderer);
+            return renderer;
         }
         internal void AddDistantGround(JcDynamicBattleSource source, Matrix4x4 fieldToBattle)
         {

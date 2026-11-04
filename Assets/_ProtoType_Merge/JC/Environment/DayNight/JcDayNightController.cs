@@ -60,6 +60,18 @@ namespace JC.Environment {
    BattleDraft=Instantiate(BattleSource);
    BattleDraft.hideFlags=HideFlags.DontSave;
   }
+  JcBattleLampSettings lamps;
+  internal static JcBattleLampSettings LampsFor(Scene scene) => OwnsOutdoorLighting(scene) ? owner.lamps : null;
+  void UpdateLampSettings(double hours){
+   if(!Application.isPlaying || !OutdoorBattle)return;
+   if(!lamps){
+    var go=new GameObject("전투 가로등");
+    go.transform.SetParent(transform,false);
+    lamps=go.AddComponent<JcBattleLampSettings>();
+   }
+   Settings.SegmentPair(hours,out int segment,out _,out _);
+   lamps.Select(segment);
+  }
   bool battle, indoor, windowInitialized;
   float windowLevel, windowTarget, windowFrom, windowElapsed;
   readonly JcDayNightScreenColor screenColor=new JcDayNightScreenColor();
@@ -188,7 +200,7 @@ namespace JC.Environment {
     probes.Add(new ProbeState{probe=p,mode=p.mode,texture=p.customBakedTexture,intensity=p.intensity});p.mode=ReflectionProbeMode.Custom;p.customBakedTexture=cube;
    }
    if(battle)foreach(var root in gameObject.scene.GetRootGameObjects())foreach(var light in root.GetComponentsInChildren<Light>())
-    if(light!=sun)extraLights.Add((light,light.intensity));
+    if(light!=sun && !light.GetComponentInParent<JcBattleLampGroup>())extraLights.Add((light,light.intensity));
    applied=true;
   }
   public void ApplyHour(double hours){
@@ -196,6 +208,7 @@ namespace JC.Environment {
    Capture();if(Application.isPlaying)specialWindows.Scan(gameObject.scene);shownHours=hours;appliedProfile=Settings;appliedRevision=Settings.revision;var k=Settings.Evaluate(hours);daylight=k.daylight;
    var look=Settings.SampleSegment(hours);var baseline=Settings.SampleSegment(hours,true);
    PrepareBattleProfile();
+   UpdateLampSettings(hours);
    partyWallReduction=Mathf.Clamp01(look.occludedPartyClarity * .01f);
    float characterBrightness=OutdoorBattle && BattleDraft!=null ? BattleDraft.Apply(Settings,hours,look) : 1;
    waterMultiplier=look.waterMultiplier;
@@ -209,7 +222,9 @@ namespace JC.Environment {
    float boost=Mathf.Lerp(Settings.nightAmbientBoost,1,daylight);sky*=boost;horizon*=boost;ground*=boost;
    sky=JcDayNightProfile.CorrectColor(sky,look.sky,baseline.sky);horizon=JcDayNightProfile.CorrectColor(horizon,look.horizon,baseline.horizon);ground=JcDayNightProfile.CorrectColor(ground,look.ground,baseline.ground);
    if(indoor){sky=Color.Lerp(oldSky,sky,.35f);horizon=Color.Lerp(oldEquator/ .55f,horizon,.35f);ground=Color.Lerp(oldGround,ground,.35f);}
-   foreach(var entry in extraLights)if(entry.light!=null)entry.light.intensity=entry.intensity*(indoor?1:Mathf.Lerp(.3f,1,daylight));
+   float secondarySun = OutdoorBattle && BattleDraft ? BattleDraft.SecondarySun(Settings,hours) : 1f;
+   foreach(var entry in extraLights)if(entry.light!=null)
+    entry.light.intensity=entry.intensity*(indoor?1:Mathf.Lerp(.3f,1,daylight))*(entry.light.type==LightType.Directional?secondarySun:1f);
    RenderSettings.ambientMode=AmbientMode.Trilight;RenderSettings.ambientIntensity=1;
    float ambientNight=Mathf.InverseLerp(1,.3f,daylight);
    float objectAmbient=Mathf.Lerp(1,Mathf.Max(1,indoor?Settings.indoorNightObjectAmbientBoost:Settings.nightObjectAmbientBoost),ambientNight);

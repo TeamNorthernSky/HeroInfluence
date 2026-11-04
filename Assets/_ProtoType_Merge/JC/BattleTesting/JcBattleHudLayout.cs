@@ -27,6 +27,7 @@ namespace JC.BattleTesting
         [Tooltip("미습득 스킬의 아이콘 중앙에 표시할 자물쇠입니다.")]
         public Sprite lockedSkillSprite;
         public Sprite skillButtonFace;
+        [Tooltip("미습득 스킬 행에 표시하는 회청색 배경입니다.")] public Sprite lockedFace;
         [Range(.5f, 1f), Tooltip("우상단 메뉴·자동·배속·도주 버튼 묶음의 크기입니다. 0.8이면 기존 대비 가로·세로 80%로 표시합니다.")]
         public float topRightButtonScale = .8f;
 
@@ -45,6 +46,7 @@ namespace JC.BattleTesting
             string Path(Transform t)=>t.parent==null?t.name:Path(t.parent)+"/"+t.name;
             var presentation = BattlePresentationController.FindInScene(scene);
             var map=all.GroupBy(r=>Path(r)).ToDictionary(g=>g.Key,g=>g.First());
+            bool hasStoredHud = map.ContainsKey("BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/DescriptionTab");
             foreach(var item in JsonUtility.FromJson<Data>(layoutJson).items)
             {
                 // 프레임 분리 후에도 저장된 레이아웃은 이미지가 아닌 시각 묶음에 적용합니다.
@@ -57,6 +59,9 @@ namespace JC.BattleTesting
                 // 턴 순서는 각 전투씬에서 확정한 세로 배치를 사용합니다.
                 // 과거 HUD JSON의 상단 가로형 위치/크기로 루트와 슬롯을 덮어쓰지 않습니다.
                 if (r.GetComponentInParent<TurnOrderUI>(true) != null) continue;
+                // 새 HUD는 각 씬에 배치한 버튼 크기와 패널 안쪽 여백을 사용합니다.
+                if (hasStoredHud && (item.path.StartsWith("BattleSceneCanvas/TopRightButtons/", StringComparison.Ordinal) ||
+                    item.path.StartsWith("BattleSceneCanvas/BottomPanel/", StringComparison.Ordinal))) continue;
                 if(item.rect)
                 {
                     r.anchorMin=item.anchorMin;r.anchorMax=item.anchorMax;r.pivot=item.pivot;r.sizeDelta=item.size;
@@ -67,25 +72,6 @@ namespace JC.BattleTesting
                 var text=r.GetComponent<TMP_Text>();
                 if(text!=null&&item.fontSize>0){text.fontSize=item.fontSize;text.enableAutoSizing=true;text.fontSizeMax=item.fontSize;text.fontSizeMin=Mathf.Max(15,item.fontSize-4);}
             }
-            var description=all.FirstOrDefault(r=>r.name=="SkillDescriptionPanel");
-            if(description!=null)
-            {
-                var body=description.GetComponentsInChildren<TMP_Text>(true).FirstOrDefault(t=>t.name=="Body");
-                if(body!=null)
-                {
-                    var existing = description.Find("DescriptionViewport");
-                    var go=existing != null ? existing.gameObject : new GameObject("DescriptionViewport",typeof(RectTransform),typeof(RectMask2D),typeof(ScrollRect));
-                    var vp=(RectTransform)go.transform;vp.SetParent(description,false);vp.anchorMin=Vector2.zero;vp.anchorMax=Vector2.one;vp.pivot=Vector2.zero;vp.anchoredPosition=new Vector2(20,12);vp.sizeDelta=new Vector2(-40,-116);
-                    body.rectTransform.SetParent(vp,false);body.enableAutoSizing=false;body.fontSize=21;body.overflowMode=TextOverflowModes.Overflow;body.raycastTarget=true;
-                    var fit=body.GetComponent<ContentSizeFitter>()??body.gameObject.AddComponent<ContentSizeFitter>();fit.verticalFit=ContentSizeFitter.FitMode.PreferredSize;
-                    var scroll=go.GetComponent<ScrollRect>();scroll.viewport=vp;scroll.content=body.rectTransform;scroll.horizontal=false;scroll.vertical=true;scroll.movementType=ScrollRect.MovementType.Clamped;scroll.scrollSensitivity=24;
-                }
-            }
-            string[] panels={"Background","PortraitArea","StatsArea","CoreSkillPanel","HeroSkillPanel","SkillDescriptionPanel","Button_Skill","Button_Skill_2","HeroSkillSlot_2","HeroSkillSlot_3","HeroSkillSlot_4","SkillButtonFrame","BaseHoverOverlay","SelectedOverlay","SelectedSkillFrame","EffectTag","RangeTag","TargetTag"};
-            foreach(var r in all.Where(r=>Path(r).Contains("/BottomPanel/")||r.name=="BottomPanel")) Style(r,panels);
-            // 기존 씬에서 하단 패널 이름이 달라도 스킬 설명과 같은 HUD 루트만 스타일링합니다.
-            if(description!=null&&description.parent!=null)
-                foreach(var r in description.parent.GetComponentsInChildren<RectTransform>(true))Style(r,panels);
             ApplyBattlePanel(scene);
         }
 
@@ -103,29 +89,15 @@ namespace JC.BattleTesting
                 r.anchorMin = new Vector2(0, 1); r.anchorMax = new Vector2(stretch ? 1 : 0, 1);
                 r.pivot = new Vector2(0, 1); r.anchoredPosition = new Vector2(x, y); r.sizeDelta = new Vector2(width, height);
             }
-            Image Decoration(Transform parent, string name, Sprite sprite, Color tint)
-            {
-                var child = parent.Find(name);
-                var image = child != null ? child.GetComponent<Image>() : null;
-                if (image == null)
-                {
-                    var go = new GameObject(name, typeof(RectTransform), typeof(Image));
-                    go.transform.SetParent(parent, false); image = go.GetComponent<Image>();
-                }
-                var r = image.rectTransform; r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one;
-                r.offsetMin = r.offsetMax = Vector2.zero;
-                image.sprite = sprite; image.type = Image.Type.Sliced; image.preserveAspect = false;
-                image.color = tint; image.raycastTarget = false;
-                return image;
-            }
             Place("ActorInfoPanel/PortraitArea", 16, -16, 132, 132);
             Place("ActorInfoPanel/PortraitArea/PortraitVisual", 0, 0, 132, 132);
             Place("ActorInfoPanel/StatsArea", 164, -16, -180, 148, true);
             Place("ActorInfoPanel/StatsArea/ActorName", 0, 0, 0, 36, true);
-            Place("ActorInfoPanel/StatsArea/HpLabel", 0, -44, 32, 26);
-            Place("ActorInfoPanel/StatsArea/HpValue", 36, -44, -36, 26, true);
-            Place("ActorInfoPanel/StatsArea/HpBar", 0, -78, 0, 10, true);
-            Place("ActorInfoPanel/StatsArea/IpIcon", 0, -101.8f, 32.2f, 32.2f);
+            var hpLabel = Rect("ActorInfoPanel/StatsArea/HpLabel");
+            bool inlineHp = hpLabel != null && !hpLabel.gameObject.activeSelf;
+            Place("ActorInfoPanel/StatsArea/HpValue", inlineHp ? 0 : 36, -42, inlineHp ? 0 : -36, 32, true);
+            Place("ActorInfoPanel/StatsArea/HpBar", 0, -76, 0, 14, true);
+            Place("ActorInfoPanel/StatsArea/IpIcon", 0, -102, 32, 32);
             Place("ActorInfoPanel/StatsArea/IpValue", 38.2f, -101.8f, 55.2f, 32.2f);
             var ipText = Rect("ActorInfoPanel/StatsArea/IpValue")?.GetComponent<TMP_Text>();
             if (ipText != null)
@@ -143,13 +115,14 @@ namespace JC.BattleTesting
                 // Keep the lower edge fixed while growing upward by 15%.
                 rank.anchoredPosition = new Vector2(0, -98.9f); rank.sizeDelta = new Vector2(112, 39.1f);
                 var text = rank.GetComponent<TMP_Text>(); text.alignment = TextAlignmentOptions.Midline; text.margin = Vector4.zero;
-                text.fontSize = 22; text.fontSizeMin = 17; text.fontSizeMax = 22; text.enableAutoSizing = true;
+                text.fontSize = 20; text.fontSizeMin = 16; text.fontSizeMax = 20; text.enableAutoSizing = true;
                 // 배경이 글자를 덮지 않도록 같은 부모의 앞쪽 형제로 둡니다.
-                var bg = Decoration(rank.parent, "RankBadgeBackground", surface, new Color(.025f,.055f,.13f,.98f));
-                bg.rectTransform.anchorMin = rank.anchorMin; bg.rectTransform.anchorMax = rank.anchorMax;
-                bg.rectTransform.pivot = rank.pivot; bg.rectTransform.anchoredPosition = rank.anchoredPosition; bg.rectTransform.sizeDelta = rank.sizeDelta;
-                Decoration(bg.transform, "Border", border, new Color(.95f,.73f,.08f,1));
-                bg.transform.SetSiblingIndex(rank.GetSiblingIndex()); rank.SetAsLastSibling();
+                var bg = Rect("ActorInfoPanel/StatsArea/RankBadgeBackground");
+                if (bg != null)
+                {
+                    bg.anchorMin = rank.anchorMin; bg.anchorMax = rank.anchorMax;
+                    bg.pivot = rank.pivot; bg.anchoredPosition = rank.anchoredPosition; bg.sizeDelta = rank.sizeDelta;
+                }
             }
             const float height = 88, gap = 10;
             Place("CoreSkillPanel", 0, -204, 0, height, true);
@@ -173,7 +146,7 @@ namespace JC.BattleTesting
                     text.enableAutoSizing = true; text.fontSize = text.fontSizeMax = 22; text.fontSizeMin = 16;
                 }
                 var baseImage = row.GetComponent<Image>();
-                if(baseImage != null) { baseImage.overrideSprite = null; baseImage.material = null; baseImage.sprite = face; baseImage.type = skillButtonFace ? Image.Type.Simple : Image.Type.Sliced; baseImage.preserveAspect = false; baseImage.color = skillButtonFace ? Color.white : new Color(.035f,.065f,.13f,1f); }
+                if(baseImage != null) { baseImage.overrideSprite = null; baseImage.material = null; baseImage.sprite = face; baseImage.type = Image.Type.Sliced; baseImage.preserveAspect = false; baseImage.color = skillButtonFace ? Color.white : new Color(.035f,.065f,.13f,1f); }
                 foreach (var toggle in row.GetComponents<ToggleButton>())
                     toggle.SetVisualSprites(face, face);
                 var button = row.GetComponent<Button>();
@@ -182,7 +155,12 @@ namespace JC.BattleTesting
                 foreach(var image in row.GetComponentsInChildren<Image>(true))
                 {
                     if(image.name == "InsetShadow" || image.name == "InsetHighlight") { image.enabled = false; continue; }
-                    if(image.name == "LockedOverlay") image.color = new Color(.13f,.15f,.19f,.36f);
+                    if (image.name == "LockedOverlay" && lockedFace != null)
+                    {
+                        // 회색 행은 아이콘 아래의 LockedFace, 자물쇠만 아이콘 위에 표시합니다.
+                        image.enabled = row.Find("LockedFace") == null;
+                        if (image.enabled) image.color = new Color(.13f, .15f, .19f, .36f);
+                    }
                     if(image.name == "BaseHoverOverlay")
                     {
                         image.overrideSprite = null; image.sprite = surface; image.material = null;
@@ -208,9 +186,6 @@ namespace JC.BattleTesting
                         var r = image.rectTransform; r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
                     }
                 }
-                var outline = Decoration(row, "HudButtonOutline", border, new Color(.12f,.68f,.93f,.85f));
-                outline.enabled = !skillButtonFace;
-                outline.transform.SetAsLastSibling();
                 var padlock = Rect(path + "/LockedOverlay/Padlock");
                 if (padlock != null && lockedSkillSprite != null)
                 {
@@ -219,7 +194,7 @@ namespace JC.BattleTesting
                     padlock.anchorMin = padlock.anchorMax = new Vector2(0, 1);
                     padlock.pivot = new Vector2(.5f, .5f);
                     padlock.anchoredPosition = new Vector2(42, -44);
-                    padlock.sizeDelta = new Vector2(44, 54);
+                    padlock.sizeDelta = new Vector2(46.8f, 57.2f);
                     var lockImage = padlock.GetComponent<Image>() ?? padlock.gameObject.AddComponent<Image>();
                     lockImage.overrideSprite = null; lockImage.sprite = lockedSkillSprite;
                     lockImage.material = null; lockImage.color = Color.white;
@@ -234,18 +209,103 @@ namespace JC.BattleTesting
                 }
             }
             var desc = Rect("SkillDescriptionPanel");
+            ConfigureDescriptionScroll(desc);
             if(desc != null) { desc.anchorMin = Vector2.zero; desc.anchorMax = Vector2.one; desc.pivot = Vector2.zero; desc.anchoredPosition = new Vector2(0,12); desc.sizeDelta = new Vector2(0,-724); }
+            var descriptionTitle = Rect("SkillDescriptionPanel/Title")?.GetComponent<TMP_Text>();
+            if (descriptionTitle != null && Rect("SkillDescriptionPanel/DescriptionTab") != null)
+            {
+                LayoutDescriptionTitle(descriptionTitle);
+                ConfigureTags(desc);
+            }
         }
 
-        void Style(RectTransform r,string[] names)
+        public static void LayoutDescriptionTitle(TMP_Text title)
         {
-            if(!names.Contains(r.name))return;var image=r.GetComponent<Image>();if(image==null)return;
-            // 선택 테두리는 실제 선택 상태의 순환광 재질과 스프라이트를 유지합니다.
-            if (r.name == "SelectedSkillFrame") return;
-            bool outline=r.name=="SelectedOverlay"||r.name=="SelectedSkillFrame"||r.name=="SkillButtonFrame";
-            image.sprite=outline?border:surface;image.type=Image.Type.Sliced;image.material=null;
-            image.color=outline?new Color(.48f,.73f,.88f,.85f):r.name=="Background"?new Color(.045f,.065f,.095f,.92f):new Color(.1f,.14f,.19f,.92f);
-            if(r.name=="BaseHoverOverlay")image.color=new Color(.4f,.62f,.78f,.16f);
+            if (title == null || !(title.rectTransform.parent is RectTransform parent) ||
+                !(parent.Find("DescriptionTab") is RectTransform tab)) return;
+            // 탭의 오른쪽 3슬라이스는 사선 몰딩 전용이며 글자 여백에 포함하지 않습니다.
+            const float padding = 18f, bevel = 32f, cornerClearance = 10f;
+            var face = parent.Find("DescriptionFace") as RectTransform;
+            float faceRight = face != null ? face.offsetMax.x + parent.rect.width : parent.rect.width;
+            float max = Mathf.Max(1f, faceRight - tab.anchoredPosition.x - cornerClearance);
+            title.enableWordWrapping = false;
+            title.enableAutoSizing = true;
+            title.fontSizeMax = 26;
+            title.fontSizeMin = 15;
+            title.fontSize = 26;
+            float width = Mathf.Clamp(Mathf.Ceil(title.GetPreferredValues(title.text, Mathf.Infinity, Mathf.Infinity).x)
+                + 2 * padding + bevel, Mathf.Min(155f, max), max);
+            tab.sizeDelta = new Vector2(width, 44);
+            var r = title.rectTransform;
+            r.anchorMin = r.anchorMax = r.pivot = new Vector2(0, 1);
+            r.anchoredPosition = tab.anchoredPosition + new Vector2(padding, -3);
+            r.sizeDelta = new Vector2(Mathf.Max(1f, width - 2 * padding - bevel), 38);
+            title.overflowMode = TextOverflowModes.Ellipsis;
+            title.margin = Vector4.zero;
+            title.alignment = TextAlignmentOptions.Midline;
+        }
+
+        private static void ConfigureTags(RectTransform parent)
+        {
+            string[] names = { "EffectTag", "RangeTag", "TargetTag" };
+            const float margin = 24, gap = 6;
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (!(parent.Find(names[i]) is RectTransform tag)) continue;
+                // 폭에서 양끝 여백과 두 칸의 간격을 뺀 뒤 3등분합니다.
+                tag.anchorMin = new Vector2(i / 3f, 1);
+                tag.anchorMax = new Vector2((i + 1) / 3f, 1);
+                tag.pivot = new Vector2(0, 1);
+                tag.sizeDelta = new Vector2(-(2 * margin + 2 * gap) / 3, 30);
+                tag.anchoredPosition = new Vector2(margin + i * (gap + tag.sizeDelta.x), -52);
+                var label = tag.GetComponentInChildren<TMP_Text>(true);
+                if (label == null) continue;
+                var r = label.rectTransform;
+                r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one;
+                r.offsetMin = new Vector2(4, 1); r.offsetMax = new Vector2(-4, -1);
+                label.alignment = TextAlignmentOptions.Midline;
+                label.enableAutoSizing = true; label.fontSizeMax = 19; label.fontSizeMin = 13;
+            }
+        }
+
+        public static void FitMaskedArt(Image image)
+        {
+            if (image == null || image.sprite == null || !(image.transform.parent is RectTransform mask) ||
+                mask.GetComponent<Mask>() == null || !image.TryGetComponent<AspectRatioFitter>(out var fit)) return;
+            image.preserveAspect = false;
+            fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fit.aspectRatio = image.sprite.rect.width / Mathf.Max(1, image.sprite.rect.height);
+        }
+
+        private static void ConfigureDescriptionScroll(RectTransform description)
+        {
+            if (description == null) return;
+            var body = description.GetComponentsInChildren<TMP_Text>(true).FirstOrDefault(t => t.name == "Body");
+            if (body == null) return;
+            var viewport = description.Find("DescriptionViewport") as RectTransform;
+            if (viewport == null)
+            {
+                viewport = new GameObject("DescriptionViewport", typeof(RectTransform), typeof(RectMask2D), typeof(ScrollRect)).GetComponent<RectTransform>();
+                viewport.SetParent(description, false);
+            }
+            viewport.anchorMin = Vector2.zero; viewport.anchorMax = Vector2.one; viewport.pivot = Vector2.zero;
+            bool hasEscape = description.Find("RunButton") != null;
+            viewport.offsetMin = new Vector2(24, hasEscape ? 70 : 12);
+            viewport.offsetMax = new Vector2(-24, -90);
+            if (body.rectTransform.parent != viewport) body.rectTransform.SetParent(viewport, false);
+            body.rectTransform.anchorMin = new Vector2(0, 1);
+            body.rectTransform.anchorMax = new Vector2(1, 1);
+            body.rectTransform.pivot = new Vector2(0, 1);
+            body.rectTransform.sizeDelta = new Vector2(0, body.rectTransform.sizeDelta.y);
+            body.rectTransform.anchoredPosition = Vector2.zero;
+            body.margin = new Vector4(2, 2, 2, 2);
+            body.enableWordWrapping = true;
+            body.enableAutoSizing = false; body.fontSize = 21; body.overflowMode = TextOverflowModes.Overflow; body.raycastTarget = true;
+            var fitter = body.GetComponent<ContentSizeFitter>() ?? body.gameObject.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var scroll = viewport.GetComponent<ScrollRect>() ?? viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport; scroll.content = body.rectTransform; scroll.horizontal = false; scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped; scroll.scrollSensitivity = 24;
         }
     }
 }

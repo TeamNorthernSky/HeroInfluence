@@ -16,5 +16,6 @@ MonoBehaviour:
   surface: {fileID: 21300000, guid: 0f88c698c10549bcae159fda3377afb4, type: 3}
   border: {fileID: 21300000, guid: 52e4fd96bedf47808c43d01b581b33a4, type: 3}
   topRightButtonScale: 0.8
-  skillButtonFace: {fileID: 21300000, guid: c932caba9bac4d87bacd1c2646894d1b, type: 3}
+  skillButtonFace: {fileID: 21300000, guid: 627d0d93c2745146bf803f9a26b311bb, type: 3}
   lockedSkillSprite: {fileID: 21300000, guid: 08990d93cc7149e9ace72d5183748a95, type: 3}
+  lockedFace: {fileID: 21300000, guid: 165187544a475336b83fc860f919a9fc, type: 3}
