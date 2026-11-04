@@ -89,6 +89,7 @@ public class DebugPanelManager : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.Alpha3)) RunCheat("Ain Soph Aur");
         else if (Input.GetKeyDown(KeyCode.Alpha1)) RunCheat("Logos");
         else if (Input.GetKeyDown(KeyCode.Alpha6)) RunCheat("Malkuth");
+        else if (Input.GetKeyDown(KeyCode.Alpha7)) RunCheat("Istaroth");
         else if (Input.GetKeyDown(KeyCode.Alpha8)) RunCheat("Asmoday");
     }
 

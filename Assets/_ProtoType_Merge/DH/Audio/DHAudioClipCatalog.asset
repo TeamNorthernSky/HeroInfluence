@@ -329,7 +329,7 @@ MonoBehaviour:
   - key: Explore_Move
     clip: {fileID: 8300000, guid: 8dae87ddcf9c2af408752857568504da, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 1
     loop: 0
     allowOverlap: 1
   - key: Battle_Spinhit_Single
@@ -413,7 +413,7 @@ MonoBehaviour:
   - key: Explore_Arnold_Move
     clip: {fileID: 8300000, guid: 1b9b2d656ee4c824b9db2089d68d8dde, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 0.7
     loop: 0
     allowOverlap: 1
   - key: Explore_Arnold_Destroy
@@ -431,7 +431,7 @@ MonoBehaviour:
   - key: PopupWarning
     clip: {fileID: 8300000, guid: 628845ea69f53644db050397e3aba5d3, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 1
     loop: 0
     allowOverlap: 1
   - key: Explore_Defeat
@@ -443,7 +443,7 @@ MonoBehaviour:
   - key: Explore_TurnEnd
     clip: {fileID: 8300000, guid: 9ca50b93dc8b9b445a793d743678622c, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 1
     loop: 0
     allowOverlap: 1
   - key: Explore_TextBubbleNPC

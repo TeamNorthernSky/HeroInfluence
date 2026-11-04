@@ -198,6 +198,7 @@ public class ChatModalController : MonoBehaviour
 
     private void OnDisable()
     {
+        AudioManager.Instance?.SetBgmDucking(this, false);
         StopRumble();
         if (entranceTween.isAlive) entranceTween.Stop();
         if (entranceRoot != null) entranceRoot.anchoredPosition = Vector2.zero;
@@ -296,6 +297,7 @@ public class ChatModalController : MonoBehaviour
 
     private void Begin(int zoneId, int startChatId, Action closedCallback)
     {
+        AudioManager.Instance?.SetBgmDucking(this, true);
         StopRumble();
         playedArnoldRumble = false;
         StopSkipping();
@@ -759,6 +761,7 @@ public class ChatModalController : MonoBehaviour
     {
         if (closeFinished) return;
         closeFinished = true;
+        AudioManager.Instance?.SetBgmDucking(this, false);
         Action callback = onClosed;
         onClosed = null;
         if (current == this) current = null;

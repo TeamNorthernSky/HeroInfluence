@@ -369,6 +369,20 @@ public class TurnManager : MonoBehaviour
         return day;
     }
 
+    public bool TrySetDayForDebug(int targetDay)
+    {
+        if (!IsPlayerTurn || DHGameEndState.IsEnding || DHGameStateRestoreService.IsRestoring ||
+            WorldInputGate.IsTurnResolving)
+            return false;
+
+        day = Mathf.Max(1, targetDay);
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetCurrentDayForDebug(day);
+        ClearAutomaticEndTurn();
+        DayAdvanced?.Invoke(day);
+        return true;
+    }
+
     private IEnumerator RunEnemyTurn()
     {
         yield return enemyTurnController.ExecuteEnemyTurn();

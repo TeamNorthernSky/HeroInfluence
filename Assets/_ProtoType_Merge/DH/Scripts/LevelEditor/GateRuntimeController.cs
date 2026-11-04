@@ -224,20 +224,25 @@ public class GateRuntimeController : MonoBehaviour
         SetOpen(true, day, true, presentChange);
     }
 
-    public void CloseGate(int day, bool presentChange = true)
+    public void CloseGate(int day, bool presentChange = true, System.Action onClosingStarted = null)
     {
-        SetOpen(false, day, true, presentChange);
+        SetOpen(false, day, true, presentChange, onClosingStarted);
     }
 
-    public void SetOpen(bool nextOpen, int day, bool saveProgress, bool presentChange = false)
+    public void SetOpen(bool nextOpen, int day, bool saveProgress, bool presentChange = false,
+        System.Action onPresentationStarted = null)
     {
         bool wasOpen = isOpen;
         isOpen = nextOpen;
 
-        if (wasOpen != isOpen && presentChange && GateCameraFocusController.TryQueue(this))
+        if (wasOpen != isOpen && presentChange && GateCameraFocusController.TryQueue(this, onPresentationStarted))
             visualChangePending = true;
         else if ((wasOpen != isOpen && !visualChangePending) || !presentChange)
+        {
             ApplyPendingVisualState(wasOpen != isOpen && presentChange);
+            if (wasOpen != isOpen && presentChange)
+                onPresentationStarted?.Invoke();
+        }
 
         if (wasOpen != isOpen || blockerCells.Count > 0)
         {

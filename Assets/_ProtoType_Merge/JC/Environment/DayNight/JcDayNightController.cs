@@ -169,6 +169,7 @@ namespace JC.Environment {
    var timeline=Settings.BuildTransitionTimeline(from,to);int segment=1;
    float duration=timeline[timeline.Length-1];
    try{
+    AudioManager.Instance?.SetBgmDucking(this,true);
     AudioManager.Instance?.PlaySfxForDuration(TurnEndSfxKey,duration);
     ApplyHour(from);
     while(elapsed<duration){
@@ -181,7 +182,7 @@ namespace JC.Environment {
      yield return null;
     }
     ApplyHour(to);shownTurn=toTurn;
-   }finally{transitioning=false;UnlockUI();}
+   }finally{AudioManager.Instance?.SetBgmDucking(this,false);transitioning=false;UnlockUI();}
   }
   void Capture(){
    if(applied)return;
@@ -295,7 +296,7 @@ namespace JC.Environment {
    if(EventSystem.current!=null && EventSystem.current.currentSelectedGameObject==null && selection!=null && selection.activeInHierarchy){var s=selection.GetComponent<Selectable>();if(s!=null && s.IsInteractable())EventSystem.current.SetSelectedGameObject(selection);}
    selection=null;
   }
-  public void Cancel(){transitioning=false;UnlockUI();Restore();}
+  public void Cancel(){AudioManager.Instance?.SetBgmDucking(this,false);transitioning=false;UnlockUI();Restore();}
   void Restore(){
    if(!applied)return;
    if(sun!=null){sun.transform.rotation=oldRotation;sun.color=oldLightColor;sun.intensity=oldIntensity;sun.shadowStrength=oldShadow;}

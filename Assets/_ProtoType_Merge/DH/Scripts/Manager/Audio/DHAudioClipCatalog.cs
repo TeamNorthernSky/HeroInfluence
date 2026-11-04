@@ -122,7 +122,7 @@ public struct DHAudioClipEntry
     public string Key => DHAudioClipCatalog.NormalizeKey(key);
     public AudioClip Clip => clip;
     public AudioClip IntroClip => introClip;
-    public float DefaultVolume => defaultVolume <= 0f ? 1f : defaultVolume;
+    public float DefaultVolume => Mathf.Clamp01(defaultVolume);
     public bool Loop => loop;
     public bool AllowOverlap => allowOverlap;
 

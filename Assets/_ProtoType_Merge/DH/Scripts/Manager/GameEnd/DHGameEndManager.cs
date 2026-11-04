@@ -36,6 +36,7 @@ public class DHGameEndManager : MonoBehaviour
             LoadClearEndingNow();
         else
         {
+            AudioManager.Instance?.StopBgm();
             AudioManager.Instance?.PlaySfx(GameOverSfxKey);
             ShowPanel(gameOverPanel);
         }

@@ -25,6 +25,55 @@ public class EnemyTurnController : MonoBehaviour
     private readonly List<TargetCandidate> targetCandidates = new List<TargetCandidate>();
     private EnemyTurnSessionRepository turnSessionRepository;
     private bool interruptedByCombat;
+    private EnemyGridMover spawnFocusedEnemy;
+    private bool ownsEnemyCameraFocus;
+
+    private void OnDisable()
+    {
+        ReleaseEnemyCameraFocus();
+    }
+
+    public IEnumerator PresentSpawnedEnemy(EnemyGridMover enemy)
+    {
+        if (enemy == null || DHGameEndState.IsEnding || !isActiveAndEnabled)
+            yield break;
+
+        ReleaseEnemyCameraFocus();
+        spawnFocusedEnemy = enemy;
+        LockCameraToEnemy(enemy);
+        bool handOffToEnemyTurn = false;
+        try
+        {
+            yield return PlaySpawnAppearance(enemy);
+            handOffToEnemyTurn = enemy != null && !DHGameEndState.IsEnding;
+        }
+        finally
+        {
+            if (!handOffToEnemyTurn) ReleaseEnemyCameraFocus();
+        }
+    }
+
+    private IEnumerator PlaySpawnAppearance(EnemyGridMover enemy)
+    {
+        var entrance = enemy.GetComponentInChildren<HeroInfluence.Events.ArnoldEntrancePlayer>(true);
+        if (entrance == null || !entrance.PlayEntrance())
+            yield break;
+
+        try
+        {
+            while (enemy != null && entrance != null && entrance.IsPlaying && !DHGameEndState.IsEnding)
+                yield return null;
+        }
+        finally
+        {
+            if (entrance != null && entrance.IsPlaying) entrance.CancelEntrance();
+        }
+    }
+
+    public void ReleaseSpawnPresentationFocus()
+    {
+        if (spawnFocusedEnemy != null) ReleaseEnemyCameraFocus();
+    }
 
     private readonly struct TargetCandidate
     {
@@ -41,6 +90,18 @@ public class EnemyTurnController : MonoBehaviour
     }
 
     public IEnumerator ExecuteEnemyTurn()
+    {
+        try
+        {
+            yield return ExecuteEnemyTurnCore();
+        }
+        finally
+        {
+            ReleaseEnemyCameraFocus();
+        }
+    }
+
+    private IEnumerator ExecuteEnemyTurnCore()
     {
         yield return GateCameraFocusController.WaitForIdle();
         interruptedByCombat = false;
@@ -106,6 +167,18 @@ public class EnemyTurnController : MonoBehaviour
     }
 
     private IEnumerator ProcessEnemy(EnemyGridMover enemy, int movePoints)
+    {
+        try
+        {
+            yield return ProcessEnemyCore(enemy, movePoints);
+        }
+        finally
+        {
+            ReleaseEnemyCameraFocus();
+        }
+    }
+
+    private IEnumerator ProcessEnemyCore(EnemyGridMover enemy, int movePoints)
     {
         yield return GateCameraFocusController.WaitForIdle();
         if (DHGameEndState.IsEnding) yield break;
@@ -380,6 +453,7 @@ public class EnemyTurnController : MonoBehaviour
             yield break;
         }
 
+        ReleaseEnemyCameraFocus();
         bool eventEncounterClosed = false;
         bool eventEncounterStartedCombat = false;
         // Mobile enemies enter combat only through their encounter chat.
@@ -663,6 +737,10 @@ public class EnemyTurnController : MonoBehaviour
         if (enemyRegistry == null)
             return null;
 
+        if (spawnFocusedEnemy != null && !spawnFocusedEnemy.IsStatic && !IsEnemyDefeated(spawnFocusedEnemy) &&
+            (turnSessionRepository == null || !turnSessionRepository.IsProcessed(ResolveEnemyPlacementKey(spawnFocusedEnemy))))
+            return spawnFocusedEnemy;
+
         IReadOnlyList<EnemyGridMover> enemies = enemyRegistry.Enemies;
         for (int i = 0; i < enemies.Count; i++)
         {
@@ -810,6 +888,7 @@ public class EnemyTurnController : MonoBehaviour
             cameraFollower = ResolveCameraFollower();
 
         cameraFollower?.LockExternalFocusTarget(enemy.transform);
+        ownsEnemyCameraFocus = cameraFollower != null;
     }
 
     private IEnumerator UnlockEnemyCameraFocusAfterDelay()
@@ -817,10 +896,15 @@ public class EnemyTurnController : MonoBehaviour
         if (enemyCameraReturnDelay > 0f)
             yield return new WaitForSeconds(enemyCameraReturnDelay);
 
-        if (cameraFollower == null)
-            yield break;
+        ReleaseEnemyCameraFocus();
+    }
 
-        cameraFollower.UnlockExternalFocus();
+    private void ReleaseEnemyCameraFocus()
+    {
+        spawnFocusedEnemy = null;
+        if (ownsEnemyCameraFocus && cameraFollower != null)
+            cameraFollower.UnlockExternalFocus();
+        ownsEnemyCameraFocus = false;
     }
 
     private static QuarterViewCameraFollower ResolveCameraFollower()

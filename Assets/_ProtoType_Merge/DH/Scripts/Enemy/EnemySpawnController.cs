@@ -4,8 +4,6 @@ using UnityEngine.Serialization;
 
 public class EnemySpawnController : MonoBehaviour
 {
-    private const string SpawnWarningSfxKey = "PopupWarning";
-
     private enum SpawnGroupSource
     {
         None,
@@ -24,6 +22,16 @@ public class EnemySpawnController : MonoBehaviour
         public string GroupKey { get; }
         public SpawnGroupSource Source { get; }
         public bool IsValid => Source != SpawnGroupSource.None && !string.IsNullOrWhiteSpace(GroupKey);
+    }
+
+    public sealed class GateThreatSpawnPlan
+    {
+        internal EnemySpawnController Owner;
+        internal string ZoneId;
+        internal string GroupKey;
+        internal bool UsesCsv;
+        internal bool Consumed;
+        public Vector2Int Grid { get; internal set; }
     }
 
     [Header("References")]
@@ -69,24 +77,54 @@ public class EnemySpawnController : MonoBehaviour
     {
         placementKey = string.Empty;
         spawnedEnemy = null;
+        return TryPrepareGateThreatEnemy(zoneId, spawnGrid, enemyGroupKey, null, out GateThreatSpawnPlan plan) &&
+            TrySpawnPreparedGateThreatEnemy(plan, out placementKey, out spawnedEnemy);
+    }
 
-        if (ResolveEnemyPrefab(EnemyBehaviorType.Mobile) == null || gridManager == null)
+    public bool TryPrepareGateThreatEnemy(
+        string zoneId, Vector2Int spawnGrid, string enemyGroupKey,
+        System.Predicate<Vector2Int> isReservedCell, out GateThreatSpawnPlan plan)
+    {
+        plan = null;
+        ResolveReferences();
+        EnemyGridMover prefab = ResolveEnemyPrefab(EnemyBehaviorType.Mobile);
+        if (gridManager == null || prefab == null ||
+            prefab.GetComponent<EnemyUnitBootstrap>() == null ||
+            prefab.GetComponent<EnemyIdentity>() == null || prefab.GetComponent<EnemyComposition>() == null ||
+            prefabRegistry == null ||
+            !prefabRegistry.TryGetEnemyUnitPrefab(EnemyUnitBootstrap.MobileVisualUnitKey, out EnemyUnitState visual) || visual == null)
             return false;
 
-        // Gate threats are runtime mobile enemies. Their encounter chat is attached by GateThreatController.
-        string sourceKey = $"gate_threat_{MapProgressKey.NormalizeSegment(zoneId)}";
-        placementKey = CreateRuntimeEnemyPlacementKey(sourceKey);
-        SpawnGroupResolution groupResolution = ResolveSpawnEnemyGroupKey(zoneId, enemyGroupKey);
-        if (groupResolution.IsValid &&
-            TrySpawnAtGrid(spawnGrid, placementKey, groupResolution, MapProgressKey.NormalizeSegment(zoneId), out spawnedEnemy))
-        {
-            AudioManager.Instance?.PlaySfx(SpawnWarningSfxKey);
-            return true;
-        }
+        string normalizedZone = MapProgressKey.NormalizeSegment(zoneId);
+        SpawnGroupResolution group = ResolveSpawnEnemyGroupKey(normalizedZone, enemyGroupKey);
+        if (!group.IsValid || !TryResolveSpawnGrid(spawnGrid, out Vector2Int resolvedGrid, isReservedCell))
+            return false;
 
+        plan = new GateThreatSpawnPlan
+        {
+            Owner = this, ZoneId = normalizedZone, GroupKey = group.GroupKey,
+            UsesCsv = group.Source == SpawnGroupSource.CsvFallback, Grid = resolvedGrid
+        };
+        return true;
+    }
+
+    public bool TrySpawnPreparedGateThreatEnemy(
+        GateThreatSpawnPlan plan, out string placementKey, out EnemyGridMover spawnedEnemy)
+    {
         placementKey = string.Empty;
         spawnedEnemy = null;
-        return false;
+        if (plan == null || plan.Owner != this || plan.Consumed || !CanSpawnOnCell(plan.Grid))
+            return false;
+
+        plan.Consumed = true;
+        string key = CreateRuntimeEnemyPlacementKey($"gate_threat_{plan.ZoneId}");
+        var group = new SpawnGroupResolution(plan.GroupKey,
+            plan.UsesCsv ? SpawnGroupSource.CsvFallback : SpawnGroupSource.EventBattle);
+        if (!TrySpawnAtGrid(plan.Grid, key, group, plan.ZoneId, out spawnedEnemy))
+            return false;
+
+        placementKey = key;
+        return true;
     }
 
     public bool TrySpawnMainEventReplacementEnemy(
@@ -237,27 +275,20 @@ public class EnemySpawnController : MonoBehaviour
         return true;
     }
 
-    private bool TryResolveSpawnGrid(Vector2Int preferredGrid, out Vector2Int resolvedGrid)
+    private bool TryResolveSpawnGrid(Vector2Int preferredGrid, out Vector2Int resolvedGrid,
+        System.Predicate<Vector2Int> isReservedCell = null)
     {
         resolvedGrid = preferredGrid;
         if (gridManager == null)
             return false;
 
-        if (partyRegistry == null)
-            partyRegistry = FindFirstObjectByType<PartyRegistry>();
-        PartyGridMover playerParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
-        bool hasPlayerGrid = playerParty != null && playerParty.gameObject.activeInHierarchy;
-        Vector2Int playerGrid = hasPlayerGrid ? playerParty.GetCurrentGrid() : default;
-
-        if ((!hasPlayerGrid || preferredGrid != playerGrid) &&
-            gridManager.CanOccupyCell(preferredGrid, null, true))
+        if ((isReservedCell == null || !isReservedCell(preferredGrid)) && CanSpawnOnCell(preferredGrid))
             return true;
 
         for (int i = 0; i < GridManager.Directions8.Length; i++)
         {
             Vector2Int candidate = preferredGrid + GridManager.Directions8[i];
-            if ((hasPlayerGrid && candidate == playerGrid) ||
-                !gridManager.CanOccupyCell(candidate, null, true))
+            if ((isReservedCell != null && isReservedCell(candidate)) || !CanSpawnOnCell(candidate))
                 continue;
 
             resolvedGrid = candidate;
@@ -265,6 +296,15 @@ public class EnemySpawnController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool CanSpawnOnCell(Vector2Int cell)
+    {
+        if (gridManager == null) return false;
+        if (partyRegistry == null) partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        return (party == null || !party.gameObject.activeInHierarchy || party.GetCurrentGrid() != cell) &&
+            gridManager.CanOccupyCell(cell, null, true);
     }
 
     private void RestoreRuntimeEnemies()

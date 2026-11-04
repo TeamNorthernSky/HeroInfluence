@@ -13,6 +13,7 @@ public static class CheatCommands
         CheatCommandRegistry.Register("Logos", Logos);
         CheatCommandRegistry.Register("Malkuth", Malkuth);
         CheatCommandRegistry.Register("Asmoday", Asmoday);
+        CheatCommandRegistry.Register("Istaroth", Istaroth);
     }
 
     private static string TetraAnax(string[] args)
@@ -57,6 +58,24 @@ public static class CheatCommands
         return enabled
             ? "Asmoday -> exploration move points unlimited ON"
             : "Asmoday -> exploration move points unlimited OFF";
+    }
+
+    private static string Istaroth(string[] args)
+    {
+        var turns = UnityEngine.Object.FindFirstObjectByType<TurnManager>();
+        if (turns == null || turns.gameObject.scene.name != "DHScene_3")
+            return "[err] Istaroth is available only in DHScene_3";
+
+        var party = UnityEngine.Object.FindFirstObjectByType<PartyRegistry>()?.PlayerParty;
+        if (WorldInputGate.IsTurnResolving || GateCameraFocusController.IsBusy || ModalManager.HasAny ||
+            ChatModalController.IsOpen || (ChatManager.Instance != null && ChatManager.Instance.IsRunning) ||
+            (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) ||
+            (party != null && party.IsMoving))
+            return "[err] Wait until exploration is idle";
+
+        return turns.TrySetDayForDebug(34)
+            ? "Istaroth -> turn set to 34"
+            : "[err] Cannot change the turn during turn resolution or game end";
     }
 
     private static string Malkuth(string[] args)

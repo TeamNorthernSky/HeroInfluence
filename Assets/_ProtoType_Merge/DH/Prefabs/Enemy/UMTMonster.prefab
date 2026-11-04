@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8433164833014218742}
   - component: {fileID: 1095460311074130782}
   - component: {fileID: 8093260281952283980}
+  - component: {fileID: 3314585121829029640}
   m_Layer: 9
   m_Name: UMTMonster
   m_TagString: Untagged
@@ -131,6 +132,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blendSeconds: 0.25
+--- !u!114 &3314585121829029640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4911330370426519206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8cbd96efb3194243a44f54249ea7e56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 8317057310725968031}
+  visualRoot: {fileID: 2705593939714296549}
+  fallingPose: {fileID: 7400000, guid: 07505acb7fbd9e74590285fd061a4c3f, type: 2}
+  landingPose: {fileID: 7400000, guid: 0bf91ff68bfce2e49854ef219f4f8a20, type: 2}
+  landingEffectPrefab: {fileID: 1953358371911353452, guid: 652a0c587cda2f2478dc0a744ee2e284,
+    type: 3}
+  landingEffectScale: 0.25
+  dropHeight: 3.5
+  fallSeconds: 0.65
+  landingSeconds: 0.28
 --- !u!1001 &8255015363363140427
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -232,6 +255,12 @@ PrefabInstance:
 --- !u!4 &2705593939714296549 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6270004528674257326, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
+    type: 3}
+  m_PrefabInstance: {fileID: 8255015363363140427}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &8317057310725968031 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 136140647584621524, guid: abb9ff7fdd62c78479f931fbc1dd5aba,
     type: 3}
   m_PrefabInstance: {fileID: 8255015363363140427}
   m_PrefabAsset: {fileID: 0}

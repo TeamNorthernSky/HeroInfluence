@@ -79,6 +79,7 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
 
     private void OnDisable()
     {
+        AudioManager.Instance?.SetBgmDucking(this, false);
         StopMoveFootsteps();
         GridChanged -= HandleGridChanged;
         enemyRegistry?.Unregister(this);
@@ -201,6 +202,7 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
             return;
 
         isMoving = moving;
+        AudioManager.Instance?.SetBgmDucking(this, isMoving && !IsStatic);
         if (isMoving && !IsStatic)
         {
             footstepRoutine = StartCoroutine(PlayMoveFootsteps());

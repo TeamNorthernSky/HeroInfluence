@@ -65,6 +65,7 @@ public class PartyGridMover : MonoBehaviour
 
     private void OnDisable()
     {
+        AudioManager.Instance?.SetBgmDucking(this, false);
         LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
         LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
         StopMoveFootsteps();
@@ -570,6 +571,7 @@ public class PartyGridMover : MonoBehaviour
             return;
 
         isMoving = moving;
+        AudioManager.Instance?.SetBgmDucking(this, isMoving);
         if (isMoving)
             footstepRoutine = StartCoroutine(PlayMoveFootsteps());
         else
