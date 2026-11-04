@@ -55,6 +55,47 @@ public sealed class ExplorationActionPointBubble : MonoBehaviour
     private Vector2 defaultBubbleSize;
     private Vector2 defaultTextOffsetMin;
     private Vector2 defaultTextOffsetMax;
+    private readonly System.Collections.Generic.Dictionary<Graphic, Material> foregroundMaterials =
+        new System.Collections.Generic.Dictionary<Graphic, Material>();
+
+    private void ApplyForegroundRendering()
+    {
+        if (GetComponent<Canvas>().renderMode != RenderMode.WorldSpace) return;
+        messageText.transform.SetAsLastSibling();
+        messageText.ForceMeshUpdate();
+        foreach (var graphic in GetComponentsInChildren<Graphic>(true))
+        {
+            var text = graphic as TMP_Text;
+            var subMesh = graphic as TMP_SubMeshUI;
+            var source = text != null ? text.fontSharedMaterial
+                : subMesh != null ? subMesh.sharedMaterial : graphic.material;
+            if (source == null) continue;
+            if (!foregroundMaterials.TryGetValue(graphic, out var material) || source != material)
+            {
+                if (material != null) Destroy(material);
+                material = new Material(source) { name = "PartyBubbleForeground" };
+                foregroundMaterials[graphic] = material;
+            }
+            // Keep shared UI/font materials untouched. Both UI and TMP must ignore world depth.
+            material.SetInt("unity_GUIZTestMode", (int)UnityEngine.Rendering.CompareFunction.Always);
+            if (material.HasProperty("_ZTestMode"))
+                material.SetInt("_ZTestMode", (int)UnityEngine.Rendering.CompareFunction.Always);
+            // Text (including additional font atlas meshes) is drawn after the balloon image.
+            material.renderQueue = graphic is TMP_Text || graphic is TMP_SubMeshUI ? 4001 : 4000;
+            // TMP renders its font material, not Graphic.material.
+            if (text != null) text.fontSharedMaterial = material;
+            else if (subMesh != null) subMesh.sharedMaterial = material;
+            else graphic.material = material;
+            graphic.SetMaterialDirty();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        foreach (var material in foregroundMaterials.Values)
+            if (material != null) Destroy(material);
+        foregroundMaterials.Clear();
+    }
 
     public float TotalDuration => entrance != null ? entrance.Duration + holdSeconds + fadeSeconds : 0f;
 
@@ -106,6 +147,7 @@ public sealed class ExplorationActionPointBubble : MonoBehaviour
         gameObject.SetActive(true);
         FitBubbleToText();
         entrance.Play(Vector2.zero);
+        ApplyForegroundRendering();
         FollowCharacter();
     }
 

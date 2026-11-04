@@ -302,6 +302,7 @@ public class LabModalController : MonoBehaviour
             return;
         }
         int reached = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId);
+        MouseClickSfx.PlayUpgradeSuccess();
         ShowCompletion($"{SkillName(skill)} +{reached - 1} 강화 완료!");
         ClearSelection();
         Refresh();

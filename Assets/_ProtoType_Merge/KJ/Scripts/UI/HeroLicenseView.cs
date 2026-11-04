@@ -70,9 +70,8 @@ public sealed class HeroLicenseView : MonoBehaviour
             image.raycastTarget = true;
             var tip = image.GetComponent<LicenseHoverTooltip>();
             if (!tip) tip = image.gameObject.AddComponent<LicenseHoverTooltip>();
-            string effect = skill.Effect == 0 ? "공격" : skill.Effect == 1 ? "회복" : "효과";
             tip.Bind(skill.SkillName + $" Lv.{level}", ClassSkillTooltipText.BuildDesc(skill, level, unitIndex: index), image.sprite,
-                hpValue.font, false, effect);
+                hpValue.font, false, SkillTagText.Format(skill));
         }
     }
     private void RefreshEquippedCore(int unitIndex)

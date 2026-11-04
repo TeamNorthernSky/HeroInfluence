@@ -281,13 +281,26 @@ MonoBehaviour:
   minZoomY: 5
   maxZoomY: 30
   zoomSpeed: 200
+  keepTargetCenteredOnZoom: 1
   edgeScrollEnabled: 1
-  edgeThreshold: 40
-  edgeScrollSpeed: 30
-  edgeAcceleration: 10
+  keyboardPanEnabled: 1
+  keyboardPanSpeed: 20
   edgeLimitRange: 50
   invertVerticalEdgeScroll: 0
+  clampToMapBounds: 1
+  mapBoundsPaddingCells: 0
+  mapBoundsMinOffsetCells: {x: 0, y: 0}
+  mapBoundsMaxOffsetCells: {x: 0, y: 0}
+  gridManager: {fileID: 0}
+  levelZoneLayoutData: {fileID: 0}
+  levelZoneLayoutLoader: {fileID: 0}
+  levelData: {fileID: 0}
+  levelLoader: {fileID: 0}
+  blockEdgeScrollOverButtons: 1
+  blockCameraInputDuringCombatPrompt: 1
+  combatPromptService: {fileID: 0}
   resetKey: 121
+  recenterKey: 32
 --- !u!1 &78333756
 GameObject:
   m_ObjectHideFlags: 0
@@ -347,8 +360,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: TurnChange
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5f69c5816e143a844a9475d47bb04245, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -484,6 +497,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   day: 1
   partyRegistry: {fileID: 1919126566}
+  enemyTurnController: {fileID: 0}
+  turnStateText: {fileID: 0}
+  outpostRegistry: {fileID: 0}
+  gateThreatController: {fileID: 0}
+  autoEndTurnWhenMovePointsDepleted: 0
 --- !u!4 &207868835
 Transform:
   m_ObjectHideFlags: 0
@@ -663,8 +681,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -985,8 +1003,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Gold : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1467,8 +1485,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Ore : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1692,9 +1710,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82c393105e213314a8f800c3e1e7281f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  goldText: {fileID: 444096205}
-  woodText: {fileID: 1085809264}
-  oreText: {fileID: 760436001}
+  moneyText: {fileID: 0}
+  chipText: {fileID: 0}
+  crystalText: {fileID: 0}
+  supplyText: {fileID: 0}
 --- !u!114 &818742916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1721,11 +1740,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f6d0b2849bf4a9b84e9f211ab84ab5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelRoot: {fileID: 1592689518}
-  resourceTypeText: {fileID: 312687609}
-  productionText: {fileID: 1846435514}
-  okButton: {fileID: 1749505262}
-  closeKey: 27
+  displayEntries: []
 --- !u!1 &866700044
 GameObject:
   m_ObjectHideFlags: 0
@@ -1738,6 +1753,8 @@ GameObject:
   - component: {fileID: 866700045}
   - component: {fileID: 866700047}
   - component: {fileID: 866700048}
+  - component: {fileID: 866700050}
+  - component: {fileID: 866700049}
   m_Layer: 8
   m_Name: Party2
   m_TagString: Untagged
@@ -1761,6 +1778,9 @@ MonoBehaviour:
   moveSpeed: 4
   arriveThreshold: 0.01
   maxMovePoints: 10
+  usePersistentState: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!4 &866700046
 Transform:
   m_ObjectHideFlags: 0
@@ -1814,6 +1834,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visionRadius: 5
+--- !u!114 &866700049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866700044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b083882a859b8784cb4d539c3fde00b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitIndices: 
+--- !u!114 &866700050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866700044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 446fe04fa3f24a140bf247393eb253b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  partyId: party_001
+  placementKey: 
+  placementSource: 0
 --- !u!1 &882956709
 GameObject:
   m_ObjectHideFlags: 0
@@ -1980,8 +2028,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: OK
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5f69c5816e143a844a9475d47bb04245, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2221,8 +2269,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Wood : 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2336,8 +2384,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Day : 1'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2550,11 +2598,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 337e9e2ca3a75d740976b3721935889b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resourceType: 2
+  outpostType: 0
   resourcePerTurn: 1
-  mineState: 0
+  outpostState: 0
+  zoneId: 
+  resolvedEnemyLevel: 1
+  defenderCombatChatId: 0
+  completionFlagName: 
+  postClaimChatZoneId: 1
+  postClaimChatId: 0
   targetRenderer: {fileID: 1130290393}
   unclaimedMaterial: {fileID: 2100000, guid: ed571a6ca3c5a964eadb92cf48f7366b, type: 2}
+  enemyClaimedMaterial: {fileID: 0}
   claimedMaterial: {fileID: 2100000, guid: 9dd66b3efbb3a5a4dbf13904161250d7, type: 2}
 --- !u!1 &1231214331
 GameObject:
@@ -3474,6 +3529,8 @@ GameObject:
   - component: {fileID: 1826875707}
   - component: {fileID: 1826875709}
   - component: {fileID: 1826875710}
+  - component: {fileID: 1826875712}
+  - component: {fileID: 1826875711}
   m_Layer: 8
   m_Name: Party
   m_TagString: Untagged
@@ -3497,6 +3554,9 @@ MonoBehaviour:
   moveSpeed: 4
   arriveThreshold: 0.01
   maxMovePoints: 10
+  usePersistentState: 1
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!4 &1826875708
 Transform:
   m_ObjectHideFlags: 0
@@ -3550,6 +3610,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visionRadius: 5
+--- !u!114 &1826875711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826875706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b083882a859b8784cb4d539c3fde00b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitIndices: 
+--- !u!114 &1826875712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826875706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 446fe04fa3f24a140bf247393eb253b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  partyId: party_001
+  placementKey: 
+  placementSource: 0
 --- !u!1 &1845465887
 GameObject:
   m_ObjectHideFlags: 0
@@ -3716,8 +3804,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: de1708c11a0d02844a42a4dccecce7ba, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3826,6 +3914,7 @@ MonoBehaviour:
   gridManager: {fileID: 1870279752}
   pathfinder: {fileID: 1870279751}
   partyRegistry: {fileID: 1919126566}
+  turnManager: {fileID: 0}
   marker: {fileID: 737785956}
   landLayerMask:
     serializedVersion: 2
@@ -3833,6 +3922,8 @@ MonoBehaviour:
   rayDistance: 500
   cameraFollower: {fileID: 0}
   pathPreviewRenderer: {fileID: 347558455}
+  zoneGuidanceArrowShader: {fileID: 0}
+  moveRangeController: {fileID: 0}
   uiInputBlocker: {fileID: 818742913}
   validMarkerColor: {r: 0, g: 1, b: 0, a: 1}
   invalidMarkerColor: {r: 1, g: 0, b: 0, a: 1}
@@ -3866,16 +3957,34 @@ MonoBehaviour:
   obstacleLayerMask:
     serializedVersion: 2
     m_Bits: 8
-  itemLayerMask:
-    serializedVersion: 2
-    m_Bits: 64
-  mineLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
+  useLegacyObstacleColliderFallback: 0
   playerLayerMask:
     serializedVersion: 2
     m_Bits: 256
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  useLegacyEnemyColliderFallback: 0
+  heroUnionLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  itemRegistry: {fileID: 0}
+  tutorialItemRegistry: {fileID: 0}
+  enemyRegistry: {fileID: 0}
+  tutorialEnemyRegistry: {fileID: 0}
+  heroUnionRegistry: {fileID: 0}
+  outpostRegistry: {fileID: 0}
+  villainUnionBaseRegistry: {fileID: 0}
+  multiGridOccupantRegistry: {fileID: 0}
+  mapEventRegistry: {fileID: 0}
+  worldEventRegistry: {fileID: 0}
+  mainEventRegistry: {fileID: 0}
+  subEventRegistry: {fileID: 0}
   obstacleCheckFill: 0.9
+  drawDebugGizmos: 1
+  drawGizmosOnlyWhenSelected: 0
+  drawDebugCenterSpheres: 1
+  drawDebugCellOutlines: 1
   debugQMin: -15
   debugQMax: 15
   debugRMin: -15
@@ -3926,9 +4035,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01353256ae9548f0a39e5a0046b74d87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  partyMovers:
-  - {fileID: 1826875707}
-  - {fileID: 866700045}
+  playerParty: {fileID: 0}
 --- !u!4 &1919126567
 Transform:
   m_ObjectHideFlags: 0
