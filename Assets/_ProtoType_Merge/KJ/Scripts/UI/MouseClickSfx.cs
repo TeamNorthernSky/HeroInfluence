@@ -15,6 +15,7 @@ public sealed class MouseClickSfx : MonoBehaviour
     private static int popupSoundFrame = -1;
     private static int moveStartedFrame = -1;
     private static int clickFailFrame = -1;
+    private static int clickSuccessFrame = -1;
     private int pendingClickFrame = -1;
     private string pendingClickKey;
     private bool pendingButtonRelease;
@@ -30,6 +31,7 @@ public sealed class MouseClickSfx : MonoBehaviour
         popupSoundFrame = -1;
         moveStartedFrame = -1;
         clickFailFrame = -1;
+        clickSuccessFrame = -1;
 #if UNITY_EDITOR
         SinkOverride = null;
 #endif
@@ -39,6 +41,14 @@ public sealed class MouseClickSfx : MonoBehaviour
     public static void NotifyPopupSoundPlayed() => popupSoundFrame = Time.frameCount;
     public static void NotifyMoveStarted() => moveStartedFrame = Time.frameCount;
     public static void NotifyClickFailPlayed() => clickFailFrame = Time.frameCount;
+
+    public static void PlayUpgradeSuccess()
+    {
+        var audio = AudioManager.Instance;
+        if (audio == null || !audio.IsReady) return;
+        audio.PlaySfx("Button_Click_Sucess");
+        clickSuccessFrame = Time.frameCount;
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
@@ -90,7 +100,7 @@ public sealed class MouseClickSfx : MonoBehaviour
         int frame = pendingClickFrame;
         string key = pendingClickKey;
         if (key == ClickSfxKey && (chatBubbleFrame >= frame || popupSoundFrame >= frame ||
-                                   moveStartedFrame >= frame || clickFailFrame >= frame))
+                                   moveStartedFrame >= frame || clickFailFrame >= frame || clickSuccessFrame >= frame))
         {
             ClearPendingClick();
             return;
