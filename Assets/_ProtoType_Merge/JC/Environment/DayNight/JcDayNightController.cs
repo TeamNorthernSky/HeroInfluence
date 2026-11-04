@@ -214,13 +214,15 @@ namespace JC.Environment {
    waterMultiplier=look.waterMultiplier;
    // 방위각은 광원의 위치입니다. 방향광의 forward는 빛의 진행 방향이므로 반대쪽을 향합니다.
    if(sun!=null){sun.transform.rotation=indoor?oldRotation:Quaternion.Euler(k.elevation,k.azimuth+180f,0);sun.color=indoor?Color.Lerp(oldLightColor,new Color(.70f,.79f,1),.25f*(1-daylight)):k.lightColor;sun.intensity=indoor?oldIntensity*Mathf.Lerp(.7f,1,daylight):k.intensity*Mathf.Lerp(Settings.nightLightBoost,1,daylight);sun.shadowStrength=Mathf.Lerp(.45f,oldShadow,daylight);}
-   if(sun!=null){sun.color=JcDayNightProfile.CorrectColor(sun.color,look.lightColor,baseline.lightColor);sun.intensity*=look.lightIntensity/Mathf.Max(.0001f,baseline.lightIntensity);sun.shadowStrength=Mathf.Clamp01(sun.shadowStrength*look.shadowMultiplier);}
+   // 실외 구간 값은 최종 색상·강도입니다. 시간 키의 일몰색을 다시 곱하면 전환 중 붉은색이 증폭됩니다.
+   if(sun!=null){sun.color=indoor?JcDayNightProfile.CorrectColor(sun.color,look.lightColor,baseline.lightColor):look.lightColor;sun.intensity=indoor?sun.intensity*look.lightIntensity/Mathf.Max(.0001f,baseline.lightIntensity):look.lightIntensity;sun.shadowStrength=Mathf.Clamp01(sun.shadowStrength*look.shadowMultiplier);}
    Color sky=Color.Lerp(Settings.nightSky,Settings.daySky,daylight);
    Color horizon=Color.Lerp(Settings.nightHorizon,Settings.dayHorizon,daylight);
    float sunset=Mathf.Clamp01((k.lightColor.r-k.lightColor.b)*1.3f);horizon=Color.Lerp(horizon,new Color(.85f,.44f,.28f),sunset);
    Color ground=Color.Lerp(Settings.nightGround,Settings.dayGround,daylight);
    float boost=Mathf.Lerp(Settings.nightAmbientBoost,1,daylight);sky*=boost;horizon*=boost;ground*=boost;
    sky=JcDayNightProfile.CorrectColor(sky,look.sky,baseline.sky);horizon=JcDayNightProfile.CorrectColor(horizon,look.horizon,baseline.horizon);ground=JcDayNightProfile.CorrectColor(ground,look.ground,baseline.ground);
+   if(!indoor){sky=look.sky;horizon=look.horizon;ground=look.ground;}
    if(indoor){sky=Color.Lerp(oldSky,sky,.35f);horizon=Color.Lerp(oldEquator/ .55f,horizon,.35f);ground=Color.Lerp(oldGround,ground,.35f);}
    float secondarySun = OutdoorBattle && BattleDraft ? BattleDraft.SecondarySun(Settings,hours) : 1f;
    foreach(var entry in extraLights)if(entry.light!=null)
