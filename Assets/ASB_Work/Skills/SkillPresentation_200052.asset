@@ -90,7 +90,7 @@ MonoBehaviour:
     ApproachEffectId: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
-    SfxKey: Explore_Move
+    SfxKey: Battle_Move
   AttackPrepare:
     Enabled: 1
     AnimationStateName: 
@@ -113,7 +113,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: MoveForward
     BlendInSeconds: 0.1
-    SfxKey: Explore_Move
+    SfxKey: Battle_Move
   Post:
     Enabled: 1
     AnimationStateName: 

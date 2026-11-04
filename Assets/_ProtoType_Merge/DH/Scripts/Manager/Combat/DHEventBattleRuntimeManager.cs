@@ -134,15 +134,21 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
     public static void HandleCompletedEventBattle(CombatContext context)
     {
+        ResumeCompletedEventChat(PrepareCompletedEventBattle(context));
+    }
+
+    public static GameSaveData.BattleReturnCheckpoint PrepareCompletedEventBattle(CombatContext context)
+    {
         if (context == null || context.EventBattle == null)
-            return;
+            return null;
 
         CombatEventBattleData eventBattle = context.EventBattle;
         DHEventStateRepository stateRepository = DHEventStateRepository.EnsureInstance();
         // Branch conditions read these values through DHEventStateRepository and snapshots save them as numeric state.
         stateRepository.SetNumericValue(BattleResultKey, context.Result == CombatResult.Victory ? 1f : 0f);
         ApplyNumericResults(stateRepository, eventBattle);
-        DHEnemyEventEncounterRuntimeManager.EnsureInstance().RegisterCompletedEventBattle(context);
+        string victoryEnemyPlacementKey = context.Result == CombatResult.Victory
+            ? MapProgressKey.NormalizeSegment(eventBattle.SourceEnemyPlacementKey) : string.Empty;
 
         string deferredMainEventKey = context.Result == CombatResult.Victory && eventBattle.ResumeChatId > 0
             ? DHEventStateRepository.NormalizeKey(eventBattle.SourceMainEventKey)
@@ -161,27 +167,83 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         ClearPendingMainEventSource(eventBattle.SourceMainEventKey);
 
         if (eventBattle.ResumeChatId <= 0)
-            return;
+        {
+            FinishDeferredEnemy(victoryEnemyPlacementKey);
+            return null;
+        }
 
         if (!TryResolveResumeChatForModal(eventBattle.ZoneId, eventBattle.ResumeChatId, out int modalChatId))
         {
             FinishDeferredEvents(deferredMainEventKey, deferredSubEventKey, returnScene);
+            FinishDeferredEnemy(victoryEnemyPlacementKey);
             Debug.LogWarning(
                 $"[DHEventBattleRuntime] Event battle resume chat could not be resolved. Zone={eventBattle.ZoneId}, Chat={eventBattle.ResumeChatId}");
-            return;
+            return null;
         }
 
-        ChatModalController.Show(eventBattle.ZoneId, modalChatId, () =>
+        return new GameSaveData.BattleReturnCheckpoint
+        {
+            zoneId = eventBattle.ZoneId,
+            chatId = modalChatId,
+            sourceMainEventKey = deferredMainEventKey,
+            sourceSubEventKey = deferredSubEventKey,
+            victoryEnemyPlacementKey = victoryEnemyPlacementKey
+        };
+    }
+
+    /// <summary>Resume dialogue only: never reapply battle rewards or battle result processing.</summary>
+    public static void ResumeCompletedEventChat(GameSaveData.BattleReturnCheckpoint checkpoint)
+    {
+        if (checkpoint == null || checkpoint.chatId <= 0) return;
+        var returnScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        // Loaded event objects have already been hidden by completed-event restoration.
+        // Restore only their deferred presentation; do not process the battle a second time.
+        foreach (var mainEvent in FindObjectsByType<MainEventObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (!string.IsNullOrWhiteSpace(checkpoint.sourceMainEventKey) && mainEvent.gameObject.scene == returnScene &&
+                DHEventStateRepository.NormalizeKey(mainEvent.EventKey) == checkpoint.sourceMainEventKey &&
+                !mainEvent.WaitingForPostBattleChat)
+            {
+                mainEvent.CompleteAfterEventBattleVictory(true);
+                mainEvent.gameObject.SetActive(true);
+            }
+        foreach (var subEvent in FindObjectsByType<SubEventObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (!string.IsNullOrWhiteSpace(checkpoint.sourceSubEventKey) && subEvent.gameObject.scene == returnScene &&
+                DHEventStateRepository.NormalizeKey(subEvent.EventKey) == checkpoint.sourceSubEventKey &&
+                !subEvent.WaitingForPostBattleChat)
+            {
+                subEvent.CompleteAfterEventBattleVictory(true);
+                subEvent.gameObject.SetActive(true);
+            }
+        ChatModalController.Show(checkpoint.zoneId, checkpoint.chatId, () =>
         {
             if (!Application.isPlaying || !returnScene.IsValid() || !returnScene.isLoaded)
                 return;
 
-            FinishDeferredEvents(deferredMainEventKey, deferredSubEventKey, returnScene);
+            FinishDeferredEvents(checkpoint.sourceMainEventKey, checkpoint.sourceSubEventKey, returnScene);
+            FinishDeferredEnemy(checkpoint.victoryEnemyPlacementKey);
+            if (!string.IsNullOrWhiteSpace(checkpoint.heroUnionChatKey))
+                MapProgressRepository.Instance?.MarkHeroUnionChatCompleted(checkpoint.heroUnionChatKey);
             RequestWorldEventConditionCheck();
         });
 
         if (!ChatModalController.IsOpen)
-            FinishDeferredEvents(deferredMainEventKey, deferredSubEventKey, returnScene);
+        {
+            FinishDeferredEvents(checkpoint.sourceMainEventKey, checkpoint.sourceSubEventKey, returnScene);
+            FinishDeferredEnemy(checkpoint.victoryEnemyPlacementKey);
+        }
+    }
+
+    private static void FinishDeferredEnemy(string placementKey)
+    {
+        if (string.IsNullOrWhiteSpace(placementKey)) return;
+        MapProgressRepository.Instance?.MarkEnemyDefeated(placementKey);
+        GateThreatController.NotifyEnemyDefeated(placementKey);
+        foreach (var enemy in FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None))
+        {
+            var identity = enemy.GetComponent<EnemyIdentity>();
+            if (identity != null && MapProgressKey.NormalizeSegment(identity.PlacementKey) == placementKey)
+                Destroy(enemy.gameObject);
+        }
     }
 
     private static void FinishDeferredEvents(string mainEventKey, string subEventKey, UnityEngine.SceneManagement.Scene scene)

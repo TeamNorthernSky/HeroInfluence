@@ -120,6 +120,7 @@ public class SceneFadeController : MonoBehaviour
         loadingSceneName = sceneName;
         pendingFadeInDuration = inDuration > 0f ? inDuration : 1f;
         transitioning = true;
+        AudioManager.Instance?.PlaySfx("ChangeScene");
         var events = UnityEngine.EventSystems.EventSystem.current;
         selectionBeforeLoad = events != null ? events.currentSelectedGameObject : null;
         if (events != null) events.SetSelectedGameObject(null);

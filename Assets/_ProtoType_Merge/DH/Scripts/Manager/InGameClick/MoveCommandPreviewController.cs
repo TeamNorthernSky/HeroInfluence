@@ -420,6 +420,8 @@ public class MoveCommandPreviewController
         }
 
         activeMover.MoveByGridPath(movePath, interactionTarget);
+        if (activeMover.IsMoving)
+            MouseClickSfx.NotifyMoveStarted();
     }
 
     public void HandlePathUpdated(List<Vector2Int> remainingPath)

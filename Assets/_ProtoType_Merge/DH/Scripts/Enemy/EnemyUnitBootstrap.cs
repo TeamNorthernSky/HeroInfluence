@@ -28,7 +28,19 @@ public class EnemyUnitBootstrap : MonoBehaviour
     private EnemyGridMover enemyUnit;
     private EnemyIdentity enemyIdentity;
     private EnemyComposition enemyComposition;
+    private void FinishVisualInitialization()
+    {
+        hasInitialized = true;
+        JC.Indicators.JcInteractionHoverMeshes.Prepare(transform);
+    }
+
     private bool hasInitialized;
+
+    private void OnTransformChildrenChanged()
+    {
+        if (Application.isPlaying && hasInitialized) JC.Indicators.JcInteractionHoverMeshes.Invalidate(transform);
+    }
+
 
     private void Awake()
     {
@@ -79,7 +91,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             enemyIdentity.SetEnemyId(resolvedEnemyId);
             enemyUnit.InitializePersistentIdentity(resolvedEnemyId);
             BindEnemyProgress(mapProgressRepository, placementKey, resolvedEnemyId);
-            hasInitialized = true;
+            FinishVisualInitialization();
             return;
         }
 
@@ -117,7 +129,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         enemyIdentity.SetEnemyId(enemyId);
         enemyUnit.InitializePersistentIdentity(enemyId);
         BindEnemyProgress(mapProgressRepository, placementKey, enemyId);
-        hasInitialized = true;
+        FinishVisualInitialization();
     }
 
     public bool InitializeEnemyGroupFromCsv(
@@ -228,7 +240,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             zoneId,
             behaviorType);
 
-        hasInitialized = true;
+        FinishVisualInitialization();
         return true;
     }
 
@@ -307,7 +319,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             zoneKey,
             behaviorType);
 
-        hasInitialized = true;
+        FinishVisualInitialization();
         return true;
     }
 
@@ -361,7 +373,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             placementKey, enemyId, grid, enemyIdentity.PlacementSource,
             groupKey, zoneId, EnemyBehaviorType.Mobile);
 
-        hasInitialized = true;
+        FinishVisualInitialization();
         return true;
     }
 
@@ -466,7 +478,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         else
             mapProgressRepository.SetEnemyGrid(placementKey, initialGrid);
 
-        hasInitialized = true;
+        FinishVisualInitialization();
         return true;
     }
 
@@ -479,7 +491,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             !worldState.Defeated)
             return false;
 
-        hasInitialized = true;
+        FinishVisualInitialization();
         Destroy(gameObject);
         return true;
     }
@@ -533,7 +545,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(zoneId))
             mapProgressRepository.SetEnemyZone(placementKey, zoneId);
 
-        hasInitialized = true;
+        FinishVisualInitialization();
         return true;
     }
 
@@ -588,7 +600,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(zoneKey))
             mapProgressRepository.SetEnemyZone(placementKey, zoneKey);
 
-        hasInitialized = true;
+        FinishVisualInitialization();
         return true;
     }
 

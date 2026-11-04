@@ -23,6 +23,10 @@ public class Outpost : MonoBehaviour
     // The event battle completion flag claims the outpost.
     [SerializeField] private string completionFlagName;
 
+    [Header("Post Claim Chat")]
+    [SerializeField, Min(1)] private int postClaimChatZoneId = 1;
+    [SerializeField, Min(0)] private int postClaimChatId;
+
     [Header("Visual")]
     [SerializeField] private Renderer targetRenderer;
     [SerializeField] private Material unclaimedMaterial;
@@ -39,6 +43,8 @@ public class Outpost : MonoBehaviour
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
     public int DefenderCombatChatId => Mathf.Max(0, defenderCombatChatId);
+    public int PostClaimChatZoneId => Mathf.Max(1, postClaimChatZoneId);
+    public int PostClaimChatId => Mathf.Max(0, postClaimChatId);
     public string CompletionFlagName => string.IsNullOrWhiteSpace(completionFlagName) ? string.Empty : completionFlagName.Trim();
 
     private void OnValidate()

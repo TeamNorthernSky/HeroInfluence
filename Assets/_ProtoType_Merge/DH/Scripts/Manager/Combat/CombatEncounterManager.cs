@@ -156,9 +156,7 @@ public class CombatEncounterManager : MonoBehaviour
         if (context == null || context.Result == CombatResult.None)
             return;
 
-        ProcessCompletedCombat(context);
-        context.Clear();
-        ClearCombatState();
+        CompleteCombatAndCheckpoint(context);
     }
 
     public void ClearCombatState()
@@ -233,52 +231,65 @@ public class CombatEncounterManager : MonoBehaviour
         return context != null && context.Result != CombatResult.None;
     }
 
-    private void ProcessCompletedCombat(CombatContext context)
+    private GameSaveData.BattleReturnCheckpoint ProcessCompletedCombat(CombatContext context)
     {
         if (context == null)
-            return;
+            return null;
 
         if (context.CombatEnemy != null &&
             context.CombatEnemy.SourceType == CombatEnemySourceType.Simulation)
         {
             context.ClearSimulation();
-            return;
+            return null;
         }
 
         if (context.HasEventBattle)
         {
-            DHEventBattleRuntimeManager.HandleCompletedEventBattle(context);
+            var resumeChat = DHEventBattleRuntimeManager.PrepareCompletedEventBattle(context);
             if (context.Result == CombatResult.Defeat)
                 ReturnDefeatedPartyToHeroUnion(context.CombatParty);
 
-            return;
+            return resumeChat;
         }
 
         if (context.Result == CombatResult.Defeat)
         {
             ReturnDefeatedPartyToHeroUnion(context.CombatParty);
-            return;
+            return null;
         }
 
         if (context.Result != CombatResult.Victory)
-            return;
+            return null;
 
         CombatEnemyPersistentData combatEnemy = context.CombatEnemy;
         if (combatEnemy == null)
-            return;
+            return null;
 
         string placementKey = combatEnemy.PlacementKey;
         if (string.IsNullOrWhiteSpace(placementKey))
             placementKey = FindPlacementKeyByEnemyId(combatEnemy.EnemyId);
 
         if (string.IsNullOrWhiteSpace(placementKey))
-            return;
+            return null;
 
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
         progressRepository?.MarkEnemyDefeated(placementKey);
         GateThreatController.NotifyEnemyDefeated(placementKey);
         RemoveDefeatedEnemyGroup(combatEnemy.EnemyId);
         DestroyMatchingSceneEnemy(placementKey, combatEnemy.EnemyId);
+        return null;
+    }
+
+    private void CompleteCombatAndCheckpoint(CombatContext context)
+    {
+        bool save = !context.IsSimulation && !context.IsTutorial && !DHGameEndState.IsEnding;
+        string defeatedPartyId = context.Result == CombatResult.Defeat ? context.CombatParty?.PartyId : null;
+        var checkpoint = ProcessCompletedCombat(context);
+        context.Clear();
+        ClearCombatState();
+        if (save)
+            BattleReturnAutoSave.Commit(checkpoint, defeatedPartyId);
+        DHEventBattleRuntimeManager.ResumeCompletedEventChat(checkpoint);
     }
 
     private IEnumerator ProcessCompletedCombatAfterSceneReady()
@@ -292,9 +303,7 @@ public class CombatEncounterManager : MonoBehaviour
         if (context == null || context.Result == CombatResult.None)
             yield break;
 
-        ProcessCompletedCombat(context);
-        context.Clear();
-        ClearCombatState();
+        CompleteCombatAndCheckpoint(context);
     }
 
     private static void ReturnDefeatedPartyToHeroUnion(CombatPartyPersistentData combatParty)

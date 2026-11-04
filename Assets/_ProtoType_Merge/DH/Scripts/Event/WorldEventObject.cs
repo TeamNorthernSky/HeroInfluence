@@ -387,6 +387,11 @@ public sealed class WorldEventObject : MonoBehaviour
         DestroyNamedChild(root, EditorPreviewVisualName);
 
         spawnedNpcVisual = CreateNpcVisual(prefab, root, string.Empty, HideFlags.None);
+        if (Application.isPlaying)
+        {
+            JC.Indicators.JcInteractionHoverMeshes.Invalidate(transform);
+            JC.Indicators.JcInteractionHoverMeshes.Prepare(transform);
+        }
         PositionNpcVisual();
         PositionSpeechBubble();
         return true;

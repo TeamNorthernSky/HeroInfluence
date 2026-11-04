@@ -69,6 +69,7 @@ public class SettingsModalController : MonoBehaviour
     private void OnEnable()
     {
         RefreshSavedValues();
+        PopupSoundService.PlayPopup(gameObject);
     }
 
     private void OnDisable()
