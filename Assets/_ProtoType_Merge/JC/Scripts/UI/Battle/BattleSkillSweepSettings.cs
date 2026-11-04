@@ -56,12 +56,22 @@ public class BattleSkillSweepSettings : MonoBehaviour
     [Tooltip("선택 중 내부를 지나는 빛띠의 색입니다. 외곽은 위의 선택 테두리 색을 사용합니다.")]
     [InspectorName("내부 스윕 색")] public Color selectedSweepColor = new Color(.75f, .9f, 1, 1);
 
+    // 동일 컴포넌트를 사용하는 자동/배속 및 카탈로그의 독립적인 기존 프리셋을 보존합니다.
+    [SerializeField, HideInInspector] private bool skillButtonStyle;
+    public bool IsSkillButtonStyle => skillButtonStyle;
+    [Tooltip("스킬 선택 중에만 버튼 안쪽에 눌린 그림자를 표시합니다.")]
+    public bool selectedInset = true;
+    [Range(0, 1), Tooltip("위·왼쪽 그림자와 반대쪽 하이라이트의 강도입니다.")]
+    public float insetDepth = .55f;
+    [SerializeField, HideInInspector] private Sprite insetSprite;
+    public Sprite InsetSprite => insetSprite;
+
     public void Apply(Material available, Material selected)
     {
         if (available != null)
         {
-            available.SetColor("_GlowColor", glowColor); available.SetFloat("_GlowWidth", glowWidth);
-            available.SetFloat("_GlowInnerWidth", glowInnerWidth); available.SetFloat("_GlowIntensity", glowIntensity);
+            available.SetColor("_GlowColor", glowColor); available.SetFloat("_GlowWidth", skillButtonStyle ? 0f : glowWidth);
+            available.SetFloat("_GlowInnerWidth", skillButtonStyle ? 0f : glowInnerWidth); available.SetFloat("_GlowIntensity", skillButtonStyle ? 0f : glowIntensity);
             available.SetFloat("_GlowLumEdge", glowLumEdge); available.SetTexture("_GleamTex", gleamTexture);
             available.SetColor("_SweepColor", sweepColor); available.SetFloat("_SweepIntensity", sweepIntensity);
             available.SetFloat("_GleamTilt", gleamTilt); available.SetFloat("_GleamScale", gleamScale);
@@ -77,7 +87,7 @@ public class BattleSkillSweepSettings : MonoBehaviour
             // Preserve the planning team's preview scene and other shared shader consumers.
             string sceneName = gameObject.scene.name;
             selected.SetFloat("_ConfigurableOrbitRim",
-                sceneName == "TmpBattleScene" || sceneName == "TutorialBattleScene" ? 1f : 0f);
+                skillButtonStyle || sceneName == "TmpBattleScene" || sceneName == "TutorialBattleScene" ? 1f : 0f);
             selected.SetColor("_GlowColor", selectedColor); selected.SetFloat("_GlowWidth", selectedWidth);
             selected.SetFloat("_GlowIntensity", selectedIntensity);
             selected.SetFloat("_SelectedMotion", selectedOrbit ? 1 : 0);
@@ -89,6 +99,12 @@ public class BattleSkillSweepSettings : MonoBehaviour
                 ? (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha
                 : (float)UnityEngine.Rendering.BlendMode.One);
             selected.SetFloat("_OrbitGlowSpread", orbitGlowSpread);
+            if (skillButtonStyle)
+            {
+                // 면을 가로지르는 빛띠는 available 재질 한 곳에서만 그립니다.
+                selected.SetFloat("_SelectedSweepIntensity", 0f);
+                return;
+            }
             selected.SetFloat("_SelectedSweepPeriod", Mathf.Max(.1f, selectedSweepPeriod));
             selected.SetFloat("_SelectedSweepWidth", selectedSweepWidth);
             selected.SetFloat("_SelectedSweepIntensity", selectedSweepIntensity);

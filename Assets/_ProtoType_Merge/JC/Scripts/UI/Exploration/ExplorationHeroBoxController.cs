@@ -57,30 +57,29 @@ public class ExplorationHeroBoxController : MonoBehaviour
                         break;
                     }
             int ci = i;
-            if (slots[i]?.root != null)
-            {
-                var source = slots[i].root.GetComponent<Image>();
-                if (source != null)
-                {
-                    var cover = new GameObject("DefeatedOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                    cover.transform.SetParent(slots[i].root.transform, false);
-                    var rect = (RectTransform)cover.transform;
-                    rect.anchorMin = Vector2.zero;
-                    rect.anchorMax = Vector2.one;
-                    rect.offsetMin = rect.offsetMax = Vector2.zero;
-                    var overlay = cover.GetComponent<Image>();
-                    overlay.sprite = source.sprite;
-                    overlay.type = source.type;
-                    overlay.preserveAspect = source.preserveAspect;
-                    overlay.material = Resources.Load<Material>("UI/DefeatedCardOverlay");
-                    overlay.color = new Color(0.5f, 0.5f, 0.5f, 0.65f);
-                    overlay.raycastTarget = true;
-                    defeatedOverlays[i] = overlay;
-                    cover.SetActive(false);
-                }
-            }
+            defeatedOverlays[i] = CreateDefeatedOverlay(slots[i]);
             if (slots[i]?.button != null) slots[i].button.onClick.AddListener(() => OnSlotClicked(ci));
         }
+    }
+
+    public static Image CreateDefeatedOverlay(HeroSlot slot)
+    {
+        var source = slot?.root != null ? slot.root.GetComponent<Image>() : null;
+        if (source == null) return null;
+        var existing = source.transform.Find("DefeatedOverlay");
+        if (existing != null && existing.TryGetComponent<Image>(out var overlayImage)) return overlayImage;
+        var cover = new GameObject("DefeatedOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        var rect = (RectTransform)cover.transform;
+        rect.SetParent(slot.root.transform, false);
+        rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        var overlay = cover.GetComponent<Image>();
+        overlay.sprite = source.sprite; overlay.type = source.type; overlay.preserveAspect = source.preserveAspect;
+        overlay.material = Resources.Load<Material>("UI/DefeatedCardOverlay");
+        overlay.color = new Color(.5f, .5f, .5f, .65f);
+        overlay.raycastTarget = true;
+        cover.SetActive(false);
+        return overlay;
     }
 
     private void OnEnable() { Refresh(); }

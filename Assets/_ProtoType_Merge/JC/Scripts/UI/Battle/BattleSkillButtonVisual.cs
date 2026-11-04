@@ -38,6 +38,31 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
     [Tooltip("선택 테두리의 발광 강도입니다. 0이면 발광을 없앱니다.")]
     [Range(0f, 8f)] [SerializeField] private float selectedIntensity = 2f;
 
+    private Image inset;
+
+    private void UpdateInset(bool selected)
+    {
+        bool show = selected && sharedSettings != null && sharedSettings.IsSkillButtonStyle &&
+            sharedSettings.isActiveAndEnabled && sharedSettings.selectedInset && sharedSettings.insetDepth > 0f &&
+            sharedSettings.InsetSprite != null;
+        if (show && inset == null)
+        {
+            var go = new GameObject("SelectedInset", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.layer = gameObject.layer;
+            inset = go.GetComponent<Image>();
+            var r = inset.rectTransform;
+            r.SetParent(transform, false);
+            r.SetAsFirstSibling(); // 버튼 면 위, 아이콘·스킬명·선택 테두리 아래.
+            r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one;
+            r.offsetMin = new Vector2(3, 3); r.offsetMax = new Vector2(-3, -3);
+            inset.sprite = sharedSettings.InsetSprite; inset.type = Image.Type.Sliced;
+            inset.raycastTarget = false;
+        }
+        if (inset == null) return;
+        inset.enabled = show;
+        if (show) inset.color = new Color(1, 1, 1, sharedSettings.insetDepth);
+    }
+
     private Material availableInstance;
     private Material selectedInstance;
     private Material availableSource;
@@ -57,7 +82,7 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
         availableInstance = CreateInstance(availableEffect, availableSource);
         selectedInstance = CreateInstance(selectedFrame, selectedSource);
         if (selectedFrame != null &&
-            (gameObject.scene.name == "TmpBattleScene" || gameObject.scene.name == "TutorialBattleScene"))
+            ((sharedSettings != null && sharedSettings.IsSkillButtonStyle) || gameObject.scene.name == "TmpBattleScene" || gameObject.scene.name == "TutorialBattleScene"))
         {
             // Carry image-relative coordinates in the mesh, before Canvas batching transforms POSITION.
             if (selectedFrame.GetComponent<BattleSkillRimCoordinates>() == null)
@@ -78,6 +103,13 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
     /// <summary>SkillButtonControllerから受け取った実際の使用可否と選択状態を表示します。</summary>
     public void SetState(bool available, bool selected)
     {
+        bool skillStyle = sharedSettings != null && sharedSettings.IsSkillButtonStyle;
+        UpdateInset(selected);
+        if (skillStyle && !sharedSettings.isActiveAndEnabled)
+        {
+            available = false;
+            selected = false;
+        }
         if (selected && !wasSelected) selectedStarted = Time.unscaledTime;
         wasSelected = selected;
         if (selectedInstance != null) selectedInstance.SetFloat("_SelectedTime", Time.unscaledTime - selectedStarted);
@@ -93,6 +125,7 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
             if (availableInstance != null) availableInstance.SetFloat("_SweepTime", Time.unscaledTime - started);
             return;
         }
+        if (skillStyle) return; // 공통 설정을 끈 경우 개별 버튼의 구형 광선으로 되돌아가지 않습니다.
         if (availableInstance != null)
         {
             availableInstance.SetColor("_GlowColor", availableColor);
@@ -153,6 +186,11 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
 
     private void OnDestroy()
     {
+        if (inset != null)
+        {
+            if (Application.isPlaying) Destroy(inset.gameObject);
+            else DestroyImmediate(inset.gameObject);
+        }
         if (availableEffect != null) availableEffect.material = availableSource;
         if (selectedFrame != null) selectedFrame.material = selectedSource;
         if (availableInstance != null) Destroy(availableInstance);

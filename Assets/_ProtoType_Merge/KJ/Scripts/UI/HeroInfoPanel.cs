@@ -21,6 +21,7 @@ public class HeroInfoPanel : MonoBehaviour
     [Tooltip("기존 씬의 IP 게이지입니다. 새 하단 UI는 숫자만 표시하므로 비워 둡니다.")]
     [SerializeField] private UnityEngine.UI.Image ipGauge;
 
+    [SerializeField, Tooltip("HP 레이블과 수치를 한 줄로 표시합니다.")] private bool inlineHp;
     private BattleCharactor currentUnit;
     [Tooltip("씬에 미리 배치한 초상화 Image입니다. 연결하면 실행 중 초상화 오브젝트를 생성하거나 배치를 변경하지 않습니다.")]
     [SerializeField] private Image portraitImage;
@@ -104,7 +105,7 @@ public class HeroInfoPanel : MonoBehaviour
         {
             if (nameText != null) nameText.text = "-";
             if (rankText != null) rankText.text = "-";
-            if (hpText != null) hpText.text = "-";
+            if (hpText != null) hpText.text = inlineHp ? "HP  -" : "-";
             if (ipText != null) ipText.text = "-";
             if (portraitImage != null)
             {
@@ -123,7 +124,10 @@ public class HeroInfoPanel : MonoBehaviour
         {
             // 현재 성장표의 F~SSS 등급을 사용한다.
             int rankLevel = currentUnit.SourceData != null ? currentUnit.SourceData.Level : currentUnit.Level;
-            rankText.text = $"랭크: <b><color=#FFD45C>{UnitRankLookup.GetRank(rankLevel)}</color></b>";
+            string rank = currentUnit.IsPlayer && (currentUnit.UsesTutorialEquipment || gameObject.scene.name == "TutorialBattleScene")
+                ? UnitRankLookup.GetTutorialRank(rankLevel, TutorialCatalog.Instance)
+                : UnitRankLookup.GetRank(rankLevel);
+            rankText.text = $"랭크: {rank}";
         }
 
         UpdateHpText(currentUnit.CurrentHp, currentUnit.MaxHp);
@@ -134,7 +138,7 @@ public class HeroInfoPanel : MonoBehaviour
     private void UpdateHpText(float current, float max)
     {
         if (hpText != null)
-            hpText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            hpText.text = $"{(inlineHp ? "HP  " : "")}{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
         if (hpGauge != null)
         {
             hpGauge.fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
@@ -163,6 +167,7 @@ public class HeroInfoPanel : MonoBehaviour
                 ? Sprites.Portrait.Hero(currentUnit.SourceData.UnitTemplateKey)
                 : Sprites.Portrait.Unselected;
         portraitImage.sprite = sp;
+        JC.BattleTesting.JcBattleHudLayout.FitMaskedArt(portraitImage);
         portraitImage.enabled = sp != null;
     }
 

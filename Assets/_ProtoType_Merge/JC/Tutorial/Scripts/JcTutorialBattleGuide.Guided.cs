@@ -38,6 +38,9 @@ namespace JC.Tutorial
         private bool FreeGuide => detailed && guidedPhase == FreeGuidePhase;
         private RectTransform currentTurnFocus;
         public bool GuidedActive => guidedActive;
+        internal static bool HighlightsWorldEnemyBadge(TurnSlotUI slot) =>
+            activeGuide != null && activeGuide.guidedActive && activeGuide.detailed && !activeGuide.formation &&
+            activeGuide.guidedPhase == 3 && activeGuide.guidedSlot == slot;
         public static bool BlocksBattleControls => activeGuide != null && activeGuide.guidedActive;
         public static RectTransform MessageObstacle => activeGuide != null && activeGuide.guidedActive ? activeGuide.layoutPanel : null;
         public static bool AllowsCancel => !BlocksBattleControls || activeGuide.FreeGuide;
@@ -147,14 +150,15 @@ namespace JC.Tutorial
             var c = rect.GetComponentInParent<Canvas>();
             return RectTransformUtility.RectangleContainsScreenPoint(rect, point, c != null && c.renderMode != RenderMode.ScreenSpaceOverlay ? c.worldCamera : null);
         }
-        public static void PlaceTooltip(Scene scene, RectTransform tooltip)
+        public static bool TryPlaceTooltip(Scene scene, RectTransform tooltip)
         {
             var g = activeGuide;
-            if (g == null || !g.guidedActive || g.gameObject.scene != scene || tooltip == null) return;
+            if (g == null || !g.guidedActive || g.gameObject.scene != scene || tooltip == null) return false;
             g.guidedTooltip = tooltip;
             if (g.dim != null && (g.guidedPhase == 3 || g.guidedPhase == 4)) g.dim.SetTooltip(tooltip);
-            if (!g.detailed || g.formation || g.guidedPhase != 3 || g.layoutPanel == null) return;
-            // Only the world-enemy hover lesson pins the tooltip above its instruction panel.
+            if (!g.detailed || g.formation || (g.guidedPhase != 3 && g.guidedPhase != 4) || g.layoutPanel == null) return false;
+            // 필드와 턴 배지 호버 모두 커서 대신 같은 안내 패널을 기준으로 배치합니다.
+            tooltip.gameObject.SetActive(true);
             var panelCanvas = g.layoutPanel.GetComponentInParent<Canvas>();
             var tooltipCanvas = tooltip.GetComponentInParent<Canvas>();
             var panelCamera = panelCanvas != null && panelCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? panelCanvas.worldCamera : null;
@@ -169,11 +173,12 @@ namespace JC.Tutorial
             float width = topRight.x - bottomLeft.x, height = topRight.y - bottomLeft.y;
             float gap = 12f * (panelCanvas != null ? panelCanvas.scaleFactor : 1f);
             float left = Mathf.Clamp(Mathf.Lerp(panelLeft.x, panelRight.x, .59f) - width * .5f, 8f, Mathf.Max(8f, Screen.width-width-8f));
-            float bottom = Mathf.Min(panelLeft.y + gap, Screen.height-height-8f);
+            float bottom = Mathf.Clamp(panelLeft.y + gap, 8f, Mathf.Max(8f, Screen.height-height-8f));
             var pivot = RectTransformUtility.WorldToScreenPoint(tooltipCamera, tooltip.position);
             var desired = pivot + new Vector2(left-bottomLeft.x, bottom-bottomLeft.y);
             if (RectTransformUtility.ScreenPointToWorldPointInRectangle(tooltip, desired, tooltipCamera, out var world))
                 tooltip.position = world;
+            return true;
         }
         private void EnsureNextButton()
         {
@@ -271,6 +276,7 @@ namespace JC.Tutorial
             {
                 allowedPointer = null;
                 view.SetVisible(true, null, JcTutorialGuideView.FocusPresentation.BorderOnly);
+                view.ShowBadgeOutline(null, false);
                 var skillButton = guidedSkills.FindSkillButton(IntroSkill);
                 view.SetActionHint(JcTutorialGuideView.ActionHint.ClickSkill, skillButton != null ? (RectTransform)skillButton.transform : null);
                 dim.gameObject.SetActive(false); resultShield.SetActive(false);
@@ -301,12 +307,14 @@ namespace JC.Tutorial
             RectTransform focus = guidedPhase == 1 ? profileFocus : guidedPhase == 2 ? turnFocus :
                 guidedPhase == 3 ? worldFocus : guidedPhase == 4 ? badge : currentTurnFocus;
             allowedPointer = guidedPhase == 3 ? worldFocus : guidedPhase == 4 ? badge : null;
-            view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.BorderOnly);
+            view.SetVisible(true, guidedPhase == 4 ? null : focus, JcTutorialGuideView.FocusPresentation.BorderOnly);
             view.SetActionHint(guidedPhase == 3 ? JcTutorialGuideView.ActionHint.HoverEnemy : guidedPhase == 4 ? JcTutorialGuideView.ActionHint.HoverBadge : JcTutorialGuideView.ActionHint.None, focus);
-            dim.SetTargets(layoutPanel, focus);
-            dim.SetExtraTargets(guidedPhase == 3 || guidedPhase == 4 ? new[] { worldFocus, badge } : Array.Empty<RectTransform>());
+            bool badgeLesson = guidedPhase == 3 || guidedPhase == 4;
+            var badgeWindow = view.ShowBadgeOutline(badgeLesson ? guidedSlot : null, guidedPhase == 4);
+            dim.SetTargets(layoutPanel, guidedPhase == 4 ? badgeWindow : focus);
+            dim.SetExtraTargets(badgeLesson ? new[] { worldFocus, badgeWindow } : Array.Empty<RectTransform>());
             dim.SetTooltip(guidedPhase == 3 || guidedPhase == 4 ? guidedTooltip : null);
-            dim.SetRoundedTarget(guidedPhase == 4 ? worldFocus : null, 16f);
+            dim.SetRoundedTarget(guidedPhase == 4 ? badgeWindow : null, badgeWindow != null ? badgeWindow.rect.height * .5f : 0f);
             resultShield.SetActive(true);
         }
         private void LateGuided()
@@ -352,7 +360,10 @@ namespace JC.Tutorial
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screen, canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera, out var local);
                 lo = Vector2.Min(lo, local); hi = Vector2.Max(hi, local);
             }
-            worldFocus.localPosition = (lo + hi) * .5f; worldFocus.sizeDelta = hi - lo + Vector2.one * 44;
+            worldFocus.localPosition = (lo + hi) * .5f;
+            Vector2 size = hi - lo + Vector2.one * 44;
+            worldFocus.sizeDelta = guidedPhase == 4
+                ? Vector2.one * (Mathf.Max(size.x, size.y) * 1.15f) : size;
         }
         private void EndGuided(bool notify)
         {
@@ -360,6 +371,7 @@ namespace JC.Tutorial
             guidedActive = false; formation = false;
             if (dim != null) dim.SetTooltip(null);
             guidedTooltip = null;
+            view.ShowBadgeOutline(null, false);
             view.FixedBattleOutline = false;
             if (formationGrid != null) formationGrid.SetTutorialRows(this, false);
             formationGrid = null;

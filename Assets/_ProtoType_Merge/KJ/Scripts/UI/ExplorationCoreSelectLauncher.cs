@@ -10,6 +10,7 @@ public class ExplorationCoreSelectLauncher : MonoBehaviour
     [SerializeField] private string targetPartyId = "";
     [SerializeField] private Image[] equippedCoreIcons = new Image[4];
 
+    private TutorialPartyComposition tutorialParty;
     private WorkshopManager workshop;
     private float nextRefresh;
 
@@ -39,6 +40,23 @@ public class ExplorationCoreSelectLauncher : MonoBehaviour
 
     public void RefreshIcons()
     {
+        if (gameObject.scene.name == "TutorialExploreScene")
+        {
+            if (tutorialParty == null) tutorialParty = FindFirstObjectByType<TutorialPartyComposition>();
+            var keys = tutorialParty != null ? tutorialParty.GetJoinedUnitTemplateKeys() : null;
+            var catalog = TutorialCatalog.Instance;
+            for (int i = 0; i < equippedCoreIcons.Length; i++)
+            {
+                int core = 0;
+                if (catalog != null && keys != null && i < keys.Count && catalog.TryGetPlayerUnitTemplate(keys[i], out var template))
+                {
+                    TutorialCombatUnitFactory.ResolveDefaultWeapon(catalog, template, out var weapon);
+                    if (weapon != null) core = weapon.NumericWeaponId;
+                }
+                SetIcon(equippedCoreIcons[i], core);
+            }
+            return;
+        }
         var current = GameManager.Instance != null ? GameManager.Instance.Workshop : null;
         if (workshop != current)
         {
@@ -55,18 +73,23 @@ public class ExplorationCoreSelectLauncher : MonoBehaviour
             if (icon == null) continue;
             int core = workshop != null && members != null && i < members.Count && members[i] > 0
                 ? workshop.GetEquippedWeaponIndex(members[i]) : 0;
-            icon.sprite = modal != null ? modal.GetCoreIcon(core) : null;
-            icon.overrideSprite = null;
-            // 그림이 없어도 코어 선택 버튼의 클릭 영역은 유지한다.
-            icon.enabled = true;
-            icon.color = icon.sprite != null ? Color.white : Color.clear;
-            icon.preserveAspect = true;
+            SetIcon(icon, core);
         }
+    }
+
+    private void SetIcon(Image icon, int core)
+    {
+        if (icon == null) return;
+        icon.overrideSprite = null;
+        icon.sprite = modal != null ? modal.GetCoreIcon(core) : null;
+        icon.enabled = true;
+        icon.color = icon.sprite != null ? Color.white : Color.clear;
+        icon.preserveAspect = true;
     }
 
     public void OpenSlot(int slotIndex)
     {
-        if (modal == null || slotIndex < 0) return;
+        if (gameObject.scene.name == "TutorialExploreScene" || modal == null || slotIndex < 0) return;
         PartyPersistentData party = ResolveParty();
         if (party == null) return;
 
