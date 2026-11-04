@@ -18,7 +18,7 @@ MonoBehaviour:
   PresentationArchetype: 2
   SkillTimelines:
   - CharacterKey: 10004
-    Timeline: {fileID: 11400000, guid: 59788898ad81ef948a869a03f410ff31, type: 2}
+    Timeline: {fileID: 11400000, guid: a4fdc37635aa45e4d8d2f548ceea7087, type: 2}
     TargetCount: 0
     Segments: []
   ImpactTiming: 0
@@ -36,7 +36,7 @@ MonoBehaviour:
       type: 3}
     Speed: 7
     Trajectory: 1
-    ArcHeight: 1.5
+    ArcHeight: 2.5
     TrailTime: 0.4
     TrackTarget: 1
     AlignToVelocity: 1
@@ -82,7 +82,7 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: heal_cast
-        EffectIds: e47e0100
+        EffectIds: 017f0100
         SoundIds: 
         Operation: 0
         InstanceKey: neko_heal_charge
@@ -91,6 +91,16 @@ MonoBehaviour:
         Timing: 0
         Time: 0
         CueId: b05d4f63350145fe838fe66c390f406c
+      - CueName: heal_release
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: neko_heal_charge
+        Anchor: 1
+        Socket: 11
+        Timing: 0
+        Time: 0
+        CueId: 0aa55d7bee594413a595e5ddb04411ff
   Return:
     Enabled: 0
     AnimationStateName: 

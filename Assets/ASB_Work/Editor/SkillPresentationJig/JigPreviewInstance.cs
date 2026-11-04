@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -136,6 +137,7 @@ namespace ASB.Work.EditorTools.Jig
             bool had = _instance != null;
             if (had)
             {
+                DeselectInstance();
                 Object.DestroyImmediate(_instance);
             }
             _instance = null;
@@ -145,6 +147,42 @@ namespace ASB.Work.EditorTools.Jig
             {
                 RestoreSceneCleanliness();
             }
+        }
+
+        /// <summary>
+        /// 선택이 프리뷰 인스턴스(또는 그 자식인 프리뷰 카메라)를 가리키면 파괴 전에 뺀다.
+        ///
+        /// 지그 창은 Timeline 창이 인스턴스를 보여 주도록 인스턴스를 선택해 둔다. 선택된 채 파괴하면
+        /// Inspector가 사라진 대상으로 OnDisable/OnEnable을 돌아 도메인 리로드마다 예외 3개
+        /// (GameObjectInspector NullReference, TransformInspector "Object at index 0 is null",
+        /// ArgumentNullException componentOrGameObject)를 낸다.
+        /// </summary>
+        private static void DeselectInstance()
+        {
+            Object[] selected = Selection.objects;
+            var kept = new List<Object>(selected.Length);
+            for (int i = 0; i < selected.Length; i++)
+            {
+                if (!IsPartOfInstance(selected[i]))
+                {
+                    kept.Add(selected[i]);
+                }
+            }
+            if (kept.Count == selected.Length)
+            {
+                return;
+            }
+
+            Selection.objects = kept.ToArray();
+
+            // 리로드·Play 전환 직전에는 Inspector가 스스로 갱신할 다음 프레임이 없다 — 대상이 살아 있을 때 지금 다시 만든다.
+            ActiveEditorTracker.sharedTracker.ForceRebuild();
+        }
+
+        private static bool IsPartOfInstance(Object obj)
+        {
+            Transform t = obj is GameObject go ? go.transform : obj is Component c ? c.transform : null;
+            return t != null && t.IsChildOf(_instance.transform);
         }
 
         /// <summary>

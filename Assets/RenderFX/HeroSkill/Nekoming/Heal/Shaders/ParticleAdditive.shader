@@ -6,6 +6,8 @@ Shader "JC/VFX/ParticleAdditive"
     {
         _BaseMap ("Texture", 2D) = "white" {}
         [HDR]_BaseColor ("Tint (HDR)", Color) = (1,1,1,1)
+        // 카메라 쪽으로 당겨 그리는 거리(m). 0이면 그대로. 손 사이처럼 가려지는 곳의 빛을 가린 물체 두께만큼만 앞에 보일 때 쓴다.
+        _CameraOffset ("Camera Offset (m)", Float) = 0
     }
     SubShader
     {
@@ -28,12 +30,15 @@ Shader "JC/VFX/ParticleAdditive"
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST;
                 half4 _BaseColor;
+                float _CameraOffset;
             CBUFFER_END
 
             Varyings vert (Attributes IN)
             {
                 Varyings OUT;
-                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+                float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+                positionWS += UNITY_MATRIX_V[2].xyz * _CameraOffset;   // 뷰 행렬 3행 = 카메라 쪽 방향(원근·직교 공통)
+                OUT.positionHCS = TransformWorldToHClip(positionWS);
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
                 OUT.color = IN.color;
                 return OUT;
