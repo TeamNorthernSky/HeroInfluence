@@ -161,7 +161,7 @@ MonoBehaviour:
     npcFillEnabled: 1
     npcFill: 0.16
     enemyFillEnabled: 1
-    enemyFill: 0.16
+    enemyFill: 0
     screenColorEnabled: 1
     screenColorStrength: 0.12
     screenColorFilter: {r: 1, g: 0.88, b: 0.78, a: 1}
@@ -185,7 +185,7 @@ MonoBehaviour:
     npcFillEnabled: 1
     npcFill: 0.21
     enemyFillEnabled: 1
-    enemyFill: 0.5
+    enemyFill: 0
     screenColorEnabled: 1
     screenColorStrength: 0.35
     screenColorFilter: {r: 0.58, g: 0.74, b: 1, a: 1}
