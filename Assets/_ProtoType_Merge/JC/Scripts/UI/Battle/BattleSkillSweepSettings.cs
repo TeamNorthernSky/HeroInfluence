@@ -102,6 +102,7 @@ public class BattleSkillSweepSettings : MonoBehaviour
             if (skillButtonStyle)
             {
                 // 면을 가로지르는 빛띠는 available 재질 한 곳에서만 그립니다.
+                // JC | 2026-11-04 | 사용 가능한 스킬의 스윕과 선택된 스킬의 테두리를 서로 독립적으로 조절합니다.
                 selected.SetFloat("_SelectedSweepIntensity", 0f);
                 return;
             }

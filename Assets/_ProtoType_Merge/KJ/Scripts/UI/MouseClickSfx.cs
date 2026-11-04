@@ -16,6 +16,8 @@ public sealed class MouseClickSfx : MonoBehaviour
     private static int moveStartedFrame = -1;
     private static int clickFailFrame = -1;
     private static int clickSuccessFrame = -1;
+    // JC | 2026-11-04 | 성공음과 스킬 전용음의 프레임을 각각 기록해 같은 입력의 공용 클릭음만 생략합니다.
+    private static int dedicatedClickFrame = -1;
     private int pendingClickFrame = -1;
     private string pendingClickKey;
     private bool pendingButtonRelease;
@@ -32,6 +34,7 @@ public sealed class MouseClickSfx : MonoBehaviour
         moveStartedFrame = -1;
         clickFailFrame = -1;
         clickSuccessFrame = -1;
+        dedicatedClickFrame = -1;
 #if UNITY_EDITOR
         SinkOverride = null;
 #endif
@@ -41,6 +44,7 @@ public sealed class MouseClickSfx : MonoBehaviour
     public static void NotifyPopupSoundPlayed() => popupSoundFrame = Time.frameCount;
     public static void NotifyMoveStarted() => moveStartedFrame = Time.frameCount;
     public static void NotifyClickFailPlayed() => clickFailFrame = Time.frameCount;
+    public static void NotifyDedicatedClickSoundPlayed() => dedicatedClickFrame = Time.frameCount;
 
     public static void PlayUpgradeSuccess()
     {
@@ -99,8 +103,10 @@ public sealed class MouseClickSfx : MonoBehaviour
         if (pendingClickFrame < 0) return;
         int frame = pendingClickFrame;
         string key = pendingClickKey;
+        if (string.IsNullOrEmpty(key)) { ClearPendingClick(); return; }
+        // JC | 2026-11-04 | KJ 성공음과 스킬 전용음 어느 쪽이든 같은 입력에서 재생됐으면 공용 클릭음을 생략합니다.
         if (key == ClickSfxKey && (chatBubbleFrame >= frame || popupSoundFrame >= frame ||
-                                   moveStartedFrame >= frame || clickFailFrame >= frame || clickSuccessFrame >= frame))
+                                   moveStartedFrame >= frame || clickFailFrame >= frame || clickSuccessFrame >= frame || dedicatedClickFrame >= frame))
         {
             ClearPendingClick();
             return;
@@ -140,6 +146,9 @@ public sealed class MouseClickSfx : MonoBehaviour
     private static string ResolveClickSfx(RaycastResult hit, Vector2 position)
     {
         if (hit.gameObject == null) return ClickSfxKey;
+        // 스킬 버튼은 선택 성공/취소 경로에서만 전용음을 냅니다. 거절된 클릭도 공용음을 겹치지 않습니다.
+        if (hit.gameObject.GetComponentInParent<SkillButtonTooltip>(true) != null ||
+            hit.gameObject.GetComponentInParent<JcSkillButtonTooltip>(true) != null) return null;
         var slider = hit.gameObject.GetComponentInParent<Slider>();
         if (slider == null || slider.name != "ProgressSlider" || !slider.IsActive() || !slider.IsInteractable())
             return ClickSfxKey;

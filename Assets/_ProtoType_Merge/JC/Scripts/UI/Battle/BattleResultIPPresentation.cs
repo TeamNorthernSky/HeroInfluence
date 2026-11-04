@@ -19,6 +19,9 @@ public sealed class BattleResultIPPresentation : IDisposable
     private bool pending = true, completed, echoActive;
     public bool IsComplete => completed;
     public bool HasStarted => !pending;
+    // JC | 2026-11-04 | 결과음이 실제 보상 수치 증가 구간에만 재생되도록 표시 상태를 노출합니다.
+    public bool IsCounting => !pending && !completed && !echoActive && gain > 0 &&
+        settings != null && settings.duration > 0 && delayElapsed >= settings.startDelay;
     public long DisplayedCurrent { get; private set; }
     public long DisplayedRemaining { get; private set; }
 

@@ -10,6 +10,7 @@ namespace JC.BattleTesting
         readonly List<Object> owned=new List<Object>();
         readonly Dictionary<Material,Material> materials=new Dictionary<Material,Material>();
         readonly Dictionary<Texture,Texture> textures=new Dictionary<Texture,Texture>();
+        // JC | 2026-11-04 | 도로·차선을 부분별로 조명할 수 있게 해 가로등 하나의 영향이 도로 전체로 퍼지는 현상을 줄입니다.
         public MeshRenderer Add(string label,Mesh mesh,Material[] source,bool terrain,MeshRenderer sourceRenderer=null)
         {
             mesh.hideFlags=HideFlags.DontSave;owned.Add(mesh);

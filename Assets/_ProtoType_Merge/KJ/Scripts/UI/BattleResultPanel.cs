@@ -36,6 +36,8 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
     private PresentationStage presentationStage;
     private bool presentationReady;
     private readonly List<HeroInfoResult> presentationCards = new List<HeroInfoResult>();
+    private bool expCountingSound, ipCountingSound;
+    private AudioManager countingAudioManager;
 
     // 결과 확인 뒤에는 내용을 숨기고, 새 결과를 Show할 때만 복원합니다.
     //   기존에는 결과 패널 위에 스킬 창이 겹쳐 떠 있었다(GetSkillParent가 결과 패널의 자식이고
@@ -45,6 +47,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
     public void Show(BattleResult result, BattleRewardPlan plan)
     {
+        StopCountingSounds();
         RestoreDefeatVisibility();
         skipDefeatResult = false;
         foreach (var slot in skillQueue)
@@ -78,6 +81,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
         BattleResultView view = GetComponent<BattleResultView>();
         if (view == null) return;
+        if (result == BattleResult.Victory) PresentationSfxPlayer.Play("BattleEnd_Victory");
 
         if (view.resultTitle != null)
         {
@@ -273,7 +277,42 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
             return;
         }
         if (CanAdvancePresentation()) AdvancePresentationStage();
+        // JC | 2026-11-04 | 여러 카드가 동시에 카운트해도 EXP와 IP 루프는 각각 하나만 재생합니다.
+        UpdateCountingSounds();
     }
+
+    private void UpdateCountingSounds()
+    {
+        bool exp = false, ip = false;
+        if (CanAdvancePresentation())
+            foreach (var card in presentationCards)
+                if (card != null) { exp |= card.IsExpCounting; ip |= card.IsIPCounting; }
+        var manager = AudioManager.Instance;
+        if (countingAudioManager != manager) StopCountingSounds();
+        countingAudioManager = manager;
+        SetCountingSound("Battle_BarCounting01", exp, ref expCountingSound);
+        SetCountingSound("Battle_BarCounting02", ip, ref ipCountingSound);
+    }
+
+    private void SetCountingSound(string key, bool counting, ref bool playing)
+    {
+        if (countingAudioManager == null) return;
+        if (counting == playing) return;
+        if (counting) countingAudioManager.PlayLoopingSfx(key);
+        else countingAudioManager.StopLoopingSfx(key, false);
+        playing = counting;
+    }
+
+    // JC | 2026-11-04 | 결과창이 닫히거나 표시가 교체될 때 이전 카드의 반복음이 다음 화면에 남지 않게 합니다.
+    private void StopCountingSounds()
+    {
+        SetCountingSound("Battle_BarCounting01", false, ref expCountingSound);
+        SetCountingSound("Battle_BarCounting02", false, ref ipCountingSound);
+        expCountingSound = ipCountingSound = false;
+        countingAudioManager = null;
+    }
+
+    private void OnDisable() => StopCountingSounds();
 
     private void RestoreDefeatVisibility()
     {
@@ -344,6 +383,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
     private void CompleteAcceptance()
     {
         if (accepted) return;
+        StopCountingSounds();
         accepted = true;
         // 조기 확인 시 표시만 최종값으로 정리한다. 보상 저장은 기존 OnAccepted 경로에서 한 번만 수행한다.
         foreach (var card in GetComponentsInChildren<HeroInfoResult>(true))
@@ -353,6 +393,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
     private void OnDestroy()
     {
+        StopCountingSounds();
         if (boundAcceptButton != null) boundAcceptButton.onClick.RemoveListener(Accept);
     }
 }

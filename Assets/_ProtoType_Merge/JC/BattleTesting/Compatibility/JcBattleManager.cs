@@ -276,6 +276,8 @@ public class JcBattleManager : MonoBehaviour
         JcCombatCalculator.ResolveHitRolls(context);
         float finalDamage = JcCombatCalculator.CalculateDamage(context) * (DamageTakenPolicy?.Invoke(context.Target) ?? 1f);
         context.Target.TakeDamage(finalDamage);
+        // JC | 2026-11-04 | 보스 테스트에서도 본게임의 효과음 키와 연출 시점을 재사용합니다.
+        if (context.Target.IsDamageImmune) UnitSfxProfile.Play(context.Target, UnitSfxEvent.ImmuneHit);
         float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
         bool isDeadAfter = context.Target.IsDead;
         Debug.Log($"[Combat] {context.Caster.UnitName} -> {context.Target.UnitName} dmg={finalDamage:F1} (Crit: {context.IsCritical})");
@@ -348,6 +350,7 @@ public class JcBattleManager : MonoBehaviour
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
         context.Target.TakeDamage(predicted.Damage);
+        if (context.Target.IsDamageImmune) UnitSfxProfile.Play(context.Target, UnitSfxEvent.ImmuneHit);
         bool isDeadAfter = context.Target.IsDead;
 
         predicted.AppliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
@@ -415,6 +418,9 @@ public class JcBattleManager : MonoBehaviour
             yield break;
         }
 
+        if (result.Skill != null && _visualDirector != null)
+            PresentationSfxEvents.PlayCast(_visualDirector.GetPresentation(result.Skill.skillIndex));
+
         float totalDamageDealt = 0f;
         // 연출이 확정하지 못한(취소·타임아웃) 히트를 규칙 계층이 나중에 일괄 확정하기 위한 목록.
         // 연출은 확정 '시점'만 정하고 '여부'는 정하지 못한다. 각 항목은 멱등하다(두 번 호출해도 1회만 적용).
@@ -430,7 +436,9 @@ public class JcBattleManager : MonoBehaviour
             {
                 if (committed) return null;
                 committed = true;
+                bool guardBlock = damageContext.RedirectedFrom != null && damageContext.Target != null && !damageContext.Target.IsDead;
                 BattleHitResult hit = CommitDamage(damageContext, predicted);
+                if (guardBlock) UnitSfxProfile.Play(damageContext.Target, UnitSfxEvent.GuardBlock);
                 result.RecordDamageResult(damageContext, hit);
                 totalDamageDealt += hit?.AppliedDamage ?? 0f;
                 return hit;
@@ -465,6 +473,7 @@ public class JcBattleManager : MonoBehaviour
             {
                 guardSwapAOrigin = guardSwapA.transform.position; guardSwapARot = guardSwapA.transform.rotation;
                 guardSwapBOrigin = guardSwapB.transform.position; guardSwapBRot = guardSwapB.transform.rotation;
+                UnitSfxProfile.Play(guardSwapA, UnitSfxEvent.GuardSwap);
                 Coroutine gInA = guardSwapA.Anim.StartCoroutine(guardSwapA.Anim.MoveToPosition(guardSwapBOrigin, GuardSwapDuration, null, GuardSwapBlend));
                 Coroutine gInB = guardSwapB.Anim.StartCoroutine(guardSwapB.Anim.MoveToPosition(guardSwapAOrigin, GuardSwapDuration, null, GuardSwapBlend));
                 yield return gInA; // 두 이동을 동시 시작 → 순차 대기 = 병렬 실행
@@ -660,6 +669,7 @@ public class JcBattleManager : MonoBehaviour
             Coroutine gBackA = (!guardSwapA.IsDead && guardSwapA.Anim != null)
                 ? guardSwapA.Anim.StartCoroutine(guardSwapA.Anim.MoveToOrigin(guardSwapAOrigin, guardSwapARot, GuardSwapDuration, null, GuardSwapBlend))
                 : null;
+            if (gBackA != null || gBackB != null) UnitSfxProfile.Play(guardSwapA, UnitSfxEvent.GuardSwap);
             if (gBackB != null) yield return gBackB;
             if (gBackA != null) yield return gBackA;
         }
@@ -703,6 +713,7 @@ public class JcBattleManager : MonoBehaviour
                     continue;
                 }
 
+                bool additionalHeal = firstHealPresented;
                 HealContext capturedHeal = healContext;
                 bool healCommitted = false;
                 bool presentationReachedImpact = false;
@@ -716,6 +727,7 @@ public class JcBattleManager : MonoBehaviour
                     healCommitted = true;
                     if (simultaneousHeal)
                     {
+                        bool healedAny = false;
                         BattleHitResult primaryHit = null;
                         foreach (HealContext groupHeal in result.HealContexts)
                         {
@@ -724,6 +736,7 @@ public class JcBattleManager : MonoBehaviour
                                 continue;
 
                             groupHeal.Target.ApplyHeal(groupHeal.HealAmount);
+                            healedAny = true;
                             var hit = new BattleHitResult
                             {
                                 Target = groupHeal.Target,
@@ -738,6 +751,7 @@ public class JcBattleManager : MonoBehaviour
                                 _visualDirector?.ShowDamagePopup(hit);
                             }
                         }
+                        if (healedAny) PresentationSfxEvents.PlayHeal(_visualDirector?.GetPresentation(capturedHeal.SkillIndex), false);
                         return primaryHit;
                     }
 
@@ -748,6 +762,7 @@ public class JcBattleManager : MonoBehaviour
                     else
                     {
                         capturedHeal.Target.ApplyHeal(capturedHeal.HealAmount);
+                        PresentationSfxEvents.PlayHeal(_visualDirector?.GetPresentation(capturedHeal.SkillIndex), additionalHeal);
                     }
                     return new BattleHitResult
                     {
@@ -1117,7 +1132,8 @@ public class JcBattleManager : MonoBehaviour
 
         if (executed)
         {
-            HostageFriendlyFireResolver.ApplyCollateralDamage(actor, hostageCollateralCenter, classSkillRow);
+            if (HostageFriendlyFireResolver.ApplyCollateralDamage(actor, hostageCollateralCenter, classSkillRow) > 0 && _visualDirector != null)
+                PresentationSfxEvents.PlayHit(_visualDirector.GetPresentation(classSkillRow.skillIndex), actor, DamageRole.Additional);
             OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
             OnSkillResolved?.Invoke(new SkillResolutionContext(
                 actor,

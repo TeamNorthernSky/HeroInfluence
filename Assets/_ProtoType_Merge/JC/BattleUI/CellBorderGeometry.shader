@@ -8,9 +8,17 @@ Shader "JC/Battle/CellBorderGeometry"
         _Inset ("Inset", Float) = 0
         _Thickness ("Thickness", Float) = .045
         _CornerCut ("Corner Cut", Float) = .25
+        // JC | 2026-11-04 | 트리거와 도로·건물의 깊이를 비교해 가려진 부분의 불투명도를 따로 적용합니다.
+        _TriggerDepthKind ("Trigger Depth Kind", Float) = 0
+        _TriggerFillSidewalkOpacity ("Fill Sidewalk Occlusion Multiplier", Float) = .25
+        _TriggerBuildingOpacity ("Building Occlusion Multiplier", Float) = .15
+        _TriggerSidewalkOpacity ("Sidewalk Occlusion Multiplier", Float) = .05
         _IsFill ("Interior", Float) = 0
         _FillOcclusionHeight ("Fill Occlusion World Height", Float) = 0.01
+        _ProjectFillToGround ("Project Fill Occlusion To Ground", Float) = 1
         _ZWrite ("Depth Write", Float) = 1
+        _ColorMask ("Color Write Mask", Float) = 15
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("Depth Test", Float) = 4
         _Cull ("Cull Mode", Float) = 2
         _SweepEnabled ("Sweep Enabled", Float) = 1
         _SweepColor ("Sweep Tint", Color) = (1,1,1,1)
@@ -26,26 +34,38 @@ Shader "JC/Battle/CellBorderGeometry"
     SubShader
     {
         Tags { "RenderPipeline"="UniversalPipeline" "Queue"="Transparent" "RenderType"="Transparent" }
+        HLSLINCLUDE
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseMap_ST, _Size;
+                half4 _BaseColor, _SweepColor;
+                float _TriggerDepthKind;
+                float _TriggerBuildingOpacity, _TriggerSidewalkOpacity, _TriggerFillSidewalkOpacity;
+                float _Inset, _Thickness, _IsFill, _CornerCut, _FillOcclusionHeight, _ProjectFillToGround;
+                float _SweepEnabled, _SweepIntensity, _SweepWidth, _SweepSoftness, _SweepTilt;
+                float _SweepDuration, _SweepInterval, _SweepReverse, _SweepTime;
+            CBUFFER_END
+            TEXTURE2D(_JcTriggerBorderDepth); SAMPLER(sampler_JcTriggerBorderDepth);
+            TEXTURE2D(_JcTriggerOccluderDepth); SAMPLER(sampler_JcTriggerOccluderDepth);
+            float4x4 _JcTriggerDepthVP, _JcTriggerDepthView;
+            float _JcTriggerDepthActive, _JcTriggerDepthUvFlip;
+            float _TriggerSurfaceKind;
+            float4x4 _TriggerSurfaceRoot;
+        ENDHLSL
         Pass
         {
             Tags { "LightMode"="UniversalForward" }
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite [_ZWrite]
-            ZTest LEqual
+            ColorMask [_ColorMask]
+            ZTest [_ZTest]
             Cull [_Cull]
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_fog
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
-            CBUFFER_START(UnityPerMaterial)
-                float4 _BaseMap_ST, _Size;
-                half4 _BaseColor, _SweepColor;
-                float _Inset, _Thickness, _IsFill, _CornerCut, _FillOcclusionHeight;
-                float _SweepEnabled, _SweepIntensity, _SweepWidth, _SweepSoftness, _SweepTilt;
-                float _SweepDuration, _SweepInterval, _SweepReverse, _SweepTime;
-            CBUFFER_END
             struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; float2 uv:TEXCOORD0; };
             struct Varyings { float4 positionCS:SV_POSITION; float2 uv:TEXCOORD0; float2 cellUV:TEXCOORD1; half fog:TEXCOORD2; half shade:TEXCOORD3; float3 positionWS:TEXCOORD4; };
             Varyings vert(Attributes v)
@@ -63,7 +83,7 @@ Shader "JC/Battle/CellBorderGeometry"
             half4 frag(Varyings v, out float depth:SV_Depth):SV_Target
             {
                 depth=v.positionCS.z;
-                if (_IsFill>.5)
+                if (_IsFill>.5 && _ProjectFillToGround>.5)
                 {
                     // 표시는 떠 있는 위치를 유지하고, 같은 화면 픽셀의 바닥 가까이에서 가림을 판정합니다.
                     float3 ray=unity_OrthoParams.w>.5 ? -UNITY_MATRIX_I_V._m02_m12_m22 : v.positionWS-_WorldSpaceCameraPos;
@@ -80,7 +100,33 @@ Shader "JC/Battle/CellBorderGeometry"
                         #endif
                     }
                 }
+                float occludedAlpha=1;
+                if (_TriggerDepthKind>.5 && _JcTriggerDepthActive>.5)
+                {
+                    float4 privateClip=mul(_JcTriggerDepthVP,float4(v.positionWS,1));
+                    float2 uv=privateClip.xy/privateClip.w*.5+.5;
+                    if (_JcTriggerDepthUvFlip>.5) uv.y=1-uv.y;
+                    float2 nearest=SAMPLE_TEXTURE2D_LOD(_JcTriggerBorderDepth,sampler_JcTriggerBorderDepth,uv,0).rg;
+                    float eyeDepth=-mul(_JcTriggerDepthView,float4(v.positionWS,1)).z;
+                    // 본체는 자기 표면끼리만 비교하고, 보조선은 본체와 두 보조선 모두와 비교합니다.
+                    float occluder=_TriggerDepthKind<1.5?nearest.r:nearest.g;
+                    if (_TriggerDepthKind<2.5) clip(occluder+max(.0001,eyeDepth*.000002)-eyeDepth);
+                    // JC | 2026-11-04 | 실제로 픽셀을 가리는 표면만 분류합니다. 캐릭터 뒤의 건물을 잘못 투과하지 않습니다.
+                    float raw=SampleSceneDepth(GetNormalizedScreenSpaceUV(v.positionCS));
+                    float sceneEye=unity_OrthoParams.w>.5?LinearDepthToEyeDepth(raw):LinearEyeDepth(raw,_ZBufferParams);
+                    if (sceneEye+max(.002,eyeDepth*.00002)<eyeDepth)
+                    {
+                        float4 surface=SAMPLE_TEXTURE2D_LOD(_JcTriggerOccluderDepth,sampler_JcTriggerOccluderDepth,uv,0);
+                        float tolerance=max(.004,sceneEye*.00003);
+                        float4 match=1-step(tolerance,abs(surface-sceneEye));
+                        // 계단은 정상 선명도, 난간은 기존 가림, 건물·인도는 각각의 약한 알파를 사용합니다.
+                        // JC | 2026-11-04 | 채움은 인도만 투과하며 건물/계단/캐릭터 위로 출력하지 않습니다.
+                        occludedAlpha=_TriggerDepthKind>2.5 ? (match.g>.5 && max(match.r,max(match.b,match.a))<.5 ? _TriggerFillSidewalkOpacity : 0) :
+                            match.a>.5?0:match.b>.5?1:match.r>.5?_TriggerBuildingOpacity:match.g>.5?_TriggerSidewalkOpacity:0;
+                    }
+                }
                 half4 result=_BaseColor;
+                result.a*=occludedAlpha;
                 result.rgb*=v.shade;
                 if (_IsFill>.5) result*=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,v.uv);
                 clip(result.a-.001);
@@ -103,6 +149,81 @@ Shader "JC/Battle/CellBorderGeometry"
                 }
                 result.rgb=MixFog(result.rgb,v.fog);
                 return result;
+            }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "TriggerOccluderDepth"
+            Tags { "LightMode"="JcTriggerOccluderDepth" }
+            Blend One One
+            BlendOp Min
+            ZWrite Off
+            ZTest Always
+            Cull Off
+            HLSLPROGRAM
+            #pragma vertex SurfaceVert
+            #pragma fragment SurfaceFrag
+            struct SurfaceAttributes { float4 positionOS:POSITION; };
+            struct SurfaceVaryings { float4 positionCS:SV_POSITION; float eyeDepth:TEXCOORD0; float3 root:TEXCOORD1; };
+            SurfaceVaryings SurfaceVert(SurfaceAttributes input)
+            {
+                SurfaceVaryings output;
+                float4 world=mul(unity_ObjectToWorld,float4(input.positionOS.xyz,1));
+                output.positionCS=mul(_JcTriggerDepthVP,world);
+                output.eyeDepth=-mul(_JcTriggerDepthView,world).z;
+                output.root=mul(_TriggerSurfaceRoot,world).xyz;
+                return output;
+            }
+            float4 SurfaceFrag(SurfaceVaryings input):SV_Target
+            {
+                float kind=_TriggerSurfaceKind;
+                float3 p=input.root;
+                // JC | 2026-11-04 | 단일 메시인 기존 협회·은행을 루트 좌표로 분류합니다. 모델/GUID/난간은 변경하지 않습니다.
+                if (kind>4.5 && kind<5.5)
+                {
+                    float x=abs(p.x-.0015);
+                    bool entrance=p.z>-.70 && p.z<-.385 && p.y>-.02 && p.y<.20;
+                    kind=entrance && x>.145 && x<.24 && p.z<-.48?4:entrance && x<=.145 && p.y<.09?3:1;
+                }
+                else if (kind>5.5)
+                    kind=p.x>-.58 && p.x<.66 && p.z>-.90 && p.z<-.49 && p.y>-.02 && p.y<.22?3:1;
+                float4 value=65504;
+                if (kind<1.5) value.r=input.eyeDepth;
+                else if (kind<2.5) value.g=input.eyeDepth;
+                else if (kind<3.5) value.b=input.eyeDepth;
+                else value.a=input.eyeDepth;
+                return value;
+            }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "TriggerAreaDepth"
+            Tags { "LightMode"="JcTriggerAreaDepth" }
+            Blend One One
+            BlendOp Min
+            ColorMask RG
+            ZWrite Off
+            ZTest Always
+            Cull [_Cull]
+            HLSLPROGRAM
+            #pragma vertex DepthVert
+            #pragma fragment DepthFrag
+            struct DepthAttributes { float4 positionOS:POSITION; };
+            struct DepthVaryings { float4 positionCS:SV_POSITION; float eyeDepth:TEXCOORD0; };
+            DepthVaryings DepthVert(DepthAttributes input)
+            {
+                DepthVaryings output;
+                float4 world=mul(unity_ObjectToWorld,float4(input.positionOS.xyz,1));
+                output.positionCS=mul(_JcTriggerDepthVP,world);
+                output.eyeDepth=-mul(_JcTriggerDepthView,world).z;
+                return output;
+            }
+            float4 DepthFrag(DepthVaryings input):SV_Target
+            {
+                clip(_BaseColor.a-.001);
+                return float4(_TriggerDepthKind<1.5?input.eyeDepth:65504,input.eyeDepth,0,0);
             }
             ENDHLSL
         }

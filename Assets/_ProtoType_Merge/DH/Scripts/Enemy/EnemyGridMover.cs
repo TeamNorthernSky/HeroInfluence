@@ -228,6 +228,7 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
                 {
                     Camera camera = Camera.main;
                     if (camera != null && camera.gameObject.scene == gameObject.scene)
+                        // JC | 2026-11-04 | 아놀드 발걸음의 발소리 시점에 맞춰 같은 이동 주체의 카메라 반동을 재생합니다.
                         JcArnoldShake.Footstep(camera, this);
                 }
             }

@@ -14,8 +14,9 @@ namespace JC.Environment.Editor {
    EditorGUILayout.HelpBox("하위 구간 1~4를 선택해 조명·색감·반사를 편집합니다. 플레이 중 즉시 반영됩니다. 종료 전에 현재 값을 프로필에 저장해야 유지됩니다.",MessageType.Info);
    if(c.profile==null)return;JcDayNightProfileButtons.Draw(c);
    if(GUILayout.Button("전체 구간 초기화")){Undo.RecordObject(c.Settings,"전체 구간 초기화");c.Settings.ResetAllSegments();EditorUtility.SetDirty(c.Settings);}
-   common=EditorGUILayout.Foldout(common,"공통 전환·가독성·창문 설정");
-   if(common){var so=new SerializedObject(c.Settings);so.Update();foreach(var name in new[]{"transitionSeconds","sunriseHour","sunsetHour","twilightHalfWidth","twilightDurationMultiplier","cloudSpeedMultiplier","disabledUIAlpha","nightObjectAmbientBoost","indoorNightObjectAmbientBoost","windowOnHour","windowOffHour","windowFadeSeconds","windowTint","windowIntensity"})EditorGUILayout.PropertyField(so.FindProperty(name),true);if(so.ApplyModifiedProperties())c.Settings.NotifyChanged();}
+   common=EditorGUILayout.Foldout(common,"공통 태양·전환·가독성·창문 설정");
+   // JC | 2026-11-04 | 왼쪽 높은 산의 그림자를 별도로 줄이고 기존 조절·명시 저장 경로를 사용합니다.
+   if(common){var so=new SerializedObject(c.Settings);so.Update();foreach(var name in new[]{"continuousSunArc","solarNoonElevation","mountainShadowHeight","leftMountainShadowHeight","transitionSeconds","sunriseHour","sunsetHour","twilightHalfWidth","twilightDurationMultiplier","cloudSpeedMultiplier","disabledUIAlpha","nightObjectAmbientBoost","indoorNightObjectAmbientBoost","windowOnHour","windowOffHour","windowFadeSeconds","windowTint","windowIntensity"})EditorGUILayout.PropertyField(so.FindProperty(name),true);if(so.ApplyModifiedProperties())c.Settings.NotifyChanged();}
    if(!Application.isPlaying&&GUILayout.Button("미리보기 복원")){c.preview=false;c.Cancel();}
   }
  }

@@ -119,6 +119,7 @@ public sealed class JcBattleHoverLink : MonoBehaviour
         {
             if (pair.Value == null) continue;
             if (!overUI && pair.Key != null && pair.Key.isActiveAndEnabled && pair.Key.DisplayedUnit == target)
+                // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
                 pair.Value.Show(badgeColor, badgeWidth, badgePhase,
                     JC.Tutorial.JcTutorialBattleGuide.HighlightsWorldEnemyBadge(pair.Key));
             else pair.Value.enabled = false;

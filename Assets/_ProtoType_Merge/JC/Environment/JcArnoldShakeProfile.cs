@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
+// JC | 2026-11-04 | 굉음 대화의 진동과 개별 발걸음 반동을 별도로 조절해 반복 이동 중에도 타이밍을 유지합니다.
 public struct ArnoldShakeValues
 {
     [InspectorName("발걸음 강도"), Tooltip("발소리가 날 때 카메라를 흔드는 세기입니다(월드 단위). 0이면 발소리만 재생됩니다."), Min(0)] public float footStrength;

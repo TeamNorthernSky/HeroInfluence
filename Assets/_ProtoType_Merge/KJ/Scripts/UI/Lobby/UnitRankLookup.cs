@@ -19,6 +19,7 @@ public static class UnitRankLookup
     public static string GetTutorialRank(int level, TutorialCatalog catalog)
     {
         var rank = catalog != null ? ResolveRank(catalog.GetUnitGrowthTemplates(), level) : Unknown;
+        // JC | 2026-11-04 | 튜토리얼 성장표에서 아직 등급을 읽을 수 없을 때 초기 배지에 F를 표시합니다.
         return rank == Unknown ? "F" : rank;
     }
 

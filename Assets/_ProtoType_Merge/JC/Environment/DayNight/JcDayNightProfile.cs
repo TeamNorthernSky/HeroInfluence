@@ -81,7 +81,12 @@ namespace JC.Environment {
    Key a=keys[segment],b=keys[segment+1];
    float progress=Mathf.InverseLerp(a.hour,b.hour,h);
    float t=Mathf.SmoothStep(0,1,progress);
-   return K(h,InterpolateMotion(segment,progress,false),InterpolateMotion(segment,progress,true),Mathf.Lerp(a.intensity,b.intensity,t),Color.Lerp(a.lightColor,b.lightColor,t),Mathf.Lerp(a.daylight,b.daylight,t));
+   float elevation,azimuth;
+   // JC | 2026-11-04 | 태양의 일출·남중·일몰을 연속 궤도로 연결하고 산의 그림자 보정은 별도 설정으로 적용합니다.
+   if(!continuousSunArc||!TrySunArc(totalHours,out elevation,out azimuth)){
+    elevation=InterpolateMotion(segment,progress,false);azimuth=InterpolateMotion(segment,progress,true);
+   }
+   return K(h,elevation,azimuth,Mathf.Lerp(a.intensity,b.intensity,t),Color.Lerp(a.lightColor,b.lightColor,t),Mathf.Lerp(a.daylight,b.daylight,t));
   }
   // 시간 키 경계에서 속도를 공유합니다. 고도의 극점에서는 높이 변화만 반전하고 방위는 계속 진행합니다.
   float InterpolateMotion(int segment,float t,bool azimuth){
@@ -93,13 +98,14 @@ namespace JC.Environment {
    float before=a.hour-previous.hour;if(before<=0)before+=24;
    float after=next.hour-b.hour;if(after<=0)after+=24;
    before=Mathf.Max(.001f,before);after=Mathf.Max(.001f,after);
-   float value=azimuth?a.azimuth:a.elevation;
-   float delta=azimuth?Mathf.DeltaAngle(a.azimuth,b.azimuth):b.elevation-a.elevation;
-   float left=(azimuth?Mathf.DeltaAngle(previous.azimuth,a.azimuth):a.elevation-previous.elevation)/before;
+   float value=MotionValue(a,azimuth),end=MotionValue(b,azimuth),prev=MotionValue(previous,azimuth),following=MotionValue(next,azimuth);
+   float delta=azimuth?Mathf.DeltaAngle(value,end):end-value;
+   float left=(azimuth?Mathf.DeltaAngle(prev,value):value-prev)/before;
    float middle=delta/span;
-   float right=(azimuth?Mathf.DeltaAngle(b.azimuth,next.azimuth):next.elevation-b.elevation)/after;
+   float right=(azimuth?Mathf.DeltaAngle(end,following):following-end)/after;
    float m0=MotionSlope(left,middle,before,span)*span;
    float m1=MotionSlope(middle,right,span,after)*span;
+   // JC | 2026-11-04 | 구형 키 모드의 접선은 원래대로 유지하고, 새 낮밤 경로는 별도로 계산합니다.
    float t2=t*t,t3=t2*t;
    return value+(-2*t3+3*t2)*delta+(t3-2*t2+t)*m0+(t3-t2)*m1;
   }

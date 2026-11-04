@@ -8,6 +8,7 @@ public sealed class JcBattleHoverRing : MaskableGraphic
     private JcBattleHoverArrow arrow;
     private readonly Vector3[] corners = new Vector3[4];
     private Image badgeCircle;
+    // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
     private bool guideRing;
     public const float ArrowClearancePixels = 80f;
 

@@ -46,6 +46,10 @@ public class HeroInfoResult : MonoBehaviour
     private bool ipStageReleased = true;
     public bool IsExpRankComplete => rewardPreview == null || phase == RewardPhase.Complete;
     public bool IsIPComplete => ipPresentation == null || ipPresentation.IsComplete;
+    // JC | 2026-11-04 | 결과음이 실제 보상 수치 증가 구간에만 재생되도록 표시 상태를 노출합니다.
+    public bool IsExpCounting => isActiveAndEnabled && !PresentationPaused && phase == RewardPhase.Exp;
+    public bool IsIPCounting => isActiveAndEnabled && !PresentationPaused && ipStageReleased &&
+        IsExpRankComplete && ipPresentation != null && ipPresentation.IsCounting;
 
     public bool PresentationPaused { get; set; }
 

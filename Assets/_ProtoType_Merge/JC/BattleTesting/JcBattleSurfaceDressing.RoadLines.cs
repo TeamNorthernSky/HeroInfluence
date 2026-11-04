@@ -225,6 +225,7 @@ namespace JC.BattleTesting
             var side = Vector3.Cross(Vector3.up, line.direction) * (width * .5f);
             float period = Mathf.Max(.2f, length + gap);
             // URP가 한 렌더러에 먼 가로등까지 배정하지 않도록 전투용 도색을 짧게 묶습니다.
+            // JC | 2026-11-04 | 도로·차선을 부분별로 조명할 수 있게 해 가로등 하나의 영향이 도로 전체로 퍼지는 현상을 줄입니다.
             float maxChunkLength = explorationLines
                 ? (gameObject.scene.name == "DHScene_3" ? JC.EnvironmentDetail.JcLampSurfaceChunks.CellSize : float.PositiveInfinity)
                 : 8f;

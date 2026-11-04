@@ -1,4 +1,4 @@
-﻿// [JC 독립 구현 대응표 / 기준 JC 0705af74]
+// [JC 독립 구현 대응표 / 기준 JC 0705af74]
 // 원본 파일: Assets/_ProtoType_Merge/KJ/Scripts/UI/SkillButtonController.cs
 // 원본 객체: SkillButtonController -> JcSkillButtonController
 // 동일 이름의 함수는 원본 함수와 1:1 대응합니다. 별도 변경 함수에는 차이를 추가로 명시합니다.
@@ -60,6 +60,8 @@ public class JcSkillButtonController : MonoBehaviour
 
     private Action<bool> onToggle1;
     private Action<bool> onToggle2;
+    private bool IsPlayerTurn => battleFlowManager != null && battleFlowManager.CurrentUnit != null &&
+        battleFlowManager.CurrentUnit.IsPlayer && !descriptionBattleEnded;
     private bool HasHeroSlots => heroSlots != null && heroSlots.Length > 0;
     public SkillData CurrentSkillData { get; private set; }
 
@@ -76,15 +78,15 @@ public class JcSkillButtonController : MonoBehaviour
     private void OnEnable()
     {
         descriptionBattleEnded = false;
-        onToggle1 = _ => Select(PendingActionType.ClassSkill);
-        onToggle2 = _ => Select(PendingActionType.WeaponSkill);
+        onToggle1 = selected => Select(PendingActionType.ClassSkill, selected: selected);
+        onToggle2 = selected => Select(PendingActionType.WeaponSkill, selected: selected);
         if (!HasHeroSlots && toggle1 != null) toggle1.OnValueChanged += onToggle1;
         if (toggle2 != null) toggle2.OnValueChanged += onToggle2;
         if (HasHeroSlots)
             foreach (var slot in heroSlots)
             {
                 if (slot == null || slot.toggle == null) continue;
-                slot.click = _ => { if (slot.button != null && slot.button.interactable) Select(PendingActionType.ClassSkill, slot.skill != null ? slot.skill.skillIndex : 0); };
+                slot.click = selected => { if (slot.button != null && slot.button.interactable) Select(PendingActionType.ClassSkill, slot.skill != null ? slot.skill.skillIndex : 0, selected); };
                 slot.toggle.OnValueChanged += slot.click;
             }
         if (battleFlowManager != null)
@@ -137,15 +139,28 @@ public class JcSkillButtonController : MonoBehaviour
 
     // 원본 함수 대응: SkillButtonController.Select (Assets/_ProtoType_Merge/KJ/Scripts/UI/SkillButtonController.cs)
 
-    private void Select(PendingActionType action, int skillId = 0)
+    private void Select(PendingActionType action, int skillId = 0, bool selected = true)
     {
+        if (!IsPlayerTurn) return;
+        // JC | 2026-11-04 | 버튼 선택 해제와 내부 선택 교체를 구분해 취소음과 선택음이 겹치지 않게 합니다.
+        if (!selected)
+        {
+            inputHandler?.TryCancelSkillSelection();
+            SyncSelection();
+            return;
+        }
         // 다른 스킬은 기존 선택을 먼저 비웁니다. 새 요청이 거절되면 미선택으로 남습니다.
-        if (inputHandler != null && !inputHandler.TryCancelSkillSelection())
+        if (inputHandler != null && !inputHandler.TryCancelSkillSelection(false))
         {
             SyncSelection();
             return;
         }
         inputHandler?.BeginPendingAction(action, skillId);
+        if (inputHandler != null && inputHandler.PendingAction == action && inputHandler.PendingSkill != null)
+        {
+            MouseClickSfx.NotifyDedicatedClickSoundPlayed();
+            PresentationSfxPlayer.Play("Battle_SkillSelect");
+        }
         // 요청이 IP 부족·튜토리얼 제한 등으로 거절되어도 실제 입력 상태만 표시합니다.
         SyncSelection();
     }

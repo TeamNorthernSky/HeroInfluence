@@ -67,6 +67,7 @@ public sealed class TutorialExploreHeroList : MonoBehaviour
             if (slot.root != null)
             {
                 var rank = slot.root.GetComponentInChildren<HeroRankBadge>(true);
+                // JC | 2026-11-04 | 튜토리얼 영웅은 해당 성장표의 레벨별 등급을 사용해 탐사와 전투 배지를 일치시킵니다.
                 if (rank != null) rank.SetRank(UnitRankLookup.GetTutorialRank(state != null ? state.Level : 1, catalog));
             }
             if (slot.profile != null)

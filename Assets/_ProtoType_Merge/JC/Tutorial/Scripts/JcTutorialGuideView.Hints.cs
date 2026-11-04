@@ -14,6 +14,7 @@ namespace JC.Tutorial
         private JcTutorialHintIcon iconGraphic;
         private CanvasGroup hintGroup;
         private float hintStarted;
+        // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
         private Image badgeOutline;
         private Sprite badgeCircle, badgeBox;
         // 초상화 기준으로 파란 슬롯 프레임 바깥에 간격을 두고 두 안내 원을 맞춥니다.

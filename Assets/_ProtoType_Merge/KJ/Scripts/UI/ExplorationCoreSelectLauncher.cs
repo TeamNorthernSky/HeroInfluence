@@ -50,6 +50,7 @@ public class ExplorationCoreSelectLauncher : MonoBehaviour
                 int core = 0;
                 if (catalog != null && keys != null && i < keys.Count && catalog.TryGetPlayerUnitTemplate(keys[i], out var template))
                 {
+                    // JC | 2026-11-04 | 튜토리얼 코어 표시는 실제 전투에서 쓰는 기본 무기 선택 규칙을 공유합니다.
                     TutorialCombatUnitFactory.ResolveDefaultWeapon(catalog, template, out var weapon);
                     if (weapon != null) core = weapon.NumericWeaponId;
                 }

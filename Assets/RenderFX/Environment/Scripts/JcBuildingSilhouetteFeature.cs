@@ -8,7 +8,7 @@ using UnityEngine.Rendering.Universal;
 /// 기존 외곽선/FOW의 스텐실과 카메라 깊이는 수정하지 않는다.
 /// DH의 transparentOverrideMaterial과 같은 머티리얼을 지정한다.
 /// </summary>
-public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
+public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 {
     [Tooltip("DH PartyOcclusionFadeController의 대체 머티리얼과 같은 자산을 지정하세요.")]
     public Material silhouetteMaterial;
@@ -69,6 +69,9 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
     public override void Create()
     {
+        // JC | 2026-11-04 | 기존 환경 렌더 기능 안에서 이벤트 원본 메시 기록 패스를 관리합니다.
+        eventOcclusion?.Dispose();
+        eventOcclusion = new EventOcclusionPass();
         compositePass?.Dispose();
         tutorialCompositePass?.Dispose();
         maskPass?.Dispose();
@@ -87,6 +90,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
+        Shader.SetGlobalFloat("_JcEventGhostActive", 0);
         CameraType type = renderingData.cameraData.cameraType;
         if ((type != CameraType.Game && type != CameraType.SceneView)
             || renderingData.cameraData.renderType == CameraRenderType.Overlay
@@ -95,6 +99,11 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
         int compositeIndex = silhouetteMaterial.FindPass("SilhouetteComposite");
         if (compositeIndex < 0) return;
+        if (JcEventOcclusionController.TryResolve(renderingData.cameraData.camera, out var eventController))
+        {
+            eventOcclusion.Setup(eventController, renderingData.cameraData.camera);
+            renderer.EnqueuePass(eventOcclusion);
+        }
         bool hasTuning = JcBuildingSilhouetteController.TryGetSettings(renderingData.cameraData.camera, out var tuning);
         maskPass.Setup(hasTuning, tuning, renderingData.cameraData.camera);
         compositePass.Setup(silhouetteMaterial, compositeIndex);
@@ -147,6 +156,8 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             tutorialMaskPass.explicitRenderers = tutorial ? tutorialRenderers : interaction ? interactionRenderers : hoverRenderers;
             if (!tutorial) tutorialMaskPass.SetHoverOrbit(renderingData.cameraData.camera, tutorialMaskPass.explicitRenderers, hoverTuning, hoverShape);
             tutorialMaskPass.throughWalls = interaction;
+            // JC | 2026-11-04 | 건물 강조만 내부 틈을 제거한 외곽을 사용하며 상호작용 표식의 투과 정책은 유지합니다.
+            tutorialMaskPass.exteriorOnly = !interaction;
             tutorialMaskPass.SetAntialiasing(smoothing);
             tutorialMaskPass.renderPassEvent = !interaction ? (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 2) : RenderPassEvent.AfterRenderingTransparents;
             tutorialCompositePass.renderPassEvent = (RenderPassEvent)((int)tutorialMaskPass.renderPassEvent + 1);
@@ -159,6 +170,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
     protected override void Dispose(bool disposing)
     {
+        eventOcclusion?.Dispose();
         compositePass?.Dispose();
         tutorialCompositePass?.Dispose();
         maskPass?.Dispose();
@@ -188,9 +200,12 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         private Color fill;
         private Color outline;
         private Vector4 pixelSize;
-        public RTHandle Mask { get; private set; }
+        // JC | 2026-11-04 | 원본 깊이는 보존하고 외곽용 모양만 별도로 합성합니다.
+        private RTHandle rawMask, exteriorMask, envelopeA, envelopeB;
+        private bool exteriorReady;
+        public RTHandle Mask => exteriorReady ? exteriorMask : rawMask;
         public Renderer[] explicitRenderers;
-        public bool throughWalls;
+        public bool throughWalls, exteriorOnly;
         public Material overrideMaterial;
         private readonly string maskName;
         private static readonly int EdgeSmoothingId = Shader.PropertyToID("_JcBuildingEdgeSmoothing");
@@ -248,6 +263,8 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
         public void WriteTuning(CommandBuffer cmd)
         {
+            cmd.SetGlobalFloat("_JcBuildingExteriorOnly", exteriorOnly ? 1 : 0);
+            cmd.SetGlobalVector("_JcBuildingExteriorRadius", new Vector4(pixelSize.x, pixelSize.y, tuningVector.w + orbit.w + edgeSmoothing + 1, 0));
             cmd.SetGlobalFloat("_JcBuildingHighlight", overrideMaterial != null && explicitRenderers != null ? (throughWalls ? 2f : 1f) : 0f);
             if (Mask != null) cmd.SetGlobalTexture("_JcBuildingShapeDepth", Mask.nameID);
             cmd.SetGlobalFloat(EdgeSmoothingId, edgeSmoothing);
@@ -264,6 +281,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         public void ClearTuning(CommandBuffer cmd)
         {
             cmd.SetGlobalFloat("_JcBuildingHighlight", 0);
+            cmd.SetGlobalFloat("_JcBuildingExteriorOnly", 0);
             cmd.SetGlobalTexture("_JcBuildingShapeDepth", Texture2D.blackTexture);
             cmd.SetGlobalFloat(EdgeSmoothingId, 0);
             cmd.SetGlobalVector(TuningId, Vector4.zero);
@@ -295,10 +313,18 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
                     ? GraphicsFormat.R32G32_SFloat : GraphicsFormat.R32G32B32A32_SFloat;
             desc.useMipMap = false;
             desc.autoGenerateMips = false;
-            RTHandle target = Mask;
+            exteriorReady = false;
+            RTHandle target = rawMask;
             RenderingUtils.ReAllocateIfNeeded(ref target, desc, FilterMode.Bilinear,
                 TextureWrapMode.Clamp, name: maskName);
-            Mask = target;
+            rawMask = target;
+            if (exteriorOnly)
+            {
+                RenderingUtils.ReAllocateIfNeeded(ref exteriorMask, desc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: maskName + "Exterior");
+                desc.graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm;
+                RenderingUtils.ReAllocateIfNeeded(ref envelopeA, desc, FilterMode.Point, TextureWrapMode.Clamp, name: maskName + "ScanA");
+                RenderingUtils.ReAllocateIfNeeded(ref envelopeB, desc, FilterMode.Point, TextureWrapMode.Clamp, name: maskName + "ScanB");
+            }
             // 카메라 깊이와 같은 단일 샘플로 검사한다. AA는 최종 선에만 적용한다.
             ConfigureTarget(Mask);
             ConfigureClear(ClearFlag.Color, Color.clear);
@@ -325,6 +351,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
                         if (mesh == null) continue;
                         for (int i = 0; i < mesh.subMeshCount; i++) cmd.DrawRenderer(target, overrideMaterial, i, pass);
                     }
+                    if (exteriorOnly) BuildExterior(cmd);
                     context.ExecuteCommandBuffer(cmd);
                     return;
                 }
@@ -365,10 +392,31 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             finally { CommandBufferPool.Release(coverage); }
         }
 
+        private void BuildExterior(CommandBuffer cmd)
+        {
+            // JC | 2026-11-04 | 각 방향의 누적 마스크로 내부의 빈 픽셀을 메웁니다.
+            // 건물별 선택 마스크에만 실행하며 원본 메시·파티 깊이·일반 투과 실루엣은 변경하지 않습니다.
+            int init = overrideMaterial.FindPass("ExteriorEnvelopeInit");
+            int scan = overrideMaterial.FindPass("ExteriorEnvelopeScan");
+            int combine = overrideMaterial.FindPass("ExteriorEnvelopeCombine");
+            if (init < 0 || scan < 0 || combine < 0) return;
+            cmd.SetGlobalVector("_JcBuildingEnvelopeTexel", new Vector4(1f / rawMask.rt.width, 1f / rawMask.rt.height, 0, 0));
+            Blitter.BlitCameraTexture(cmd, rawMask, envelopeA, overrideMaterial, init);
+            var a = envelopeA; var b = envelopeB;
+            for (int step = 1; step < Mathf.Max(rawMask.rt.width, rawMask.rt.height); step *= 2)
+            {
+                cmd.SetGlobalFloat("_JcBuildingEnvelopeStep", step);
+                Blitter.BlitCameraTexture(cmd, a, b, overrideMaterial, scan);
+                var swap = a; a = b; b = swap;
+            }
+            cmd.SetGlobalTexture("_JcBuildingEnvelopeSource", rawMask.nameID);
+            Blitter.BlitCameraTexture(cmd, a, exteriorMask, overrideMaterial, combine);
+            exteriorReady = true;
+        }
         public void Dispose()
         {
-            Mask?.Release();
-            Mask = null;
+            rawMask?.Release(); exteriorMask?.Release(); envelopeA?.Release(); envelopeB?.Release();
+            rawMask = exteriorMask = envelopeA = envelopeB = null; exteriorReady = false;
         }
     }
 

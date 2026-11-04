@@ -11,6 +11,7 @@ namespace JC.Environment
         {
             [Min(0)] public float sunlight = 1;
             [Min(0), Tooltip("주 방향광 그림자의 기존 강도에 곱합니다.")] public float sunShadow = 1;
+            // JC | 2026-11-04 | 시간대별 전장 조명을 조절하고 가로등의 중심광과 주변광을 배치에 맞게 적용합니다.
             [Min(0), Tooltip("주 방향광 이외의 방향광에 적용하는 밝기 배율입니다.")] public float secondarySun = 1;
             public Color sunlightTint = Color.white;
             [Min(0)] public float ambient = 1;

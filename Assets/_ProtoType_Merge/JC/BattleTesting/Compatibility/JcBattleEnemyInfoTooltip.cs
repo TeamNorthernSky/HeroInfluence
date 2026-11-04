@@ -149,6 +149,8 @@ public sealed class JcBattleEnemyInfoTooltip : MonoBehaviour
 
     private void Bind(BattleCharactor unit)
     {
+        // JC | 2026-11-04 | 적 정보에 처음 진입할 때 호버음을 내고 동일 대상에 머무는 동안 중복 재생을 피합니다.
+        PresentationSfxPlayer.Play("Button_Hover");
         shownUnit = unit;
         panel.gameObject.SetActive(true);
         if (unitName != null) unitName.text = unit.UnitName;

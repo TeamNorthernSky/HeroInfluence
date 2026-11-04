@@ -23,6 +23,8 @@ Shader "UI/HoverOutlineSelected"
         _OrbitWhiteRim ("Orbit White Rim Intensity", Range(0,3)) = 0
         _OrbitGlowSpread ("Orbit Glow Spread", Range(1,4)) = 1
         [HideInInspector] _ConfigurableOrbitRim ("Use Configurable Battle Rim", Float) = 0
+        // JC | 2026-11-04 | 버튼 면과 강조 효과에 같은 종횡비와 윤곽을 적용해 확대하거나 선택해도 테두리가 어긋나지 않게 합니다.
+        [HideInInspector] _SystemButtonFit ("Fit System Button Silhouette", Float) = 0
         [HideInInspector] _BattleRimRect ("Battle Rim Local Rect", Vector) = (0,0,320,88)
         [HideInInspector] _OrbitUVPerPixel ("Orbit UV Per Screen Pixel", Vector) = (0.00556,0.01351,0,0)
         _SelectedSweepPeriod ("Inner Sweep Period Seconds", Float) = 2
@@ -92,7 +94,7 @@ Shader "UI/HoverOutlineSelected"
             float _GlowLumEdge;
             float _SelectedMotion, _SelectedTime, _OrbitPeriod, _OrbitTrail;
             float _OrbitWhiteRim, _OrbitGlowSpread;
-            float _ConfigurableOrbitRim;
+            float _ConfigurableOrbitRim, _SystemButtonFit;
             float4 _BattleRimRect;
             float4 _OrbitUVPerPixel;
             float _SelectedSweepPeriod, _SelectedSweepWidth, _SelectedSweepIntensity;
@@ -121,23 +123,36 @@ Shader "UI/HoverOutlineSelected"
                 return o;
             }
 
+            float4 SampleButton(float2 uv)
+            {
+                if (_SystemButtonFit > 0.5)
+                {
+                    float y = (uv.y - 0.5) * (87.75 / (160.0 / 3.10 * 1.35));
+                    float ay = abs(y);
+                    if (ay > 0.5) return 0;
+                    float sourceY = ay <= 0.25 ? ay * 1.125 : lerp(0.28125, 0.5, (ay - 0.25) * 4);
+                    uv.y = 0.5 + sign(y) * sourceY;
+                }
+                return tex2D(_MainTex, uv);
+            }
+
             float RingAvg(float2 uv, float2 texel)
             {
                 float a = 0;
-                a += tex2D(_MainTex, uv + float2( texel.x,  0)).a;
-                a += tex2D(_MainTex, uv + float2(-texel.x,  0)).a;
-                a += tex2D(_MainTex, uv + float2( 0,  texel.y)).a;
-                a += tex2D(_MainTex, uv + float2( 0, -texel.y)).a;
-                a += tex2D(_MainTex, uv + float2( texel.x,  texel.y)).a;
-                a += tex2D(_MainTex, uv + float2( texel.x, -texel.y)).a;
-                a += tex2D(_MainTex, uv + float2(-texel.x,  texel.y)).a;
-                a += tex2D(_MainTex, uv + float2(-texel.x, -texel.y)).a;
+                a += SampleButton(uv + float2( texel.x,  0)).a;
+                a += SampleButton(uv + float2(-texel.x,  0)).a;
+                a += SampleButton(uv + float2( 0,  texel.y)).a;
+                a += SampleButton(uv + float2( 0, -texel.y)).a;
+                a += SampleButton(uv + float2( texel.x,  texel.y)).a;
+                a += SampleButton(uv + float2( texel.x, -texel.y)).a;
+                a += SampleButton(uv + float2(-texel.x,  texel.y)).a;
+                a += SampleButton(uv + float2(-texel.x, -texel.y)).a;
                 return a * 0.125;
             }
             float OrbitAlpha(float2 uv)
             {
                 float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
-                return tex2D(_MainTex, saturate(uv)).a * inside;
+                return SampleButton(saturate(uv)).a * inside;
             }
             float OrbitDilatedAlpha(float2 uv, float2 radius)
             {
@@ -155,14 +170,14 @@ Shader "UI/HoverOutlineSelected"
             float RingMin(float2 uv, float2 texel)
             {
                 float a = 1;
-                a = min(a, tex2D(_MainTex, uv + float2( texel.x,  0)).a);
-                a = min(a, tex2D(_MainTex, uv + float2(-texel.x,  0)).a);
-                a = min(a, tex2D(_MainTex, uv + float2( 0,  texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2( 0, -texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2( texel.x,  texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2( texel.x, -texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2(-texel.x,  texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2(-texel.x, -texel.y)).a);
+                a = min(a, SampleButton(uv + float2( texel.x,  0)).a);
+                a = min(a, SampleButton(uv + float2(-texel.x,  0)).a);
+                a = min(a, SampleButton(uv + float2( 0,  texel.y)).a);
+                a = min(a, SampleButton(uv + float2( 0, -texel.y)).a);
+                a = min(a, SampleButton(uv + float2( texel.x,  texel.y)).a);
+                a = min(a, SampleButton(uv + float2( texel.x, -texel.y)).a);
+                a = min(a, SampleButton(uv + float2(-texel.x,  texel.y)).a);
+                a = min(a, SampleButton(uv + float2(-texel.x, -texel.y)).a);
                 return a;
             }
             float OrbitErodedAlpha(float2 uv, float2 radius)
@@ -182,7 +197,7 @@ Shader "UI/HoverOutlineSelected"
             }
             float LumA(float2 uv)
             {
-                float4 c = tex2D(_MainTex, uv);
+                float4 c = SampleButton(uv);
                 return max(c.r, max(c.g, c.b)) * c.a;
             }
             float LumRing(float2 uv, float2 texel)
@@ -200,7 +215,7 @@ Shader "UI/HoverOutlineSelected"
             }
             float3 BrightAt(float2 uv)
             {
-                float4 c = tex2D(_MainTex, uv);
+                float4 c = SampleButton(uv);
                 float lum = max(c.r, max(c.g, c.b)) * c.a;
                 return c.rgb * max(lum - _BloomThreshold, 0.0);
             }
@@ -257,7 +272,7 @@ Shader "UI/HoverOutlineSelected"
             {
                 if (_ConfigurableOrbitRim > 0.5) return BattleRim(i);
                 float2 uv = i.texcoord;
-                float baseA = tex2D(_MainTex, uv).a;
+                float baseA = SampleButton(uv).a;
                 if (_SelectedMotion > 0.5 && _OrbitWhiteRim > 0.0) baseA = OrbitAlpha(uv);
                 float aspect = _MainTex_TexelSize.y / _MainTex_TexelSize.x;
 
