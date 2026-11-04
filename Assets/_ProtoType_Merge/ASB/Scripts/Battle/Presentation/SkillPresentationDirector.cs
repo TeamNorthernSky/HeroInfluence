@@ -1116,7 +1116,7 @@ public sealed partial class SkillPresentationDirector
             // Animator 레일의 AttackPrepare 시작 훅과 같은 시점: 부활 대기가 있으면 재생 시작에서 확정한다(멱등).
             // revive 이펙트는 Timeline의 revive 마커가 발화한다.
             if (_battle.HasPendingRevive) _battle.TriggerPendingRevive();
-            List<KeyValuePair<double, float>> holdMarks = CollectHoldMarks(timeline);
+            List<PresentationHoldMarker> holdMarks = CollectHoldMarks(timeline);
             var holdDone = new bool[holdMarks.Count];
             double holdPrevTime = playbackRange.Start;
             while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
@@ -1128,11 +1128,12 @@ public sealed partial class SkillPresentationDirector
                 for (int h = 0; h < holdMarks.Count; h++)
                 {
                     if (holdDone[h]) continue;
-                    double ht = holdMarks[h].Key;
+                    double ht = holdMarks[h].time;
                     if (ht <= holdPrevTime + 0.0001d || ht > director.time + 0.0001d) continue;
                     holdDone[h] = true;
-                    yield return FreezeForHoldRoutine(director, holdMarks[h].Value,
-                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
+                    yield return FreezeForHoldRoutine(director, holdMarks[h].DurationSeconds,
+                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None,
+                        holdMarks[h].ReleaseSfxKey);
                 }
 
                 if (presentation.SkillIndex == 200022 && director.time >= 1.45d && director.time < 1.6d)
@@ -1647,7 +1648,7 @@ public sealed partial class SkillPresentationDirector
             director.Evaluate();
             director.Play();
             if (_battle.HasPendingRevive) _battle.TriggerPendingRevive();
-            List<KeyValuePair<double, float>> holdMarks = CollectHoldMarks(timeline);
+            List<PresentationHoldMarker> holdMarks = CollectHoldMarks(timeline);
             var holdDone = new bool[holdMarks.Count];
             double holdPrevTime = 0d;
             while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
@@ -1670,11 +1671,12 @@ public sealed partial class SkillPresentationDirector
                 for (int h = 0; h < holdMarks.Count; h++)
                 {
                     if (holdDone[h]) continue;
-                    double ht = holdMarks[h].Key;
+                    double ht = holdMarks[h].time;
                     if (ht <= holdPrevTime + 0.0001d || ht > director.time + 0.0001d) continue;
                     holdDone[h] = true;
-                    yield return FreezeForHoldRoutine(director, holdMarks[h].Value,
-                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
+                    yield return FreezeForHoldRoutine(director, holdMarks[h].DurationSeconds,
+                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None,
+                        holdMarks[h].ReleaseSfxKey);
                 }
 
                 if (presentation.SkillIndex == 200022 && director.time >= 1.45d && director.time < 1.6d)
@@ -1824,17 +1826,17 @@ public sealed partial class SkillPresentationDirector
         }
     }
 
-    /// <summary>Timeline의 PresentationHoldMarker 목록(시각, 정지시간). 재생 루프가 정지 지점을 찾는 데 쓴다.</summary>
-    private static List<KeyValuePair<double, float>> CollectHoldMarks(TimelineAsset timeline)
+    /// <summary>Timeline의 Hold 마커 목록. 재생 루프가 정지 시각과 종료 효과음을 읽는 데 쓴다.</summary>
+    private static List<PresentationHoldMarker> CollectHoldMarks(TimelineAsset timeline)
     {
-        var list = new List<KeyValuePair<double, float>>();
+        var list = new List<PresentationHoldMarker>();
         if (timeline != null && timeline.markerTrack != null)
         {
             foreach (IMarker m in timeline.markerTrack.GetMarkers())
             {
                 if (m is PresentationHoldMarker hm && hm.DurationSeconds > 0f)
                 {
-                    list.Add(new KeyValuePair<double, float>(hm.time, hm.DurationSeconds));
+                    list.Add(hm);
                 }
             }
         }
@@ -1842,13 +1844,13 @@ public sealed partial class SkillPresentationDirector
     }
 
     /// <summary>
-    /// director를 <paramref name="holdTime"/> 지점에서 <paramref name="durationBattleSeconds"/>(배속-초)만큼
+    /// director를 현재 시점에서 <paramref name="durationBattleSeconds"/>(배속-초)만큼
     /// 정지시킨다(AniEvent_HoldBegin의 Timeline판). 루트 속도를 0으로 만들어 포즈·시간을 얼리고,
     /// 배속-초 누적으로 대기한다(전투 배속이 높을수록 실제 정지 짧음 — HoldRoutine과 동일). 재개는 호출측 루프의
-    /// ApplyBattleSpeedToDirector가 다음 프레임에 정상 속도를 다시 걸어 처리한다.
+    /// 정상 종료 시 선택한 효과음을 재생한다. ApplyBattleSpeedToDirector가 다음 프레임에 정상 속도를 다시 건다.
     /// </summary>
     private IEnumerator FreezeForHoldRoutine(PlayableDirector director,
-        float durationBattleSeconds, System.Func<bool> abort)
+        float durationBattleSeconds, System.Func<bool> abort, string releaseSfxKey = null)
     {
         if (director == null) yield break;
         // Pause는 AnimatorController에 포즈를 돌려줘 유지 중에도 Idle 등이 섞인다.
@@ -1863,18 +1865,20 @@ public sealed partial class SkillPresentationDirector
             previousSpeeds[i] = root.GetSpeed();
             root.SetSpeed(0d);
         }
+        bool completed = false;
         try
         {
             float elapsedBattle = 0f;
             while (elapsedBattle < durationBattleSeconds)
             {
                 if (director == null || director.playableAsset == null) yield break;
-                if (abort != null && abort()) break;
+                if (abort != null && abort()) yield break;
                 director.time = holdTime;
                 director.Evaluate();
                 elapsedBattle += Time.deltaTime * Mathf.Max(0.01f, _battle.CurrentBattleSpeed);
                 yield return null;
             }
+            completed = director != null && director.playableAsset != null && (abort == null || !abort());
         }
         finally
         {
@@ -1882,6 +1886,8 @@ public sealed partial class SkillPresentationDirector
                 for (int i = 0; i < Mathf.Min(rootCount, graph.GetRootPlayableCount()); i++)
                     graph.GetRootPlayable(i).SetSpeed(previousSpeeds[i]);
         }
+        if (completed && !string.IsNullOrEmpty(releaseSfxKey))
+            PresentationSfxPlayer.Play(releaseSfxKey);
     }
 
     /// <summary>

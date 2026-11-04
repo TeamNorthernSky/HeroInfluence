@@ -318,7 +318,7 @@ public sealed partial class SkillPresentationDirector
                 director.time = 0d;
                 director.Evaluate();
 
-                List<KeyValuePair<double, float>> holds = CollectHoldMarks(timeline);
+                List<PresentationHoldMarker> holds = CollectHoldMarks(timeline);
                 var holdDone = new bool[holds.Count];
                 double previousTime = 0d;
                 while (actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
@@ -328,11 +328,12 @@ public sealed partial class SkillPresentationDirector
                     UpdatePlanReturn(actor, activeReturns, now, originPosition, originalActorRotation);
                     for (int h = 0; h < holds.Count; h++)
                     {
-                        if (holdDone[h] || holds[h].Key <= previousTime + 0.0001d ||
-                            holds[h].Key > now + 0.0001d) continue;
+                        if (holdDone[h] || holds[h].time <= previousTime + 0.0001d ||
+                            holds[h].time > now + 0.0001d) continue;
                         holdDone[h] = true;
-                        yield return FreezeForHoldRoutine(director, holds[h].Value,
-                            () => actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
+                        yield return FreezeForHoldRoutine(director, holds[h].DurationSeconds,
+                            () => actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None,
+                            holds[h].ReleaseSfxKey);
                     }
                     ApplyBattleSpeedToDirector(director,
                         _battle.CurrentBattleSpeed * PresentationTimelineSpeed.SpeedAt(timeline, now) *

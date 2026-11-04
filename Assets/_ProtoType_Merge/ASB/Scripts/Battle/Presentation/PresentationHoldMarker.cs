@@ -11,6 +11,7 @@ using UnityEngine.Timeline;
 ///
 /// charge(이펙트 스폰)와는 <b>기능이 다르다</b>: charge는 "무엇을 낼지", Hold는 "얼마나 멈출지".
 /// 정지 시간 동안 이미 스폰된 charge 이펙트가 눈에 보이게 된다.
+/// 종료 효과음이 지정돼 있으면 정상적으로 정지가 끝난 직후 한 번 재생한다.
 /// </summary>
 public sealed class PresentationHoldMarker : Marker
 {
@@ -19,12 +20,19 @@ public sealed class PresentationHoldMarker : Marker
     [Tooltip("정지 시간(배속-초). 전투 배속이 높을수록 실제 정지는 짧아진다(HoldBegin과 동일). 0이면 정지 없음.")]
     [SerializeField, Range(0f, MaxDuration)] private float _durationSeconds = 0.5f;
 
+    [Tooltip("홀드가 정상 종료되어 Timeline이 재개될 때 재생할 SFX 키. 비우면 재생하지 않습니다.")]
+    [SerializeField] private string _releaseSfxKey;
+
     /// <summary>정지 시간(배속-초). NaN/Infinity는 0으로, [0,MaxDuration]로 Clamp.</summary>
     public float DurationSeconds =>
         float.IsNaN(_durationSeconds) || float.IsInfinity(_durationSeconds)
             ? 0f : Mathf.Clamp(_durationSeconds, 0f, MaxDuration);
 
+    public string ReleaseSfxKey => DHAudioClipCatalog.NormalizeKey(_releaseSfxKey);
+
     public void Configure(float durationSeconds) =>
         _durationSeconds = float.IsNaN(durationSeconds) || float.IsInfinity(durationSeconds)
             ? 0f : Mathf.Clamp(durationSeconds, 0f, MaxDuration);
+
+    public void ConfigureReleaseSfx(string key) => _releaseSfxKey = DHAudioClipCatalog.NormalizeKey(key);
 }
