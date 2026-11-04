@@ -35,7 +35,7 @@ public sealed class JcMoveGridMesh : System.IDisposable
         renderer.receiveShadows = false;
         if (shader != null)
         {
-            material = new Material(shader) { name = "Movement Range Grid (Runtime)" };
+            material = new Material(shader) { name = "Movement Range Grid (Runtime)", renderQueue = JC.Indicators.JcIndicatorRenderOrder.MoveRangeGrid };
             renderer.sharedMaterial = material;
         }
         else Debug.LogError("이동 그리드 셰이더 JcMoveRangeGrid를 찾을 수 없습니다.");

@@ -4,7 +4,7 @@ public enum BattleCellVisualState { Hidden, CurrentTurn, Selectable, ConfirmedAr
 
 /// <summary>대상 판정을 갖지 않는 셀 테두리 프리팹입니다. 테두리와 채움의 외형만 담당합니다.</summary>
 [ExecuteAlways, DisallowMultipleComponent]
-public sealed class BattleCellBorderVisual : MonoBehaviour
+public sealed partial class BattleCellBorderVisual : MonoBehaviour
 {
     [Header("크기와 테두리")]
     [Tooltip("셀 기준 가로·세로 크기입니다. Transform 배율 대신 이 값을 바꾸면 테두리 두께가 유지됩니다.")]
@@ -96,9 +96,9 @@ public sealed class BattleCellBorderVisual : MonoBehaviour
         if(outerBorder!=null)outerBorder.enabled=style.showOuter;
         if(innerOutline!=null)innerOutline.enabled=style.showInner;
         if(interior!=null)interior.enabled=style.useFill && style.fillOpacity>0 && style.fillColor.a>0;
-        Paint(outerBorder,style.outlineColor,borderAlpha,false,style,config,clock);
+        Paint(outerBorder,region != null && regionOuterColor.HasValue ? regionOuterColor.Value : style.outlineColor,borderAlpha,false,style,config,clock);
         Paint(innerBorder,style.mainColor,borderAlpha,false,style,config,clock);
-        Paint(innerOutline,style.outlineColor,borderAlpha,false,style,config,clock);
+        Paint(innerOutline,region != null && regionInnerColor.HasValue ? regionInnerColor.Value : style.outlineColor,borderAlpha,false,style,config,clock);
         Paint(interior,style.fillColor,style.fillOpacity,true,style,config,clock);
     }
     private void Rebuild(BattleCellBorderStyle style)
@@ -112,9 +112,13 @@ public sealed class BattleCellBorderVisual : MonoBehaviour
         float inner=style.showInner?Mathf.Max(.001f,shape.innerWidth):0;
         float scale=Mathf.Min(1,budget/(outer+main+inner));outer*=scale;main*=scale;inner*=scale;
         float radius=Mathf.Clamp(shape.cornerRadius,0,Mathf.Min(dimensions.x,dimensions.y)*.5f);
+        regionInset=0;
         BuildPart(0,outerBorder,dimensions,radius,Mathf.Max(.001f,outer),shape,false);
+        regionInset=outer;
         BuildPart(1,innerBorder,dimensions-Vector2.one*2*outer,Mathf.Max(0,radius-outer),main,shape,false);
+        regionInset=outer+main;
         BuildPart(2,innerOutline,dimensions-Vector2.one*2*(outer+main),Mathf.Max(0,radius-outer-main),Mathf.Max(.001f,inner),shape,false);
+        regionInset=outer+main+inner;
         BuildPart(3,interior,dimensions-Vector2.one*2*(outer+main+inner),Mathf.Max(0,radius-outer-main-inner),.001f,shape,true);
         if(interior!=null)interior.transform.localPosition=new Vector3(0,Mathf.Max(.001f,shape.depth)*.5f,0);
         builtShape=shape;builtOuter=style.showOuter;builtInner=style.showInner;hasGeometry=true;
@@ -130,7 +134,10 @@ public sealed class BattleCellBorderVisual : MonoBehaviour
             meshes[index]=new Mesh{name="Battle border procedural "+index,hideFlags=HideFlags.HideAndDontSave};
             filters[index].sharedMesh=meshes[index];
         }
-        BattleCellBorderMesh.Build(meshes[index],dimensions,radius,width,shape.depth,shape.curveSegments,fill);
+        if (region != null)
+            BattleCellBorderMesh.BuildRegion(meshes[index], region, shape.padding + regionInset, shape.cornerRadius, width, shape.depth, shape.curveSegments, fill);
+        else
+            BattleCellBorderMesh.Build(meshes[index],dimensions,radius,width,shape.depth,shape.curveSegments,fill);
         renderer.ResetLocalBounds();
     }
     private void Paint(MeshRenderer target,Color color,float alpha,bool fill,BattleCellBorderStyle style,BattleCellBorderConfiguration config,float clock)
@@ -138,7 +145,14 @@ public sealed class BattleCellBorderVisual : MonoBehaviour
         if(target==null)return;
         block.Clear();color.a*=Mathf.Clamp01(alpha);block.SetColor("_BaseColor",color);
         block.SetFloat("_IsFill",fill?1:0);
+        // JC | 2026-11-04 | 탐사 가림 배율만 추가하며 기존 전투 테두리의 깊이 판정은 유지합니다.
+        block.SetFloat("_TriggerBuildingOpacity", regionBuildingOpacity); block.SetFloat("_TriggerSidewalkOpacity", regionSidewalkOpacity);
+        // JC | 2026-11-04 | 탐사 채움은 종류3으로 구분해 선의 내부 깊이와 비교하지 않고 인도에만 투과합니다.
+        block.SetFloat("_TriggerFillSidewalkOpacity", regionFillSidewalkOpacity);
+        block.SetFloat("_TriggerDepthKind",region != null ? (fill ? 3 : target == innerBorder ? 1 : 2) : 0);
         block.SetFloat("_FillOcclusionHeight",fillOcclusionHeight);
+        // 탐사 영역은 부유한 메시 위치에서 깊이를 판정합니다. 도로와 같은 높이로 투영하면 채움이 충돌합니다.
+        block.SetFloat("_ProjectFillToGround",region != null ? 0 : 1);
         block.SetTexture("_BaseMap",fill && style.fillTexture!=null?style.fillTexture:Texture2D.whiteTexture);
         block.SetFloat("_SweepEnabled",!fill && style.allowSweep && config.useSweep?1:0);
         block.SetColor("_SweepColor",config.sweepColor);block.SetFloat("_SweepIntensity",config.sweepIntensity);

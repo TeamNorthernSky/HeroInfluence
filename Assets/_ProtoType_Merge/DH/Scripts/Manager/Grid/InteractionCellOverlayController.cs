@@ -2,6 +2,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+// Optional presentation only. The controller retains cell selection and encounter picking.
+public interface IInteractionCellOverlayVisual
+{
+    void RenderCells(IReadOnlyList<InteractionOverlayCell> cells, GridManager grid);
+    void ClearCells();
+}
+
+public readonly struct InteractionOverlayCell
+{
+    public readonly object Owner;
+    public readonly Vector2Int Grid;
+    public readonly Color Color;
+    public InteractionOverlayCell(object owner, Vector2Int grid, Color color)
+    { Owner = owner; Grid = grid; Color = color; }
+}
+
 public class InteractionCellOverlayController : MonoBehaviour
 {
     private enum OverlayCellType
@@ -55,7 +71,7 @@ public class InteractionCellOverlayController : MonoBehaviour
     private void AddEncounterCell(Behaviour owner, Vector2Int cell, OverlayCellType type)
     {
         encounterCells.Add(new EncounterCell { owner = owner, grid = cell, type = type });
-        TrySetDesiredCell(cell, type);
+        TrySetDesiredCell(cell, type, owner);
     }
 
     private void CacheVisibleEncounterCells()
@@ -101,6 +117,23 @@ public class InteractionCellOverlayController : MonoBehaviour
             bestCenterDistance = centerDistance;
         }
         return best;
+    }
+
+    private readonly Dictionary<Vector2Int, object> desiredOwners = new Dictionary<Vector2Int, object>();
+    private readonly List<InteractionOverlayCell> visibleCells = new List<InteractionOverlayCell>();
+    private IInteractionCellOverlayVisual visualOverride;
+    public IInteractionCellOverlayVisual VisualOverride
+    {
+        get => visualOverride;
+        set
+        {
+            if (ReferenceEquals(visualOverride, value)) return;
+            visualOverride?.ClearCells();
+            visualOverride = value;
+            foreach (var tile in activeOverlays.Values) tile.SetPresentationHidden(value != null);
+            foreach (var tile in overlayPool) tile.SetPresentationHidden(value != null);
+            RequestRefresh();
+        }
     }
 
     private float nextRefreshTime;
@@ -203,11 +236,23 @@ public class InteractionCellOverlayController : MonoBehaviour
         HideRemovedZones();
         ShowDesiredZones();
         CacheVisibleEncounterCells();
+        if (visualOverride != null)
+        {
+            visibleCells.Clear();
+            foreach (var pair in desiredCells)
+            {
+                Color color = pair.Value == OverlayCellType.External && externalDesiredCellColors.TryGetValue(pair.Key, out var external)
+                    ? external : GetColor(pair.Value);
+                visibleCells.Add(new InteractionOverlayCell(desiredOwners[pair.Key], pair.Key, color));
+            }
+            visualOverride.RenderCells(visibleCells, gridManager);
+        }
     }
 
     private void BuildDesiredZones()
     {
         desiredCells.Clear();
+        desiredOwners.Clear();
         encounterCells.Clear();
         externalDesiredCellColors.Clear();
         AddMainEventInteractionCells();
@@ -229,7 +274,7 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int i = 0; i < set.Cells.Count; i++)
             {
                 Vector2Int grid = set.Cells[i];
-                if (TrySetDesiredCell(grid, OverlayCellType.External))
+                if (TrySetDesiredCell(grid, OverlayCellType.External, pair.Key))
                 {
                     externalDesiredCellColors[grid] = set.Color;
                     if (pair.Key is TutorialEnemyObject tutorialEnemy)
@@ -328,7 +373,7 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
-                TrySetDesiredCell(grid, type);
+                TrySetDesiredCell(grid, type, outpost);
             }
         }
     }
@@ -349,7 +394,7 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
-                TrySetDesiredCell(grid, heroUnion.IsClaimedByHero ? OverlayCellType.Player : OverlayCellType.Neutral);
+                TrySetDesiredCell(grid, heroUnion.IsClaimedByHero ? OverlayCellType.Player : OverlayCellType.Neutral, heroUnion);
             }
         }
     }
@@ -370,12 +415,12 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
-                TrySetDesiredCell(grid, OverlayCellType.Enemy);
+                TrySetDesiredCell(grid, OverlayCellType.Enemy, villainUnionBase);
             }
         }
     }
 
-    private bool TrySetDesiredCell(Vector2Int grid, OverlayCellType type)
+    private bool TrySetDesiredCell(Vector2Int grid, OverlayCellType type, object owner)
     {
         if (gridManager != null && gridManager.HasObstacle(grid))
             return false;
@@ -387,6 +432,7 @@ public class InteractionCellOverlayController : MonoBehaviour
         }
 
         desiredCells[grid] = type;
+        desiredOwners[grid] = owner;
         return true;
     }
 
@@ -476,6 +522,7 @@ public class InteractionCellOverlayController : MonoBehaviour
             : GetColor(type);
         instance.ApplyLighting(generatedMaterial);
         instance.ApplyColor(color);
+        instance.SetPresentationHidden(visualOverride != null);
     }
 
     private void ReleaseOverlay(OverlayInstance instance)
@@ -489,6 +536,7 @@ public class InteractionCellOverlayController : MonoBehaviour
 
     private void ClearActiveOverlays()
     {
+        visualOverride?.ClearCells();
         encounterCells.Clear();
         encounterBounds.Clear();
         foreach (KeyValuePair<Vector2Int, OverlayInstance> pair in activeOverlays)
@@ -808,6 +856,20 @@ public class InteractionCellOverlayController : MonoBehaviour
         }
 
         public GameObject GameObject { get; }
+        private bool presentationHidden;
+        private bool[] previousForceRenderingOff;
+        public void SetPresentationHidden(bool hidden)
+        {
+            if (presentationHidden == hidden) return;
+            if (hidden) previousForceRenderingOff = new bool[renderers.Length];
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (!renderers[i]) continue;
+                if (hidden) previousForceRenderingOff[i] = renderers[i].forceRenderingOff;
+                renderers[i].forceRenderingOff = hidden || previousForceRenderingOff[i];
+            }
+            presentationHidden = hidden;
+        }
 
         public void ApplyLighting(Material material)
         {

@@ -363,8 +363,8 @@ namespace JC.Indicators
             if (visualRoot != null) return;
             visualRoot = new GameObject("JC Movement Visuals (Generated)") { hideFlags = HideFlags.DontSave };
             SceneManager.MoveGameObjectToScene(visualRoot, gameObject.scene);
-            material = new Material(indicatorShader) { name = "JC Movement Glow (runtime)", hideFlags = HideFlags.DontSave };
-            shadowMaterial = new Material(material) { name = "JC Movement Shadow (runtime)", renderQueue = 2999, hideFlags = HideFlags.DontSave };
+            material = new Material(indicatorShader) { name = "JC Movement Glow (runtime)", renderQueue = JcIndicatorRenderOrder.Movement, hideFlags = HideFlags.DontSave };
+            shadowMaterial = new Material(material) { name = "JC Movement Shadow (runtime)", renderQueue = JcIndicatorRenderOrder.MovementShadow, hideFlags = HideFlags.DontSave };
             markerMaterial = new Material(material) { name = "JC Solid Indicator (runtime)", hideFlags = HideFlags.DontSave };
             markerMaterial.SetFloat("_Cull", (float)CullMode.Back);
             pathMesh = NewMesh("JC Path"); shadowMesh = NewMesh("JC Path Shadow"); markerMesh = NewMesh("JC Marker");
