@@ -14,6 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skyShader: {fileID: 4800000, guid: ef5625516e71dc34bb9e649c14f50935, type: 3}
   startHour: 8.5
+  continuousSunArc: 1
+  solarNoonElevation: 40
+  mountainShadowHeight: 0.5
+  leftMountainShadowHeight: 0.15
+  solarArcLatitude: 37.5
   hoursPerTurn: 6
   transitionSeconds: 2
   sunriseHour: 6.5

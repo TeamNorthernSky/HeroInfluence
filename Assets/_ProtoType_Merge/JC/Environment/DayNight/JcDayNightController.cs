@@ -53,6 +53,7 @@ namespace JC.Environment {
    owner != null && owner.applied && owner.OutdoorBattle && owner.gameObject.scene == scene;
   public JcOutdoorBattleLightingProfile BattleSource { get; private set; }
   public JcOutdoorBattleLightingProfile BattleDraft { get; private set; }
+  JcMountainShadows mountainShadows;
   void PrepareBattleProfile(){
    if(!OutdoorBattle || BattleDraft != null)return;
    BattleSource=Resources.Load<JcOutdoorBattleLightingProfile>(JcOutdoorBattleLightingProfile.ResourceName);
@@ -125,7 +126,9 @@ namespace JC.Environment {
    var parent=Array.Find(scene.GetRootGameObjects(),r=>r.name=="JC_Environment");if(parent!=null)go.transform.SetParent(parent.transform,false);
    return go.AddComponent<JcDayNightController>();
   }
-  void OnEnable(){if(profile==null)profile=Resources.Load<JcDayNightProfile>("JC_DayNight_Default");SceneManager.activeSceneChanged+=SceneChanged;EnsureSegmentObjects();}
+  void OnEnable(){if(profile==null)profile=Resources.Load<JcDayNightProfile>("JC_DayNight_Default");SceneManager.activeSceneChanged+=SceneChanged;EnsureSegmentObjects();
+   if(gameObject.scene.path==ScenePath||gameObject.scene.name=="TutorialExploreScene")mountainShadows=GetComponent<JcMountainShadows>()??gameObject.AddComponent<JcMountainShadows>();
+  }
   public void EnsureSegmentObjects(){
    for(int i=0;i<4;i++){
     JcDayNightSegment slot=null;foreach(var child in GetComponentsInChildren<JcDayNightSegment>(true))if(child.index==i&&child.transform.parent==transform){slot=child;break;}
@@ -134,7 +137,7 @@ namespace JC.Environment {
    }
   }
   void SceneChanged(Scene oldScene,Scene newScene){if(newScene!=gameObject.scene)Cancel();}
-  void OnDisable(){SceneManager.activeSceneChanged-=SceneChanged;Cancel();}
+  void OnDisable(){SceneManager.activeSceneChanged-=SceneChanged;Cancel();if(mountainShadows!=null)mountainShadows.Restore();}
   void OnDestroy(){Cancel();DestroyObject(BattleDraft);}
   public static void CancelForScene(Scene scene){if(owner!=null && owner.gameObject.scene==scene)owner.Cancel();}
   void LateUpdate(){
@@ -206,6 +209,7 @@ namespace JC.Environment {
   }
   public void ApplyHour(double hours){
    if(Settings==null||SceneManager.GetActiveScene()!=gameObject.scene)return;
+   if(mountainShadows!=null)mountainShadows.ApplyNow();
    Capture();if(Application.isPlaying)specialWindows.Scan(gameObject.scene);shownHours=hours;appliedProfile=Settings;appliedRevision=Settings.revision;var k=Settings.Evaluate(hours);daylight=k.daylight;
    var look=Settings.SampleSegment(hours);var baseline=Settings.SampleSegment(hours,true);
    PrepareBattleProfile();
@@ -217,6 +221,8 @@ namespace JC.Environment {
    if(sun!=null){sun.transform.rotation=indoor?oldRotation:Quaternion.Euler(k.elevation,k.azimuth+180f,0);sun.color=indoor?Color.Lerp(oldLightColor,new Color(.70f,.79f,1),.25f*(1-daylight)):k.lightColor;sun.intensity=indoor?oldIntensity*Mathf.Lerp(.7f,1,daylight):k.intensity*Mathf.Lerp(Settings.nightLightBoost,1,daylight);sun.shadowStrength=Mathf.Lerp(.45f,oldShadow,daylight);}
    // 실외 구간 값은 최종 색상·강도입니다. 시간 키의 일몰색을 다시 곱하면 전환 중 붉은색이 증폭됩니다.
    if(sun!=null){sun.color=indoor?JcDayNightProfile.CorrectColor(sun.color,look.lightColor,baseline.lightColor):look.lightColor;sun.intensity=indoor?sun.intensity*look.lightIntensity/Mathf.Max(.0001f,baseline.lightIntensity):look.lightIntensity;sun.shadowStrength=Mathf.Clamp01(sun.shadowStrength*look.shadowMultiplier);}
+   // JC | 2026-11-04 | 태양·달 교대 중 회전은 직접광·그림자가 꺼진 순간에 수행하고 환경광은 유지합니다.
+   if(sun!=null&&!indoor){float handoff=Settings.CelestialHandoffMultiplier(hours);sun.intensity*=handoff;sun.shadowStrength*=handoff;}
    Color sky=Color.Lerp(Settings.nightSky,Settings.daySky,daylight);
    Color horizon=Color.Lerp(Settings.nightHorizon,Settings.dayHorizon,daylight);
    float sunset=Mathf.Clamp01((k.lightColor.r-k.lightColor.b)*1.3f);horizon=Color.Lerp(horizon,new Color(.85f,.44f,.28f),sunset);

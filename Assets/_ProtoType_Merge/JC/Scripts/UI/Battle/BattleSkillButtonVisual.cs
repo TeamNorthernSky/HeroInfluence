@@ -71,16 +71,28 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
     private bool wasAvailable;
     private bool wasSelected;
     private float selectedStarted;
+    private bool systemButtonStyle;
     private readonly Vector3[] selectedCorners = new Vector3[4];
 
     private void Awake()
     {
         restingScale = transform.localScale;
         selectable = GetComponent<Selectable>();
+        var face = GetComponent<Image>();
+        systemButtonStyle = face != null && face.material != null &&
+            face.material.shader.name == "UI/JC/SystemButtonFit";
         availableSource = availableEffect != null ? availableEffect.material : null;
         selectedSource = selectedFrame != null ? selectedFrame.material : null;
         availableInstance = CreateInstance(availableEffect, availableSource);
         selectedInstance = CreateInstance(selectedFrame, selectedSource);
+        if (systemButtonStyle && selectedFrame != null)
+        {
+            selectedFrame.type = face.type;
+            selectedFrame.preserveAspect = face.preserveAspect;
+            foreach (var edge in selectedFrame.GetComponentsInChildren<Image>(true))
+                if (edge != selectedFrame && (edge.name == "Top" || edge.name == "Bottom" || edge.name == "Left" || edge.name == "Right"))
+                    edge.enabled = false; // 구형 사각 보조선 대신 버튼 실루엣을 따라 순환합니다.
+        }
         if (selectedFrame != null &&
             ((sharedSettings != null && sharedSettings.IsSkillButtonStyle) || gameObject.scene.name == "TmpBattleScene" || gameObject.scene.name == "TutorialBattleScene"))
         {
@@ -121,6 +133,11 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
         if (useShared)
         {
             sharedSettings.Apply(availableInstance, selectedInstance);
+            if (systemButtonStyle && selectedInstance != null)
+            {
+                selectedInstance.SetFloat("_SystemButtonFit", 1f);
+                selectedInstance.SetFloat("_ConfigurableOrbitRim", 0f);
+            }
             UpdateOrbitPixelSize();
             if (availableInstance != null) availableInstance.SetFloat("_SweepTime", Time.unscaledTime - started);
             return;

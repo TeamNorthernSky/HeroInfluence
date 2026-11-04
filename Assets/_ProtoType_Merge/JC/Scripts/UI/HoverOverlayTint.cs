@@ -22,6 +22,9 @@ public class HoverOverlayTint : MonoBehaviour
     [Tooltip("RGB를 흰색으로 강제하고 sprite 알파를 형상 마스크로 쓰는 UI 머티리얼(UI/WhiteSilhouette). 비우면 sprite 곱셈이라 흰색이 무효.")]
     [SerializeField] private Material overlayMaterial;
 
+    private Material fittedMaterial;
+    private Material originalMaterial;
+
     private void Awake() => Apply();
     private void OnEnable() => Apply();
 
@@ -44,6 +47,29 @@ public class HoverOverlayTint : MonoBehaviour
                 overlay.fillCenter = true;
         }
         if (overlayMaterial != null) overlay.material = overlayMaterial;
+        if (source != null && source.material.shader.name == "UI/JC/SystemButtonFit" &&
+            overlay.material.HasProperty("_SystemButtonFit"))
+        {
+            if (fittedMaterial == null)
+            {
+                originalMaterial = overlay.material;
+                fittedMaterial = new Material(originalMaterial)
+                {
+                    name = originalMaterial.name + " (System Button Hover)",
+                    hideFlags = HideFlags.DontSave
+                };
+                fittedMaterial.SetFloat("_SystemButtonFit", 1f);
+            }
+            overlay.material = fittedMaterial;
+        }
         overlay.color = tint;
+    }
+
+    private void OnDestroy()
+    {
+        if (fittedMaterial == null) return;
+        if (overlay != null && overlay.material == fittedMaterial) overlay.material = originalMaterial;
+        if (Application.isPlaying) Destroy(fittedMaterial);
+        else DestroyImmediate(fittedMaterial);
     }
 }

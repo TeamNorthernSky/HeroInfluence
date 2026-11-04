@@ -10,6 +10,7 @@ Shader "UI/HoverGlowSweep"
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         _Color ("Master Tint (Image.color)", Color) = (1,1,1,1)
+        [HideInInspector] _SystemButtonFit ("Fit System Button Silhouette", Float) = 0
 
         [Header(Outline Glow)]
         _GlowColor ("Glow Color", Color) = (0.25, 0.55, 1.0, 1)
@@ -87,6 +88,7 @@ Shader "UI/HoverGlowSweep"
             sampler2D _MainTex;
             float4 _MainTex_TexelSize;
             fixed4 _Color;
+            float _SystemButtonFit;
 
             fixed4 _GlowColor;
             float _GlowWidth;
@@ -122,36 +124,50 @@ Shader "UI/HoverGlowSweep"
                 return o;
             }
 
+            // 시스템 버튼 본체와 동일한 UV 변환을 사용합니다. 다른 버튼은 원본 샘플을 유지합니다.
+            float4 SampleButton(float2 uv)
+            {
+                if (_SystemButtonFit > 0.5)
+                {
+                    float y = (uv.y - 0.5) * (87.75 / (160.0 / 3.10 * 1.35));
+                    float ay = abs(y);
+                    if (ay > 0.5) return 0;
+                    float sourceY = ay <= 0.25 ? ay * 1.125 : lerp(0.28125, 0.5, (ay - 0.25) * 4);
+                    uv.y = 0.5 + sign(y) * sourceY;
+                }
+                return tex2D(_MainTex, uv);
+            }
+
             float RingAvg(float2 uv, float2 texel)
             {
                 float a = 0;
-                a += tex2D(_MainTex, uv + float2( texel.x,  0)).a;
-                a += tex2D(_MainTex, uv + float2(-texel.x,  0)).a;
-                a += tex2D(_MainTex, uv + float2( 0,  texel.y)).a;
-                a += tex2D(_MainTex, uv + float2( 0, -texel.y)).a;
-                a += tex2D(_MainTex, uv + float2( texel.x,  texel.y)).a;
-                a += tex2D(_MainTex, uv + float2( texel.x, -texel.y)).a;
-                a += tex2D(_MainTex, uv + float2(-texel.x,  texel.y)).a;
-                a += tex2D(_MainTex, uv + float2(-texel.x, -texel.y)).a;
+                a += SampleButton( uv + float2( texel.x,  0)).a;
+                a += SampleButton( uv + float2(-texel.x,  0)).a;
+                a += SampleButton( uv + float2( 0,  texel.y)).a;
+                a += SampleButton( uv + float2( 0, -texel.y)).a;
+                a += SampleButton( uv + float2( texel.x,  texel.y)).a;
+                a += SampleButton( uv + float2( texel.x, -texel.y)).a;
+                a += SampleButton( uv + float2(-texel.x,  texel.y)).a;
+                a += SampleButton( uv + float2(-texel.x, -texel.y)).a;
                 return a * 0.125;
             }
             float RingMin(float2 uv, float2 texel)
             {
                 float a = 1;
-                a = min(a, tex2D(_MainTex, uv + float2( texel.x,  0)).a);
-                a = min(a, tex2D(_MainTex, uv + float2(-texel.x,  0)).a);
-                a = min(a, tex2D(_MainTex, uv + float2( 0,  texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2( 0, -texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2( texel.x,  texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2( texel.x, -texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2(-texel.x,  texel.y)).a);
-                a = min(a, tex2D(_MainTex, uv + float2(-texel.x, -texel.y)).a);
+                a = min(a, SampleButton( uv + float2( texel.x,  0)).a);
+                a = min(a, SampleButton( uv + float2(-texel.x,  0)).a);
+                a = min(a, SampleButton( uv + float2( 0,  texel.y)).a);
+                a = min(a, SampleButton( uv + float2( 0, -texel.y)).a);
+                a = min(a, SampleButton( uv + float2( texel.x,  texel.y)).a);
+                a = min(a, SampleButton( uv + float2( texel.x, -texel.y)).a);
+                a = min(a, SampleButton( uv + float2(-texel.x,  texel.y)).a);
+                a = min(a, SampleButton( uv + float2(-texel.x, -texel.y)).a);
                 return a;
             }
             // 휘도(알파 가중) — 글로우 휘도엣지/블룸 공용
             float LumA(float2 uv)
             {
-                float4 c = tex2D(_MainTex, uv);
+                float4 c = SampleButton( uv);
                 return max(c.r, max(c.g, c.b)) * c.a;
             }
             float LumRing(float2 uv, float2 texel)
@@ -169,7 +185,7 @@ Shader "UI/HoverGlowSweep"
             }
             float3 BrightAt(float2 uv)
             {
-                float4 c = tex2D(_MainTex, uv);
+                float4 c = SampleButton( uv);
                 float lum = max(c.r, max(c.g, c.b)) * c.a;
                 return c.rgb * max(lum - _BloomThreshold, 0.0);
             }
@@ -190,7 +206,7 @@ Shader "UI/HoverGlowSweep"
             fixed4 frag(v2f i) : SV_Target
             {
                 float2 uv = i.texcoord;
-                float baseA = tex2D(_MainTex, uv).a;
+                float baseA = SampleButton( uv).a;
                 float aspect = _MainTex_TexelSize.y / _MainTex_TexelSize.x; // texW/texH
 
                 // ===== 글로우: 알파 실루엣(외/내측) + 휘도 엣지 =====
@@ -245,6 +261,7 @@ Shader "UI/HoverGlowSweep"
 
                 float master = i.color.a;
                 outRGB *= i.color.rgb * master;
+                if (_SystemButtonFit > 0.5) outRGB *= baseA; // 호버 광선도 버튼 실루엣 안에 유지합니다.
                 float a = saturate(max(gsAmount, max(bloom.r, max(bloom.g, bloom.b))) * master);
                 return fixed4(outRGB, a);
             }

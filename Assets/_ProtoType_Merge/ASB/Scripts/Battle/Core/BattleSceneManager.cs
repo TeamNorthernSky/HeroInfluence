@@ -204,7 +204,7 @@ public class BattleSceneManager : MonoBehaviour
             yield break;
         }
 
-        yield return StartCoroutine(TransitionToSceneRoutine(contextReturnScene));
+        yield return StartCoroutine(TransitionToSceneRoutine(contextReturnScene, result == BattleResult.Defeat));
     }
 
     private YuliaStasisVfx FindYuliaDeathPresentation()
@@ -356,7 +356,7 @@ public class BattleSceneManager : MonoBehaviour
         }
     }
 
-    private IEnumerator TransitionToSceneRoutine(string targetOverride = null)
+    private IEnumerator TransitionToSceneRoutine(string targetOverride = null, bool defeat = false)
     {
         if (returnDelay > 0f)
         {
@@ -379,6 +379,7 @@ public class BattleSceneManager : MonoBehaviour
         Debug.Log($"[BattleSceneManager] TransitionTo target='{target}' returnSceneName='{returnSceneName}' instanceOk={GameSceneManager.Instance != null} fadeOk={SceneFadeController.Instance != null}");
         // [JC 260513] SceneFadeController 영속(GameManager 자식). 없으면 직접 LoadScene fallback.
         SceneFadeController fade = SceneFadeController.Instance;
+        if (defeat) PresentationSfxPlayer.Play("BattleEnd_Defeat");
         if (fade != null)
             fade.FadeToScene(target, fadeOutDuration, fadeInDuration);
         // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.
