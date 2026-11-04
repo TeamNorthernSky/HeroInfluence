@@ -310,7 +310,7 @@ public sealed class AudioManager : MonoBehaviour
         source.Play();
     }
 
-    public void StopLoopingSfx(string key)
+    public void StopLoopingSfx(string key, bool finishCurrentCycle = true)
     {
         string normalizedKey = DHAudioClipCatalog.NormalizeKey(key);
         if (string.IsNullOrWhiteSpace(normalizedKey))
@@ -320,7 +320,7 @@ public sealed class AudioManager : MonoBehaviour
             return;
 
         CancelScheduledLoopingSfxStop(normalizedKey);
-        if (!source.isPlaying || source.clip == null)
+        if (!finishCurrentCycle || !source.isPlaying || source.clip == null)
         {
             StopLoopingSfxImmediately(source);
             return;

@@ -28,8 +28,12 @@ namespace JC.BattleTesting
         public Sprite lockedSkillSprite;
         public Sprite skillButtonFace;
         [Tooltip("미습득 스킬 행에 표시하는 회청색 배경입니다.")] public Sprite lockedFace;
-        [Range(.5f, 1f), Tooltip("우상단 메뉴·자동·배속·도주 버튼 묶음의 크기입니다. 0.8이면 기존 대비 가로·세로 80%로 표시합니다.")]
-        public float topRightButtonScale = .8f;
+        [Range(.5f, 1.5f), Tooltip("우상단 메뉴·자동·배속·도주 버튼 묶음의 크기입니다. 0.8이면 기존 대비 가로·세로 80%로 표시합니다.")]
+        public float topRightButtonScale = 1.04f;
+        [Range(.5f, 1f), Tooltip("버튼 높이는 유지하면서 가로 폭만 조절합니다. 0.9이면 현재 크기의 90% 너비로 표시합니다.")]
+        public float topRightButtonWidthRatio = .9f;
+        [Min(0f), Tooltip("우상단 버튼 묶음의 오른쪽 여백입니다. 턴슬롯 본체의 오른쪽 테두리에 맞춥니다.")]
+        public float topRightButtonRightInset = 16f;
 
         public void ApplyTopRightButtons(Scene scene)
         {
@@ -37,7 +41,11 @@ namespace JC.BattleTesting
                 .SelectMany(r => r.GetComponentsInChildren<RectTransform>(true))
                 .FirstOrDefault(r => r.name == "TopRightButtons");
             if (group != null)
-                group.localScale = Vector3.one * Mathf.Clamp(topRightButtonScale, .5f, 1f);
+            {
+                float scale = Mathf.Clamp(topRightButtonScale, .5f, 1.5f);
+                group.localScale = new Vector3(scale * Mathf.Clamp(topRightButtonWidthRatio, .5f, 1f), scale, scale);
+                group.anchoredPosition = new Vector2(-Mathf.Max(0f, topRightButtonRightInset), group.anchoredPosition.y);
+            }
         }
         public void Apply(Scene scene)
         {

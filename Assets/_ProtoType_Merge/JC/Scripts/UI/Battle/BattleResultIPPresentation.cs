@@ -19,6 +19,8 @@ public sealed class BattleResultIPPresentation : IDisposable
     private bool pending = true, completed, echoActive;
     public bool IsComplete => completed;
     public bool HasStarted => !pending;
+    public bool IsCounting => !pending && !completed && !echoActive && gain > 0 &&
+        settings != null && settings.duration > 0 && delayElapsed >= settings.startDelay;
     public long DisplayedCurrent { get; private set; }
     public long DisplayedRemaining { get; private set; }
 

@@ -139,6 +139,7 @@ namespace JC.BattleTesting.Vfx
                 for(int n=0;n<65;n++){float a=n/64f*Mathf.PI*2;float radius=.38f+i*.07f;line.SetPosition(n,new Vector3(Mathf.Cos(a)*radius,Mathf.Sin(a)*radius,.012f));}
             }
             director.Show(JcYuliaEffectKind.Summon,transform.position);
+            UnitSfxProfile.Play(actor, UnitSfxEvent.Summon);
         }
         private static Mesh Torus(float radius,float tube)
         {

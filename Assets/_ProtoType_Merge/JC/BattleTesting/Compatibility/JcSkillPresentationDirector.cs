@@ -1298,14 +1298,20 @@ public sealed partial class JcSkillPresentationDirector
         director.playableAsset = timeline;
 
         Animator animator = actor.Anim != null ? actor.Anim.Animator : actor.GetComponentInChildren<Animator>();
-        if (animator == null) return;
+        PresentationSignalReceiver receiver = null;
 
         // Animation Track을 이 캐릭터의 Animator에 바인딩한다(바인딩은 director 인스턴스에 저장 — 공유 에셋을 뮤테이트하지 않음).
         foreach (TrackAsset track in timeline.GetOutputTracks())
         {
-            if (track is AnimationTrack)
+            if (track is AnimationTrack && animator != null)
             {
                 director.SetGenericBinding(track, animator);
+            }
+            else if (track is PresentationMarkerTrack markerTrack
+                     && markerTrack.Role == PresentationMarkerTrackRole.Sfx)
+            {
+                if (receiver == null) receiver = EnsureSignalReceiver(actor);
+                director.SetGenericBinding(track, receiver);
             }
         }
     }

@@ -149,6 +149,7 @@ public sealed class JcBattleEnemyInfoTooltip : MonoBehaviour
 
     private void Bind(BattleCharactor unit)
     {
+        PresentationSfxPlayer.Play("Button_Hover");
         shownUnit = unit;
         panel.gameObject.SetActive(true);
         if (unitName != null) unitName.text = unit.UnitName;

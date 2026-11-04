@@ -15,6 +15,7 @@ public sealed class MouseClickSfx : MonoBehaviour
     private static int popupSoundFrame = -1;
     private static int moveStartedFrame = -1;
     private static int clickFailFrame = -1;
+    private static int dedicatedClickFrame = -1;
     private int pendingClickFrame = -1;
     private string pendingClickKey;
     private bool pendingButtonRelease;
@@ -30,6 +31,7 @@ public sealed class MouseClickSfx : MonoBehaviour
         popupSoundFrame = -1;
         moveStartedFrame = -1;
         clickFailFrame = -1;
+        dedicatedClickFrame = -1;
 #if UNITY_EDITOR
         SinkOverride = null;
 #endif
@@ -39,6 +41,7 @@ public sealed class MouseClickSfx : MonoBehaviour
     public static void NotifyPopupSoundPlayed() => popupSoundFrame = Time.frameCount;
     public static void NotifyMoveStarted() => moveStartedFrame = Time.frameCount;
     public static void NotifyClickFailPlayed() => clickFailFrame = Time.frameCount;
+    public static void NotifyDedicatedClickSoundPlayed() => dedicatedClickFrame = Time.frameCount;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
@@ -89,8 +92,9 @@ public sealed class MouseClickSfx : MonoBehaviour
         if (pendingClickFrame < 0) return;
         int frame = pendingClickFrame;
         string key = pendingClickKey;
+        if (string.IsNullOrEmpty(key)) { ClearPendingClick(); return; }
         if (key == ClickSfxKey && (chatBubbleFrame >= frame || popupSoundFrame >= frame ||
-                                   moveStartedFrame >= frame || clickFailFrame >= frame))
+                                   moveStartedFrame >= frame || clickFailFrame >= frame || dedicatedClickFrame >= frame))
         {
             ClearPendingClick();
             return;
@@ -130,6 +134,9 @@ public sealed class MouseClickSfx : MonoBehaviour
     private static string ResolveClickSfx(RaycastResult hit, Vector2 position)
     {
         if (hit.gameObject == null) return ClickSfxKey;
+        // 스킬 버튼은 선택 성공/취소 경로에서만 전용음을 냅니다. 거절된 클릭도 공용음을 겹치지 않습니다.
+        if (hit.gameObject.GetComponentInParent<SkillButtonTooltip>(true) != null ||
+            hit.gameObject.GetComponentInParent<JcSkillButtonTooltip>(true) != null) return null;
         var slider = hit.gameObject.GetComponentInParent<Slider>();
         if (slider == null || slider.name != "ProgressSlider" || !slider.IsActive() || !slider.IsInteractable())
             return ClickSfxKey;
