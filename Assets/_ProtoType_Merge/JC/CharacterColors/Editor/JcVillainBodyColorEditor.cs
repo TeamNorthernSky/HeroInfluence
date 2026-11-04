@@ -39,6 +39,7 @@ namespace JC.CharacterColors.Editor
                 throw new InvalidOperationException("전용 Baked 폴더의 새 PNG 경로가 필요합니다. 원본과 기존 결과는 덮어쓰지 않습니다.");
             var p=c.Settings;
             if(!p || !p.source)throw new InvalidOperationException("원본 텍스처가 없습니다.");
+            // JC | 2026-11-04 | 기본색만 별도 PNG로 저장하고 재질 슬라이더는 실시간 조명에 반응하도록 프로필에 보관합니다.
             var rt=c.RenderForBake();var prev=RenderTexture.active;
             var copy=new Texture2D(rt.width,rt.height,TextureFormat.RGBA32,false,false);
             try
@@ -73,6 +74,7 @@ namespace JC.CharacterColors.Editor
             string[] labels={"보정 기준색","색상 적용 강도","검은 영역 밝기 상한","경계 부드러움","선택 채도 상한","원본 기준 명도","명암·옷감 보존"};
             for(int i=0;i<names.Length;i++){var field=tuning.FindPropertyRelative(names[i]);EditorGUILayout.PropertyField(field,new GUIContent(labels[i],field.tooltip));}
             EditorGUILayout.Space();EditorGUILayout.LabelField("검은 몸체 재질 반응",EditorStyles.boldLabel);
+            // JC | 2026-11-04 | 저장 대상과 분리된 조절 복사본을 편집하므로 슬라이더를 움직이는 동안 공유 프로필을 덮지 않습니다.
             var surface=so.FindProperty("surface");
             foreach(var pair in new[]{new[]{"enabled","재질 조절 사용"},new[]{"reflection","반사광 강도"},new[]{"smoothness","광택 · 매끄러움"},new[]{"metallic","메탈릭"}}){
                 var field=surface.FindPropertyRelative(pair[0]);EditorGUILayout.PropertyField(field,new GUIContent(pair[1],field.tooltip));

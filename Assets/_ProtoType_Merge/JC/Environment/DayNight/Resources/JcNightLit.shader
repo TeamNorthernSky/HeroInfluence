@@ -247,6 +247,7 @@
             TEXTURE2D(_JcVillainSource); SAMPLER(sampler_JcVillainSource);
             float4 _JcVillainParams, _JcVillainBlackRange;
             // Per-fragment state, set before URP initializes its BRDF. Non-targets stay exactly at one.
+            // JC | 2026-11-04 | 조명이나 베이크 결과에 따라 범위가 달라지지 않도록 원본 몸체의 어두운 저채도 영역을 기준으로 보정합니다.
             static half JcVillainReflectionScale=1;
 
             TEXTURE2D(_JcWindowMask); SAMPLER(sampler_JcWindowMask);

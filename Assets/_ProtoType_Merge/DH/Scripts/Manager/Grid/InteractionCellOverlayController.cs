@@ -122,6 +122,7 @@ public class InteractionCellOverlayController : MonoBehaviour
     private readonly Dictionary<Vector2Int, object> desiredOwners = new Dictionary<Vector2Int, object>();
     private readonly List<InteractionOverlayCell> visibleCells = new List<InteractionOverlayCell>();
     private IInteractionCellOverlayVisual visualOverride;
+    // JC | 2026-11-04 | 범위 판정과 클릭 처리는 기존 DH 셀이 담당하고, 외형만 연결된 영역 렌더러에 위임합니다.
     public IInteractionCellOverlayVisual VisualOverride
     {
         get => visualOverride;
@@ -245,6 +246,7 @@ public class InteractionCellOverlayController : MonoBehaviour
                     ? external : GetColor(pair.Value);
                 visibleCells.Add(new InteractionOverlayCell(desiredOwners[pair.Key], pair.Key, color));
             }
+            // JC | 2026-11-04 | 클릭 셀과 소유자를 기존 판정에서 얻어 표시 전용 윤곽에 넘깁니다.
             visualOverride.RenderCells(visibleCells, gridManager);
         }
     }

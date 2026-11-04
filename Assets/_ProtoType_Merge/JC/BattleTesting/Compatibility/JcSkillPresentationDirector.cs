@@ -1307,6 +1307,7 @@ public sealed partial class JcSkillPresentationDirector
             {
                 director.SetGenericBinding(track, animator);
             }
+            // JC | 2026-11-04 | 보스 테스트에서도 본게임의 효과음 키와 연출 시점을 재사용합니다.
             else if (track is PresentationMarkerTrack markerTrack
                      && markerTrack.Role == PresentationMarkerTrackRole.Sfx)
             {

@@ -163,6 +163,7 @@ public static class TutorialCombatUnitFactory
         return 0;
     }
 
+    // JC | 2026-11-04 | 튜토리얼 코어 표시는 실제 전투에서 쓰는 기본 무기 선택 규칙을 공유합니다.
     public static string ResolveDefaultWeapon(
         TutorialCatalog catalog,
         DHPlayerUnitTemplate template,

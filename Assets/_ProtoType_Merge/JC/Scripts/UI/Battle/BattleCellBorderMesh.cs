@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>둥근 사각 윤곽을 따라 윗면·밑면·양쪽 벽을 생성합니다. 움직임에는 재생성하지 않습니다.</summary>
+// JC | 2026-11-04 | 이웃한 셀은 하나의 영역으로 표시하고 단일 전투 셀은 기존 테두리 경로를 사용합니다.
 public static partial class BattleCellBorderMesh
 {
     public static void Build(Mesh mesh, Vector2 size, float radius, float width, float depth, int segments, bool fill)

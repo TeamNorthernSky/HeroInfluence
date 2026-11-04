@@ -96,6 +96,7 @@ public sealed partial class BattleCellBorderVisual : MonoBehaviour
         if(outerBorder!=null)outerBorder.enabled=style.showOuter;
         if(innerOutline!=null)innerOutline.enabled=style.showInner;
         if(interior!=null)interior.enabled=style.useFill && style.fillOpacity>0 && style.fillColor.a>0;
+        // JC | 2026-11-04 | 이웃한 셀은 하나의 영역으로 표시하고 단일 전투 셀은 기존 테두리 경로를 사용합니다.
         Paint(outerBorder,region != null && regionOuterColor.HasValue ? regionOuterColor.Value : style.outlineColor,borderAlpha,false,style,config,clock);
         Paint(innerBorder,style.mainColor,borderAlpha,false,style,config,clock);
         Paint(innerOutline,region != null && regionInnerColor.HasValue ? regionInnerColor.Value : style.outlineColor,borderAlpha,false,style,config,clock);

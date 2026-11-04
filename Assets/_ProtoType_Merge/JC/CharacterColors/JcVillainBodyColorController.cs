@@ -39,6 +39,8 @@ namespace JC.CharacterColors
             Restore();DestroyOwned(draft);draftSource=profile;
             draft=profile?Instantiate(profile):null;
             // HideAndDontSave includes NotEditable and disables SerializedProperty fields in the tuning Inspector.
+            // JC | 2026-11-04 | 저장 색상과 베이크가 일치할 때만 PNG를 재사용하며 임시 조절값은 명시적으로 저장합니다.
+            // JC | 2026-11-04 | 임시 복사본에는 저장 방지만 적용해야 플레이 중 Inspector에서 값을 편집할 수 있습니다.
             if(draft){draft.name=profile.name+" (조절 중)";draft.hideFlags=HideFlags.DontSave;}
             generated=false;nextScan=0;
         }
@@ -92,6 +94,7 @@ namespace JC.CharacterColors
             var mats=renderer.sharedMaterials;if(mats.Length!=1 || !mats[0] || !mats[0].HasProperty("_BaseMap"))return false;
             var tex=mats[0].GetTexture("_BaseMap");if(tex!=p.source)return false;
             var mesh=renderer is SkinnedMeshRenderer skin?skin.sharedMesh:renderer.GetComponent<MeshFilter>()?.sharedMesh;
+            // JC | 2026-11-04 | 공용 텍스처를 사용하는 다른 모델과 무기까지 보정되지 않도록 몸체 메시도 대조합니다.
             if(!mesh || p.bodyMeshes==null || !p.bodyMeshes.Contains(mesh))return false;
             for(var t=renderer.transform;t;t=t.parent)
                 if(t.name.IndexOf("Arnold",StringComparison.OrdinalIgnoreCase)>=0 || t.name.Contains("아놀드"))return false;
@@ -136,6 +139,7 @@ namespace JC.CharacterColors
                 if(surface){int group=JC.Environment.JcNightMaterialBindings.CharacterGroup(b.renderer);b.surfaceMaterials.Bind(b.renderer,0,null,group>0,group);}
                 else b.surfaceMaterials.Dispose();
                 b.renderer.GetPropertyBlock(block);
+                // JC | 2026-11-04 | 반사와 금속성은 조명에 따라 달라지므로 기본색 PNG와 분리해 현재 렌더러의 속성 블록에 전달합니다.
                 var parameters=new Vector4(surface?1:0,Mathf.Clamp(p.surface.reflection,0,4),Mathf.Clamp01(p.surface.smoothness),Mathf.Clamp01(p.surface.metallic));
                 var range=new Vector4(Mathf.Clamp(p.tuning.blackThreshold,.05f,.45f),Mathf.Clamp(p.tuning.feather,.005f,.15f),Mathf.Clamp(p.tuning.saturationLimit,.1f,.3f),0);
                 if(block.GetTexture("_BaseMap")!=selected || block.GetTexture("_MainTex")!=selected || block.GetVector("_JcVillainParams")!=parameters ||

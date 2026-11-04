@@ -8,6 +8,7 @@ Shader "JC/Battle/CellBorderGeometry"
         _Inset ("Inset", Float) = 0
         _Thickness ("Thickness", Float) = .045
         _CornerCut ("Corner Cut", Float) = .25
+        // JC | 2026-11-04 | 트리거와 도로·건물의 깊이를 비교해 가려진 부분의 불투명도를 따로 적용합니다.
         _TriggerDepthKind ("Trigger Depth Kind", Float) = 0
         _TriggerFillSidewalkOpacity ("Fill Sidewalk Occlusion Multiplier", Float) = .25
         _TriggerBuildingOpacity ("Building Occlusion Multiplier", Float) = .15

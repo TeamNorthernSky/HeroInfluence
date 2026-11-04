@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 namespace JC.Indicators
 {
     [DefaultExecutionOrder(100), DisallowMultipleComponent]
+    // JC | 2026-11-04 | 탐사 영역의 채움과 테두리를 부모 조절기에서 함께 관리해 하위 표시 설정이 저장값을 덮지 않게 합니다.
     public sealed class JcTriggerAreaIndicator : MonoBehaviour, IInteractionCellOverlayVisual
     {
         [SerializeField, Tooltip("현재 씬의 기존 셀 수집·색상·겹침·호버 판정을 제공하는 컨트롤러입니다.")]

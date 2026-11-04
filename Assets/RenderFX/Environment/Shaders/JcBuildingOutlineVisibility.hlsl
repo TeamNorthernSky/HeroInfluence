@@ -2,6 +2,7 @@
 #define JC_BUILDING_OUTLINE_VISIBILITY_INCLUDED
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 TEXTURE2D_X(_JcBuildingShapeDepth);
+// JC | 2026-11-04 | 외곽선에 쓸 실루엣 경계를 분리해 건물 내부의 가림 경계까지 강조되는 것을 막습니다.
 float _JcBuildingHighlight, _JcBuildingExteriorOnly;
 float4 _JcBuildingExteriorRadius;
 

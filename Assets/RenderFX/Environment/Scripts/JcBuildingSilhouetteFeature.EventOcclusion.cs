@@ -6,6 +6,7 @@ using UnityEngine.Rendering.Universal;
 
 public sealed partial class JcBuildingSilhouetteFeature
 {
+    // JC | 2026-11-04 | 건물 뒤에 가려진 이벤트 외형의 깊이와 투명도를 별도로 처리해 전면의 원본 외형을 보존합니다.
     private EventOcclusionPass eventOcclusion;
     // JC | 2026-11-04 | 원본 색상·포즈를 기록하고 전용 깊이에서 자가 겹침을 제거합니다. 카메라 장면 깊이는 수정하지 않습니다.
     private sealed class EventOcclusionPass : ScriptableRenderPass

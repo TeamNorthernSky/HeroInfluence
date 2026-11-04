@@ -312,6 +312,7 @@ public sealed class AudioManager : MonoBehaviour
         source.Play();
     }
 
+    // JC | 2026-11-04 | 결과 수치 카운팅은 표시가 끝날 때 즉시 멈추고 기존 호출자는 현재 루프를 끝까지 재생합니다.
     public void StopLoopingSfx(string key, bool finishCurrentCycle = true)
     {
         string normalizedKey = DHAudioClipCatalog.NormalizeKey(key);

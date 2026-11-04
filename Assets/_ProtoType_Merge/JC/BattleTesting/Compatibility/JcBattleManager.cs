@@ -276,6 +276,7 @@ public class JcBattleManager : MonoBehaviour
         JcCombatCalculator.ResolveHitRolls(context);
         float finalDamage = JcCombatCalculator.CalculateDamage(context) * (DamageTakenPolicy?.Invoke(context.Target) ?? 1f);
         context.Target.TakeDamage(finalDamage);
+        // JC | 2026-11-04 | 보스 테스트에서도 본게임의 효과음 키와 연출 시점을 재사용합니다.
         if (context.Target.IsDamageImmune) UnitSfxProfile.Play(context.Target, UnitSfxEvent.ImmuneHit);
         float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
         bool isDeadAfter = context.Target.IsDead;

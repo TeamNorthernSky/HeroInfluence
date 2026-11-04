@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+// JC | 2026-11-04 | 이웃한 셀은 하나의 영역으로 표시하고 단일 전투 셀은 기존 테두리 경로를 사용합니다.
 public static partial class BattleCellBorderMesh
 {
     /// <summary>셀 합집합의 외곽과 구멍입니다. 키는 기준 셀에 대한 상대 좌표, 값은 지면 높이입니다.</summary>

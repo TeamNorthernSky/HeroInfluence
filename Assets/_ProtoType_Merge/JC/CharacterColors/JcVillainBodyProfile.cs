@@ -63,6 +63,7 @@ namespace JC.CharacterColors
         [Tooltip("별도 파일로 저장한 보정 기본색 텍스처입니다. 원본을 덮어쓰지 않습니다.")]
         public Texture2D bakedTexture;
         [HideInInspector] public string bakedTuning;
+        // JC | 2026-11-04 | 저장 색상과 베이크가 일치할 때만 PNG를 재사용하며 임시 조절값은 명시적으로 저장합니다.
         public bool BakeMatches => bakedTexture && bakedTuning==JsonUtility.ToJson(tuning);
     }
 }

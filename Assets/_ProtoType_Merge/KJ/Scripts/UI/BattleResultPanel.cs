@@ -277,6 +277,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
             return;
         }
         if (CanAdvancePresentation()) AdvancePresentationStage();
+        // JC | 2026-11-04 | 여러 카드가 동시에 카운트해도 EXP와 IP 루프는 각각 하나만 재생합니다.
         UpdateCountingSounds();
     }
 
@@ -302,6 +303,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
         playing = counting;
     }
 
+    // JC | 2026-11-04 | 결과창이 닫히거나 표시가 교체될 때 이전 카드의 반복음이 다음 화면에 남지 않게 합니다.
     private void StopCountingSounds()
     {
         SetCountingSound("Battle_BarCounting01", false, ref expCountingSound);

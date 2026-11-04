@@ -4,6 +4,7 @@ using UnityEngine;
 namespace JC.Indicators
 {
     [Serializable]
+    // JC | 2026-11-04 | 탐사 영역의 채움과 테두리를 부모 조절기에서 함께 관리해 하위 표시 설정이 저장값을 덮지 않게 합니다.
     public sealed class JcTriggerAreaSettings
     {
         [Tooltip("월드 단위의 테두리 형태입니다. 크기는 실제 셀 영역에서 자동 계산하며 부유 높이는 아래 최저 높이와 왕복 폭으로 계산합니다.")]

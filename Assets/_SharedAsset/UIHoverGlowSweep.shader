@@ -10,6 +10,7 @@ Shader "UI/HoverGlowSweep"
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         _Color ("Master Tint (Image.color)", Color) = (1,1,1,1)
+        // JC | 2026-11-04 | 버튼 면과 강조 효과에 같은 종횡비와 윤곽을 적용해 확대하거나 선택해도 테두리가 어긋나지 않게 합니다.
         [HideInInspector] _SystemButtonFit ("Fit System Button Silhouette", Float) = 0
 
         [Header(Outline Glow)]

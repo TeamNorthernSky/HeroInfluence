@@ -207,6 +207,7 @@ public sealed partial class JcSkillPresentationDirector
                     RetargetPlanContext(actor, target);
                     if (activeSegmentIndex == 0 && span.Slot == 1 && shouldMove)
                     {
+                        // JC | 2026-11-04 | 보스 테스트에서도 본게임의 효과음 키와 연출 시점을 재사용합니다.
                         string key = MovementSfxKeyResolver.ResolveApproach(presentation.Move, movement);
                         if (!string.IsNullOrEmpty(key)) PresentationSfxPlayer.Play(key);
                     }

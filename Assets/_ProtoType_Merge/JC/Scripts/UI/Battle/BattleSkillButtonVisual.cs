@@ -71,6 +71,7 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
     private bool wasAvailable;
     private bool wasSelected;
     private float selectedStarted;
+    // JC | 2026-11-04 | 버튼 면과 강조 효과에 같은 종횡비와 윤곽을 적용해 확대하거나 선택해도 테두리가 어긋나지 않게 합니다.
     private bool systemButtonStyle;
     private readonly Vector3[] selectedCorners = new Vector3[4];
 

@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 namespace JC.Indicators
 {
     /// <summary>트리거 내부의 가림 깊이만 기록하며 카메라의 장면 깊이는 변경하지 않습니다.</summary>
+    // JC | 2026-11-04 | 트리거와 도로·건물의 깊이를 비교해 가려진 부분의 불투명도를 따로 적용합니다.
     internal static class JcTriggerAreaDepth
     {
         // JC | 2026-11-04 | 테두리 자체 깊이와 지형 종류별 깊이를 분리해 장면 깊이를 오염시키지 않습니다.

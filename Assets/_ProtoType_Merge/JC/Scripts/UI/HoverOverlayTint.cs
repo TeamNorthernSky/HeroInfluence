@@ -22,6 +22,7 @@ public class HoverOverlayTint : MonoBehaviour
     [Tooltip("RGB를 흰색으로 강제하고 sprite 알파를 형상 마스크로 쓰는 UI 머티리얼(UI/WhiteSilhouette). 비우면 sprite 곱셈이라 흰색이 무효.")]
     [SerializeField] private Material overlayMaterial;
 
+    // JC | 2026-11-04 | 버튼 면과 강조 효과에 같은 종횡비와 윤곽을 적용해 확대하거나 선택해도 테두리가 어긋나지 않게 합니다.
     private Material fittedMaterial;
     private Material originalMaterial;
 

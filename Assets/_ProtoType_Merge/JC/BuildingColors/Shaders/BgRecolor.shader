@@ -11,6 +11,7 @@ Shader "Hidden/JC/BuildingRecolor"
  sampler2D _MainTex,_Parts,_Floor,_Extra,_Extra2,_Extra3,_Extra4;float4 _Changes[24],_FlatColors[24];float _Highlight;int _PartCount;
  // Opt-in body recoloring uses the existing color-space conversion and blit path.
  // Building materials leave this uniform at zero and retain their original behavior.
+ // JC | 2026-11-04 | 조명이나 베이크 결과에 따라 범위가 달라지지 않도록 원본 몸체의 어두운 저채도 영역을 기준으로 보정합니다.
  float _BlackBodyMode,_BlackBodyMaskView;float4 _BlackBodyTint,_BlackBodyRange,_BlackBodyTone;
  float3 toLab(float3 c){float3 lms=mul(float3x3(.4122214708,.5363325363,.0514459929,.2119034982,.6806995451,.1073969566,.0883024619,.2817188376,.6299787005),c);lms=pow(max(lms,0),1.0/3.0);return mul(float3x3(.2104542553,.793617785,-.0040720468,1.9779984951,-2.428592205,.4505937099,.0259040371,.7827717662,-.808675766),lms);}
  float3 toRgb(float3 v){float3 lms=mul(float3x3(1,.3963377774,.2158037573,1,-.1055613458,-.0638541728,1,-.0894841775,-1.291485548),v);lms=lms*lms*lms;return saturate(mul(float3x3(4.0767416621,-3.3077115913,.2309699292,-1.2684380046,2.6097574011,-.3413193965,-.0041960863,-.7034186147,1.707614701),lms));}

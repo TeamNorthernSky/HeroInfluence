@@ -53,6 +53,8 @@ namespace JC.Environment {
    owner != null && owner.applied && owner.OutdoorBattle && owner.gameObject.scene == scene;
   public JcOutdoorBattleLightingProfile BattleSource { get; private set; }
   public JcOutdoorBattleLightingProfile BattleDraft { get; private set; }
+  // JC | 2026-11-04 | 태양의 일출·남중·일몰을 연속 궤도로 연결하고 산의 그림자 보정은 별도 설정으로 적용합니다.
+  // JC | 2026-11-04 | 산의 외형 메시를 유지하고 시간대별 그림자 표시만 별도 수명으로 관리합니다.
   JcMountainShadows mountainShadows;
   void PrepareBattleProfile(){
    if(!OutdoorBattle || BattleDraft != null)return;

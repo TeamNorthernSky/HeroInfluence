@@ -25,6 +25,7 @@ namespace JC.BattleTesting.Vfx
             var timeline = presentation?.ResolveTimeline(actor.TemplateIndex, actor.UnitName);
             if (timeline != null && presentation.IsTimelineRail &&
                 !(battle.PresentationCatalog?.ForceAnimatorRail ?? false))
+                // JC | 2026-11-04 | 보스 테스트에서도 본게임의 효과음 키와 연출 시점을 재사용합니다.
                 battle.StartCoroutine(PlayTimelineSfx(battle, actor, timeline));
             var context=new SkillEffectContext{Caster=actor,PrimaryTarget=target,Targets=targets,SocketTransform=actor.GetComponent<JcYuliaUnitVfx>()?.OrbAnchor??actor.transform,PlaybackSpeed=battle.CurrentBattleSpeed};
             bool wheel=actor.TemplateIndex=="40005",veil=actor.TemplateIndex=="40004";

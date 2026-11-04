@@ -61,6 +61,7 @@ namespace JC.Indicators
                 roads.Clear(); roadHeights.Clear(); pavementHeights.Clear();
                 foreach (var f in roadFilters)
                 {
+                    // JC | 2026-11-04 | 트리거와 도로·건물의 깊이를 비교해 가려진 부분의 불투명도를 따로 적용합니다.
                     roads.Add(new Road { filter = f, mesh = f.sharedMesh, matrix = f.transform.localToWorldMatrix, pavement = pavementFilters.Contains(f) });
                     CacheRoad(f, pavementFilters.Contains(f));
                 }

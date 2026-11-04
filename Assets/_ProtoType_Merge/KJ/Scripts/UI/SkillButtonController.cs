@@ -138,6 +138,7 @@ public class SkillButtonController : MonoBehaviour
     private void Select(PendingActionType action, int skillId = 0, bool selected = true)
     {
         if (!IsPlayerTurn) return;
+        // JC | 2026-11-04 | 버튼 선택 해제와 내부 선택 교체를 구분해 취소음과 선택음이 겹치지 않게 합니다.
         if (!selected)
         {
             inputHandler?.TryCancelSkillSelection();

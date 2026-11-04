@@ -29,6 +29,7 @@ namespace JC.BattleTesting
         public Sprite skillButtonFace;
         [Tooltip("미습득 스킬 행에 표시하는 회청색 배경입니다.")] public Sprite lockedFace;
         [Range(.5f, 1.5f), Tooltip("우상단 메뉴·자동·배속·도주 버튼 묶음의 크기입니다. 0.8이면 기존 대비 가로·세로 80%로 표시합니다.")]
+        // JC | 2026-11-04 | 버튼 면과 강조 효과에 같은 종횡비와 윤곽을 적용해 확대하거나 선택해도 테두리가 어긋나지 않게 합니다.
         public float topRightButtonScale = 1.04f;
         [Range(.5f, 1f), Tooltip("버튼 높이는 유지하면서 가로 폭만 조절합니다. 0.9이면 현재 크기의 90% 너비로 표시합니다.")]
         public float topRightButtonWidthRatio = .9f;

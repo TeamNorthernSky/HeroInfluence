@@ -23,6 +23,7 @@ Shader "UI/HoverOutlineSelected"
         _OrbitWhiteRim ("Orbit White Rim Intensity", Range(0,3)) = 0
         _OrbitGlowSpread ("Orbit Glow Spread", Range(1,4)) = 1
         [HideInInspector] _ConfigurableOrbitRim ("Use Configurable Battle Rim", Float) = 0
+        // JC | 2026-11-04 | 버튼 면과 강조 효과에 같은 종횡비와 윤곽을 적용해 확대하거나 선택해도 테두리가 어긋나지 않게 합니다.
         [HideInInspector] _SystemButtonFit ("Fit System Button Silhouette", Float) = 0
         [HideInInspector] _BattleRimRect ("Battle Rim Local Rect", Vector) = (0,0,320,88)
         [HideInInspector] _OrbitUVPerPixel ("Orbit UV Per Screen Pixel", Vector) = (0.00556,0.01351,0,0)

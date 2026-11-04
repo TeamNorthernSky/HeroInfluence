@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace JC.Indicators.EditorTools
 {
+    // JC | 2026-11-04 | 탐사 영역의 채움과 테두리를 부모 조절기에서 함께 관리해 하위 표시 설정이 저장값을 덮지 않게 합니다.
     [CustomEditor(typeof(JcTriggerAreaIndicator))]
     public sealed class JcTriggerAreaIndicatorEditor : Editor
     {

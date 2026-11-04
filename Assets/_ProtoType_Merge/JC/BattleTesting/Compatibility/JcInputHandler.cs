@@ -206,6 +206,7 @@ public class JcInputHandler : MonoBehaviour
 
     /// <summary>사용자 입력으로 선택을 비웁니다. 자동전투·공격 실행 중에는 false를 반환하고 유지합니다.</summary>
     // 원본 함수 대응: InputHandler.TryCancelSkillSelection (Assets/_ProtoType_Merge/ASB/Scripts/Battle/BinputHandler/InputHandler.cs)
+    // JC | 2026-11-04 | 실제 선택을 취소할 때만 취소음을 내고 다른 스킬로 전환할 때의 내부 초기화는 무음으로 처리합니다.
     public bool TryCancelSkillSelection(bool playSound = true)
     {
         if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return false;

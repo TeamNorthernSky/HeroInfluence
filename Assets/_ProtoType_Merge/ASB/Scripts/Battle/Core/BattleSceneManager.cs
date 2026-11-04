@@ -204,6 +204,7 @@ public class BattleSceneManager : MonoBehaviour
             yield break;
         }
 
+        // JC | 2026-11-04 | 패배 여부를 씬 전환까지 전달해 전환 시점에 결과음을 한 번 재생합니다.
         yield return StartCoroutine(TransitionToSceneRoutine(contextReturnScene, result == BattleResult.Defeat));
     }
 

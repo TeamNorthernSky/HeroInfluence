@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 namespace JC.EnvironmentDetail
 {
     // 원본 렌더러와 필터는 베이크·충돌·전투 캡처의 입력으로 유지합니다.
+    // JC | 2026-11-04 | 도로·차선을 부분별로 조명할 수 있게 해 가로등 하나의 영향이 도로 전체로 퍼지는 현상을 줄입니다.
     internal sealed class JcLampSurfaceChunks : MonoBehaviour
     {
         internal const string VisualName = "JC_LampSurface";

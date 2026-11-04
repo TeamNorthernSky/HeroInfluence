@@ -2,6 +2,7 @@ Shader "UI/JC/TurnFrameReferenceFit"
 {
  Properties {
  [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+ // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
  [Toggle] _SeparateBadgeFrames ("Use independent portrait frames", Float) = 0
  _PointerDetail ("Inset pointer artwork", 2D) = "black" {}
  _Color ("Tint", Color) = (1,1,1,1)

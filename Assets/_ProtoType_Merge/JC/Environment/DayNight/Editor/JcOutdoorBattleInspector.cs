@@ -30,6 +30,7 @@ namespace JC.Environment.Editor
             EditorGUILayout.HelpBox("루트에서는 현재 구간을 조절합니다. 다른 시간대는 하위 구간을 선택하세요. 저장은 선택한 구간에만 적용됩니다.", MessageType.Info);
             var so = new SerializedObject(draft);
             var slot = so.FindProperty("segments").GetArrayElementAtIndex(index);
+            // JC | 2026-11-04 | 시간대별 전장 조명을 조절하고 가로등의 중심광과 주변광을 배치에 맞게 적용합니다.
             string[] fields = { "sunlight", "sunlightTint", "sunShadow", "secondarySun", "ambient", "characterBrightness", "exposure", "screenTint" };
             string[] labels = { "방향광 밝기 배율", "방향광 색조", "주 방향광 그림자 배율", "보조 방향광 밝기 배율", "환경광 배율", "전투 캐릭터 밝기 배율", "화면 노출 보정", "화면 색조" };
             for (int i = 0; i < fields.Length; ++i)

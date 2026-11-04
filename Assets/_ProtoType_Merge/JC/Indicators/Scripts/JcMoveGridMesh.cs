@@ -35,6 +35,7 @@ public sealed class JcMoveGridMesh : System.IDisposable
         renderer.receiveShadows = false;
         if (shader != null)
         {
+            // JC | 2026-11-04 | 이동 그리드 위에 트리거가 합성되고 경로와 표식이 그 위에 보이도록 그리기 순서를 맞춥니다.
             material = new Material(shader) { name = "Movement Range Grid (Runtime)", renderQueue = JC.Indicators.JcIndicatorRenderOrder.MoveRangeGrid };
             renderer.sharedMaterial = material;
         }

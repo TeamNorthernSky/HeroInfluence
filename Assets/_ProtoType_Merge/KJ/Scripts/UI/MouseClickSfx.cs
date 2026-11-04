@@ -16,6 +16,7 @@ public sealed class MouseClickSfx : MonoBehaviour
     private static int moveStartedFrame = -1;
     private static int clickFailFrame = -1;
     private static int clickSuccessFrame = -1;
+    // JC | 2026-11-04 | 성공음과 스킬 전용음의 프레임을 각각 기록해 같은 입력의 공용 클릭음만 생략합니다.
     private static int dedicatedClickFrame = -1;
     private int pendingClickFrame = -1;
     private string pendingClickKey;
@@ -103,6 +104,7 @@ public sealed class MouseClickSfx : MonoBehaviour
         int frame = pendingClickFrame;
         string key = pendingClickKey;
         if (string.IsNullOrEmpty(key)) { ClearPendingClick(); return; }
+        // JC | 2026-11-04 | KJ 성공음과 스킬 전용음 어느 쪽이든 같은 입력에서 재생됐으면 공용 클릭음을 생략합니다.
         if (key == ClickSfxKey && (chatBubbleFrame >= frame || popupSoundFrame >= frame ||
                                    moveStartedFrame >= frame || clickFailFrame >= frame || clickSuccessFrame >= frame || dedicatedClickFrame >= frame))
         {

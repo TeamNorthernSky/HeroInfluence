@@ -1,3 +1,4 @@
+// JC | 2026-11-04 | 건물 뒤에 가려진 이벤트 외형의 깊이와 투명도를 별도로 처리해 전면의 원본 외형을 보존합니다.
 Shader "JC/Environment/Event Occlusion"
 {
     Properties

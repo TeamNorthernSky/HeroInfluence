@@ -125,6 +125,7 @@ public class HeroInfoPanel : MonoBehaviour
             // 현재 성장표의 F~SSS 등급을 사용한다.
             int rankLevel = currentUnit.SourceData != null ? currentUnit.SourceData.Level : currentUnit.Level;
             string rank = currentUnit.IsPlayer && (currentUnit.UsesTutorialEquipment || gameObject.scene.name == "TutorialBattleScene")
+                // JC | 2026-11-04 | 튜토리얼 영웅은 해당 성장표의 레벨별 등급을 사용해 탐사와 전투 배지를 일치시킵니다.
                 ? UnitRankLookup.GetTutorialRank(rankLevel, TutorialCatalog.Instance)
                 : UnitRankLookup.GetRank(rankLevel);
             rankText.text = $"랭크: {rank}";

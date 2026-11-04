@@ -642,6 +642,7 @@ namespace JC.BattleTesting
             yield return new WaitUntil(() => modalConfirmed);
             CloseModal();
         }
+        // JC | 2026-11-04 | 탐사 복귀가 없는 테스트 세션에서는 결과창을 여는 시점에 승패음을 재생합니다.
         private void BattleEnded(BattleResult result)
         {
             // 테스트는 탐사 복귀/보상 지급이 없으므로 종료창에서 승패음을 확인합니다.

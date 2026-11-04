@@ -82,6 +82,7 @@ namespace JC.Environment {
    float progress=Mathf.InverseLerp(a.hour,b.hour,h);
    float t=Mathf.SmoothStep(0,1,progress);
    float elevation,azimuth;
+   // JC | 2026-11-04 | 태양의 일출·남중·일몰을 연속 궤도로 연결하고 산의 그림자 보정은 별도 설정으로 적용합니다.
    if(!continuousSunArc||!TrySunArc(totalHours,out elevation,out azimuth)){
     elevation=InterpolateMotion(segment,progress,false);azimuth=InterpolateMotion(segment,progress,true);
    }

@@ -2,6 +2,7 @@ using UnityEngine;
 
 public sealed partial class BattleCellBorderVisual
 {
+    // JC | 2026-11-04 | 이웃한 셀은 하나의 영역으로 표시하고 단일 전투 셀은 기존 테두리 경로를 사용합니다.
     private BattleCellBorderMesh.Region region;
     private float regionInset;
     private Color? regionOuterColor, regionInnerColor;
