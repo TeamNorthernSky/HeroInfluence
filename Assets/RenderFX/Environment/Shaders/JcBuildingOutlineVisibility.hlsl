@@ -6,7 +6,10 @@ float _JcBuildingHighlight;
 
 half JcOutlineVisibility(float2 uv, float2 radius, float bias)
 {
-    if (_JcBuildingHighlight < .5 || _JcBuildingHighlight > 1.5) return 1;
+    if (_JcBuildingHighlight < .5) return 1;
+    // 최종 합성에서도 원본 실루엣을 제외해 AA가 메시 안으로 번지지 않게 한다.
+    if (_JcBuildingHighlight > 1.5)
+        return SAMPLE_TEXTURE2D_X(_JcBuildingShapeDepth, sampler_PointClamp, uv).r > .0001 ? 0 : 1;
     // 포인트 샘플은 건물 자기 깊이를 이웃의 경사 깊이와 섞지 않는다.
     float inverseDepth = SAMPLE_TEXTURE2D_X(_JcBuildingShapeDepth, sampler_PointClamp, uv).g;
     if (inverseDepth <= 0)
