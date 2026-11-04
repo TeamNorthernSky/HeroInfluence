@@ -18,7 +18,7 @@ MonoBehaviour:
   PresentationArchetype: 0
   SkillTimelines:
   - CharacterKey: 10004
-    Timeline: {fileID: 11400000, guid: 5e0b973187e49cc4996fa5c9fc56ebdd, type: 2}
+    Timeline: {fileID: 11400000, guid: 1b393b0671eb0f44794e36f6b3cb75ff, type: 2}
     TargetCount: 0
     Segments: []
   ImpactTiming: 0

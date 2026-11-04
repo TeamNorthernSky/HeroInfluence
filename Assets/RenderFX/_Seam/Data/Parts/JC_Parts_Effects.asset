@@ -150,6 +150,12 @@ MonoBehaviour:
       type: 3}
   - Id: 98047
     Prefab: {fileID: 751471882910008744, guid: c87a5ce0b26e880449fbb72543326ff5, type: 3}
+  - Id: 98048
+    Prefab: {fileID: 5854793371056050240, guid: 5332988821a2dd943bfb78c435a3e8f4,
+      type: 3}
+  - Id: 98049
+    Prefab: {fileID: 4304652937970550156, guid: 2a102692b39b67141a8537716c83b46b,
+      type: 3}
   - Id: 98632
     Prefab: {fileID: 2478677000275031897, guid: ab354a0c4d3376640b93e7ea6ecd7b09,
       type: 3}

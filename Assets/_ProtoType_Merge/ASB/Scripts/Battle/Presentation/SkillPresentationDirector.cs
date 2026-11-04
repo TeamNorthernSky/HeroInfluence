@@ -1079,6 +1079,7 @@ public sealed partial class SkillPresentationDirector
         // 피격/사망 인터럽트: 반응 CrossFade가 Timeline 포즈를 덮기 전에 director를 '동기' 정지시킨다.
         // (플래그만 세우면 PlayableDirector가 같은/다음 프레임에 한 번 더 Evaluate해 Hit/Dead를 덮어쓴다.)
         PresentationInterruptReason interrupt = PresentationInterruptReason.None;
+        BattleTimelineFootGrounding footGrounding = null;
         void OnInterrupt(PresentationInterruptReason reason)
         {
             if (reason == PresentationInterruptReason.None) return;
@@ -1088,6 +1089,25 @@ public sealed partial class SkillPresentationDirector
         if (actor != null) actor.PresentationInterruptRequested += OnInterrupt;
         try
         {
+            if ((presentation.SkillIndex == 4020 || presentation.SkillIndex == 4021) &&
+                actor.PresentationIndex == "10004" &&
+                timeline.name == "Skill4020_10004_CastSpell1H_Grounded")
+            {
+                Animator animator = actor.Anim != null ? actor.Anim.Animator : null;
+                Transform modelRoot = animator != null ? animator.transform.parent : null;
+                if (modelRoot != null && modelRoot != actor.transform)
+                {
+                    footGrounding = modelRoot.GetComponent<BattleTimelineFootGrounding>();
+                    if (footGrounding == null)
+                        footGrounding = modelRoot.gameObject.AddComponent<BattleTimelineFootGrounding>();
+                    if (!footGrounding.Begin(animator, actor.transform.position.y))
+                    {
+                        UnityEngine.Object.Destroy(footGrounding);
+                        footGrounding = null;
+                    }
+                }
+            }
+
             director.Play();
             // Play()가 정지 상태의 Director 시간을 초기화할 수 있으므로 그래프를 먼저 연 뒤
             // 구간 시작점으로 이동한다. 범위 밖 Retroactive Marker는 receiver가 차단한다.
@@ -1152,6 +1172,7 @@ public sealed partial class SkillPresentationDirector
             director.stopped -= OnStopped;
             director.Stop();               // 그래프 정리
             director.playableAsset = null; // 다음 재생을 위해 바인딩 해제
+            if (footGrounding != null) footGrounding.Release();
             // 그래프 해제 시 AnimationTrack의 마지막 루트 포즈가 다시 기록될 수 있다.
             if (actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None &&
                 returnSpans.Exists(span => span.Completed))
