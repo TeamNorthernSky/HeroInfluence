@@ -11620,6 +11620,9 @@ MonoBehaviour:
   - gridPosition: {x: 10, y: 17}
     prefabKey: BGHouse002
     rotation: 270
+  - gridPosition: {x: 34, y: 10}
+    prefabKey: Trash Can
+    rotation: 270
   tutorialObjectPlacements: []
   mainEventPlacements:
   - gridPosition: {x: 8, y: 16}
