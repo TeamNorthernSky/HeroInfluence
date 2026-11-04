@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>둥근 사각 윤곽을 따라 윗면·밑면·양쪽 벽을 생성합니다. 움직임에는 재생성하지 않습니다.</summary>
-public static class BattleCellBorderMesh
+public static partial class BattleCellBorderMesh
 {
     public static void Build(Mesh mesh, Vector2 size, float radius, float width, float depth, int segments, bool fill)
     {

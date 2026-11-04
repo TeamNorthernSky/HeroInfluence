@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61f92490c53b41b781c46c184f476575, type: 3}
+  m_Name: TriggerArea
+  m_EditorClassIdentifier: 
+  settings:
+    shape:
+      size: {x: 1, y: 1}
+      padding: 0
+      cornerRadius: 0.16
+      curveSegments: 14
+      outerWidth: 0.025
+      mainWidth: 0.06
+      innerWidth: 0.01
+      depth: 0.05
+      floatHeight: 0
+    showOuter: 1
+    showInner: 1
+    intensity: 1
+    opacity: 1
+    outerIntensity: 0.8
+    outerOpacity: 0.8
+    innerIntensity: 0.9
+    innerOpacity: 1
+    buildingOccludedOpacity: 0.15
+    sidewalkOccludedOpacity: 0.275
+    minimumHeight: 0.006
+    bobAmplitude: 0.02
+    bobPeriod: 1.8
+    useFill: 1
+    fillUsesTriggerColor: 1
+    fillColor: {r: 1, g: 1, b: 1, a: 1}
+    fillIntensity: 0.8
+    fillOpacity: 0
+    fillTexture: {fileID: 0}
