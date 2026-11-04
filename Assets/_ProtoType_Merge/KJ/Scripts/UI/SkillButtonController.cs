@@ -25,6 +25,7 @@ public class SkillButtonController : MonoBehaviour
         [Tooltip("표시할 스킬의 아이콘입니다.")] public Image icon;
         [Tooltip("표시할 스킬 이름입니다.")] public TMP_Text name;
         [Tooltip("요구 레벨 미달 시 표시하는 음영과 자물쇠 묶음입니다.")] public GameObject lockedOverlay;
+        [Tooltip("흑백 아이콘 뒤에 표시하는 미습득 스킬 행입니다.")] public GameObject lockedFace;
         [Tooltip("습득했지만 실행 연결이 없는 슬롯의 임시 안내입니다.")] public GameObject unconnectedLabel;
         [Tooltip("이 슬롯의 사용 가능 효과와 선택 테두리입니다. 없으면 기존 표시를 유지합니다.")] public BattleSkillButtonVisual visual;
         [NonSerialized] public SkillData skill;
@@ -206,24 +207,14 @@ public class SkillButtonController : MonoBehaviour
                         slot.iconMaterialCaptured = true;
                     }
                     if (locked && lockedIconMaterial == null)
-                    {
-                        var shader = Shader.Find("JC/UI/RewardTint");
-                        if (shader != null)
-                        {
-                            lockedIconMaterial = new Material(shader) { name = "BattleLockedSkillIcon", hideFlags = HideFlags.HideAndDontSave };
-                            lockedIconMaterial.SetFloat("_Saturation", .2f);
-                            // 미습득 아이콘만 어두운 회색으로 혼합해 명도와 대비를 함께 낮춥니다.
-                            // 프레임/자물쇠는 별도 Image이며, 습득 시 원본 재질로 복원됩니다.
-                            lockedIconMaterial.SetColor("_EffectColor", new Color(.045f, .055f, .07f, 1f));
-                            lockedIconMaterial.SetFloat("_Effect", .55f);
-
-                        }
-                    }
+                        lockedIconMaterial = Resources.Load<Material>("BattleEntry/HudLockedIcon");
                     slot.icon.material = locked && lockedIconMaterial != null ? lockedIconMaterial : slot.originalIconMaterial;
                     // '+' 변형은 별도 스킬 ID이며 협회 강화 단계와 혼용하지 않습니다.
                     slot.icon.sprite = shown != null ? Sprites.Icon.ClassSkill(shown.skillIndex, 1) : null;
                     slot.icon.enabled = slot.icon.sprite != null;
+                    JC.BattleTesting.JcBattleHudLayout.FitMaskedArt(slot.icon);
                 }
+                if (slot.lockedFace != null) slot.lockedFace.SetActive(locked);
                 if (slot.lockedOverlay != null) slot.lockedOverlay.SetActive(locked);
                 if (slot.unconnectedLabel != null) slot.unconnectedLabel.SetActive(shown != null && !locked && !wired);
             }
@@ -391,13 +382,21 @@ public class SkillButtonController : MonoBehaviour
             foreach (var slot in heroSlots)
                 if (slot != null && slot.icon != null && slot.iconMaterialCaptured)
                     slot.icon.material = slot.originalIconMaterial;
-        if (lockedIconMaterial != null) Destroy(lockedIconMaterial);
     }
 
     private void SetDescription(string title, string body, SkillData skill)
     {
-        if (descriptionTitle != null) descriptionTitle.text = title;
-        if (descriptionBody != null) descriptionBody.text = body;
+        if (descriptionTitle != null && descriptionTitle.text != title)
+        {
+            descriptionTitle.text = title;
+            JC.BattleTesting.JcBattleHudLayout.LayoutDescriptionTitle(descriptionTitle);
+        }
+        if (descriptionBody != null && descriptionBody.text != body)
+        {
+            descriptionBody.text = body;
+            var scroll = descriptionBody.GetComponentInParent<ScrollRect>();
+            if (scroll != null) { scroll.StopMovement(); scroll.verticalNormalizedPosition = 1f; }
+        }
         if (descriptionTags == null) return;
         for (int i = 0; i < descriptionTags.Length; i++)
         {

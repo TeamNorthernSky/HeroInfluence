@@ -16,6 +16,12 @@ public static class UnitRankLookup
         return ResolveRank(catalog.GetUnitGrowthTemplates(), level);
     }
 
+    public static string GetTutorialRank(int level, TutorialCatalog catalog)
+    {
+        var rank = catalog != null ? ResolveRank(catalog.GetUnitGrowthTemplates(), level) : Unknown;
+        return rank == Unknown ? "F" : rank;
+    }
+
     public static string ResolveRank(IReadOnlyList<DHUnitGrowthTemplate> table, int level)
     {
         if (table == null) return Unknown;

@@ -119,7 +119,8 @@ public sealed class JcBattleHoverLink : MonoBehaviour
         {
             if (pair.Value == null) continue;
             if (!overUI && pair.Key != null && pair.Key.isActiveAndEnabled && pair.Key.DisplayedUnit == target)
-                pair.Value.Show(badgeColor, badgeWidth, badgePhase);
+                pair.Value.Show(badgeColor, badgeWidth, badgePhase,
+                    JC.Tutorial.JcTutorialBattleGuide.HighlightsWorldEnemyBadge(pair.Key));
             else pair.Value.enabled = false;
         }
         if (!highlightModel) return;
