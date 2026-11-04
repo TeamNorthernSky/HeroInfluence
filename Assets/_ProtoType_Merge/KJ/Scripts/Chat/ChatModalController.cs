@@ -56,6 +56,10 @@ public class ChatModalController : MonoBehaviour
     private ChoiceButtonView briefingEndButton;
     private int briefingEndShownFrame = -1;
     private RectTransform entranceRoot;
+    private RectTransform shakeRoot;
+    private Coroutine rumble;
+    private CameraShakeEffect rumbleCamera;
+    private bool playedArnoldRumble;
     private CanvasGroup entranceGroup;
     private Tween entranceTween;
     private ChatBubbleView previousSpeakerBubble;
@@ -157,7 +161,14 @@ public class ChatModalController : MonoBehaviour
         entranceRoot.anchorMin = Vector2.zero;
         entranceRoot.anchorMax = Vector2.one;
         entranceRoot.offsetMin = entranceRoot.offsetMax = Vector2.zero;
-        foreach (var child in children) child.SetParent(entranceRoot, false);
+        var frame = new GameObject("ChatShakeRoot", typeof(RectTransform));
+        frame.layer = host.layer;
+        shakeRoot = (RectTransform)frame.transform;
+        shakeRoot.SetParent(entranceRoot, false);
+        shakeRoot.anchorMin = Vector2.zero;
+        shakeRoot.anchorMax = Vector2.one;
+        shakeRoot.offsetMin = shakeRoot.offsetMax = Vector2.zero;
+        foreach (var child in children) child.SetParent(shakeRoot, false);
         entranceGroup = host.GetComponent<CanvasGroup>();
         if (skipConfirmPopup != null) skipConfirmPopup.transform.SetAsLastSibling();
     }
@@ -187,6 +198,7 @@ public class ChatModalController : MonoBehaviour
 
     private void OnDisable()
     {
+        StopRumble();
         if (entranceTween.isAlive) entranceTween.Stop();
         if (entranceRoot != null) entranceRoot.anchoredPosition = Vector2.zero;
         if (entranceGroup != null) entranceGroup.interactable = true;
@@ -284,6 +296,8 @@ public class ChatModalController : MonoBehaviour
 
     private void Begin(int zoneId, int startChatId, Action closedCallback)
     {
+        StopRumble();
+        playedArnoldRumble = false;
         StopSkipping();
         ClearBubbles();
         ClearChoices();
@@ -339,7 +353,73 @@ public class ChatModalController : MonoBehaviour
         }
 
         SpawnBubble(chat);
+        if (chat.ChatId == 1510050 && !playedArnoldRumble)
+        {
+            playedArnoldRumble = true;
+            StopRumble();
+            rumble = StartCoroutine(PlayArnoldRumble());
+        }
         // 전부 빈 텍스트 = 자동 진행 분기(버튼 없이 조건이 경로 결정, 시트 관찰 기반 규칙)
+    }
+
+    // Copy only the visual hierarchy. The real modal registers input, pauses gameplay and starts a chat session.
+    public static GameObject CreateRumblePreview(out RectTransform frame)
+    {
+        frame = null;
+        var asset = Resources.Load<GameObject>(PrefabPath);
+        if (asset == null || !asset.TryGetComponent<ChatModalController>(out var prefab) || prefab.bubblePrefab == null) return null;
+        var window = new GameObject("HEROTALK (셰이크 테스트)", typeof(Canvas), typeof(CanvasScaler), typeof(CanvasGroup));
+        var canvas = window.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = prefab.GetComponent<Canvas>().sortingOrder + 1;
+        var scaler = window.GetComponent<CanvasScaler>();
+        var source = prefab.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = source.uiScaleMode;
+        scaler.referenceResolution = source.referenceResolution;
+        scaler.screenMatchMode = source.screenMatchMode;
+        scaler.matchWidthOrHeight = source.matchWidthOrHeight;
+        var group = window.GetComponent<CanvasGroup>();
+        group.interactable = group.blocksRaycasts = false;
+        frame = (RectTransform)new GameObject("ChatShakeRoot", typeof(RectTransform)).transform;
+        frame.SetParent(window.transform, false);
+        frame.anchorMin = Vector2.zero;
+        frame.anchorMax = Vector2.one;
+        frame.offsetMin = frame.offsetMax = Vector2.zero;
+        foreach (Transform child in prefab.transform)
+        {
+            if (child.gameObject == prefab.skipConfirmPopup) continue;
+            var copy = Instantiate(child, child.name == "Dim Panel" ? window.transform : frame, false);
+            if (child.name == "Dim Panel") copy.SetAsFirstSibling();
+        }
+        var scroll = frame.GetComponentInChildren<ScrollRect>(true);
+        var bubble = Instantiate(prefab.bubblePrefab, scroll.content);
+        bubble.Bind("", "(잠시후 폭발적인 굉음이 반복적으로 울리며 점점 커져온다.)", 2);
+        return window;
+    }
+
+    public static bool PreviewArnoldRumble()
+    {
+        if (!IsOpen || current.isClosing || !current.isActiveAndEnabled) return false;
+        current.StopRumble();
+        current.rumble = current.StartCoroutine(current.PlayArnoldRumble());
+        return true;
+    }
+
+    private IEnumerator PlayArnoldRumble()
+    {
+        rumbleCamera = CameraShakeEffect.ForCamera(Camera.main);
+        yield return JcArnoldShake.ChatBeats(rumbleCamera, shakeRoot, this);
+        rumbleCamera = null;
+        rumble = null;
+    }
+
+    private void StopRumble()
+    {
+        if (rumble != null) StopCoroutine(rumble);
+        if (rumbleCamera != null) rumbleCamera.CancelImpact(this);
+        if (shakeRoot != null) shakeRoot.anchoredPosition = Vector2.zero;
+        rumbleCamera = null;
+        rumble = null;
     }
 
     private void Update()
@@ -641,6 +721,7 @@ public class ChatModalController : MonoBehaviour
         }
 
         isClosing = true;
+        StopRumble();
         StopSkipping();
 
         if (manager != null && manager.IsRunning)

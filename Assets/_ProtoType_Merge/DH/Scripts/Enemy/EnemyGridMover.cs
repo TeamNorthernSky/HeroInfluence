@@ -214,11 +214,21 @@ public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
 
     private IEnumerator PlayMoveFootsteps()
     {
+        string group = enemyIdentity != null ? enemyIdentity.EnemyGroupKey : string.Empty;
+        bool arnold = group == "BE161" || group == "BE261";
         var interval = new WaitForSeconds(Mathf.Max(0.01f, footstepInterval));
         while (isMoving && !IsStatic && isActiveAndEnabled)
         {
             if (Time.timeScale > 0f)
+            {
                 AudioManager.Instance?.PlaySfxForDuration(MoveSfxKey, footstepDuration);
+                if (arnold)
+                {
+                    Camera camera = Camera.main;
+                    if (camera != null && camera.gameObject.scene == gameObject.scene)
+                        JcArnoldShake.Footstep(camera, this);
+                }
+            }
             yield return interval;
         }
         footstepRoutine = null;
