@@ -26,8 +26,8 @@ MonoBehaviour:
     loop: 0
     allowOverlap: 0
   - key: Lobby
-    clip: {fileID: 8300000, guid: 0fddd1a8f7d620d4396af0d371c01809, type: 3}
-    introClip: {fileID: 8300000, guid: 6a6dddc674760f146876613f6dceeb43, type: 3}
+    clip: {fileID: 8300000, guid: 05c2654844cd2744c885a0f6cc299063, type: 3}
+    introClip: {fileID: 8300000, guid: db9c0b78097f61b4daf14813cfc9480a, type: 3}
     defaultVolume: 0.5
     loop: 0
     allowOverlap: 0
