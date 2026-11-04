@@ -110,13 +110,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f1623785259f4548b0f73d4994672ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  movementMessage: "\uC9C0\uAE08\uC740 \uADF8\uACF3\uC73C\uB85C\n \uAC08 \uC218 \uC5C6\uC5B4!"
+  moneyMessage: "\uC790\uAE08\uC744 \uCC3E\uC558\uC5B4!\n\uC54C\uB730\uD558\uAC8C
+    \uC368\uC57C\uACA0\uB124."
+  chipMessage: "\uBA54\uB2EC\uC744 \uC5BB\uC5C8\uC5B4!\n\uD611\uD68C\uC5D0 \uB3C4\uC6C0\uC774
+    \uB418\uACA0\uB124."
+  crystalMessage: "\uBCF4\uC11D\uC744 \uBC1C\uACAC\uD588\uC5B4!\n\uBC18\uC9DD\uBC18\uC9DD
+    \uBE5B\uB098\uB124."
+  supplyMessage: "\uBCF4\uAE09\uD488\uC744 \uCC3E\uC558\uC5B4!\n\uD0D0\uC0AC\uC5D0
+    \uB3C4\uC6C0\uC774 \uB418\uACA0\uB124."
   followAnchor: {fileID: 5075915286730843807}
   entrance: {fileID: 5766773314371755867}
   bubbleGroup: {fileID: 4838399034364459656}
   visibility: {fileID: 4455295838582813313}
   messageText: {fileID: 2767128124386918746}
   partyPanelSprite: {fileID: 21300000, guid: 1fbbdab26fdbfa44286fc0c75fc2108b, type: 3}
-  headPadding: 0.15
+  movementBalloons: []
   holdSeconds: 1.6
   fadeSeconds: 0.25
   followCharacterPosition: 0
@@ -187,9 +196,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD589\uB3D9\uB825\uC774 \uBD80\uC871\uD574!"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
-  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

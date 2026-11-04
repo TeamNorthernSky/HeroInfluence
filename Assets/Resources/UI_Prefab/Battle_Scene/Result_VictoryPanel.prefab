@@ -174,9 +174,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD655\uC778"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 20209589e34fcf84e80b676dcf38b7f6, type: 2}
-  m_sharedMaterial: {fileID: -4837156727757825064, guid: 20209589e34fcf84e80b676dcf38b7f6,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 86a5236b05cf8984e9bb05f9edc93ae8, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 088ecb80dfad41e40ace8e004992bed2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -358,6 +357,11 @@ MonoBehaviour:
   acceptButton: {fileID: 8468075864948878154}
   heroInfoResultPrefab: {fileID: 7417560410204484897, guid: 4883666fd3776a442be743c7ebc5df07,
     type: 3}
+  sceneHeroSlots: []
+  resultContent: {fileID: 0}
+  resultTitle: {fileID: 0}
+  victoryTitle: {fileID: 0}
+  defeatTitle: {fileID: 0}
 --- !u!223 &895417429614922528
 Canvas:
   m_ObjectHideFlags: 0

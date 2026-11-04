@@ -141,9 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7b47028b2f75ff43be4567cd9590b40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelPrefab: {fileID: 3046258963059198080, guid: d5886c4e80fa1a84fa5d3b689c192864,
-    type: 3}
-  spawnParent: {fileID: 0}
+  PNL_PressNextTurn: {fileID: 0}
   nextTurnButton: {fileID: 1187370465448521588}
 --- !u!1 &8566817826227367868
 GameObject:
@@ -212,9 +210,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "1\uD134   99\uC8FC   4\uC77C "
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
-    type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 2d98d13bb434b6c4a8ee8b009d74fb41, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
