@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine.Timeline;
 
 /// <summary>
@@ -13,6 +14,9 @@ public static class PresentationTimelineSpeed
 {
     public const float DefaultSpeed = 1f;
 
+    // Timeline 재생 중 매 프레임 불리므로 조회용 목록을 재사용한다(메인 스레드 전용).
+    private static readonly List<IMarker> s_SpeedMarkers = new List<IMarker>();
+
     /// <summary>
     /// <paramref name="time"/> 이전(포함)의 가장 늦은 <see cref="PresentationSpeedMarker"/> 배속.
     /// 해당 마커가 없거나 timeline이 null이면 <see cref="DefaultSpeed"/>(1.0).
@@ -24,8 +28,10 @@ public static class PresentationTimelineSpeed
         double bestTime = double.NegativeInfinity;
         float best = DefaultSpeed;
 
-        foreach (PresentationSpeedMarker speed in PresentationTimelineMarkers.OfType<PresentationSpeedMarker>(timeline))
+        PresentationTimelineMarkers.Collect(timeline, typeof(PresentationSpeedMarker), s_SpeedMarkers);
+        for (int i = 0; i < s_SpeedMarkers.Count; i++)
         {
+            var speed = (PresentationSpeedMarker)s_SpeedMarkers[i];
             double t = speed.time;
             if (t > time + 1e-9d) continue;                            // 아직 도달하지 않은 마커
             if (!found || t >= bestTime)                               // 시각이 가장 늦은 것 채택
@@ -36,6 +42,7 @@ public static class PresentationTimelineSpeed
             }
         }
 
+        s_SpeedMarkers.Clear();
         return best;
     }
 }
