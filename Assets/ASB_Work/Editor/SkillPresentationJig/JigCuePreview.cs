@@ -119,7 +119,7 @@ namespace ASB.Work.EditorTools.Jig
 
             DHAudioClipCatalog catalog = AssetDatabase.LoadAssetAtPath<DHAudioClipCatalog>(
                 "Assets/_ProtoType_Merge/DH/Audio/DHAudioClipCatalog.asset");
-            foreach (PresentationSfxMarker marker in PresentationTimelineMarkers.OfType<PresentationSfxMarker>(timeline))
+            foreach (PresentationSfxMarker marker in PresentationTimelineMarkersEditor.OfType<PresentationSfxMarker>(timeline))
             {
                 if (catalog == null || !catalog.TryGetClip(marker.SfxKey, out AudioClip clip))
                 {

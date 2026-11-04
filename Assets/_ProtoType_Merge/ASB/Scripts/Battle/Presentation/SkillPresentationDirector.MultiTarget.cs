@@ -318,7 +318,7 @@ public sealed partial class SkillPresentationDirector
                 director.time = 0d;
                 director.Evaluate();
 
-                List<KeyValuePair<double, float>> holds = CollectHoldMarks(timeline);
+                List<PresentationHoldMarker> holds = CollectHoldMarks(timeline);
                 var holdDone = new bool[holds.Count];
                 double previousTime = 0d;
                 while (actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
@@ -328,11 +328,12 @@ public sealed partial class SkillPresentationDirector
                     UpdatePlanReturn(actor, activeReturns, now, originPosition, originalActorRotation);
                     for (int h = 0; h < holds.Count; h++)
                     {
-                        if (holdDone[h] || holds[h].Key <= previousTime + 0.0001d ||
-                            holds[h].Key > now + 0.0001d) continue;
+                        if (holdDone[h] || holds[h].time <= previousTime + 0.0001d ||
+                            holds[h].time > now + 0.0001d) continue;
                         holdDone[h] = true;
-                        yield return FreezeForHoldRoutine(director, holds[h].Value,
-                            () => actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
+                        yield return FreezeForHoldRoutine(director, holds[h].DurationSeconds,
+                            () => actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None,
+                            holds[h].ReleaseSfxKey);
                     }
                     ApplyBattleSpeedToDirector(director,
                         _battle.CurrentBattleSpeed * PresentationTimelineSpeed.SpeedAt(timeline, now) *
@@ -443,7 +444,10 @@ public sealed partial class SkillPresentationDirector
     {
         var spans = new List<PlanMoveSpan>();
         if (timeline == null) return spans;
-        var markers = new List<PresentationMoveMarker>(PresentationTimelineMarkers.OfType<PresentationMoveMarker>(timeline));
+        var found = new List<IMarker>();
+        PresentationTimelineMarkers.Collect(timeline, typeof(PresentationMoveMarker), found);
+        var markers = new List<PresentationMoveMarker>(found.Count);
+        foreach (IMarker marker in found) markers.Add((PresentationMoveMarker)marker);
         markers.Sort((a, b) => a.time.CompareTo(b.time));
         PresentationMoveMarker start = null;
         foreach (PresentationMoveMarker marker in markers)
@@ -469,7 +473,10 @@ public sealed partial class SkillPresentationDirector
     {
         var spans = new List<PlanReturnSpan>();
         if (timeline == null) return spans;
-        var markers = new List<PresentationReturnMarker>(PresentationTimelineMarkers.OfType<PresentationReturnMarker>(timeline));
+        var found = new List<IMarker>();
+        PresentationTimelineMarkers.Collect(timeline, typeof(PresentationReturnMarker), found);
+        var markers = new List<PresentationReturnMarker>(found.Count);
+        foreach (IMarker marker in found) markers.Add((PresentationReturnMarker)marker);
         markers.Sort((a, b) => a.time.CompareTo(b.time));
         PresentationReturnMarker start = null;
         foreach (PresentationReturnMarker marker in markers)
@@ -491,8 +498,10 @@ public sealed partial class SkillPresentationDirector
     private static TimelineMovingAttackSpan CollectMovingAttackSpan(TimelineAsset timeline,
         MovingAttackPath.Points points, int requestedSampleCount)
     {
-        var markers = new List<PresentationMovingAttackMarker>(
-            PresentationTimelineMarkers.OfType<PresentationMovingAttackMarker>(timeline));
+        var found = new List<IMarker>();
+        PresentationTimelineMarkers.Collect(timeline, typeof(PresentationMovingAttackMarker), found);
+        var markers = new List<PresentationMovingAttackMarker>(found.Count);
+        foreach (IMarker marker in found) markers.Add((PresentationMovingAttackMarker)marker);
         if (markers.Count != 2) return null;
         markers.Sort((a, b) => a.time.CompareTo(b.time));
         if (markers[0].Boundary != PresentationSectionBoundary.Start ||
@@ -551,16 +560,12 @@ public sealed partial class SkillPresentationDirector
 
     private static bool HasTimelineMove(TimelineAsset timeline)
     {
-        foreach (PresentationMoveMarker marker in PresentationTimelineMarkers.OfType<PresentationMoveMarker>(timeline))
-            return true;
-        return false;
+        return PresentationTimelineMarkers.Contains(timeline, typeof(PresentationMoveMarker));
     }
 
     private static bool HasTimelineReturn(TimelineAsset timeline)
     {
-        foreach (PresentationReturnMarker marker in PresentationTimelineMarkers.OfType<PresentationReturnMarker>(timeline))
-            return true;
-        return false;
+        return PresentationTimelineMarkers.Contains(timeline, typeof(PresentationReturnMarker));
     }
 
     private static bool MovementSpansOverlap(List<PlanMoveSpan> moves, List<PlanReturnSpan> returns)

@@ -91,7 +91,7 @@ namespace ASB.Work.EditorTools.Jig
         private static int MoveMarkers<T>(TimelineAsset timeline, PresentationMarkerTrack target)
             where T : ScriptableObject, IMarker
         {
-            var sources = new List<T>(PresentationTimelineMarkers.OfType<T>(timeline));
+            var sources = new List<T>(PresentationTimelineMarkersEditor.OfType<T>(timeline));
             int moved = 0;
             foreach (T source in sources)
             {

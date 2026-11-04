@@ -237,10 +237,10 @@ namespace ASB.Work.EditorTools.Jig
                         $"세그먼트 {i + 1}: {timelineMessages[m].Message}");
                 if (timeline == null) continue;
 
-                var ordered = new List<IMarker>(PresentationTimelineMarkers.OfType<PresentationSignalMarker>(timeline));
+                var ordered = new List<IMarker>(PresentationTimelineMarkersEditor.OfType<PresentationSignalMarker>(timeline));
                 ordered.Sort((a, b) => a.time.CompareTo(b.time));
 
-                var moves = new List<PresentationMoveMarker>(PresentationTimelineMarkers.OfType<PresentationMoveMarker>(timeline));
+                var moves = new List<PresentationMoveMarker>(PresentationTimelineMarkersEditor.OfType<PresentationMoveMarker>(timeline));
                 for (int markerIndex = 0; markerIndex < ordered.Count; markerIndex++)
                 {
                     IMarker raw = ordered[markerIndex];
@@ -318,10 +318,10 @@ namespace ASB.Work.EditorTools.Jig
         private static void ValidateMovementMarkers(SkillPresentationData data, TimelineAsset timeline,
             List<SkillTimelineValidationMessage> result)
         {
-            var moves = new List<PresentationMoveMarker>(PresentationTimelineMarkers.OfType<PresentationMoveMarker>(timeline));
-            var returns = new List<PresentationReturnMarker>(PresentationTimelineMarkers.OfType<PresentationReturnMarker>(timeline));
+            var moves = new List<PresentationMoveMarker>(PresentationTimelineMarkersEditor.OfType<PresentationMoveMarker>(timeline));
+            var returns = new List<PresentationReturnMarker>(PresentationTimelineMarkersEditor.OfType<PresentationReturnMarker>(timeline));
             var movingAttacks = new List<PresentationMovingAttackMarker>(
-                PresentationTimelineMarkers.OfType<PresentationMovingAttackMarker>(timeline));
+                PresentationTimelineMarkersEditor.OfType<PresentationMovingAttackMarker>(timeline));
             moves.Sort((a, b) => a.time.CompareTo(b.time));
             returns.Sort((a, b) => a.time.CompareTo(b.time));
             movingAttacks.Sort((a, b) => a.time.CompareTo(b.time));
@@ -653,7 +653,7 @@ namespace ASB.Work.EditorTools.Jig
         private static DHAudioClipCatalog FindSfxCatalog(TimelineAsset timeline)
         {
             bool hasSfx = false;
-            foreach (PresentationSfxMarker marker in PresentationTimelineMarkers.OfType<PresentationSfxMarker>(timeline))
+            foreach (PresentationSfxMarker marker in PresentationTimelineMarkersEditor.OfType<PresentationSfxMarker>(timeline))
             {
                 hasSfx = true;
                 break;
@@ -685,7 +685,7 @@ namespace ASB.Work.EditorTools.Jig
             const double epsilon = 0.0001d;
             // 마커가 자동 계산 길이(duration)를 늘릴 수 있어 duration 비교만으로는 늦은 마커를 못 잡는다 → 애니 끝과도 비교.
             double animationEnd = LastAnimationClipEnd(timeline);
-            foreach (PresentationSfxMarker marker in PresentationTimelineMarkers.OfType<PresentationSfxMarker>(timeline))
+            foreach (PresentationSfxMarker marker in PresentationTimelineMarkersEditor.OfType<PresentationSfxMarker>(timeline))
             {
                 string key = marker.SfxKey;
                 if (string.IsNullOrEmpty(key))
@@ -848,7 +848,7 @@ namespace ASB.Work.EditorTools.Jig
             List<SkillTimelineValidationMessage> result)
         {
             var speedMarkers = new List<PresentationSpeedMarker>();
-            foreach (PresentationSpeedMarker marker in PresentationTimelineMarkers.OfType<PresentationSpeedMarker>(timeline))
+            foreach (PresentationSpeedMarker marker in PresentationTimelineMarkersEditor.OfType<PresentationSpeedMarker>(timeline))
                 speedMarkers.Add(marker);
             if (speedMarkers.Count == 0) return;   // 속도 마커는 선택 기능
 
