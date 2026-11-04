@@ -10,6 +10,8 @@ namespace JC.Environment
         public sealed class Adjustment
         {
             [Min(0)] public float sunlight = 1;
+            [Min(0), Tooltip("주 방향광 그림자의 기존 강도에 곱합니다.")] public float sunShadow = 1;
+            [Min(0), Tooltip("주 방향광 이외의 방향광에 적용하는 밝기 배율입니다.")] public float secondarySun = 1;
             public Color sunlightTint = Color.white;
             [Min(0)] public float ambient = 1;
             [Min(0)] public float characterBrightness = 1;
@@ -18,6 +20,12 @@ namespace JC.Environment
         }
         public Adjustment[] segments = { new Adjustment(), new Adjustment(), new Adjustment(), new Adjustment() };
 
+        public float SecondarySun(JcDayNightProfile source, double hours)
+        {
+            source.SegmentPair(hours, out int first, out int next, out float progress);
+            return Mathf.Lerp(segments[first].secondarySun, segments[next].secondarySun, Mathf.SmoothStep(0, 1, progress));
+        }
+
         public float Apply(JcDayNightProfile source, double hours, JcDayNightProfile.Segment look)
         {
             source.SegmentPair(hours, out int first, out int next, out float progress);
@@ -25,6 +33,7 @@ namespace JC.Environment
             var a = segments[first];
             var b = segments[next];
             look.lightIntensity *= Mathf.Lerp(a.sunlight, b.sunlight, t);
+            look.shadowMultiplier *= Mathf.Lerp(a.sunShadow, b.sunShadow, t);
             look.lightColor *= Color.Lerp(a.sunlightTint, b.sunlightTint, t);
             look.ambientMultiplier *= Mathf.Lerp(a.ambient, b.ambient, t);
             float brightness = Mathf.Lerp(a.characterBrightness, b.characterBrightness, t);
