@@ -285,8 +285,8 @@ MonoBehaviour:
   _useIncapacitation: 0
   _keepCorpseAfterDeath: 1
   _reviveStartPhase: 1
-  _corpseReviveDelayRounds: 2
-  _reviveHpRatio: 0.5
+  _corpseReviveDelayRounds: 3
+  _reviveHpRatio: 0.65
   _reviveGroupId: YuliaAmplifier
   _immediateRevivePhase: 0
   _immediateReviveHoldSeconds: 0.7

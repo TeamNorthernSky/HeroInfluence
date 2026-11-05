@@ -4,6 +4,7 @@ namespace ASB.Work.Battle.Core
 {
     public static class CombatCalculator
     {
+        private const float DefaultCounterDamageMultiplier = 0.5f;
         /// <summary>경감 발동 시 받는 피해 배율.</summary>
         private const float ReducedDamageMultiplier = 0.5f;
         private const float MaxCriticalRate = 0.7f;
@@ -94,10 +95,16 @@ namespace ASB.Work.Battle.Core
         }
 
         public static float CalculateDamage(DamageContext context)
-            => CalculateDamage(context, out _);
+            => CalculateDamage(context, out _, DefaultCounterDamageMultiplier);
+
+        public static float CalculateDamage(DamageContext context, float counterDamageMultiplier)
+            => CalculateDamage(context, out _, counterDamageMultiplier);
 
         /// <summary>피해를 계산하고 경감이 발동했는지 함께 반환한다. 경감 판정은 context.IsDamageReduced를 따른다.</summary>
         public static float CalculateDamage(DamageContext context, out bool damageReduced)
+            => CalculateDamage(context, out damageReduced, DefaultCounterDamageMultiplier);
+
+        public static float CalculateDamage(DamageContext context, out bool damageReduced, float counterDamageMultiplier)
         {
             // 피해 무효 대상(BattleCharactor.IsDamageImmune)은 최소 피해(2)도 없이 0. 예측·팝업·실제 적용이 모두 0으로 맞는다.
             if (context.Target != null && context.Target.IsDamageImmune)
@@ -109,7 +116,7 @@ namespace ASB.Work.Battle.Core
             if (context.IsCounterAttack)
             {
                 damageReduced = false;
-                return CalculateCounterDamage(context.Caster.FinalStats.Atk);
+                return CalculateCounterDamage(context.Caster.FinalStats.Atk, counterDamageMultiplier);
             }
 
             float atk = context.Caster.FinalStats.Atk;
@@ -139,10 +146,13 @@ namespace ASB.Work.Battle.Core
             return Mathf.Max(2f, roundedDamage);
         }
 
-        /// <summary>반격은 상대 방어력과 일반 공격의 모든 계수를 제외하고 공격력의 50%만 사용한다.</summary>
+        /// <summary>반격은 상대 방어력과 일반 공격의 모든 계수를 제외하고 공격력에 반격 피해 배율만 적용한다.</summary>
         public static float CalculateCounterDamage(float counterAttackerAttack)
+            => CalculateCounterDamage(counterAttackerAttack, DefaultCounterDamageMultiplier);
+
+        public static float CalculateCounterDamage(float counterAttackerAttack, float counterDamageMultiplier)
         {
-            float finalDamage = Mathf.Max(2f, counterAttackerAttack * 0.5f);
+            float finalDamage = Mathf.Max(2f, counterAttackerAttack * Mathf.Max(0f, counterDamageMultiplier));
             return Mathf.Floor(finalDamage + 0.5f);
         }
     }
