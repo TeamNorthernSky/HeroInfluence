@@ -118,24 +118,38 @@ public class UnitVisualMotionController : MonoBehaviour
             return;
 
         isMoving = moving;
+        ApplyMovingAnimation(false);
+    }
+
+    public void SynchronizeMovingAnimation(bool moving)
+    {
+        isMoving = moving;
+        ApplyMovingAnimation(true);
+    }
+
+    private void ApplyMovingAnimation(bool immediate)
+    {
         ResolveAnimatorIfNeeded();
         if (animator == null)
         {
-            Debug.LogWarning($"[UnitVisualMotionController] {name} has no Animator. moving={moving}", this);
+            Debug.LogWarning($"[UnitVisualMotionController] {name} has no Animator. moving={isMoving}", this);
             return;
         }
 
         if (disableRootMotion)
             animator.applyRootMotion = false;
 
-        string stateName = moving ? moveStateName : idleStateName;
+        string stateName = isMoving ? moveStateName : idleStateName;
         if (string.IsNullOrWhiteSpace(stateName))
         {
-            Debug.LogWarning($"[UnitVisualMotionController] {name} animation state name is empty. moving={moving}", this);
+            Debug.LogWarning($"[UnitVisualMotionController] {name} animation state name is empty. moving={isMoving}", this);
             return;
         }
 
-        animator.CrossFade(stateName, Mathf.Max(0f, animationFadeTime));
+        if (immediate)
+            animator.Play(stateName, 0, 0f);
+        else
+            animator.CrossFade(stateName, Mathf.Max(0f, animationFadeTime));
     }
 
     private void ResolveVisualRootIfNeeded()

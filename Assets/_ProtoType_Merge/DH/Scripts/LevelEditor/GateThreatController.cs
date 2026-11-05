@@ -743,7 +743,6 @@ public class GateThreatController : MonoBehaviour
                     normalizedZoneId,
                     spawnPoint.GridPosition,
                     spawnPoint.EnemyGroupKey,
-                    cell => IsClosingGateCell(normalizedZoneId, cell),
                     out plan))
             {
                 usedSpawnPoint = spawnPoint;
@@ -897,18 +896,6 @@ public class GateThreatController : MonoBehaviour
             }
         }
         if (!hasOpenGate) notifyOnce();
-    }
-
-    private bool IsClosingGateCell(string zoneId, Vector2Int cell)
-    {
-        for (int i = 0; i < gates.Count; i++)
-        {
-            GateRuntimeController gate = gates[i];
-            if (gate != null && gate.ContainsZone(zoneId) &&
-                (gate.ContainsEntranceCell(cell) || gate.ContainsExitCell(cell)))
-                return true;
-        }
-        return false;
     }
 
     private void EndThreatForZone(string zoneId)

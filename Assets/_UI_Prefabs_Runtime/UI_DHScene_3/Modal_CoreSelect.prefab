@@ -194,8 +194,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uCF54\uC5B4 \uC120\uD0DD"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -773,8 +773,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC7A5\uCC29\uD560 \uCF54\uC5B4\uB97C \uC120\uD0DD\uD558\uC138\uC694"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -927,13 +927,13 @@ PrefabInstance:
         type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842,
+      objectReference: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190,
         type: 2}
     - target: {fileID: 1640412043440765858, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
+      objectReference: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
     - target: {fileID: 2999953207406830999, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_Name
@@ -1078,7 +1078,7 @@ MonoBehaviour:
   core: 1
   label: "\uAE30\uBCF8 \uCF54\uC5B4"
   coreIcon: {fileID: 21300000, guid: 718967d5fe12e264ba7bdc2a74ea9f0d, type: 3}
-  font: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  font: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
 --- !u!224 &5320146413479029626 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5635217879990506453, guid: f2796057ed096554197519e4c89f5918,
@@ -1120,13 +1120,13 @@ PrefabInstance:
         type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842,
+      objectReference: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190,
         type: 2}
     - target: {fileID: 1640412043440765858, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
+      objectReference: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
     - target: {fileID: 2999953207406830999, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_Name
@@ -1271,7 +1271,7 @@ MonoBehaviour:
   core: 2
   label: "\uAD11\uC5ED \uCF54\uC5B4"
   coreIcon: {fileID: 21300000, guid: 45ee830012879ff429535400bc8fcbd8, type: 3}
-  font: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  font: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
 --- !u!224 &5048919426426992750 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5635217879990506453, guid: f2796057ed096554197519e4c89f5918,
@@ -1313,13 +1313,13 @@ PrefabInstance:
         type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842,
+      objectReference: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190,
         type: 2}
     - target: {fileID: 1640412043440765858, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
+      objectReference: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
     - target: {fileID: 2999953207406830999, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_Name
@@ -1464,7 +1464,7 @@ MonoBehaviour:
   core: 5
   label: "\uC704\uC555 \uCF54\uC5B4"
   coreIcon: {fileID: 21300000, guid: 1abc62750c7502f4386a4199907a5cd3, type: 3}
-  font: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  font: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
 --- !u!114 &7343513843253344579 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5855784512032819212, guid: f2796057ed096554197519e4c89f5918,
@@ -1506,13 +1506,13 @@ PrefabInstance:
         type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842,
+      objectReference: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190,
         type: 2}
     - target: {fileID: 1640412043440765858, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
+      objectReference: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
     - target: {fileID: 2999953207406830999, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_Name
@@ -1675,7 +1675,7 @@ MonoBehaviour:
   core: 4
   label: "\uD68C\uBCF5 \uCF54\uC5B4"
   coreIcon: {fileID: 21300000, guid: 0c4906b6d660f0c4ab11261db00dd7d5, type: 3}
-  font: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  font: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
 --- !u!1001 &7872199237668330743
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1699,13 +1699,13 @@ PrefabInstance:
         type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842,
+      objectReference: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190,
         type: 2}
     - target: {fileID: 1640412043440765858, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 2100000, guid: c3d251e93c6c3f346b2e2c4bd476b796, type: 2}
+      objectReference: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
     - target: {fileID: 2999953207406830999, guid: f2796057ed096554197519e4c89f5918,
         type: 3}
       propertyPath: m_Name
@@ -1868,4 +1868,4 @@ MonoBehaviour:
   core: 3
   label: "\uBC29\uC5B4 \uCF54\uC5B4"
   coreIcon: {fileID: 21300000, guid: 3c4f29ce5d4f3cd4cbe7f8251cfb13c1, type: 3}
-  font: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
+  font: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
