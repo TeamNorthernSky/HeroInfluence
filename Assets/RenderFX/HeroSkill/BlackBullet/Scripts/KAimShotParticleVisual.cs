@@ -39,6 +39,8 @@ namespace JC.VFX
         public int EmittedProjectileCount { get; private set; }
         public int ArrivedProjectileCount { get; private set; }
         public int SpawnedImpactCount { get; private set; }
+        /// <summary>반복 탄 한 발이 착탄한 순간(이 비주얼 안에서 0부터 센 순번). 효과음 같은 연출 훅용이며 피해 판정과는 무관합니다.</summary>
+        public event Action<int> RepeatedProjectileArrived;
         private sealed class FlyingProjectile
         {
             public GameObject instance;
@@ -266,6 +268,7 @@ namespace JC.VFX
                 Destroy(shot.instance);
                 flyingProjectiles.RemoveAt(i);
                 ArrivedProjectileCount++;
+                RepeatedProjectileArrived?.Invoke(ArrivedProjectileCount - 1);
             }
             for (int i = repeatedImpacts.Count - 1; i >= 0; i--)
             {

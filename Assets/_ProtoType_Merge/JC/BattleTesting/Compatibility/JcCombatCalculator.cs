@@ -10,6 +10,7 @@ namespace ASB.Work.Battle.Core
 {
     public static class JcCombatCalculator
     {
+        private const float DefaultCounterDamageMultiplier = 0.5f;
         private const float MaxCriticalRate = 0.7f;
         private const float ReducedDamageMultiplier = 0.5f;
 
@@ -103,10 +104,13 @@ namespace ASB.Work.Battle.Core
         // 원본 함수 대응: CombatCalculator.CalculateDamage (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Core/CombatCalculator.cs)
 
         public static float CalculateDamage(DamageContext context)
+            => CalculateDamage(context, DefaultCounterDamageMultiplier);
+
+        public static float CalculateDamage(DamageContext context, float counterDamageMultiplier)
         {
             if (context.IsCounterAttack)
             {
-                float counterDamage = Mathf.Max(2f, context.Caster.FinalStats.Atk * 0.5f);
+                float counterDamage = Mathf.Max(2f, context.Caster.FinalStats.Atk * Mathf.Max(0f, counterDamageMultiplier));
                 return Mathf.Floor(counterDamage + 0.5f);
             }
 

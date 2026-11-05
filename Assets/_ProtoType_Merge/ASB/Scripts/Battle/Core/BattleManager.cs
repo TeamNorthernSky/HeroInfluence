@@ -64,6 +64,10 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    [Header("Battle Rules")]
+    [SerializeField, Min(0f), Tooltip("반격 피해 = 공격력 × 이 배율 (최소 피해 2). 기본값 0.35")]
+    private float counterDamageMultiplier = CombatCalculator.DefaultCounterDamageMultiplier;
+
     [Header("Battle Speed")]
     [SerializeField] private float _currentBattleSpeed = 1.0f;
     [SerializeField] private BattleFlowManager battleFlowManager;
@@ -248,7 +252,7 @@ public class BattleManager : MonoBehaviour
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
         CombatCalculator.ResolveHitRolls(context);
-        float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
+        float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced, counterDamageMultiplier);
         context.Target.TakeDamage(finalDamage);
         if (context.Target.IsDamageImmune)
         {
@@ -291,7 +295,7 @@ public class BattleManager : MonoBehaviour
         }
 
         CombatCalculator.ResolveHitRolls(context);
-        float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
+        float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced, counterDamageMultiplier);
         float predictedHp = Mathf.Max(
             context.Target.MinimumHpAfterDamage,
             context.Target.CurrentHp - finalDamage);
@@ -1346,7 +1350,7 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 {CombatCalculator.CounterDamageMultiplier})");
+        Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 {counterDamageMultiplier:0.###})");
         _visualDirector?.ShowCounterPopup(req.Defender);
 
         // 스킬은 반격 가능 여부와 연출에만 사용하고, 피해는 반격 전용 공식으로 계산한다.

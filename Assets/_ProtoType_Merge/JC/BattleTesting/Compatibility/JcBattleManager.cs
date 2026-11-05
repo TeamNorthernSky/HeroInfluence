@@ -60,7 +60,7 @@ public class JcBattleManager : MonoBehaviour
             new SkillExecutionOptions(1f, false, true);
 
         public static SkillExecutionOptions CounterDefault =>
-            new SkillExecutionOptions(0.5f, true, false);
+            new SkillExecutionOptions(1f, true, false);
     }
 
     internal readonly struct CounterAttackRequest
@@ -76,6 +76,10 @@ public class JcBattleManager : MonoBehaviour
             Skill = skill;
         }
     }
+
+    [Header("Battle Rules")]
+    [SerializeField, Min(0f), Tooltip("반격 피해 = 공격력 × 이 배율 (최소 피해 2). 기본값 0.5")]
+    private float counterDamageMultiplier = 0.5f;
 
     [Header("Battle Speed")]
     [Tooltip("현재 JC 전투 속도 배율입니다. 1은 정상 속도이며 배속 버튼으로 변경합니다.")]
@@ -274,7 +278,7 @@ public class JcBattleManager : MonoBehaviour
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
         JcCombatCalculator.ResolveHitRolls(context);
-        float finalDamage = JcCombatCalculator.CalculateDamage(context) * (DamageTakenPolicy?.Invoke(context.Target) ?? 1f);
+        float finalDamage = JcCombatCalculator.CalculateDamage(context, counterDamageMultiplier) * (DamageTakenPolicy?.Invoke(context.Target) ?? 1f);
         context.Target.TakeDamage(finalDamage);
         // JC | 2026-11-04 | 보스 테스트에서도 본게임의 효과음 키와 연출 시점을 재사용합니다.
         if (context.Target.IsDamageImmune) UnitSfxProfile.Play(context.Target, UnitSfxEvent.ImmuneHit);
@@ -315,7 +319,7 @@ public class JcBattleManager : MonoBehaviour
         }
 
         JcCombatCalculator.ResolveHitRolls(context);
-        float finalDamage = JcCombatCalculator.CalculateDamage(context) * (DamageTakenPolicy?.Invoke(context.Target) ?? 1f);
+        float finalDamage = JcCombatCalculator.CalculateDamage(context, counterDamageMultiplier) * (DamageTakenPolicy?.Invoke(context.Target) ?? 1f);
         float predictedHp = Mathf.Max(
             context.Target.MinimumHpAfterDamage,
             context.Target.CurrentHp - finalDamage);
@@ -1206,10 +1210,10 @@ public class JcBattleManager : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 0.5)");
+        Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 {counterDamageMultiplier:0.###})");
 
         // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
-        // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.
+        // Influence 소모 없음, 인스펙터의 반격 피해 배율 적용, 반격은 반격을 유발하지 않습니다.
         SkillExecutionResult result = BuildDefaultSkillResult(
             req.Defender,
             req.OriginalCaster,
