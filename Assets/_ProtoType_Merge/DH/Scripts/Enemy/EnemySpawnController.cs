@@ -77,13 +77,12 @@ public class EnemySpawnController : MonoBehaviour
     {
         placementKey = string.Empty;
         spawnedEnemy = null;
-        return TryPrepareGateThreatEnemy(zoneId, spawnGrid, enemyGroupKey, null, out GateThreatSpawnPlan plan) &&
+        return TryPrepareGateThreatEnemy(zoneId, spawnGrid, enemyGroupKey, out GateThreatSpawnPlan plan) &&
             TrySpawnPreparedGateThreatEnemy(plan, out placementKey, out spawnedEnemy);
     }
 
     public bool TryPrepareGateThreatEnemy(
-        string zoneId, Vector2Int spawnGrid, string enemyGroupKey,
-        System.Predicate<Vector2Int> isReservedCell, out GateThreatSpawnPlan plan)
+        string zoneId, Vector2Int spawnGrid, string enemyGroupKey, out GateThreatSpawnPlan plan)
     {
         plan = null;
         ResolveReferences();
@@ -97,7 +96,7 @@ public class EnemySpawnController : MonoBehaviour
 
         string normalizedZone = MapProgressKey.NormalizeSegment(zoneId);
         SpawnGroupResolution group = ResolveSpawnEnemyGroupKey(normalizedZone, enemyGroupKey);
-        if (!group.IsValid || !TryResolveSpawnGrid(spawnGrid, out Vector2Int resolvedGrid, isReservedCell))
+        if (!group.IsValid || !TryResolveSpawnGrid(spawnGrid, out Vector2Int resolvedGrid))
             return false;
 
         plan = new GateThreatSpawnPlan
@@ -275,20 +274,19 @@ public class EnemySpawnController : MonoBehaviour
         return true;
     }
 
-    private bool TryResolveSpawnGrid(Vector2Int preferredGrid, out Vector2Int resolvedGrid,
-        System.Predicate<Vector2Int> isReservedCell = null)
+    private bool TryResolveSpawnGrid(Vector2Int preferredGrid, out Vector2Int resolvedGrid)
     {
         resolvedGrid = preferredGrid;
         if (gridManager == null)
             return false;
 
-        if ((isReservedCell == null || !isReservedCell(preferredGrid)) && CanSpawnOnCell(preferredGrid))
+        if (CanSpawnOnCell(preferredGrid))
             return true;
 
         for (int i = 0; i < GridManager.Directions8.Length; i++)
         {
             Vector2Int candidate = preferredGrid + GridManager.Directions8[i];
-            if ((isReservedCell != null && isReservedCell(candidate)) || !CanSpawnOnCell(candidate))
+            if (!CanSpawnOnCell(candidate))
                 continue;
 
             resolvedGrid = candidate;
@@ -304,7 +302,7 @@ public class EnemySpawnController : MonoBehaviour
         if (partyRegistry == null) partyRegistry = FindFirstObjectByType<PartyRegistry>();
         PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
         return (party == null || !party.gameObject.activeInHierarchy || party.GetCurrentGrid() != cell) &&
-            gridManager.CanOccupyCell(cell, null, true);
+            gridManager.CanOccupyCell(cell, null, true, ignoreGateBlockers: true);
     }
 
     private void RestoreRuntimeEnemies()
