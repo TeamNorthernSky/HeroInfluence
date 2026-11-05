@@ -227,13 +227,35 @@ namespace JC.BattleTesting
             center = player != null && enemies != null ? (player.transform.position + enemies.transform.position) * .5f : Vector3.zero;
             originalPosition = battleCamera.transform.position; originalRotation = battleCamera.transform.rotation; originalFov = battleCamera.fieldOfView;
             var bossSettings = bossBackground ? JcBossBattleBackground.Load() : null;
+            // JC | 2026-11-05 | 유리·표면과 조명 조절기를 같은 환경 루트 아래에서 찾을 수 있게 합니다.
+            GameObject bossEnvironmentRoot = null;
+            JcBossBackgroundMaterials bossMaterials = null;
+            if (bossSettings && background)
+            {
+                bossEnvironmentRoot = roots.FirstOrDefault(r => r.name == "JC_Environment");
+                if (!bossEnvironmentRoot)
+                {
+                    bossEnvironmentRoot = new GameObject("JC_Environment");
+                    SceneManager.MoveGameObjectToScene(bossEnvironmentRoot, scene);
+                }
+            }
             if (bossSettings && bossSettings.glassProfile && background)
             {
                 var materials = new GameObject("JC_BossBackgroundMaterials");
-                SceneManager.MoveGameObjectToScene(materials, scene);
-                materials.AddComponent<JcBossBackgroundMaterials>().Initialize(background, bossSettings.glassProfile);
+                materials.transform.SetParent(bossEnvironmentRoot.transform, false);
+                bossMaterials = materials.AddComponent<JcBossBackgroundMaterials>();
+                bossMaterials.Initialize(background, bossSettings.glassProfile, battleCamera, bossSettings.surfaceProfile);
             }
             var bossCameraProfile = bossSettings ? bossSettings.cameraProfile : null;
+            // JC | 2026-11-05 | 공용 낮밤/유리 적용 이후에 보스 무대 전용 보정을 설치합니다. 일반 전투에는 생성하지 않습니다.
+            if (bossSettings && bossSettings.environmentProfile && background)
+            {
+                var controls = new GameObject("JC_BossEnvironment");
+                controls.transform.SetParent(bossEnvironmentRoot.transform, false);
+                var environment = controls.AddComponent<JcBossEnvironment>();
+                environment.Initialize(bossSettings.environmentProfile, background.transform);
+                if (bossMaterials) bossMaterials.Environment = environment;
+            }
             if (bossCameraProfile)
             {
                 var controls = new GameObject("JC_BossCamera");

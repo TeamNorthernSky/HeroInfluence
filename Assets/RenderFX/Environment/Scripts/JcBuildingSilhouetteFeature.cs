@@ -69,6 +69,8 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
 
     public override void Create()
     {
+        // JC | 2026-11-05 | 보스 유리의 전용 색 복사도 기존 환경 렌더 기능의 수명에 맞춰 관리합니다.
+        bossGlass?.Dispose(); bossGlass = new BossGlassPass();
         // JC | 2026-11-04 | 기존 환경 렌더 기능 안에서 이벤트 원본 메시 기록 패스를 관리합니다.
         eventOcclusion?.Dispose();
         eventOcclusion = new EventOcclusionPass();
@@ -90,6 +92,10 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
+        // JC | 2026-11-05 | 일반/오버레이 카메라에는 새 패스를 추가하지 않고 이전 카메라의 투과색도 사용하지 않습니다.
+        Shader.SetGlobalFloat("_JcBossGlassColorReady", 0);
+        if (renderingData.cameraData.renderType != CameraRenderType.Overlay &&
+            JC.BattleTesting.JcBossBackgroundMaterials.UsesRefraction(renderingData.cameraData.camera)) renderer.EnqueuePass(bossGlass);
         Shader.SetGlobalFloat("_JcEventGhostActive", 0);
         CameraType type = renderingData.cameraData.cameraType;
         if ((type != CameraType.Game && type != CameraType.SceneView)
@@ -170,6 +176,7 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
 
     protected override void Dispose(bool disposing)
     {
+        bossGlass?.Dispose();
         eventOcclusion?.Dispose();
         compositePass?.Dispose();
         tutorialCompositePass?.Dispose();
