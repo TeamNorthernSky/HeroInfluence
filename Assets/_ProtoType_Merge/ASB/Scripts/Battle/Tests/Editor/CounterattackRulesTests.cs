@@ -98,9 +98,10 @@ public sealed class CounterattackRulesTests
             .GetMethod("CalculateDamage", new[] { contextType });
         Assert.That(calculate, Is.Not.Null);
         Assert.That(jcCalculate, Is.Not.Null);
-        Assert.That((float)calculate.Invoke(null, new[] { context }), Is.EqualTo(5f),
-            "공격력 9의 반격은 4.5를 반올림해 5이며 다른 피해 계수는 무시한다.");
-        Assert.That((float)jcCalculate.Invoke(null, new[] { context }), Is.EqualTo(5f));
+        Assert.That((float)calculate.Invoke(null, new[] { context }), Is.EqualTo(3f),
+            "공격력 9의 반격은 기본 배율 0.35로 3.15를 반올림해 3이며 다른 피해 계수는 무시한다.");
+        Assert.That((float)jcCalculate.Invoke(null, new[] { context }), Is.EqualTo(5f),
+            "JC 복사본은 기본 배율 0.5 그대로(4.5 → 5).");
 
         MethodInfo calculateWithMultiplier = calculator.GetMethod("CalculateDamage", new[] { contextType, typeof(float) });
         MethodInfo jcCalculateWithMultiplier = FindType("ASB.Work.Battle.Core.JcCombatCalculator")
