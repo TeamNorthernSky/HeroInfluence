@@ -182,10 +182,112 @@ namespace JC.BattleTesting
             public bool alongX;
         }
 
+        // JC | 2026-11-05 | 산의 Bounds 안 빈 공간을 가림으로 오인하지 않도록 실제 표면을 검사합니다.
+        // 한 번의 배치 탐색 안에서만 월드 정점/인덱스를 재사용하며 Collider나 씬 객체를 만들지 않습니다.
+        sealed class SightMesh
+        {
+            public readonly Vector3[] vertices;
+            public readonly int[] triangles;
+            public SightMesh(JcDynamicBattleSource.Part part)
+            {
+                vertices = part.mesh.vertices;
+                for (int i = 0; i < vertices.Length; i++) vertices[i] = part.matrix.MultiplyPoint3x4(vertices[i]);
+                triangles = part.mesh.triangles;
+            }
+        }
+
+        static float SegmentDistanceSquared(Vector3 p, Vector3 q, Vector3 a, Vector3 b)
+        {
+            var u = q - p; var v = b - a; var w = p - a;
+            float uu = Vector3.Dot(u, u), vv = Vector3.Dot(v, v), vw = Vector3.Dot(v, w);
+            float s, t;
+            if (uu <= 1e-12f && vv <= 1e-12f) return w.sqrMagnitude;
+            if (uu <= 1e-12f) { s = 0; t = Mathf.Clamp01(vw / vv); }
+            else
+            {
+                float uw = Vector3.Dot(u, w);
+                if (vv <= 1e-12f) { t = 0; s = Mathf.Clamp01(-uw / uu); }
+                else
+                {
+                    float uv = Vector3.Dot(u, v), denominator = uu * vv - uv * uv;
+                    s = denominator > 1e-12f ? Mathf.Clamp01((uv * vw - uw * vv) / denominator) : 0;
+                    t = (uv * s + vw) / vv;
+                    if (t < 0) { t = 0; s = Mathf.Clamp01(-uw / uu); }
+                    else if (t > 1) { t = 1; s = Mathf.Clamp01((uv - uw) / uu); }
+                }
+            }
+            return (w + s * u - t * v).sqrMagnitude;
+        }
+
+        static float PointTriangleDistanceSquared(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
+        {
+            var ab = b - a; var ac = c - a; var normal = Vector3.Cross(ab, ac);
+            float normalSquared = normal.sqrMagnitude;
+            // JC | 2026-11-05 | 면적이 없는 삼각형은 변으로 검사해 0으로 나누는 계산을 방지합니다.
+            if (normalSquared > 1e-12f)
+            {
+                float height = Vector3.Dot(p - a, normal);
+                var projected = p - normal * (height / normalSquared);
+                if (Vector3.Dot(Vector3.Cross(b - a, projected - a), normal) >= 0 &&
+                    Vector3.Dot(Vector3.Cross(c - b, projected - b), normal) >= 0 &&
+                    Vector3.Dot(Vector3.Cross(a - c, projected - c), normal) >= 0)
+                    return height * height / normalSquared;
+            }
+            return Mathf.Min(SegmentDistanceSquared(p, p, a, b),
+                SegmentDistanceSquared(p, p, b, c), SegmentDistanceSquared(p, p, c, a));
+        }
+
+        static bool TriangleBlocksSight(Vector3 eye, Vector3 target, float radius,
+            Vector3 a, Vector3 b, Vector3 c)
+        {
+            var direction = target - eye;
+            var normal = Vector3.Cross(b - a, c - a);
+            float denominator = Vector3.Dot(normal, direction);
+            if (Mathf.Abs(denominator) > 1e-12f)
+            {
+                float t = Vector3.Dot(normal, a - eye) / denominator;
+                if (t >= 0 && t <= 1 && PointTriangleDistanceSquared(eye + t * direction, a, b, c) <= 1e-10f)
+                    return true;
+            }
+            // JC | 2026-11-05 | 양면 표면과 시선 구간의 최소 거리로 기존 전투 기준 0.5 여유 폭도 유지합니다.
+            // 카메라 뒤/캐릭터 너머의 무한 직선은 검사하지 않으며 경사면의 빈 Bounds는 차단하지 않습니다.
+            float squared = radius * radius;
+            return PointTriangleDistanceSquared(eye, a, b, c) <= squared ||
+                   PointTriangleDistanceSquared(target, a, b, c) <= squared ||
+                   SegmentDistanceSquared(eye, target, a, b) <= squared ||
+                   SegmentDistanceSquared(eye, target, b, c) <= squared ||
+                   SegmentDistanceSquared(eye, target, c, a) <= squared;
+        }
+
+        static bool BlocksSight(JcDynamicBattleSource.Part part, Ray ray, float length, float radius,
+            Dictionary<JcDynamicBattleSource.Part, SightMesh> cache)
+        {
+            if (part.terrain) return false;
+            var bounds = part.bounds;
+            bounds.Expand(radius * 2);
+            if (!bounds.Contains(ray.origin) && !(bounds.IntersectRay(ray, out float hit) && hit <= length)) return false;
+            if (!cache.TryGetValue(part, out var geometry)) cache.Add(part, geometry = new SightMesh(part));
+            var target = ray.GetPoint(length);
+            for (int i = 0; i < geometry.triangles.Length; i += 3)
+            {
+                var a = geometry.vertices[geometry.triangles[i]];
+                var b = geometry.vertices[geometry.triangles[i + 1]];
+                var c = geometry.vertices[geometry.triangles[i + 2]];
+                var triangleBounds = new Bounds(a, Vector3.zero);
+                triangleBounds.Encapsulate(b); triangleBounds.Encapsulate(c); triangleBounds.Expand(radius * 2);
+                if (!triangleBounds.Contains(ray.origin) &&
+                    !(triangleBounds.IntersectRay(ray, out float triangleHit) && triangleHit <= length)) continue;
+                if (TriangleBlocksSight(ray.origin, target, radius, a, b, c)) return true;
+            }
+            return false;
+        }
+
         // 배경을 변형하지 않고, 도로 안에 진형 사각형이 들어가는 가까운 위치를 찾습니다.
         public static Placement Resolve(JcDynamicBattleSource source,JcDynamicBattleSettings settings,Vector3[] cameras=null)
         {
             Validate(source,settings);
+            // JC | 2026-11-05 | Bounds는 빠른 1차 선별만 담당하고 실제 가림 여부는 정밀 메시 검사로 결정합니다.
+            var sightMeshes = new Dictionary<JcDynamicBattleSource.Part, SightMesh>();
             var requested=settings.encounterPosition;
             var roadIndex=new Dictionary<Vector2Int,List<JcDynamicBattleSource.Road>>();
             foreach(var road in source.roads)
@@ -238,14 +340,7 @@ namespace JC.BattleTesting
                         {
                             var target=c+inverse*new Vector3(x,1.3f,z)/scale;var delta=target-eye;
                             var ray=new Ray(eye,delta.normalized);float length=delta.magnitude;
-                            if(source.parts.Any(part=>
-                            {
-                                if(part.terrain)return false;
-                                var obstacle=part.bounds;
-                                // 몸통 중심뿐 아니라 캐릭터 외곽도 보이도록 전투 기준 0.5만큼 여유를 둡니다.
-                                obstacle.Expand(1f/scale);
-                                return obstacle.Contains(eye)||(obstacle.IntersectRay(ray,out float hit)&&hit<length);
-                            }))fits=false;
+                            if(source.parts.Any(part => BlocksSight(part, ray, length, .5f / scale, sightMeshes)))fits=false;
                         }
                         if(!fits)break;
                     }

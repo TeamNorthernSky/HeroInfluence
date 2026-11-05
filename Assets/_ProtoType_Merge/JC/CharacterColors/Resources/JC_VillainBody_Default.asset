@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: JC_VillainBody_Default
   m_EditorClassIdentifier: 
   tuning:
-    tint: {r: 0, g: 0.14181772, b: 0.28930807, a: 1}
-    strength: 0.679
-    blackThreshold: 0.45
-    feather: 0.1046
+    tint: {r: 0, g: 0.16063231, b: 0.3301887, a: 1}
+    strength: 0.539
+    blackThreshold: 0.166
+    feather: 0.15
     saturationLimit: 0.3
     sourceLightness: 0.192
     detail: 1
   surface:
     enabled: 1
-    reflection: 1.3
-    smoothness: 0.5
+    reflection: 0.7
+    smoothness: 0.243
     metallic: 0
   processorShader: {fileID: 4800000, guid: 81d3ea1c9ef6b804d86d5127ba6a1e43, type: 3}
   source: {fileID: 2800000, guid: d88c848270e4c8a4c84191ea38cdfdbc, type: 3}
@@ -66,5 +66,5 @@ MonoBehaviour:
   - {fileID: 5766440592677582745, guid: 99ed22d203e495e469317cf72baaa7a3, type: 3}
   - {fileID: 5766440592677582745, guid: a3df000220505d94fb888c220d2c853c, type: 3}
   useBaked: 1
-  bakedTexture: {fileID: 2800000, guid: fd9b760bad8e2a5439028d77d6312608, type: 3}
-  bakedTuning: '{"tint":{"r":0.0,"g":0.14181771874427796,"b":0.2893080711364746,"a":1.0},"strength":0.6790000200271606,"blackThreshold":0.44999998807907107,"feather":0.10459999740123749,"saturationLimit":0.30000001192092898,"sourceLightness":0.19200000166893006,"detail":1.0}'
+  bakedTexture: {fileID: 2800000, guid: 5f763ff782d772a4cbdd5c4aba48ce00, type: 3}
+  bakedTuning: '{"tint":{"r":0.0,"g":0.16063231229782105,"b":0.33018869161605837,"a":1.0},"strength":0.5389999747276306,"blackThreshold":0.16599999368190766,"feather":0.15000000596046449,"saturationLimit":0.30000001192092898,"sourceLightness":0.19200000166893006,"detail":1.0}'
