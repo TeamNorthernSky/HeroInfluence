@@ -10,6 +10,7 @@ using UnityEngine.UI;
 /// [KJ 260807] Chat_Type=2(상황 설명 나레이션)는 화자가 없으므로 가운데 정렬 + 이름/초상화 숨김.
 /// </summary>
 [DisallowMultipleComponent]
+[ExecuteAlways]
 public class ChatBubbleView : MonoBehaviour
 {
     private const int TypePlayer = 1;    // 플레이어 — 우측
@@ -92,6 +93,24 @@ public class ChatBubbleView : MonoBehaviour
     private RectOffset normalRowPadding;
     private const int NarrationVerticalSpacing = 28;
 
+    private void LateUpdate()
+    {
+        // Also update the prefab preview when the message is edited without Bind.
+        if (messageText == null || messageText.transform.parent == null) return;
+        var box = messageText.transform.parent.GetComponent<LayoutElement>();
+        var layout = messageText.transform.parent.GetComponent<VerticalLayoutGroup>();
+        if (box == null || layout == null || !layout.enabled) return;
+        float width = box.preferredWidth - layout.padding.horizontal;
+        if (width <= 0f) return;
+        messageText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+        float height = messageText.GetPreferredValues(width, Mathf.Infinity).y;
+        float boxHeight = Mathf.Max(84f, height + layout.padding.vertical);
+        if (Mathf.Approximately(box.minHeight, boxHeight) &&
+            Mathf.Approximately(box.preferredHeight, boxHeight)) return;
+        box.minHeight = box.preferredHeight = boxHeight;
+        LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
+    }
+
     private void ApplyBubbleLayout(bool isPlayer, bool isNarration)
     {
         if (portraitRoot != null)
@@ -108,6 +127,9 @@ public class ChatBubbleView : MonoBehaviour
         }
 
         layout.enabled = true;
+        layout.childAlignment = TextAnchor.MiddleLeft;
+        layout.childForceExpandHeight = true;
+        box.flexibleHeight = 0f;
         messageText.enableAutoSizing = false;
         messageText.fontSize = normalFontSize;
         messageText.overflowMode = TextOverflowModes.Overflow;
@@ -116,7 +138,9 @@ public class ChatBubbleView : MonoBehaviour
         layout.padding = isNarration ? new RectOffset(30, 30, 18, 18)
             : isPlayer ? new RectOffset(30, 58, 18, 18) : new RectOffset(58, 30, 18, 18);
         float width = 440f;
-        float height = messageText.GetPreferredValues(messageText.text, width, Mathf.Infinity).y;
+        // The current-text overload includes the attached word-wrap preprocessor.
+        messageText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+        float height = messageText.GetPreferredValues(width, Mathf.Infinity).y;
         bool multiline = height > messageText.fontSize * 1.6f;
         box.layoutPriority = 2;
         box.minWidth = box.preferredWidth = width + layout.padding.horizontal;

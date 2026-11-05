@@ -66,6 +66,7 @@ public class ChatModalController : MonoBehaviour
     private ChatBubbleView previousSpeakerBubble;
     private Coroutine skipRoutine;
     private bool skipping;
+    private bool skipBubbleSoundPlayed;
 
     /// <summary>대화 소환. 이미 떠 있으면 재활성 후 해당 대화로 재시작(중복 생성 방지).</summary>
     private bool isClosing;
@@ -259,6 +260,7 @@ public class ChatModalController : MonoBehaviour
         CloseSkipConfirm();
         if (skipping || manager == null || !manager.IsRunning || isClosing) return;
         skipping = true;
+        skipBubbleSoundPlayed = false;
         RefreshSkipButtonState();
         skipRoutine = StartCoroutine(PlaySkippedChatInOrder());
     }
@@ -634,11 +636,18 @@ public class ChatModalController : MonoBehaviour
         if (bubblePrefab == null || contentRoot == null) return;
         ChatBubbleView bubble = Instantiate(bubblePrefab, contentRoot);
         bubble.Bind(chat.CharacterName, chat.MessageText, chat.ChatType, chat.CharacterProfile);
-        PopupSoundService.PlayChatBubble();
+        PlayBubbleSound();
         if (bubble.HasSameSpeaker(previousSpeakerBubble)) bubble.JoinPreviousSpeaker(previousSpeakerBubble);
         previousSpeakerBubble = bubble;
         if (chat.ChatType != 2) StartCoroutine(PlayBubbleSideEntrance(bubble, chat.ChatType == 1));
         StartCoroutine(ScrollToBottomNextFrame());
+    }
+
+    private void PlayBubbleSound()
+    {
+        if (skipping && skipBubbleSoundPlayed) return;
+        if (skipping) skipBubbleSoundPlayed = true;
+        PopupSoundService.PlayChatBubble();
     }
 
     private IEnumerator PlayBubbleSideEntrance(ChatBubbleView bubble, bool fromRight)
