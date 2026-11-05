@@ -15,31 +15,31 @@ MonoBehaviour:
   settings:
     shape:
       size: {x: 1, y: 1}
-      padding: 0
+      padding: 0.01
       cornerRadius: 0.16
       curveSegments: 14
-      outerWidth: 0.025
-      mainWidth: 0.06
+      outerWidth: 0.015
+      mainWidth: 0.045
       innerWidth: 0.01
-      depth: 0.05
+      depth: 0.025
       floatHeight: 0
-    showOuter: 1
-    showInner: 1
+    showOuter: 0
+    showInner: 0
     intensity: 1
-    opacity: 1
-    outerIntensity: 0.8
-    outerOpacity: 0.8
-    innerIntensity: 0.9
+    opacity: 0.7
+    outerIntensity: 1
+    outerOpacity: 1
+    innerIntensity: 1
     innerOpacity: 1
-    buildingOccludedOpacity: 0.15
-    sidewalkOccludedOpacity: 0.275
+    buildingOccludedOpacity: 0
+    sidewalkOccludedOpacity: 0.05
     fillSidewalkOccludedOpacity: 0.25
     minimumHeight: 0.006
-    bobAmplitude: 0.02
+    bobAmplitude: 0.03
     bobPeriod: 1.8
     useFill: 1
     fillUsesTriggerColor: 1
     fillColor: {r: 1, g: 1, b: 1, a: 1}
-    fillIntensity: 0.8
-    fillOpacity: 0.23
+    fillIntensity: 1
+    fillOpacity: 0.2
     fillTexture: {fileID: 0}

@@ -11,5 +11,5 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 908d1ea3dceb48ffab27eac2d5b8269a, type: 3}
   m_Name: EventOcclusion
-  m_EditorClassIdentifier:
-  opacity: 0.25
+  m_EditorClassIdentifier: 
+  opacity: 0
