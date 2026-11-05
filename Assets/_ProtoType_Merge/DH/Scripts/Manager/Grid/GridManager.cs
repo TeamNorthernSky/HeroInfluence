@@ -238,7 +238,12 @@ public class GridManager : MonoBehaviour
 
     public bool HasObstacle(Vector2Int grid)
     {
-        if (levelObstacleCells.Contains(grid) || gateBlockerCells.Contains(grid))
+        return HasObstacle(grid, false);
+    }
+
+    private bool HasObstacle(Vector2Int grid, bool ignoreGateBlockers)
+    {
+        if (levelObstacleCells.Contains(grid) || (!ignoreGateBlockers && gateBlockerCells.Contains(grid)))
             return true;
 
         return useLegacyObstacleColliderFallback && HasBlockingCollider(grid, obstacleLayerMask);
@@ -1215,12 +1220,13 @@ public class GridManager : MonoBehaviour
         return true;
     }
 
-    public bool CanOccupyCell(Vector2Int grid, Transform selfTransform = null, bool ignoreVisibilityRules = false)
+    public bool CanOccupyCell(Vector2Int grid, Transform selfTransform = null, bool ignoreVisibilityRules = false,
+        bool ignoreGateBlockers = false)
     {
         if (!HasLevelGroundCell(grid))
             return false;
 
-        if (HasObstacle(grid))
+        if (HasObstacle(grid, ignoreGateBlockers))
             return false;
 
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
