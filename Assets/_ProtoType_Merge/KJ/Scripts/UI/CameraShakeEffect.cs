@@ -18,6 +18,10 @@ public sealed class CameraShakeEffect : MonoBehaviour
     private float impactStart, impactStrength, impactDuration;
     private float footRebound;
     private Vector3 renderOffset;
+    private Object noiseOwner;
+    private float noiseStart, noiseStrength, noiseDuration;
+    private int noiseFrame = -1;
+    private Vector2 noiseOffset;
     public const float ImpactDuration = .14f;
 
     public static CameraShakeEffect ForCamera(Camera camera)
@@ -42,6 +46,22 @@ public sealed class CameraShakeEffect : MonoBehaviour
         footRebound = Mathf.Clamp01(reboundPercent * .01f);
     }
 
+    /// <summary>EffectLab 방식의 감쇠하는 무작위 진동을 기존 반동에 더합니다.</summary>
+    public void PlayNoise(Object owner, float strength, float seconds)
+    {
+        noiseOwner = owner;
+        noiseStrength = Mathf.Max(0f, strength);
+        noiseDuration = Mathf.Max(0f, seconds);
+        noiseStart = Time.unscaledTime;
+        noiseFrame = -1;
+    }
+
+    private static Vector2 NoiseOffset(float age, float seconds, float strength)
+    {
+        if (seconds <= 0f || age >= seconds || strength <= 0f) return Vector2.zero;
+        return Random.insideUnitCircle * (strength * (1f - Mathf.Clamp01(age / seconds)));
+    }
+
     private static Vector2 FootstepOffset(float t, float rebound)
     {
         // Drop quickly, rise past rest, then settle more slowly.
@@ -54,6 +74,7 @@ public sealed class CameraShakeEffect : MonoBehaviour
     public void CancelImpact(Object owner)
     {
         if (impactOwner == owner) impactOwner = null;
+        if (noiseOwner == owner) noiseOwner = null;
     }
 
     // A quick downward hit followed by a smaller rebound, in screen coordinates.
@@ -72,13 +93,32 @@ public sealed class CameraShakeEffect : MonoBehaviour
 
     private void BeginRender(ScriptableRenderContext context, Camera camera)
     {
-        if (camera.transform != transform || !impactOwner) return;
-        float age = Time.unscaledTime - impactStart;
-        if (age >= impactDuration) { impactOwner = null; return; }
+        if (camera.transform != transform) return;
+        RestoreRenderOffset();
+        Vector2 offset = Vector2.zero;
+        if (impactOwner)
+        {
+            float age = Time.unscaledTime - impactStart;
+            if (age >= impactDuration) impactOwner = null;
+            else offset = (footRebound >= 0f ? FootstepOffset(age / impactDuration, footRebound)
+                : ImpactOffset(age, impactDuration)) * impactStrength;
+        }
+        if (noiseOwner)
+        {
+            float age = Time.unscaledTime - noiseStart;
+            if (age >= noiseDuration) noiseOwner = null;
+            else
+            {
+                if (noiseFrame != Time.frameCount)
+                {
+                    noiseOffset = NoiseOffset(age, noiseDuration, noiseStrength);
+                    noiseFrame = Time.frameCount;
+                }
+                offset += noiseOffset;
+            }
+        }
         // Move opposite to the desired image displacement. Restore before follow logic runs.
-        Vector2 offset = footRebound >= 0f ? FootstepOffset(age / impactDuration, footRebound)
-            : ImpactOffset(age, impactDuration);
-        renderOffset = -transform.TransformDirection((Vector3)offset) * impactStrength;
+        renderOffset = -transform.TransformDirection((Vector3)offset);
         transform.position += renderOffset;
     }
 
@@ -119,8 +159,7 @@ public sealed class CameraShakeEffect : MonoBehaviour
             StopShake();
             return;
         }
-        float strength = intensity * (1f - elapsed / duration);
-        Vector2 noise = Random.insideUnitCircle * strength;
+        Vector2 noise = NoiseOffset(elapsed, duration, intensity);
         appliedOffset = new Vector3(noise.x, noise.y, 0f);
         transform.localPosition += appliedOffset;
     }
@@ -144,6 +183,7 @@ public sealed class CameraShakeEffect : MonoBehaviour
         RenderPipelineManager.endCameraRendering -= EndRender;
         RestoreRenderOffset();
         impactOwner = null;
+        noiseOwner = null;
         StopShake();
     }
 }

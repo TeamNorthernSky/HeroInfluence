@@ -15,6 +15,10 @@ MonoBehaviour:
   values:
     footStrength: 0.04
     footDuration: 0.25
+    footNoiseStrength: 0.008
+    footNoiseDuration: 0.16
+    landingStrength: 0.15
+    landingDuration: 0.45
     cameraStart: 0
     cameraEnd: 0
     frameStart: 0

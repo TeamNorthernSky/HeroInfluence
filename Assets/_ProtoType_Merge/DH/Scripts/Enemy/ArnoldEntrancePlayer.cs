@@ -23,6 +23,7 @@ namespace HeroInfluence.Events
         private bool running;
         private bool landed;
         private GameObject landingEffect;
+        private CameraShakeEffect landingCamera;
 
         public bool IsPlaying => running;
 
@@ -125,6 +126,9 @@ namespace HeroInfluence.Events
                 {
                     landed = true;
                     PlayLandingEffect();
+                    Camera camera = Camera.main;
+                    if (camera != null && camera.gameObject.scene == gameObject.scene)
+                        landingCamera = JcArnoldShake.Landing(camera, this);
                 }
             }
             else if (state.IsName("Idle"))
@@ -154,6 +158,8 @@ namespace HeroInfluence.Events
 
         public void CancelEntrance()
         {
+            if (landingCamera != null) landingCamera.CancelImpact(this);
+            landingCamera = null;
             if (running) FinishEntrance();
             if (landingEffect != null) Destroy(landingEffect);
         }
