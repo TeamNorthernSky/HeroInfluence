@@ -777,35 +777,55 @@ public class GridManager : MonoBehaviour
             return EnemyEncounterZoneState.EnemyOccupied;
         }
 
-        int ownerCount = 0;
-        EnemyGridMover singleOwner = null;
+        return ResolveRuntimeEnemyInteractionOwner(grid, enemies, out owner);
+    }
+
+    private static EnemyEncounterZoneState ResolveRuntimeEnemyInteractionOwner(
+        Vector2Int grid, IReadOnlyList<EnemyGridMover> enemies, out EnemyGridMover owner)
+    {
+        owner = null;
+        int staticCount = 0;
+        int mobileCount = 0;
+        EnemyGridMover staticOwner = null;
+        EnemyGridMover mobileOwner = null;
         for (int i = 0; i < enemies.Count; i++)
         {
             EnemyGridMover enemy = enemies[i];
-            if (enemy == null)
+            if (enemy == null || !enemy.isActiveAndEnabled || !enemy.IsInteractionCell(grid))
                 continue;
-
-            if (GridDistance(grid, enemy.GetCurrentGrid()) > 1)
-                continue;
-
-            ownerCount++;
-            if (ownerCount == 1)
+            if (enemy.IsStatic)
             {
-                singleOwner = enemy;
-                continue;
+                staticCount++;
+                staticOwner = enemy;
             }
-
-            owner = null;
-            return EnemyEncounterZoneState.OverlappedEnemyZone;
+            else
+            {
+                mobileCount++;
+                mobileOwner = enemy;
+            }
         }
 
-        if (ownerCount == 1)
+        // Static encounters resolve first; the mobile encounter resumes after their follow-up.
+        int count = staticCount > 0 ? staticCount : mobileCount;
+        owner = count == 1 ? (staticCount > 0 ? staticOwner : mobileOwner) : null;
+        return count > 1 ? EnemyEncounterZoneState.OverlappedEnemyZone
+            : count == 1 ? EnemyEncounterZoneState.SingleEnemyZone : EnemyEncounterZoneState.None;
+    }
+
+    public bool TryGetMobileEnemyAtInteractionCell(Vector2Int grid, out EnemyGridMover owner)
+    {
+        owner = null;
+        if (IsTutorialSceneActive() || enemyRegistry == null)
+            return false;
+        foreach (EnemyGridMover enemy in enemyRegistry.Enemies)
         {
-            owner = singleOwner;
-            return EnemyEncounterZoneState.SingleEnemyZone;
+            if (enemy != null && enemy.isActiveAndEnabled && !enemy.IsStatic && enemy.IsInteractionCell(grid))
+            {
+                owner = enemy;
+                return true;
+            }
         }
-
-        return EnemyEncounterZoneState.None;
+        return false;
     }
 
     public EnemyEncounterZoneState GetGridEnemyEncounterZoneState(Vector2Int grid, out IGridEnemyObject owner)
@@ -848,6 +868,13 @@ public class GridManager : MonoBehaviour
                 owner = enemy;
                 return EnemyEncounterZoneState.EnemyOccupied;
             }
+        }
+
+        if (tutorialEnemies == null)
+        {
+            EnemyEncounterZoneState state = ResolveRuntimeEnemyInteractionOwner(grid, runtimeEnemies, out EnemyGridMover runtimeOwner);
+            owner = runtimeOwner;
+            return state;
         }
 
         int ownerCount = 0;
