@@ -1346,7 +1346,7 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 0.5)");
+        Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 {CombatCalculator.CounterDamageMultiplier})");
         _visualDirector?.ShowCounterPopup(req.Defender);
 
         // 스킬은 반격 가능 여부와 연출에만 사용하고, 피해는 반격 전용 공식으로 계산한다.

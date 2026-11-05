@@ -174,9 +174,11 @@ namespace EnemyAI
     }
 
     /// <summary>
-    /// 율리아(40001): 정지장에 갇힌 채 소켓3(절망의 굴레, 굴렁쇠 소환)만 쓰고, 시전 다음 턴은 쉰다(소환 ↔ 휴식 교대).
+    /// 율리아(40001): 정지장에 갇힌 채 소켓3(절망의 굴레, 굴렁쇠 소환)만 매 턴 쓴다.
     /// [2026-10-23 변경] 율리아전 페이즈를 없애고 예전 3페이즈 행동으로 고정했다. 증폭기 예약 스킬(소켓1 열 광역 / 소켓2 행 광역)은
     /// 더 이상 쓰지 않는다.
+    /// [2026-11-05 변경] 소환 다음 턴 휴식(쿨타임)을 없앴다. 굴렁쇠(속도 1)가 율리아(속도 0)보다 먼저 돌진·자폭해 칸을 비우므로
+    /// 매 라운드 새로 소환된다. 막 쓰러진 굴렁쇠 시체는 소환 때 EnemySpawner가 바로 치운다.
     /// 소환은 BossController가 필요하고, 대상은 파이프라인 통과용이다(스킬 유효대상 ∩ validTargets 무작위, 비면 validTargets 무작위).
     /// </summary>
     public sealed class EAI_40001 : BaseEnemyAI
@@ -190,11 +192,6 @@ namespace EnemyAI
         {
             if (self == null || validTargets == null || validTargets.Count == 0)
                 return EnemyActionDecision.SkipTurn();
-
-            // [한턴 쉼] 소환 시전 직후 1턴 휴식. 이 턴을 소비하고 휴식 예약 해제 → 다음 턴에 다시 소환.
-            // SelfAction(비-Skip)이라 도발 폴백 재호출을 유발하지 않는다.
-            if (self.HasPendingRest)
-                return EnemyActionDecision.SelfAction(() => self.SetPendingRest(false));
 
             if (!canUseSkill) return EnemyActionDecision.SkipTurn();
 
@@ -211,7 +208,6 @@ namespace EnemyAI
 
             return EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, skill, () =>
             {
-                self.SetPendingRest(true);   // 소환 시전 후 다음 턴 한턴 쉼 예약
                 UnityEngine.Debug.Log($"[EnemyAI/Yulia] 소환 시전: {skill.skillName} → {target.UnitName}");
             });
         }

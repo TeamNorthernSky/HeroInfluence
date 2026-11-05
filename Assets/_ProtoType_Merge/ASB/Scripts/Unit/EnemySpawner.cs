@@ -381,10 +381,8 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        // 점유 시 기존 유닛을 보존하고 조용히 실패.
-        BattleCharactor existingUnit = resolvedCell.GetComponentInChildren<BattleCharactor>(true);
-        HostageBattleActor existingHostage = resolvedCell.GetComponentInChildren<HostageBattleActor>(true);
-        if (existingUnit != null || existingHostage != null)
+        // 점유 시 기존 유닛을 보존하고 조용히 실패. 제거 대기 중인 시체만 남은 칸은 지금 치우고 소환한다.
+        if (!IsCellFreeForSpawn(resolvedCell, clearPendingCorpses: true))
         {
             return false;
         }
@@ -716,8 +714,48 @@ public class EnemySpawner : MonoBehaviour
         if (!hierarchyReady) return false;
         if (!gridSlots.TryGetValue(gridNumber, out position)) return false;
         if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null) return false;
-        return cell.GetComponentInChildren<BattleCharactor>(true) == null
-            && cell.GetComponentInChildren<HostageBattleActor>(true) == null;
+        return IsCellFreeForSpawn(cell, clearPendingCorpses: false);
+    }
+
+    /// <summary>
+    /// 소환 점유 판정. 살아 있는 유닛·유지 시체·인질이 있으면 막히고, 지연 제거를 기다리는 시체만 있으면 빈 칸으로 본다.
+    /// [2026-11-05] 율리아 소환 휴식을 없애 굴렁쇠가 쓰러진 같은 라운드에 같은 칸으로 다시 소환된다.
+    /// 시체 제거는 배속과 무관한 실제 시간(<see cref="_corpseRemovalDelay"/>)이라 고배속에서는 소환이 먼저 올 수 있다.
+    /// clearPendingCorpses면 그 시체를 지금 제거하고 칸에서 떼어 낸다(Destroy는 프레임 끝이라 같은 프레임 점유 검사에 남지 않게).
+    /// </summary>
+    private bool IsCellFreeForSpawn(GridCellRef cell, bool clearPendingCorpses)
+    {
+        if (cell == null) return false;
+        if (cell.GetComponentInChildren<HostageBattleActor>(true) != null) return false;
+
+        BattleCharactor[] units = cell.GetComponentsInChildren<BattleCharactor>(true);
+        for (int i = 0; i < units.Length; i++)
+        {
+            if (!IsPendingRemovableCorpse(units[i])) return false;
+        }
+
+        if (!clearPendingCorpses) return true;
+
+        for (int i = 0; i < units.Length; i++)
+        {
+            BattleCharactor corpse = units[i];
+            if (!_pendingCorpseRemovals.TryGetValue(corpse, out int pendingGridNumber)) continue;
+
+            RemoveCorpseNow(corpse, pendingGridNumber);
+            if (corpse != null) corpse.transform.SetParent(null, true);
+            Debug.Log($"[EnemySpawner] 소환 칸의 제거 대기 시체를 먼저 치움: {corpse.name}, grid={pendingGridNumber}", this);
+        }
+        return true;
+    }
+
+    // 지연 제거 대기 중이고 시체 유지(부활 대상) 설정이 아닌 시체.
+    private bool IsPendingRemovableCorpse(BattleCharactor unit)
+    {
+        if (unit == null || !unit.IsDead || unit.IsIncapacitated) return false;
+        if (!_pendingCorpseRemovals.ContainsKey(unit)) return false;
+
+        EncounterParticipant participant = unit.GetComponent<EncounterParticipant>();
+        return participant == null || !participant.KeepCorpseAfterDeath;
     }
 
     /// <summary>GridCell에 대응하는 스포너의 표준 gridNumber를 반환한다.</summary>
@@ -860,6 +898,8 @@ public class EnemySpawner : MonoBehaviour
     private System.Collections.IEnumerator RemoveCorpseAfter(BattleCharactor bc, int gridNumber, float delay)
     {
         yield return new WaitForSeconds(delay);
+        // 부활·소환 칸 정리에서 이미 치웠으면 다시 돌지 않는다(같은 칸에 새로 생긴 유닛의 spawnedByGrid 등록을 지우지 않게).
+        if (!_pendingCorpseRemovals.ContainsKey(bc)) yield break;
         RemoveCorpseNow(bc, gridNumber);
     }
 

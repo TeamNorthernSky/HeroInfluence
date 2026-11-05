@@ -6,6 +6,8 @@ namespace ASB.Work.Battle.Core
     {
         /// <summary>경감 발동 시 받는 피해 배율.</summary>
         private const float ReducedDamageMultiplier = 0.5f;
+        /// <summary>반격 피해 = 반격하는 쪽 공격력 × 이 배율.</summary>
+        public const float CounterDamageMultiplier = 0.35f;
         private const float MaxCriticalRate = 0.7f;
 
         public static bool RollCritical(BattleCharactor caster)
@@ -139,10 +141,10 @@ namespace ASB.Work.Battle.Core
             return Mathf.Max(2f, roundedDamage);
         }
 
-        /// <summary>반격은 상대 방어력과 일반 공격의 모든 계수를 제외하고 공격력의 50%만 사용한다.</summary>
+        /// <summary>반격은 상대 방어력과 일반 공격의 모든 계수를 제외하고 공격력의 35%(CounterDamageMultiplier)만 사용한다.</summary>
         public static float CalculateCounterDamage(float counterAttackerAttack)
         {
-            float finalDamage = Mathf.Max(2f, counterAttackerAttack * 0.5f);
+            float finalDamage = Mathf.Max(2f, counterAttackerAttack * CounterDamageMultiplier);
             return Mathf.Floor(finalDamage + 0.5f);
         }
     }
