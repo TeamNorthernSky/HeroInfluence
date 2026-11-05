@@ -37,6 +37,7 @@ namespace JC.BattleTesting
             var parts=new List<JcDynamicBattleSource.Part>();var roads=new List<JcDynamicBattleSource.Road>();
             foreach(var f in scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<MeshFilter>()))
             {
+                // JC | 2026-11-04 | 도로·차선을 부분별로 조명할 수 있게 해 가로등 하나의 영향이 도로 전체로 퍼지는 현상을 줄입니다.
                 if (f.name == JC.EnvironmentDetail.JcLampSurfaceChunks.VisualName) continue;
                 var r=f.GetComponent<MeshRenderer>();if(r==null||f.sharedMesh==null||Character(f.transform)||Barricade(f.transform))continue;
                 if(f.GetComponentInParent<JC.EnvironmentDetail.JcRoadMarkingControl>()!=null)continue;

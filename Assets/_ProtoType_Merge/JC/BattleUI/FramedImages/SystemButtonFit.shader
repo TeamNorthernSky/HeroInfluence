@@ -1,3 +1,4 @@
+// JC | 2026-11-04 | 버튼 면과 강조 효과에 같은 종횡비와 윤곽을 적용해 확대하거나 선택해도 테두리가 어긋나지 않게 합니다.
 Shader "UI/JC/SystemButtonFit"
 {
  Properties {
@@ -35,6 +36,7 @@ Shader "UI/JC/SystemButtonFit"
  float ay = abs(y);
  if (ay > .5) return 0;
  float sourceY = ay <= .25 ? ay * 1.125 : lerp(.28125, .5, (ay - .25) * 4);
+ // JC | 2026-11-04 | 상하 여백을 원본 비율로 환산해 버튼의 글자와 아이콘이 세로로 늘어나지 않게 합니다.
  float2 uv = float2(i.uv.x, .5 + sign(y) * sourceY);
  fixed4 c = (tex2D(_MainTex, uv) + _TextureSampleAdd) * i.color;
  #ifdef UNITY_UI_CLIP_RECT

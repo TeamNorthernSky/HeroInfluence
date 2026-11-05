@@ -57,6 +57,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
                         break;
                     }
             int ci = i;
+            // JC | 2026-11-04 | 전투·탐사 HUD의 마스크 안에서 아이콘 비율과 상태 표시를 유지합니다.
             defeatedOverlays[i] = CreateDefeatedOverlay(slots[i]);
             if (slots[i]?.button != null) slots[i].button.onClick.AddListener(() => OnSlotClicked(ci));
         }

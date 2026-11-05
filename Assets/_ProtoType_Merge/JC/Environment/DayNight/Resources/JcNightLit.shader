@@ -11,6 +11,9 @@
         _JcSpecialWindow("특수 건물 창문 면",Float)=0
         _JcCombatOverlay("전투 범위 야간 보정",Float)=0
         _JcHumanoid("인간형 야간 보정",Float)=0
+        [HideInInspector] _JcVillainParams("검은 빌런 표면 사용·반사·광택·금속",Vector)=(0,1,.5,0)
+        [HideInInspector] _JcVillainBlackRange("검은 영역 밝기·경계·채도",Vector)=(.3,.07,.25,0)
+        [HideInInspector] _JcVillainSource("검은 영역 원본",2D)="white"{}
 
         _WorkflowMode("WorkflowMode", Float) = 1.0
 
@@ -239,6 +242,13 @@
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
+            #include "../../../CharacterColors/JcVillainBlackMask.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/BRDF.hlsl"
+            TEXTURE2D(_JcVillainSource); SAMPLER(sampler_JcVillainSource);
+            float4 _JcVillainParams, _JcVillainBlackRange;
+            // Per-fragment state, set before URP initializes its BRDF. Non-targets stay exactly at one.
+            // JC | 2026-11-04 | 조명이나 베이크 결과에 따라 범위가 달라지지 않도록 원본 몸체의 어두운 저채도 영역을 기준으로 보정합니다.
+            static half JcVillainReflectionScale=1;
 
             TEXTURE2D(_JcWindowMask); SAMPLER(sampler_JcWindowMask);
 
@@ -253,6 +263,18 @@
                 float specialWindow=_JcSpecialWindow*step(1,uv.x);
                 uv.x-=specialWindow;
                 InitializeStandardLitSurfaceData(uv,surfaceData);
+                JcVillainReflectionScale=1;
+                if(_JcVillainParams.x>.5)
+                {
+                    half3 source=SAMPLE_TEXTURE2D(_JcVillainSource,sampler_JcVillainSource,uv).rgb;
+                    #if defined(UNITY_COLORSPACE_GAMMA)
+                    source=SRGBToLinear(source);
+                    #endif
+                    half weight=JcVillainBlackWeight(LinearToSRGB(source),_JcVillainBlackRange.x,_JcVillainBlackRange.y,_JcVillainBlackRange.z);
+                    surfaceData.smoothness=lerp(surfaceData.smoothness,saturate(_JcVillainParams.z),weight);
+                    surfaceData.metallic=lerp(surfaceData.metallic,saturate(_JcVillainParams.w),weight);
+                    JcVillainReflectionScale=lerp(1,clamp(_JcVillainParams.y,0,4),weight);
+                }
 
                 float window=max(specialWindow,SAMPLE_TEXTURE2D(_JcWindowMask,sampler_JcWindowMask,uv).b)*saturate(_JcWindowLight.x);
 
@@ -279,6 +301,15 @@
 
             }
 
+            void JcVillainInitializeBRDF(inout SurfaceData surfaceData,out BRDFData brdfData)
+            {
+                InitializeBRDFData(surfaceData,brdfData);
+                brdfData.specular*=JcVillainReflectionScale;
+                brdfData.grazingTerm*=JcVillainReflectionScale;
+            }
+            #define InitializeBRDFData JcVillainInitializeBRDF
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #undef InitializeBRDFData
             #define InitializeStandardLitSurfaceData JcNightSurface
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"

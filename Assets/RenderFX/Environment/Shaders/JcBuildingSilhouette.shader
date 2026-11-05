@@ -263,6 +263,48 @@ Shader "JC/Environment/Building Silhouette"
             }
             ENDHLSL
         }
+
+        // JC | 2026-11-04 | 건물 외곽 전용 마스크에서만 내부 틈을 제거합니다. 기존 패스 번호는 유지합니다.
+        Pass
+        {
+            Name "ExteriorEnvelopeInit"
+            Tags { "LightMode"="JcExteriorEnvelopeInit" }
+            Cull Off ZWrite Off ZTest Always Blend One Zero
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment EnvelopeInit
+            #include "JcBuildingExteriorEnvelope.hlsl"
+            ENDHLSL
+        }
+
+        // JC | 2026-11-04 | 건물 외곽 전용 마스크에서만 내부 틈을 제거합니다. 기존 패스 번호는 유지합니다.
+        Pass
+        {
+            Name "ExteriorEnvelopeScan"
+            Tags { "LightMode"="JcExteriorEnvelopeScan" }
+            Cull Off ZWrite Off ZTest Always Blend One Zero
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment EnvelopeScan
+            #include "JcBuildingExteriorEnvelope.hlsl"
+            ENDHLSL
+        }
+
+        // JC | 2026-11-04 | 건물 외곽 전용 마스크에서만 내부 틈을 제거합니다. 기존 패스 번호는 유지합니다.
+        Pass
+        {
+            Name "ExteriorEnvelopeCombine"
+            Tags { "LightMode"="JcExteriorEnvelopeCombine" }
+            Cull Off ZWrite Off ZTest Always Blend One Zero
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment EnvelopeCombine
+            #include "JcBuildingExteriorEnvelope.hlsl"
+            ENDHLSL
+        }
     }
     Fallback Off
 }

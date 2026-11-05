@@ -48,6 +48,7 @@ public class SkillButtonIcon : MonoBehaviour
         Sprite sp = Resolve(unit);
         // 장착 정보나 리소스가 없으면 이전 캐릭터의 아이콘을 남기지 않습니다.
         iconImage.sprite = sp;
+        // JC | 2026-11-04 | 전투·탐사 HUD의 마스크 안에서 아이콘 비율과 상태 표시를 유지합니다.
         JC.BattleTesting.JcBattleHudLayout.FitMaskedArt(iconImage);
         iconImage.enabled = sp != null;
     }

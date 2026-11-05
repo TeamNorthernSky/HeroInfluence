@@ -32,7 +32,8 @@
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 float4 maskData = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
                 half mask = maskData.r;
-                bool exterior = _JcBuildingHighlight > 1.5;
+                // JC | 2026-11-04 | 건물 호버도 내부 틈을 메운 그룹 마스크의 바깥쪽에만 선을 그립니다.
+                bool exterior = _JcBuildingHighlight > 1.5 || _JcBuildingExteriorOnly > .5;
                 if (exterior ? mask >= .9999h : mask <= .0001h) return 0;
                 half4 fill = _JcBuildingTuning.x > 0.5 ? _JcBuildingFill : _FillColor;
                 half4 outline = _JcBuildingTuning.x > 0.5 ? _JcBuildingOutline : _OutlineColor;

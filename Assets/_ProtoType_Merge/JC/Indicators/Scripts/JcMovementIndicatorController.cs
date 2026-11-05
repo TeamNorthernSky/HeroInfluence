@@ -363,8 +363,9 @@ namespace JC.Indicators
             if (visualRoot != null) return;
             visualRoot = new GameObject("JC Movement Visuals (Generated)") { hideFlags = HideFlags.DontSave };
             SceneManager.MoveGameObjectToScene(visualRoot, gameObject.scene);
-            material = new Material(indicatorShader) { name = "JC Movement Glow (runtime)", hideFlags = HideFlags.DontSave };
-            shadowMaterial = new Material(material) { name = "JC Movement Shadow (runtime)", renderQueue = 2999, hideFlags = HideFlags.DontSave };
+            // JC | 2026-11-04 | 이동 그리드 위에 트리거가 합성되고 경로와 표식이 그 위에 보이도록 그리기 순서를 맞춥니다.
+            material = new Material(indicatorShader) { name = "JC Movement Glow (runtime)", renderQueue = JcIndicatorRenderOrder.Movement, hideFlags = HideFlags.DontSave };
+            shadowMaterial = new Material(material) { name = "JC Movement Shadow (runtime)", renderQueue = JcIndicatorRenderOrder.MovementShadow, hideFlags = HideFlags.DontSave };
             markerMaterial = new Material(material) { name = "JC Solid Indicator (runtime)", hideFlags = HideFlags.DontSave };
             markerMaterial.SetFloat("_Cull", (float)CullMode.Back);
             pathMesh = NewMesh("JC Path"); shadowMesh = NewMesh("JC Path Shadow"); markerMesh = NewMesh("JC Marker");

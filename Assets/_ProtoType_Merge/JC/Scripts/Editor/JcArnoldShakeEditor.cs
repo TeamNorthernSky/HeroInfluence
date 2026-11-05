@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
+// JC | 2026-11-04 | 굉음 대화의 진동과 개별 발걸음 반동을 별도로 조절해 반복 이동 중에도 타이밍을 유지합니다.
 [CustomEditor(typeof(JcArnoldShake))]
 public sealed class JcArnoldShakeEditor : Editor
 {

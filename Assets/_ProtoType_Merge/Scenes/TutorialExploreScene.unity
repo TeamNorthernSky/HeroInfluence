@@ -3881,6 +3881,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 826611041100000012}
   - {fileID: 873040000101}
   - {fileID: 1380568332}
   m_Father: {fileID: 0}
@@ -17336,6 +17337,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 826611041100000002}
   - {fileID: 813473004}
   - {fileID: 814310012}
   m_Father: {fileID: 0}
@@ -49428,3 +49430,121 @@ SceneRoots:
   - {fileID: 1327263448}
   - {fileID: 1743440935}
   - {fileID: 1194642788005167262}
+--- !u!1 &826611041100000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 826611041100000002}
+  - component: {fileID: 826611041100000003}
+  m_Layer: 0
+  m_Name: TriggerAreaIndicator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &826611041100000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 826611041100000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 813473002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &826611041100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 826611041100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b75eb8c18ca6427f9890f1c5fa5b1c7a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  source: {fileID: 639429861}
+  borderPrefab: {fileID: 7953163747722209633, guid: 9c1241adbdeca4d488aad19a27b42027, type: 3}
+  borderShader: {fileID: 4800000, guid: 0c73897c76f94674da31b57037a65fe4, type: 3}
+  profile: {fileID: 11400000, guid: 5b8aed37deb1447e808cd48b9cd59f53, type: 2}
+  settings:
+    shape:
+      size: {x: 1, y: 1}
+      padding: 0.01
+      cornerRadius: 0.16
+      curveSegments: 14
+      outerWidth: 0.015
+      mainWidth: 0.045
+      innerWidth: 0.01
+      depth: 0.025
+      floatHeight: 0
+    showOuter: 1
+    showInner: 1
+    opacity: 1
+    minimumHeight: 0.006
+    bobAmplitude: 0.03
+    bobPeriod: 1.8
+    useFill: 0
+    fillUsesTriggerColor: 1
+    fillColor: {r: 1, g: 1, b: 1, a: 1}
+    fillOpacity: 0.2
+    fillTexture: {fileID: 0}
+--- !u!1 &826611041100000011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 826611041100000012}
+  - component: {fileID: 826611041100000013}
+  m_Layer: 0
+  m_Name: JC_EventOcclusion
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &826611041100000012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 826611041100000011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 197574232}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &826611041100000013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 826611041100000011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b12675efe02e4c9f8383a30da2ac80d2, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  profile: {fileID: 11400000, guid: e8e23eb167d1452b960c22880621c6bc, type: 2}
+  opacity: 0.25
+  compositeShader: {fileID: 4800000, guid: fe44ad98cfa44dd5ad712e67a39a085c, type: 3}
+  surfaceShader: {fileID: 4800000, guid: 0c73897c76f94674da31b57037a65fe4, type: 3}

@@ -166,6 +166,7 @@ public sealed partial class JcSkillPresentationDirector
         var resolved = new bool[count];
         var hitRoutines = new List<Coroutine>();
         int segmentSlot = 1;
+        int activeSegmentIndex = -1;
         List<PlanMoveSpan> activeSpans = null;
         PresentationInterruptReason interrupt = PresentationInterruptReason.None;
 
@@ -204,6 +205,12 @@ public sealed partial class JcSkillPresentationDirector
                     span.To.y = span.From.y;
                     span.ToRotation = Quaternion.LookRotation(-away, Vector3.up);
                     RetargetPlanContext(actor, target);
+                    if (activeSegmentIndex == 0 && span.Slot == 1 && shouldMove)
+                    {
+                        // JC | 2026-11-04 | 보스 테스트에서도 본게임의 효과음 키와 연출 시점을 재사용합니다.
+                        string key = MovementSfxKeyResolver.ResolveApproach(presentation.Move, movement);
+                        if (!string.IsNullOrEmpty(key)) PresentationSfxPlayer.Play(key);
+                    }
                     return;
                 }
                 if (marker == span.End && span.Started && !span.Completed)
@@ -231,6 +238,7 @@ public sealed partial class JcSkillPresentationDirector
                 SkillTimelineSegment segment = segments[s];
                 TimelineAsset timeline = segment.Timeline;
                 segmentSlot = segment.TargetSlot;
+                activeSegmentIndex = s;
                 activeSpans = moveSpansBySegment[s];
                 BattleCharactor target = slotContexts[segmentSlot - 1]?.Target;
                 RetargetPlanContext(actor, target);

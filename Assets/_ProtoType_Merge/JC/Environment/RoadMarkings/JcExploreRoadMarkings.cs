@@ -28,6 +28,7 @@ namespace JC.EnvironmentDetail
         HashSet<int> sourceIds = new HashSet<int>();
         GameObject output;
         JcBattleSurfaceDressing lines;
+        // JC | 2026-11-04 | 도로·차선을 부분별로 조명할 수 있게 해 가로등 하나의 영향이 도로 전체로 퍼지는 현상을 줄입니다.
         readonly List<JcLampSurfaceChunks> litSurfaces = new List<JcLampSurfaceChunks>();
         readonly HashSet<int> checkedSurfaces = new HashSet<int>();
         int surfaceReadyFrame;

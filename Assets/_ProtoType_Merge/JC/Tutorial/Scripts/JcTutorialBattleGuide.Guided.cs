@@ -38,6 +38,7 @@ namespace JC.Tutorial
         private bool FreeGuide => detailed && guidedPhase == FreeGuidePhase;
         private RectTransform currentTurnFocus;
         public bool GuidedActive => guidedActive;
+        // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
         internal static bool HighlightsWorldEnemyBadge(TurnSlotUI slot) =>
             activeGuide != null && activeGuide.guidedActive && activeGuide.detailed && !activeGuide.formation &&
             activeGuide.guidedPhase == 3 && activeGuide.guidedSlot == slot;

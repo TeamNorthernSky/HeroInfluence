@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
+// JC | 2026-11-04 | 굉음 대화의 진동과 개별 발걸음 반동을 별도로 조절해 반복 이동 중에도 타이밍을 유지합니다.
 public sealed class JcArnoldShake : MonoBehaviour
 {
     [InspectorName("저장 대상 프로필"), Tooltip("조절값을 불러오거나 저장할 에셋입니다. 다른 프로필을 선택한 뒤 ‘프로필 불러와 적용’을 누르면 그 값을 사용합니다.")] public JcArnoldShakeProfile profile;

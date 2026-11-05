@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
+// JC | 2026-11-04 | 사용 가능한 스킬의 스윕과 선택된 스킬의 테두리를 서로 독립적으로 조절합니다.
 [CustomEditor(typeof(BattleSkillSweepSettings))]
 public sealed class BattleSkillSweepSettingsEditor : Editor
 {

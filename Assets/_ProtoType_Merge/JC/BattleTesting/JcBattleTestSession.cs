@@ -642,7 +642,14 @@ namespace JC.BattleTesting
             yield return new WaitUntil(() => modalConfirmed);
             CloseModal();
         }
-        private void BattleEnded(BattleResult result) => OpenModal((result == BattleResult.Victory ? "승리했습니다." : "패배했습니다.") + "\n현재 인스펙터 설정으로 전투를 초기화하시겠습니까?", true);
+        // JC | 2026-11-04 | 탐사 복귀가 없는 테스트 세션에서는 결과창을 여는 시점에 승패음을 재생합니다.
+        private void BattleEnded(BattleResult result)
+        {
+            // 테스트는 탐사 복귀/보상 지급이 없으므로 종료창에서 승패음을 확인합니다.
+            if (result == BattleResult.Victory) PresentationSfxPlayer.Play("BattleEnd_Victory");
+            else if (result == BattleResult.Defeat) PresentationSfxPlayer.Play("BattleEnd_Defeat");
+            OpenModal((result == BattleResult.Victory ? "승리했습니다." : "패배했습니다.") + "\n현재 인스펙터 설정으로 전투를 초기화하시겠습니까?", true);
+        }
         private void OpenModal(string message, bool isResult)
         {
             modalMessage = message; modalConfirmed = false; resultModal = isResult;

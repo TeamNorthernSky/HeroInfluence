@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 namespace JC.BattleTesting.Vfx
 {
@@ -17,6 +19,14 @@ namespace JC.BattleTesting.Vfx
         {
             var director=UnityEngine.Object.FindFirstObjectByType<JcYuliaVfxDirector>();
             if(director==null||director.preset==null){applyHit?.Invoke();yield break;}
+            // 특수 외형 레일도 본게임의 동일 Timeline SFX 트랙을 읽습니다.
+            // 애니메이션/피해 마커는 실행하지 않아 기존 테스트 판정을 보존합니다.
+            var presentation = battle.VisualDirector?.GetPresentation(skill.skillIndex);
+            var timeline = presentation?.ResolveTimeline(actor.TemplateIndex, actor.UnitName);
+            if (timeline != null && presentation.IsTimelineRail &&
+                !(battle.PresentationCatalog?.ForceAnimatorRail ?? false))
+                // JC | 2026-11-04 | 보스 테스트에서도 본게임의 효과음 키와 연출 시점을 재사용합니다.
+                battle.StartCoroutine(PlayTimelineSfx(battle, actor, timeline));
             var context=new SkillEffectContext{Caster=actor,PrimaryTarget=target,Targets=targets,SocketTransform=actor.GetComponent<JcYuliaUnitVfx>()?.OrbAnchor??actor.transform,PlaybackSpeed=battle.CurrentBattleSpeed};
             bool wheel=actor.TemplateIndex=="40005",veil=actor.TemplateIndex=="40004";
             Vector3 home=actor.transform.position;
@@ -27,6 +37,8 @@ namespace JC.BattleTesting.Vfx
             {
                 if(wheel)
                 {
+                    var preset = actor.GetComponent<HoopWheelVisual>()?.Preset;
+                    if (preset != null) UnitSfxProfile.PlayKey(DHAudioClipCatalog.NormalizeKey(preset.dashSfxKey));
                     Vector3 end=target!=null?target.transform.position:home;end.y=home.y;
                     trail=director.WheelTrail(home+Vector3.up*.72f);
                     float elapsed=0;
@@ -53,5 +65,27 @@ namespace JC.BattleTesting.Vfx
         }
         private static IEnumerator Wait(JcBattleManager battle,float seconds)
         {for(float t=0;t<seconds;t+=Time.deltaTime*Mathf.Max(.01f,battle.CurrentBattleSpeed))yield return null;}
+
+        private static IEnumerator PlayTimelineSfx(JcBattleManager battle, BattleCharactor actor, TimelineAsset timeline)
+        {
+            var markers = timeline.GetOutputTracks().OfType<PresentationMarkerTrack>()
+                .Where(track => !track.mutedInHierarchy && track.Role == PresentationMarkerTrackRole.Sfx)
+                .SelectMany(track => track.GetMarkers().OfType<PresentationSfxMarker>())
+                .OrderBy(marker => marker.time).ToArray();
+            float elapsed = 0f;
+            int index = 0;
+            while (index < markers.Length && actor != null && actor.gameObject.activeInHierarchy && !actor.IsDead)
+            {
+                while (index < markers.Length && markers[index].time <= elapsed)
+                {
+                    var marker = markers[index++];
+                    if (string.IsNullOrEmpty(marker.SfxKey)) continue;
+                    if (marker.DurationSeconds > 0f) PresentationSfxPlayer.PlayForDuration(marker.SfxKey, marker.DurationSeconds);
+                    else PresentationSfxPlayer.Play(marker.SfxKey);
+                }
+                yield return null;
+                elapsed += Time.deltaTime * Mathf.Max(.01f, battle.CurrentBattleSpeed);
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace JC.Environment
 {
+    // JC | 2026-11-04 | 시간대별 전장 조명을 조절하고 가로등의 중심광과 주변광을 배치에 맞게 적용합니다.
     public sealed class JcBattleLampProfile : ScriptableObject
     {
         public const string ResourceName = "JC_BattleStreetlights";
