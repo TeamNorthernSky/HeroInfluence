@@ -14,8 +14,10 @@ public readonly struct InteractionOverlayCell
     public readonly object Owner;
     public readonly Vector2Int Grid;
     public readonly Color Color;
-    public InteractionOverlayCell(object owner, Vector2Int grid, Color color)
-    { Owner = owner; Grid = grid; Color = color; }
+    // JC | 2026-11-05 | DH의 기존 셀 우선순위를 표시 계층에 전달하여 겹친 윤곽선도 같은 우선순위를 사용합니다.
+    public readonly int Priority;
+    public InteractionOverlayCell(object owner, Vector2Int grid, Color color, int priority = 0)
+    { Owner = owner; Grid = grid; Color = color; Priority = priority; }
 }
 
 public class InteractionCellOverlayController : MonoBehaviour
@@ -244,7 +246,8 @@ public class InteractionCellOverlayController : MonoBehaviour
             {
                 Color color = pair.Value == OverlayCellType.External && externalDesiredCellColors.TryGetValue(pair.Key, out var external)
                     ? external : GetColor(pair.Value);
-                visibleCells.Add(new InteractionOverlayCell(desiredOwners[pair.Key], pair.Key, color));
+                // JC | 2026-11-05 | 셀 선택·접촉 판정은 기존 결과를 사용하고, 이미 계산된 종류의 표시 우선순위만 함께 전달합니다.
+                visibleCells.Add(new InteractionOverlayCell(desiredOwners[pair.Key], pair.Key, color, GetPriority(pair.Value)));
             }
             // JC | 2026-11-04 | 클릭 셀과 소유자를 기존 판정에서 얻어 표시 전용 윤곽에 넘깁니다.
             visualOverride.RenderCells(visibleCells, gridManager);

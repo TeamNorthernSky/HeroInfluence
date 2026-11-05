@@ -10,6 +10,12 @@ namespace JC.BattleTesting
         public GameObject visualPrefab;
         public JcBossCameraProfile cameraProfile;
         public Material glassProfile;
+        // JC | 2026-11-05 | 테스트와 실제 BE490이 같은 전용 환경 보정을 사용하며 일반 전투 프로필과 분리합니다.
+        [Tooltip("기존 환경 위에 적용할 보스전 전용 조명·음영·무대 재질 설정입니다.")]
+        public JcBossEnvironmentProfile environmentProfile;
+        // JC | 2026-11-05 | 실내 표면·바닥 줄눈도 테스트/실제 BE490에서 같은 프로필을 사용합니다.
+        [Tooltip("보스 무대의 석재·바닥·가구 표면 보정입니다. 원본 재질은 유지합니다.")]
+        public JcBossSurfaceProfile surfaceProfile;
         [Tooltip("보스전 이벤트 구역 번호입니다.")] public int zoneId = 2;
         [Tooltip("이 배경을 사용할 전투 키입니다. Start_ 접두어는 자동으로 제외합니다.")]
         public string battleKey = "BE490";

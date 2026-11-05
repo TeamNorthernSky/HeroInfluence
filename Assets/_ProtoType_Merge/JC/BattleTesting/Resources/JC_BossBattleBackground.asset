@@ -16,5 +16,7 @@ MonoBehaviour:
     type: 3}
   cameraProfile: {fileID: 11400000, guid: a8b00b86ef8962a49bfd8c3ea7f2ce6c, type: 2}
   glassProfile: {fileID: 2100000, guid: 000ffbad2aba4dc4aa0a939a31cd5db3, type: 2}
+  environmentProfile: {fileID: 11400000, guid: 1c3257bfd296497cb38a1af53b8225ce, type: 2}
+  surfaceProfile: {fileID: 11400000, guid: 2a4334a981404e1ba0255eb40b5fb82d, type: 2}
   zoneId: 2
   battleKey: BE490
