@@ -344,10 +344,31 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 사망 보류용 대상별 타격 수. 한 시전에서 같은 대상을 두 번 이상 때리는 경우(3030 더블 공격 등)에만
+    /// 표를 만들고, 모든 대상이 한 번씩만 맞으면 null을 돌려준다(보류할 것이 없음).
+    /// </summary>
+    private static Dictionary<BattleCharactor, int> CountHitsPerTarget(List<DamageContext> contexts)
+    {
+        Dictionary<BattleCharactor, int> counts = null;
+        bool anyMultiHit = false;
+        for (int i = 0; i < contexts.Count; i++)
+        {
+            BattleCharactor target = contexts[i]?.Target;
+            if (target == null) continue;
+            counts ??= new Dictionary<BattleCharactor, int>();
+            counts.TryGetValue(target, out int count);
+            counts[target] = count + 1;
+            if (count >= 1) anyMultiHit = true;
+        }
+        return anyMultiHit ? counts : null;
+    }
+
+    /// <summary>
     /// 대신 맞기: 플레이어의 '단일' 공격이 보호 중인 적 B에 들어오면 살아있는 가디언 A로 데미지를 재지정한다.
     /// 원래 대상이 둘 이상(광역/스플래시)이면 가로채지 않는다(동일 B 다단 히트만 허용).
     /// A가 도중 사망하면 남은 히트는 죽은 A를 가리켜 스킵됨 = 무효(캐스트가 A에 묶임).
     /// </summary>
+
     private void TryApplyGuardRedirect(SkillExecutionResult result)
     {
         if (result == null || result.DamageContexts == null || result.DamageContexts.Count == 0)
@@ -408,6 +429,8 @@ public class BattleManager : MonoBehaviour
         // 연출이 확정하지 못한(취소·타임아웃) 히트를 규칙 계층이 나중에 일괄 확정하기 위한 목록.
         // 연출은 확정 '시점'만 정하고 '여부'는 정하지 못한다. 각 항목은 멱등하다(두 번 호출해도 1회만 적용).
         var pendingCommits = new List<Func<BattleHitResult>>();
+        // 사망 보류: 같은 대상을 여러 번 때리는 시전에서 대상별로 남은 타격 수. 마지막 타 전에는 HP가 1 아래로 내려가지 않는다.
+        Dictionary<BattleCharactor, int> deathHoldHits = null;
         Func<BattleHitResult> PrepareDamageCommit(DamageContext damageContext)
         {
             if (!damageContext.IsCounterAttack && !damageContext.CanTriggerCounter)
@@ -421,7 +444,20 @@ public class BattleManager : MonoBehaviour
                 committed = true;
                 // 대신 맞기: 살아 있는 가디언이 재지정된 피해를 받는 순간 방어음(가디언 UnitSfxProfile).
                 bool guardBlock = damageContext.RedirectedFrom != null && damageContext.Target != null && !damageContext.Target.IsDead;
-                BattleHitResult hit = CommitDamage(damageContext, predicted);
+                // 같은 대상에 타격이 더 남았으면 이 피해를 넣는 순간에만 HP 1 하한을 건다(죽는 모션은 마지막 타에).
+                // 제약은 바로 풀리므로 연출이 끊겨도 대상이 HP 1로 남지 않는다(남은 타격은 스윕이 확정).
+                IDisposable deathHold = null;
+                BattleCharactor holdTarget = damageContext.Target;
+                if (deathHoldHits != null && holdTarget != null &&
+                    deathHoldHits.TryGetValue(holdTarget, out int remainingHits))
+                {
+                    deathHoldHits[holdTarget] = --remainingHits;
+                    if (remainingHits > 0 && !holdTarget.IsDead)
+                        deathHold = holdTarget.AddMinimumHpConstraint(1f, this);
+                }
+                BattleHitResult hit;
+                try { hit = CommitDamage(damageContext, predicted); }
+                finally { deathHold?.Dispose(); }
                 if (guardBlock) UnitSfxProfile.Play(damageContext.Target, UnitSfxEvent.GuardBlock);
                 result.RecordDamageResult(damageContext, hit);
                 totalDamageDealt += hit?.AppliedDamage ?? 0f;
@@ -466,6 +502,10 @@ public class BattleManager : MonoBehaviour
         if (result.DamageContexts != null)
         {
             TryApplyGuardRedirect(result); // 대신 맞기: 단일 공격이 보호 중 대상에 들어오면 가디언으로 재지정
+
+            // 다단 공격(같은 대상 여러 번): 앞 타에 죽을 피해여도 마지막 타가 들어간 뒤 죽는다.
+            // 재지정 이후의 최종 대상으로 센다. 대상마다 한 번씩만 맞는 스킬은 null(보류 없음).
+            deathHoldHits = CountHitsPerTarget(result.DamageContexts);
 
             // 재지정됐으면 A↔B 자리 교환(move → 원래 방향 → Idle). transform만 이동, OccupiedCell 불변.
             // 조건 미충족이면 아무것도 하지 않고, 이후 Exit도 동작하지 않는다.

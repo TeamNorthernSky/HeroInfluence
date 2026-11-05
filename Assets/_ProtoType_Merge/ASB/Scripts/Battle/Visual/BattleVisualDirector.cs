@@ -157,13 +157,14 @@ public class BattleVisualDirector : MonoBehaviour
         return keys.TryAdd(cast, target);
     }
 
+    /// <summary>
+    /// 한 시전에서 같은 대상은 첫 타격에만 피격 모션을 재생한다(3030 더블 공격 등 다단 공격의 2타째부터는
+    /// 모션을 다시 시작하지 않는다). 한 번만 맞는 대상은 항상 첫 타격이라 그대로 재생된다.
+    /// </summary>
     public bool ShouldPlayTargetHitAnimation(BattleCharactor actor, BattleCharactor target, BattleHitResult result)
     {
-        var context = actor != null ? actor.GetComponent<PresentationRuntimeContext>() : null;
-        int skillIndex = result != null && result.SkillIndex > 0 ? result.SkillIndex
-            : context?.Current?.Presentation?.SkillIndex ?? 0;
-        if ((skillIndex != 3030 && skillIndex != 3031) || target == null) return true;
-        return ShouldPlayFirstHit(actor, target, result, _hitReactionKeys, context);
+        if (target == null) return true;
+        return ShouldPlayFirstHit(actor, target, result, _hitReactionKeys);
     }
 
     private bool ShouldPlaySharedHit(BattleCharactor actor, BattleHitResult result)

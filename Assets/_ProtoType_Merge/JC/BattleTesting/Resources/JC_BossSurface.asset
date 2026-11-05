@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a315932f4894f2d88e5436f04e37b21, type: 3}
+  m_Name: JC_BossSurface
+  m_EditorClassIdentifier:
+  surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
+  tileSize: 4
+  jointWidth: 0.025
+  jointContrast: 0.12
+  jointNormal: 0.018
+  tileVariation: 0.012
+  surfaces:
+  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
+    rendererPath:
+    floorTiles: 0
+    smoothness: 0.12
+    specular: 0.018
+    variation: 0.035
+  - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
+    rendererPath:
+    floorTiles: 0
+    smoothness: 0.12
+    specular: 0.018
+    variation: 0.035
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    rendererPath:
+    floorTiles: 0
+    smoothness: 0.28
+    specular: 0.028
+    variation: 0.025
+  - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
+    rendererPath:
+    floorTiles: 0
+    smoothness: 0.08
+    specular: 0.012
+    variation: 0.025
+  - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
+    rendererPath:
+    floorTiles: 0
+    smoothness: 0.08
+    specular: 0.012
+    variation: 0.025
+  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
+    rendererPath: FinalStage/Floor
+    floorTiles: 1
+    smoothness: 0.18
+    specular: 0.022
+    variation: 0.045
