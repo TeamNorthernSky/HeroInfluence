@@ -193,8 +193,17 @@ public class PartyUnitState : MonoBehaviour
 
     public void SetIncapacitated(bool nextIsIncapacitated)
     {
+        bool revived = isIncapacitated && !nextIsIncapacitated;
         isIncapacitated = nextIsIncapacitated;
         ApplyIncapacitatedVisualState();
+
+        if (revived)
+        {
+            UnitVisualMotionController motion = GetComponent<UnitVisualMotionController>();
+            PartyGridMover party = GetComponentInParent<PartyGridMover>();
+            if (motion != null)
+                motion.SynchronizeMovingAnimation(party != null && party.IsMoving);
+        }
     }
 
     public void ApplyLevelUp(int amount = 1)
