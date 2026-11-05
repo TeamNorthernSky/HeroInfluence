@@ -30,7 +30,19 @@ public sealed class JcArnoldShake : MonoBehaviour
     public static void Footstep(Camera camera, Object owner)
     {
         var settings = Values;
-        CameraShakeEffect.ForCamera(camera)?.PlayFootstep(owner, settings.footStrength, settings.footDuration, settings.footReboundPercent);
+        var effect = CameraShakeEffect.ForCamera(camera);
+        if (effect == null) return;
+        effect.PlayFootstep(owner, settings.footStrength, settings.footDuration, settings.footReboundPercent);
+        effect.PlayNoise(owner, settings.footNoiseStrength, settings.footNoiseDuration);
+    }
+
+    public static CameraShakeEffect Landing(Camera camera, Object owner)
+    {
+        var effect = CameraShakeEffect.ForCamera(camera);
+        if (effect == null) return null;
+        var settings = Values;
+        effect.PlayNoise(owner, settings.landingStrength, settings.landingDuration);
+        return effect;
     }
 
     public static IEnumerator ChatBeats(CameraShakeEffect camera, RectTransform frame, Object owner)
@@ -85,6 +97,12 @@ public sealed class JcArnoldShake : MonoBehaviour
         if (previewWindow == null) return;
         previewCamera = CameraShakeEffect.ForCamera(Camera.main);
         preview = StartCoroutine(TestWindowBeats(frame));
+    }
+
+    public void PreviewLanding()
+    {
+        StopPreview();
+        previewCamera = Landing(Camera.main, this);
     }
 
     private IEnumerator TestWindowBeats(RectTransform frame)

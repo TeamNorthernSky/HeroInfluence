@@ -6,6 +6,10 @@ public struct ArnoldShakeValues
 {
     [InspectorName("발걸음 강도"), Tooltip("발소리가 날 때 카메라를 흔드는 세기입니다(월드 단위). 0이면 발소리만 재생됩니다."), Min(0)] public float footStrength;
     [InspectorName("발걸음 지속 시간(초)"), Tooltip("발을 한 번 디딘 뒤 반동이 끝날 때까지의 시간입니다. 발걸음 간격은 기존 발소리 타이밍을 따릅니다."), Min(.01f)] public float footDuration;
+    [InspectorName("발걸음 잔진동 강도"), Tooltip("기존 발걸음 반동에 더하는 무작위 진동입니다. 0이면 잔진동을 끕니다."), Min(0)] public float footNoiseStrength;
+    [InspectorName("발걸음 잔진동 시간(초)"), Tooltip("발걸음마다 잔진동이 점점 약해지며 끝나는 시간입니다."), Min(0)] public float footNoiseDuration;
+    [InspectorName("착지 흔들림 강도"), Tooltip("착지 순간 재생하는 EffectLab 방식의 무작위 진동입니다. 0이면 끕니다."), Min(0)] public float landingStrength;
+    [InspectorName("착지 흔들림 시간(초)"), Tooltip("착지 후 흔들림이 점점 약해지며 끝나는 시간입니다."), Min(0)] public float landingDuration;
     [InspectorName("채팅 첫 박자 카메라 강도"), Tooltip("굉음 안내 직후 첫 번째 카메라 흔들림의 세기입니다(월드 단위)."), Min(0)] public float cameraStart;
     [InspectorName("채팅 마지막 박자 카메라 강도"), Tooltip("네 번째 카메라 흔들림의 세기입니다(월드 단위). 둘째와 셋째 박자는 첫 값과 이 값 사이에서 고르게 변합니다."), Min(0)] public float cameraEnd;
     [InspectorName("채팅 첫 박자 창 이동량"), Tooltip("첫 박자에 HEROTALK 창을 흔드는 폭입니다(UI 캔버스 단위). 카메라 강도와 별도로 조절합니다."), Min(0)] public float frameStart;
@@ -17,6 +21,7 @@ public struct ArnoldShakeValues
 
     public static ArnoldShakeValues Default => new ArnoldShakeValues {
         footStrength = .08f, footDuration = .20f, footReboundPercent = 30, cameraStart = .035f, cameraEnd = .08f,
+        footNoiseStrength = .008f, footNoiseDuration = .16f, landingStrength = .15f, landingDuration = .45f,
         frameStart = 2, frameEnd = 5, chatDuration = .14f, interval = .30f
     };
 }
