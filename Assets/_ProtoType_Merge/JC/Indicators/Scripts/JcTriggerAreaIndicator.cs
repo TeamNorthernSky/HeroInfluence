@@ -77,13 +77,20 @@ namespace JC.Indicators
             bound = null; ClearCells();
         }
         private void OnDisable() { Unbind(); Dispose(material); Dispose(depthMaterial); Dispose(fillMaterial); Dispose(outlineMaterial); material = depthMaterial = fillMaterial = outlineMaterial = null; }
-        private void Update()
+        // JC | 2026-11-05 | 이동 코루틴의 위치·상태 갱신 이후에 숨김을 적용해 이동 시작 프레임에도 윤곽선이 남지 않게 합니다.
+        private void LateUpdate()
         {
             if (bound != source || !bound || bound.VisualOverride != this)
             { Unbind(); Bind(); }
             if (!bound) return;
             // The existing visual rebuilds only when its shape changes; movement only changes the transform.
-            foreach (var view in views.Values) Paint(view);
+            foreach (var view in views.Values)
+            {
+                if (view.arnold && view.arnold.IsMoving) view.hideBordersUntilRefresh = true;
+                else if (view.hideBordersUntilRefresh) source.RequestRefresh();
+                // 정지 직후에는 셀 갱신이 끝날 때까지 숨김을 유지해 이전 위치의 선이 잠깐 나타나는 것을 막습니다.
+                Paint(view);
+            }
         }
         public void RenderCells(IReadOnlyList<InteractionOverlayCell> cells, GridManager grid)
         {
@@ -119,6 +126,16 @@ namespace JC.Indicators
                     if (visual.outerBorder) visual.outerBorder.sharedMaterial = outlineMaterial;
                     if (visual.innerOutline) visual.innerOutline.sharedMaterial = outlineMaterial;
                     view = new View { visual = visual, color = pair.Key.color };
+                    // JC | 2026-11-05 | 기존 이동 효과음과 같은 아놀드 그룹 식별자를 사용하며 다른 이동형 적의 표시는 구분합니다.
+                    var enemy = pair.Key.owner as EnemyGridMover;
+                    var identity = enemy ? enemy.GetComponent<EnemyIdentity>() : null;
+                    if (identity && (identity.EnemyGroupKey == "BE161" || identity.EnemyGroupKey == "BE261")) view.arnold = enemy;
+                    int ownerId = pair.Key.owner is UnityEngine.Object owner ? owner.GetInstanceID() : pair.Key.GetHashCode();
+                    view.borders = new[] {
+                        new JcTriggerAreaDepth.Border(visual.innerBorder, depthMaterial, ownerId, 0),
+                        new JcTriggerAreaDepth.Border(visual.outerBorder, depthMaterial, ownerId, 1),
+                        new JcTriggerAreaDepth.Border(visual.innerOutline, depthMaterial, ownerId, 2)
+                    };
                     views.Add(pair.Key, view);
                 }
                 // JC | 2026-11-04 | 인도 셀 높이 차이를 제거하고 도로에 접한 모든 셀을 같은 평면에 둡니다.
@@ -137,6 +154,9 @@ namespace JC.Indicators
                     foreach (var cell in pair.Value) view.region.Cells[cell.Grid - view.anchor] = ground;
                     view.region.Trace(); view.visual.SetRegion(view.region);
                 }
+                // JC | 2026-11-05 | 최종 셀로 메시를 갱신한 뒤에만 정지한 아놀드의 윤곽선을 다시 표시합니다.
+                view.hideBordersUntilRefresh = view.arnold && view.arnold.IsMoving;
+                foreach (var border in view.borders) border.priority = pair.Value[0].Priority;
                 Paint(view);
             }
             geometryDirty = false;
@@ -174,27 +194,25 @@ namespace JC.Indicators
                 Tint(view.color, settings.outerIntensity, settings.outerOpacity),
                 Tint(view.color, settings.innerIntensity, settings.innerOpacity),
                 settings.buildingOccludedOpacity, settings.sidewalkOccludedOpacity, settings.fillSidewalkOccludedOpacity);
+            // JC | 2026-11-05 | 이동 중에는 윤곽선과 채움을 함께 숨기고, 정지 후 새 셀 갱신이 끝나면 같은 프레임에 복원합니다.
+            // 채움의 enabled 설정은 프로필이 관리하고, 이동 중 임시 숨김만 별도로 적용합니다.
+            foreach (var border in view.borders)
+                if (border.renderer) border.renderer.forceRenderingOff = view.hideBordersUntilRefresh;
+            if (view.visual.interior) view.visual.interior.forceRenderingOff = view.hideBordersUntilRefresh;
         }
-        internal void DrawPrivateDepth(CommandBuffer command, Camera camera, MaterialPropertyBlock properties)
+        internal void CollectBorders(List<JcTriggerAreaDepth.Border> borders, Camera camera)
         {
             if (!isActiveAndEnabled || !bound || !depthMaterial) return;
             if (camera.scene.IsValid() && camera.scene != gameObject.scene) return;
-            int pass = depthMaterial.FindPass("TriggerAreaDepth");
-            if (pass < 0) return;
+            // JC | 2026-11-05 | 실제로 표시하는 선만 공용 겹침 판정에 포함해 숨겨진 선이 다른 영역을 가리지 않게 합니다.
             foreach (var view in views.Values)
             {
-                Draw(view.visual.innerBorder);
-                Draw(view.visual.outerBorder);
-                Draw(view.visual.innerOutline);
-            }
-            void Draw(MeshRenderer renderer)
-            {
-                if (!renderer || !renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer.forceRenderingOff ||
-                    (camera.cullingMask & (1 << renderer.gameObject.layer)) == 0) return;
-                var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
-                if (!mesh) return;
-                properties.Clear(); renderer.GetPropertyBlock(properties);
-                command.DrawMesh(mesh, renderer.localToWorldMatrix, depthMaterial, 0, pass, properties);
+                foreach (var border in view.borders)
+                {
+                    var renderer = border.renderer;
+                    if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy && !renderer.forceRenderingOff &&
+                        (camera.cullingMask & (1 << renderer.gameObject.layer)) != 0) borders.Add(border);
+                }
             }
         }
         // JC | 2026-11-04 | 별도 버퍼에만 가림 표면을 그려 이동 표시·말풍선의 장면 깊이는 보존합니다.
@@ -228,6 +246,10 @@ namespace JC.Indicators
             internal Vector3 position;
             internal float ground;
             internal Color color;
+            // JC | 2026-11-05 | 이동 종료 후 셀 갱신까지의 숨김과 각 윤곽선의 고정 정렬 정보를 보관합니다.
+            internal EnemyGridMover arnold;
+            internal bool hideBordersUntilRefresh;
+            internal JcTriggerAreaDepth.Border[] borders;
             internal readonly BattleCellBorderConfiguration config = new BattleCellBorderConfiguration();
             internal readonly BattleCellBorderMotion motion = new BattleCellBorderMotion();
         }
