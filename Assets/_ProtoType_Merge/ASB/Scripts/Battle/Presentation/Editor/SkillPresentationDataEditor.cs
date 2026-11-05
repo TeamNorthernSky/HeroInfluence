@@ -96,6 +96,17 @@ public class SkillPresentationDataEditor : Editor
         }
 
         EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Hit Stop / 타격 카메라 줌 (공용)", EditorStyles.boldLabel);
+        SerializedProperty overrideHitStop = serializedObject.FindProperty("OverrideHitStop");
+        EditorGUILayout.PropertyField(overrideHitStop);
+        using (new EditorGUI.DisabledScope(overrideHitStop != null && !overrideHitStop.boolValue))
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitStop"), true);
+        SerializedProperty overridePunch = serializedObject.FindProperty("OverrideHitCameraPunch");
+        EditorGUILayout.PropertyField(overridePunch);
+        using (new EditorGUI.DisabledScope(overridePunch != null && !overridePunch.boolValue))
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitCameraPunch"), true);
+
+        EditorGUILayout.Space();
         EditorGUILayout.LabelField("Projectile Impact (공용)", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ProjectileVisual"), true);
 

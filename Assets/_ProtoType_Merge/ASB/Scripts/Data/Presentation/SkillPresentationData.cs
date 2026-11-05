@@ -276,6 +276,9 @@ public class SkillPresentationData : ScriptableObject
     [Tooltip("켜면 이 스킬의 히트스탑 설정을 사용합니다. 끄면 BattleVisualDirector 기본값을 사용합니다.")]
     public bool OverrideHitStop;
     public HitStopSettings HitStop = HitStopSettings.Default;
+    [Tooltip("켜면 이 스킬의 타격 카메라 줌 설정을 사용합니다. 끄면 BattleVisualDirector 기본값을 사용합니다.")]
+    public bool OverrideHitCameraPunch;
+    public HitCameraPunchSettings HitCameraPunch = HitCameraPunchSettings.Default;
 
     [Header("Projectile Impact (Skill-specific)")]
     [Tooltip("Actual projectile presentation used by ranged offensive skills. This lives on the presentation asset, never in CSV SkillData.")]

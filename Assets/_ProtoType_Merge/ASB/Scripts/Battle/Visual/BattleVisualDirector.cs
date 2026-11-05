@@ -18,6 +18,34 @@ public struct HitStopSettings
     };
 }
 
+/// <summary>타격 순간 화면을 짧게 조였다가 푸는 카메라 줌 설정. 시간은 실제 시간(초) 기준이며 전투 배속만큼 빨라진다.</summary>
+[Serializable]
+public struct HitCameraPunchSettings
+{
+    public bool Enabled;
+    [Tooltip("최대로 조일 때 화면 확대 비율. 0.05 = 5% 확대.")]
+    [Range(0f, 0.3f)] public float ZoomAmount;
+    [Range(0f, 0.3f)] public float ZoomInSeconds;
+    [Range(0f, 0.5f)] public float HoldSeconds;
+    [Range(0f, 1f)] public float ZoomOutSeconds;
+
+    public static HitCameraPunchSettings Default => new HitCameraPunchSettings
+    {
+        Enabled = true, ZoomAmount = 0.05f, ZoomInSeconds = 0.04f, HoldSeconds = 0.04f, ZoomOutSeconds = 0.15f
+    };
+
+    /// <summary>Default와 같은 값에서 끄기만 한 설정. 전투 전역 기본값용 — 다시 켤 때 Enabled만 체크하면 된다.</summary>
+    public static HitCameraPunchSettings DefaultOff
+    {
+        get
+        {
+            HitCameraPunchSettings settings = Default;
+            settings.Enabled = false;
+            return settings;
+        }
+    }
+}
+
 /// <summary>
 /// 전투 연출(이펙트·팝업) 생성 책임.
 /// BattleManager의 [SerializeField] 필드로 주입합니다.
@@ -34,6 +62,12 @@ public class BattleVisualDirector : MonoBehaviour
     };
     [Tooltip("테스트용 HP 하한으로 피해가 막혀도 명중 연출을 재생합니다.")]
     [SerializeField] private bool _reactToPreventedDamage;
+    [Header("타격 카메라 줌")]
+    [Tooltip("피해가 확정될 때마다 화면을 짧게 조였다가 풉니다. 기본은 꺼짐 — Enabled를 켜면 모든 타격에 들어가고, " +
+             "특정 스킬만 쓰려면 그 스킬의 SkillPresentationData에서 Override Hit Camera Punch를 켭니다.")]
+    [SerializeField] private HitCameraPunchSettings _defaultHitCameraPunch = HitCameraPunchSettings.DefaultOff;
+    [Tooltip("켜면 아군이 적을 때릴 때만 타격 카메라 줌을 넣습니다.")]
+    [SerializeField] private bool _hitCameraPunchPlayerAttacksOnly;
     [Header("공통 피격 이펙트")]
     [InspectorName("공통 피격 이펙트 사용"), SerializeField] private bool _enableCommonHitEffect = true;
     [Tooltip("비어 있으면 BattleEffects/FX_Common_Hit_Basic를 공통으로 사용합니다.")]
@@ -202,6 +236,7 @@ public class BattleVisualDirector : MonoBehaviour
     private float _characterSpeedMultiplier = 1f;
     private float _effectSpeedMultiplier = 1f;
     private float _lastAutomaticHitStopAt = float.NegativeInfinity;
+    private float _lastHitCameraPunchAt = float.NegativeInfinity;
     private BattleCharactor _lastMarkerActor;
     private BattleCharactor _lastMarkerTarget;
     private float _lastMarkerTime = float.NegativeInfinity;
@@ -261,6 +296,7 @@ public class BattleVisualDirector : MonoBehaviour
             PlayCommonHitEffect(result.Target);
             PlayJusticeHitEffect(result);
         }
+        PlayHitCameraPunch(actor, result);
         if (_lastMarkerActor == actor && _lastMarkerTarget == result.Target &&
             Time.unscaledTime - _lastMarkerTime < 0.15f) return;
         SkillPresentationData presentation = GetPresentation(result.SkillIndex);
@@ -279,6 +315,22 @@ public class BattleVisualDirector : MonoBehaviour
         }
         _lastAutomaticHitStopAt = Time.unscaledTime;
         RequestHitStop(actor, result.Target, settings);
+    }
+
+    /// <summary>명중마다 메인 카메라를 짧게 조인다. 히트스탑 마커가 정지를 맡은 명중에도 줌은 넣는다.</summary>
+    private void PlayHitCameraPunch(BattleCharactor actor, BattleHitResult result)
+    {
+        if (_hitCameraPunchPlayerAttacksOnly && (actor == null || !actor.IsPlayer)) return;
+        // 동시 광역 대상은 한 번만 조인다(히트스탑 합류와 같은 0.1초 창).
+        if (Time.unscaledTime - _lastHitCameraPunchAt < 0.1f) return;
+        SkillPresentationData presentation = GetPresentation(result.SkillIndex);
+        HitCameraPunchSettings settings = presentation != null && presentation.OverrideHitCameraPunch
+            ? presentation.HitCameraPunch : _defaultHitCameraPunch;
+        if (!settings.Enabled || settings.ZoomAmount <= 0f) return;
+        BattleCameraHitPunch punch = BattleCameraHitPunch.Ensure(Camera.main);
+        if (punch == null) return;
+        _lastHitCameraPunchAt = Time.unscaledTime;
+        punch.Punch(settings, BattleRuntimeSettings.BattleSpeed);
     }
 
     private void AddStoppedAnimation(BattleCharactor unit, float speed)
