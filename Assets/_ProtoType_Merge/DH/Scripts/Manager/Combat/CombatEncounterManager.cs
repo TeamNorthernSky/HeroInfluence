@@ -236,6 +236,9 @@ public class CombatEncounterManager : MonoBehaviour
         if (context == null)
             return null;
 
+        if (context.Result == CombatResult.Defeat)
+            MapProgressRepository.Instance?.ClearMobileEncounter();
+
         if (context.CombatEnemy != null &&
             context.CombatEnemy.SourceType == CombatEnemySourceType.Simulation)
         {

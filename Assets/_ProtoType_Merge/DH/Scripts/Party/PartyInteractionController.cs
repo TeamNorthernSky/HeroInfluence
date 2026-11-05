@@ -18,7 +18,20 @@ public class PartyInteractionController
 
     private Coroutine pendingInteractionCoroutine;
 
-    public bool IsInputLocked { get; private set; }
+    private bool inputLocked;
+    private bool enemyInteractionInProgress;
+    private int continuationReadyFrames;
+    private PartyIdentity partyIdentity;
+
+    public bool IsInputLocked
+    {
+        get => inputLocked || HasMobileContinuation;
+        private set => inputLocked = value;
+    }
+
+    private bool HasMobileContinuation => partyIdentity != null &&
+        MapProgressRepository.Instance != null &&
+        MapProgressRepository.Instance.PendingMobileEncounter?.PartyId == partyIdentity.PartyId;
 
     public event Action<Vector2Int> AdjacentItemCellEntered;
     public event Action<HeroUnionUnit> AdjacentHeroUnionDetected;
@@ -39,6 +52,7 @@ public class PartyInteractionController
         this.ownerParty = ownerParty;
         this.coroutineOwner = coroutineOwner;
         this.currentGridProvider = currentGridProvider;
+        partyIdentity = ownerParty != null ? ownerParty.GetComponent<PartyIdentity>() : null;
         SceneFadeController.TransitionFailed += HandleTransitionFailed;
 
         if (this.ownerParty != null)
@@ -50,6 +64,9 @@ public class PartyInteractionController
     public void HandleGridEntered(Vector2Int enteredGrid)
     {
         if (DHGameEndState.IsEnding)
+            return;
+
+        if (HasMobileContinuation)
             return;
 
         if (HasPendingCombatResult())
@@ -115,7 +132,18 @@ public class PartyInteractionController
         if (!gridManager.TryGetEnemyEncounterZoneOwner(currentGrid, out EnemyGridMover enemy))
             return;
 
+        if (enemy.IsStatic)
+            ReserveMobileContinuation(currentGrid);
+        BeginEnemyInteraction(enemy);
+    }
+
+    private void BeginEnemyInteraction(EnemyGridMover enemy)
+    {
+        if (enemyInteractionInProgress)
+            return;
+
         CancelPendingInteraction();
+        enemyInteractionInProgress = true;
         IsInputLocked = true;
         if (EnemyEventEncounterService.TryOpenEncounterChat(ownerParty, enemy, HandleCombatPromptClosed))
         {
@@ -124,18 +152,115 @@ public class PartyInteractionController
 
         if (!enemy.IsStatic)
         {
+            enemyInteractionInProgress = false;
             IsInputLocked = false;
             Debug.LogWarning("Mobile enemy encounter chat could not be opened. Skipping combat.", enemy);
             return;
         }
 
         bool combatStarted = combatEncounterManager.BeginCombat(ownerParty, enemy);
+        enemyInteractionInProgress = combatStarted;
         IsInputLocked = combatStarted;
+    }
+
+    private bool TryPrioritizeEnemyInteraction()
+    {
+        CombatContext context = CombatContext.Instance;
+        if (enemyInteractionInProgress || HasMobileContinuation ||
+            (combatEncounterManager != null && combatEncounterManager.IsCombatActive) ||
+            (context != null && (context.Result != CombatResult.None || context.CombatParty != null ||
+                context.CombatEnemy != null || context.HasEventBattle)))
+            return true;
+
+        if (gridManager == null || ownerParty == null ||
+            !gridManager.TryGetEnemyEncounterZoneOwner(ownerParty.GetCurrentGrid(), out _))
+            return false;
+
+        // A chat already owns the encounter; never open it again from an item/event callback.
+        if (ChatModalController.IsOpen || (ChatManager.Instance != null && ChatManager.Instance.IsRunning))
+            return true;
+
+        IsInputLocked = false;
+        ownerParty.SnapToGridPosition(ownerParty.GetCurrentGrid(), notifyMoveCompleted: false);
+        HandleMoveCompleted();
+        return true;
+    }
+
+    private void ReserveMobileContinuation(Vector2Int grid)
+    {
+        if (partyIdentity == null || gridManager == null || MapProgressRepository.Instance == null ||
+            !gridManager.TryGetMobileEnemyAtInteractionCell(grid, out _))
+            return;
+
+        MapProgressRepository.Instance.ReserveMobileEncounter(partyIdentity.PartyId,
+            ownerParty.gameObject.scene.name, grid, GameManager.Instance != null ? GameManager.Instance.CurrentDay : 0);
+        continuationReadyFrames = 0;
+    }
+
+    public void TickMobileContinuation()
+    {
+        if (!HasMobileContinuation || ownerParty == null || gridManager == null)
+            return;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        var pending = repository.PendingMobileEncounter;
+        if (DHGameEndState.IsEnding ||
+            pending.SceneName != ownerParty.gameObject.scene.name ||
+            (GameManager.Instance != null && pending.Day != GameManager.Instance.CurrentDay))
+        {
+            repository.ClearMobileEncounter();
+            return;
+        }
+
+        CombatContext context = CombatContext.Instance;
+        if (DHGameStateRestoreService.IsRestoring || inputLocked || ownerParty.IsMoving ||
+            GateCameraFocusController.IsBusy ||
+            (context != null && (context.Result != CombatResult.None || context.HasEventBattle ||
+                context.CombatParty != null || context.CombatEnemy != null)) ||
+            (combatEncounterManager != null && combatEncounterManager.IsCombatActive) ||
+            (ChatManager.Instance != null && ChatManager.Instance.IsRunning) ||
+            ChatModalController.IsOpen || ModalManager.HasAny ||
+            (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning))
+        {
+            continuationReadyFrames = 0;
+            return;
+        }
+
+        if (ownerParty.GetCurrentGrid() != pending.Grid || !HasLivingPartyUnit())
+        {
+            repository.ClearMobileEncounter();
+            return;
+        }
+
+        // Let close callbacks, result flags and deferred object removal settle first.
+        if (++continuationReadyFrames < 2)
+            return;
+
+        repository.ClearMobileEncounter();
+        continuationReadyFrames = 0;
+        if (gridManager.TryGetMobileEnemyAtInteractionCell(pending.Grid, out EnemyGridMover enemy))
+            BeginEnemyInteraction(enemy);
+    }
+
+    private bool HasLivingPartyUnit()
+    {
+        PartyComposition composition = ownerParty.GetComponent<PartyComposition>();
+        PersistentUnitRepository repository = PersistentUnitRepository.Instance;
+        if (composition == null || repository == null)
+            return false;
+        foreach (int unitIndex in composition.UnitIndices)
+        {
+            if (repository.TryGetUnit(unitIndex, out UnitPersistentData unit) && unit != null &&
+                !unit.IsIncapacitated && unit.CurrentHp > 0f)
+                return true;
+        }
+        return false;
     }
 
     private void HandleTransitionFailed(UnityEngine.SceneManagement.Scene sourceScene)
     {
         if (ownerParty == null || ownerParty.gameObject.scene != sourceScene) return;
+        enemyInteractionInProgress = false;
         IsInputLocked = false;
         RequestMoveRangeRefresh();
     }
@@ -197,6 +322,9 @@ public class PartyInteractionController
             : IsAdjacentOrSame(currentGrid, targetInteractionGrid) && currentGrid != targetInteractionGrid;
         if (inInteractionRange)
         {
+            if (TryPrioritizeEnemyInteraction())
+                return true;
+
             ownerParty.SnapToGridPosition(currentGrid);
 
             if (isItem)
@@ -229,6 +357,8 @@ public class PartyInteractionController
 
         CancelPendingInteraction();
         bool started = mainEvent.TryTrigger(ownerParty, HandleMainEventClosed);
+        if (started)
+            ReserveMobileContinuation(enteredGrid);
         IsInputLocked = started;
         return started;
     }
@@ -241,6 +371,7 @@ public class PartyInteractionController
         if (!outpost.IsClaimableByPlayer)
             return false;
 
+        ReserveMobileContinuation(enteredGrid);
         BeginAdjacentOutpostClaim(outpost, enteredGrid);
         return true;
     }
@@ -250,6 +381,7 @@ public class PartyInteractionController
         if (!gridManager.TryGetVillainUnionAtInteractionCell(enteredGrid, out VillainUnionBase villainUnionBase))
             return false;
 
+        ReserveMobileContinuation(enteredGrid);
         CancelPendingInteraction();
         IsInputLocked = true;
         if (!TryShowDefenderCombatChat(
@@ -268,6 +400,8 @@ public class PartyInteractionController
 
     private void OnAdjacentEventCellEntered(Vector2Int eventGrid)
     {
+        if (TryPrioritizeEnemyInteraction())
+            return;
         CancelPendingInteraction();
 
         IsInputLocked = true;
@@ -276,6 +410,8 @@ public class PartyInteractionController
 
     private void OnAdjacentSubEventCellEntered(Vector2Int subEventGrid)
     {
+        if (TryPrioritizeEnemyInteraction())
+            return;
         CancelPendingInteraction();
 
         IsInputLocked = true;
@@ -284,6 +420,8 @@ public class PartyInteractionController
 
     private void OnAdjacentWorldEventCellEntered(Vector2Int worldEventGrid)
     {
+        if (TryPrioritizeEnemyInteraction())
+            return;
         CancelPendingInteraction();
 
         IsInputLocked = true;
@@ -293,6 +431,9 @@ public class PartyInteractionController
     private IEnumerator InvokeDelayedEventInteraction(Vector2Int eventGrid)
     {
         pendingInteractionCoroutine = null;
+
+        if (TryPrioritizeEnemyInteraction())
+            yield break;
 
         if (DHGameEndState.IsEnding)
         {
@@ -329,6 +470,9 @@ public class PartyInteractionController
     {
         pendingInteractionCoroutine = null;
 
+        if (TryPrioritizeEnemyInteraction())
+            yield break;
+
         if (DHGameEndState.IsEnding)
         {
             IsInputLocked = false;
@@ -357,6 +501,9 @@ public class PartyInteractionController
     private IEnumerator InvokeDelayedSubEventInteraction(Vector2Int subEventGrid)
     {
         pendingInteractionCoroutine = null;
+
+        if (TryPrioritizeEnemyInteraction())
+            yield break;
 
         if (DHGameEndState.IsEnding)
         {
@@ -403,6 +550,8 @@ public class PartyInteractionController
 
     private void OnAdjacentItemCellEntered(Vector2Int itemGrid)
     {
+        if (TryPrioritizeEnemyInteraction())
+            return;
         CancelPendingInteraction();
 
         IsInputLocked = true;
@@ -420,6 +569,10 @@ public class PartyInteractionController
 
     private IEnumerator InvokeDelayedItemPickup(Vector2Int itemGrid)
     {
+        pendingInteractionCoroutine = null;
+        if (TryPrioritizeEnemyInteraction())
+            yield break;
+
         if (DHGameEndState.IsEnding)
         {
             pendingInteractionCoroutine = null;
@@ -540,6 +693,7 @@ public class PartyInteractionController
 
     private void HandleCombatPromptClosed(bool startedCombat)
     {
+        enemyInteractionInProgress = startedCombat;
         IsInputLocked = startedCombat;
     }
 
