@@ -86,6 +86,8 @@ public class TurnManager : MonoBehaviour
 
     public void EndPlayerTurn()
     {
+        if (MapProgressRepository.Instance != null && MapProgressRepository.Instance.PendingMobileEncounter != null)
+            return;
         if (DHGameEndState.IsEnding || GateCameraFocusController.IsBusy || enemyTurnRunning || completingTurn || pendingEnemyTurnStartCoroutine != null)
             return;
 
@@ -209,6 +211,8 @@ public class TurnManager : MonoBehaviour
 
     private bool CanExecuteAutomaticEndTurn()
     {
+        if (MapProgressRepository.Instance != null && MapProgressRepository.Instance.PendingMobileEncounter != null)
+            return false;
         if (DHGameEndState.IsEnding || enemyTurnRunning || completingTurn || pendingEnemyTurnStartCoroutine != null ||
             WorldInputGate.IsTurnResolving ||
             gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene() ||

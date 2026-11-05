@@ -279,6 +279,15 @@ public class MoveCommandPreviewController
         if (ZoneEntryGuidanceController.IsActive)
             path = TrimGuidancePathAtFirstItem(path, out destinationGrid);
 
+        if (previewInteractionTargetGrid.HasValue &&
+            gridManager.TryGetEnemyEncounterZoneOwner(destinationGrid, out EnemyGridMover blockingEnemy))
+        {
+            // The encounter cell, not the object behind it, becomes the selected destination.
+            previewInteractionTargetGrid = null;
+            previewEnemyTarget = blockingEnemy;
+            resolvedSelectionCell = destinationGrid;
+        }
+
         guidancePathCached = false;
         Vector2Int markerDisplayGrid = previewInteractionTargetGrid.HasValue
             ? previewInteractionTargetGrid.Value
@@ -524,6 +533,9 @@ public class MoveCommandPreviewController
             return false;
 
         Vector2Int currentGrid = activeMover.GetCurrentGrid();
+        if (previewEnemyTarget != null && IsEnemyEncounterCellFor(previewEnemyTarget, currentGrid))
+            return true;
+
         Vector2Int interactionGrid = previewInteractionTargetGrid.HasValue
             ? previewInteractionTargetGrid.Value
             : markerGrid;
