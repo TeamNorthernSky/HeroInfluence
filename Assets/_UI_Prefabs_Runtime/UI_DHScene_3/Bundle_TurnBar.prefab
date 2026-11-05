@@ -210,8 +210,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "1\uD134   99\uC8FC   4\uC77C "
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 11336019db026de4880ade0dd4a7e842, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 2d98d13bb434b6c4a8ee8b009d74fb41, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: df8cf5ffe36e6094d9814a95a2d7f1ad, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
