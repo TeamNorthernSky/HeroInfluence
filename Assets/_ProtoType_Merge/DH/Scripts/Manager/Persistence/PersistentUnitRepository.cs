@@ -346,7 +346,7 @@ public class PersistentUnitRepository : MonoBehaviour
             return false;
 
         float maxHp = Mathf.Max(0f, data.IngameStats.HP);
-        float heal = maxHp * Mathf.Max(0, percent) / 100f;
+        float heal = Mathf.Floor(maxHp * Mathf.Max(0, percent) / 100f + 0.5f);
         newHp = Mathf.Clamp(data.CurrentHp + heal, 0f, maxHp);
         bool nextIncapacitated = reviveIfDown ? false : data.IsIncapacitated;
 
