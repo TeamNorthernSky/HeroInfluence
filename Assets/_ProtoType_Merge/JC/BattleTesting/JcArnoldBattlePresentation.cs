@@ -213,7 +213,8 @@ namespace JC.BattleTesting
                     root.name.StartsWith("BGHouse", StringComparison.Ordinal) || root.name.StartsWith("BGStore", StringComparison.Ordinal) ||
                     root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
-            JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null||bossBackground);
+            // JC | 2026-11-05 | 보스 원경은 실내 보정 대신 월드 조명으로 초기화하고 실내 수광은 별도로 유지합니다.
+            if(!bossBackground) JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null);
             JC.EnvironmentDetail.JcBattleRoadMarkings.BindScene(scene);
             if (background != null) background.SetActive(true);
             if (clearTutorialArenaTrees) RemoveArenaTrees(scene);
@@ -239,6 +240,11 @@ namespace JC.BattleTesting
                     SceneManager.MoveGameObjectToScene(bossEnvironmentRoot, scene);
                 }
             }
+            // JC | 2026-11-05 | 기존 실내 조절기가 기준 환경을 잡기 전에 도시 태양과 시간대를 설정합니다.
+            if(bossSettings && background){
+                var cityObject=new GameObject("JC_BossCityLighting");cityObject.transform.SetParent(bossEnvironmentRoot.transform,false);
+                cityObject.AddComponent<JcBossCityLighting>().Initialize(background.transform,bossSettings,lightingHour);
+            }
             if (bossSettings && bossSettings.glassProfile && background)
             {
                 var materials = new GameObject("JC_BossBackgroundMaterials");
@@ -254,7 +260,8 @@ namespace JC.BattleTesting
                 controls.transform.SetParent(bossEnvironmentRoot.transform, false);
                 var environment = controls.AddComponent<JcBossEnvironment>();
                 environment.Initialize(bossSettings.environmentProfile, background.transform);
-                if (bossMaterials) bossMaterials.Environment = environment;
+                // JC | 2026-11-05 | 실내 조명 분리 상태가 금속을 포함한 모든 실내 표면에 반영되도록 연결 후 재적용합니다.
+                if (bossMaterials) { bossMaterials.Environment = environment; environment.SurfaceController = bossMaterials; bossMaterials.ApplySurfaces(); }
             }
             if (bossCameraProfile)
             {

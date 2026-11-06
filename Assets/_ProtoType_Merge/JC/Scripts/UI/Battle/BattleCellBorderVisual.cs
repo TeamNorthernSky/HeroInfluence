@@ -144,6 +144,8 @@ public sealed partial class BattleCellBorderVisual : MonoBehaviour
     private void Paint(MeshRenderer target,Color color,float alpha,bool fill,BattleCellBorderStyle style,BattleCellBorderConfiguration config,float clock)
     {
         if(target==null)return;
+        // JC | 2026-11-06 | 재질 큐보다 먼저 적용되는 정렬 순서도 타격 VFX(-1000)보다 낮춥니다. 탐사 영역의 순서는 유지합니다.
+        target.sortingOrder = region == null ? -2000 : 0;
         block.Clear();color.a*=Mathf.Clamp01(alpha);block.SetColor("_BaseColor",color);
         block.SetFloat("_IsFill",fill?1:0);
         // JC | 2026-11-04 | 탐사 가림 배율만 추가하며 기존 전투 테두리의 깊이 판정은 유지합니다.

@@ -9,6 +9,8 @@ namespace JC.BattleTesting
         public Material GlassProfile { get; private set; }
         public Material GlassDraft { get; private set; }
         readonly List<Renderer> panes = new List<Renderer>();
+        // JC | 2026-11-05 | 내보낸 무대의 복제 재질도 제어하며, 종료 시 각 창의 실제 원래 재질로 복원합니다.
+        readonly Dictionary<Renderer, Material> originalGlassMaterials = new Dictionary<Renderer, Material>();
         // JC | 2026-11-05 | 유리 메시/카메라 설정은 현재 보스전에만 적용하고 종료 시 원래 참조로 복원합니다.
         readonly Dictionary<MeshFilter, Mesh> originalMeshes = new Dictionary<MeshFilter, Mesh>();
         readonly Dictionary<MeshFilter, Mesh> volumeMeshes = new Dictionary<MeshFilter, Mesh>();
@@ -27,8 +29,22 @@ namespace JC.BattleTesting
         static void ResetCapture(UnityEngine.Rendering.ScriptableRenderContext context, Camera camera) => Shader.SetGlobalFloat("_JcBossGlassColorReady", 0);
         public static bool UsesRefraction(Camera camera)
         {
+            if (!camera) return false;
             foreach (var item in instances)
-                if (item && item.isActiveAndEnabled && item.cameraData && item.cameraData.gameObject == camera.gameObject) return true;
+            {
+                if (!item || !item.isActiveAndEnabled) continue;
+                if (item.cameraData && item.cameraData.gameObject == camera.gameObject) return true;
+#if UNITY_EDITOR
+                // JC | 2026-11-05 | SceneView도 자기 화면을 복사해야 게임 카메라의 잔상이 유리 안에 거울처럼 나타나지 않습니다.
+                // 프리팹 격리 화면 등 다른 무대를 보는 에디터 카메라에는 이 패스를 추가하지 않습니다.
+                if (camera.cameraType != CameraType.SceneView) continue;
+                foreach (var pane in item.panes)
+                    if (pane && pane.enabled && pane.gameObject.activeInHierarchy &&
+                        (camera.cullingMask & (1 << pane.gameObject.layer)) != 0 &&
+                        (camera.overrideSceneCullingMask & UnityEditor.SceneManagement.EditorSceneManager.GetSceneCullingMask(pane.gameObject.scene)) != 0)
+                        return true;
+#endif
+            }
             return false;
         }
 
@@ -39,8 +55,12 @@ namespace JC.BattleTesting
             GlassDraft = new Material(profile) { hideFlags = HideFlags.DontSave, name = "보스전 유리 · 조정 중" };
             foreach (var pane in stage.GetComponentsInChildren<Renderer>(true))
             {
-                if (pane.sharedMaterial != profile) continue;
+                // JC | 2026-11-05 | Export는 재질을 복제하므로 에셋 참조 동일성이 아닌 전용 유리 셰이더로 창을 판별합니다.
+                // 현재 보스 무대 내부만 등록하여 SceneView 투과색 복사와 유리 프로필 조절을 함께 복구합니다.
+                var original = pane.sharedMaterial;
+                if (!original || original.shader != profile.shader) continue;
                 panes.Add(pane);
+                originalGlassMaterials.Add(pane, original);
                 pane.sharedMaterial = GlassDraft;
                 var filter = pane.GetComponent<MeshFilter>();
                 if (filter && filter.sharedMesh) originalMeshes.Add(filter, filter.sharedMesh);
@@ -107,8 +127,9 @@ namespace JC.BattleTesting
                 Shader.SetGlobalFloat("_JcBossGlassColorReady", 0);
             }
             if (Environment) Environment.SuspendMaterialOverrides();
-            foreach (var pane in panes)
-                if (pane && pane.sharedMaterial == GlassDraft) pane.sharedMaterial = GlassProfile;
+            // JC | 2026-11-05 | 내보낸 창에 원본 프로필을 강제로 남기지 않고 각 창이 쓰던 재질 참조를 되돌립니다.
+            foreach (var entry in originalGlassMaterials)
+                if (entry.Key && entry.Key.sharedMaterial == GlassDraft) entry.Key.sharedMaterial = entry.Value;
             foreach (var entry in originalMeshes) if (entry.Key) entry.Key.sharedMesh = entry.Value;
             foreach (var mesh in volumeMeshes.Values) Release(mesh);
             if (cameraData) { cameraData.requiresColorOption = originalColor; cameraData.requiresDepthOption = originalDepth; }

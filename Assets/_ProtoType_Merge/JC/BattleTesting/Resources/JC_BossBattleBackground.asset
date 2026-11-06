@@ -12,11 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c65d6a9bbe0e1a545b146f54e7797a8d, type: 3}
   m_Name: JC_BossBattleBackground
   m_EditorClassIdentifier: 
-  visualPrefab: {fileID: 4975732683661938459, guid: 2f0bbfb4bb0d1c846bad759cff51c9ad,
+  visualPrefab: {fileID: 7454900192816348364, guid: 0f29a5ddc5ab5d34ca677420979c5cad,
     type: 3}
   cameraProfile: {fileID: 11400000, guid: a8b00b86ef8962a49bfd8c3ea7f2ce6c, type: 2}
   glassProfile: {fileID: 2100000, guid: 000ffbad2aba4dc4aa0a939a31cd5db3, type: 2}
   environmentProfile: {fileID: 11400000, guid: 1c3257bfd296497cb38a1af53b8225ce, type: 2}
   surfaceProfile: {fileID: 11400000, guid: 2a4334a981404e1ba0255eb40b5fb82d, type: 2}
+  citySun: {fileID: 7951856378101774353, guid: 9645966940bcb644dabd04f707a31404, type: 3}
+  cityTimeProfile: {fileID: 11400000, guid: 8ff1ab1614516ff46829124c1192f1eb, type: 2}
+  cityShadowDistance: 300
   zoneId: 2
   battleKey: BE490

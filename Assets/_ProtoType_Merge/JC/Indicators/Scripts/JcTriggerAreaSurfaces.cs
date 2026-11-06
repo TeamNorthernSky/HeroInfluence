@@ -20,7 +20,6 @@ namespace JC.Indicators
         private Vector3 gridOrigin;
         private readonly List<Surface> surfaces = new List<Surface>();
         private readonly Dictionary<Vector2Int, float> roadHeights = new Dictionary<Vector2Int, float>();
-        private static readonly Vector2Int[] touchingOffsets = { Vector2Int.zero, Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
         private float nextScan;
         private GridManager grid;
 
@@ -97,17 +96,17 @@ namespace JC.Indicators
         }
         internal float GroundHeight(IReadOnlyList<InteractionOverlayCell> cells)
         {
-            // JC | 2026-11-04 | 도로를 포함하거나 변을 맞댄 영역만 도로 평면에 둡니다. 대각선 근접은 제외합니다.
+            // JC | 2026-11-06 | 인접 도로를 제외하고 실제 트리거 셀의 과반(50% 초과)이 도로일 때만 도로 평면을 사용합니다.
             float road = float.PositiveInfinity;
+            int roadCells = 0;
             foreach (var cell in cells)
-                foreach (var offset in touchingOffsets)
-                    if (roadHeights.TryGetValue(cell.Grid + offset, out float y)) road = Mathf.Min(road, y);
-            if (!float.IsPositiveInfinity(road)) return road;
+                if (roadHeights.TryGetValue(cell.Grid, out float y)) { roadCells++; road = Mathf.Min(road, y); }
+            if (roadCells * 2 > cells.Count) return road;
+            // JC | 2026-11-06 | 도로가 과반이 아닌 혼합 영역도 보도 높이를 사용합니다. 도로 한 셀 때문에 지면 기본값으로 떨어지지 않습니다.
             float pavement = float.NegativeInfinity;
             foreach (var cell in cells)
             {
-                if (!pavementHeights.TryGetValue(cell.Grid, out float y)) return grid.GetLandSurfaceY();
-                pavement = Mathf.Max(pavement, y);
+                if (pavementHeights.TryGetValue(cell.Grid, out float y)) pavement = Mathf.Max(pavement, y);
             }
             return float.IsNegativeInfinity(pavement) ? grid.GetLandSurfaceY() : pavement;
         }

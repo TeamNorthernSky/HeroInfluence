@@ -30,8 +30,9 @@ namespace JC.BattleTesting
             [InspectorName("렌더러 경로"), Tooltip("무대 상대 경로입니다. 비우면 해당 재질을 사용하는 무대 렌더러 모두에 적용합니다.")] public string rendererPath;
             [InspectorName("바닥 줄눈"), Tooltip("이 표면의 윗면에만 큼직한 타일 줄눈을 적용합니다.")] public bool floorTiles;
             [InspectorName("매끄러움"), Range(0,1), Tooltip("낮을수록 반사가 넓게 퍼집니다.")] public float smoothness = .18f;
-            [InspectorName("반사량"), Range(0,.1f), Tooltip("직접광과 환경의 반사량입니다. 금속 장식은 원래 재질을 유지합니다.")] public float specular = .02f;
-            [InspectorName("거칠기 변화"), Range(0,.2f), Tooltip("표면의 매끄러움이 넓고 부드럽게 달라지는 정도입니다.")] public float variation = .035f;
+            // JC | 2026-11-05 | 홀스톤·웜스톤을 더 강하게 조절할 수 있도록 상한만 확장합니다. 기존 저장값과 초기 외형은 유지합니다.
+            [InspectorName("반사량"), Range(0,1), Tooltip("직접광과 환경의 반사량입니다. 최대 1까지 강하게 조절하며 금속 장식은 원래 재질을 유지합니다.")] public float specular = .02f;
+            [InspectorName("거칠기 변화"), Range(0,1), Tooltip("표면의 매끄러움 차이입니다. 큰 값에서는 거친 부분과 매끄러운 부분의 대비가 강해집니다.")] public float variation = .035f;
         }
     }
 }

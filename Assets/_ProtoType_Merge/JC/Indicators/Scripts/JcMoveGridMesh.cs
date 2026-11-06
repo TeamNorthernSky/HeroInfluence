@@ -5,6 +5,20 @@ using UnityEngine.Rendering;
 /// <summary>중복 제거된 그리드 선분을 하나의 메시로 묶습니다. 교차점과 선 몸통은 겹치지 않습니다.</summary>
 public sealed class JcMoveGridMesh : System.IDisposable
 {
+    // JC | 2026-11-06 | 탐사 이동 범위를 건물 입장 외곽선보다 먼저 합성하기 위한 기존 메시의 등록 목록입니다.
+    private static readonly List<JcMoveGridMesh> instances = new List<JcMoveGridMesh>();
+    internal static bool HasInstances => instances.Exists(item => item.root && item.root.activeInHierarchy);
+    internal static void DrawAll(CommandBuffer command, Camera camera, Plane[] planes)
+    {
+        foreach (var item in instances)
+        {
+            var r = item.renderer;
+            if (!r || !item.material || !r.enabled || r.forceRenderingOff || !r.gameObject.activeInHierarchy ||
+                (camera.scene.IsValid() && camera.scene != r.gameObject.scene) ||
+                (camera.cullingMask & (1 << r.gameObject.layer)) == 0 || !GeometryUtility.TestPlanesAABB(planes, r.bounds)) continue;
+            command.DrawRenderer(r, item.material, 0, 0);
+        }
+    }
     private readonly GameObject root;
     private readonly Mesh mesh;
     private readonly Material material;
@@ -35,12 +49,14 @@ public sealed class JcMoveGridMesh : System.IDisposable
         renderer.receiveShadows = false;
         if (shader != null)
         {
-            // JC | 2026-11-04 | 이동 그리드 위에 트리거가 합성되고 경로와 표식이 그 위에 보이도록 그리기 순서를 맞춥니다.
+            // JC | 2026-11-06 | 트리거보다 위, 입장 외곽선보다 아래의 전용 패스에서만 그려 이중 합성을 막습니다.
             material = new Material(shader) { name = "Movement Range Grid (Runtime)", renderQueue = JC.Indicators.JcIndicatorRenderOrder.MoveRangeGrid };
+            material.SetShaderPassEnabled("UniversalForward", false);
             renderer.sharedMaterial = material;
         }
         else Debug.LogError("이동 그리드 셰이더 JcMoveRangeGrid를 찾을 수 없습니다.");
         Hide();
+        instances.Add(this);
     }
 
     public void Begin(float width)
@@ -166,6 +182,8 @@ public sealed class JcMoveGridMesh : System.IDisposable
     public void Hide() { if (root != null) root.SetActive(false); }
     public void Dispose()
     {
+        // JC | 2026-11-06 | 씬 종료·숨김 후 이전 이동 격자가 다음 카메라에 남지 않게 등록을 해제합니다.
+        instances.Remove(this);
         Destroy(root); Destroy(mesh); Destroy(material);
     }
     private static void Destroy(Object obj)

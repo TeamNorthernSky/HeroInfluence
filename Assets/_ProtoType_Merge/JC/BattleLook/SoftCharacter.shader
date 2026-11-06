@@ -20,6 +20,7 @@ Shader "JC/Battle/SoftCharacter"
   _KeyDirection("Key Direction",Vector)=(.4,.8,-.3,0)
   _KeyTint("Key Tint",Color)=(1,.98,.94,1)
   _FillTint("Fill Tint",Color)=(.87,.92,1,1)
+  [HideInInspector] _BossLocalOnly("보스 전용 조명만",Float)=0
  }
  SubShader
  {
@@ -34,15 +35,22 @@ Shader "JC/Battle/SoftCharacter"
    #pragma fragment frag
    #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
    #pragma multi_compile_fragment _ _SHADOWS_SOFT
+   // JC | 2026-11-05 | BE490에서는 기존 자체 명암 대신 실제 창문/추가광 및 그림자를 받습니다.
+   #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+   #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+   #pragma multi_compile_fragment _ _LIGHT_COOKIES
+   #pragma multi_compile _ _FORWARD_PLUS
    #pragma multi_compile_fog
    #pragma shader_feature_local_fragment _ALPHATEST_ON
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+   #include "Assets/_ProtoType_Merge/JC/BattleTesting/JcBossLocalLighting.hlsl"
    TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
    TEXTURE2D(_EmissionMap); SAMPLER(sampler_EmissionMap);
    CBUFFER_START(UnityPerMaterial)
    float4 _BaseMap_ST,_EmissionMap_ST,_KeyDirection;
    half4 _BaseColor,_EmissionColor,_KeyTint,_FillTint;
    float _Cutoff,_ShadeFloor,_Wrap,_ShadowStrength,_AlbedoLift,_RimStrength,_Saturation,_MoldingStrength,_MoldingSharpness,_HitFlash;
+   float _BossLocalOnly;
    CBUFFER_END
    float4 _JcDayNight, _JcNightReadability;
    struct A{float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;};
@@ -55,6 +63,14 @@ Shader "JC/Battle/SoftCharacter"
      clip(albedo.a-_Cutoff);
     #endif
     float3 n=normalize(i.normalWS);
+    if(_BossLocalOnly>.5)
+    {
+     // JC | 2026-11-05 | 최소 밝기/림/발광/안개를 제외하여 조명이 없으면 캐릭터도 검게 됩니다. 일반 전투 경로는 유지합니다.
+     SurfaceData surface=(SurfaceData)0; surface.albedo=albedo.rgb; surface.alpha=albedo.a; surface.smoothness=.25; surface.occlusion=1;
+     InputData inputData=(InputData)0; inputData.positionWS=i.positionWS; inputData.normalWS=n; inputData.viewDirectionWS=GetWorldSpaceNormalizeViewDir(i.positionWS);
+     inputData.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(i.positionCS);
+     half4 localColor=JcBossLocalSurface(inputData,surface); localColor.a=albedo.a; return localColor;
+    }
     float lightAmount=smoothstep(-max(.01,_Wrap),1,dot(n,normalize(_KeyDirection.xyz)));
     half3 lighting=lerp(_FillTint.rgb*_ShadeFloor,_KeyTint.rgb,lightAmount);
     Light main=GetMainLight(TransformWorldToShadowCoord(i.positionWS));

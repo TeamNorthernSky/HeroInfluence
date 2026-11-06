@@ -37,11 +37,24 @@ namespace JC.BattleTesting
                     foreach (var item in SurfaceDraft.surfaces)
                         if (item != null && item.source && item.source == originals[slot] &&
                             (string.IsNullOrEmpty(item.rendererPath) || stageRoot.Find(item.rendererPath) == renderer.transform)) rule = item;
-                    if (rule == null) continue;
+                    // JC | 2026-11-05 | 금속 창틀/몰딩도 실내에 포함합니다. 조절 규칙이 없는 재질은 기존 표면값을 유지합니다.
+                    bool isolated = Environment && Environment.Isolated && Environment.IsInterior(renderer) && originals[slot] &&
+                        (originals[slot].shader.name == "Universal Render Pipeline/Lit" || originals[slot].shader == SurfaceDraft.surfaceShader);
+                    if (rule == null && !isolated) continue;
                     var copy = new Material(originals[slot]) { shader = SurfaceDraft.surfaceShader, hideFlags = HideFlags.DontSave, name = originals[slot].name + " (보스 표면)" };
                     copy.shaderKeywords = new string[0];
-                    copy.SetFloat("_Smoothness", rule.smoothness); copy.SetColor("_SpecColor", new Color(rule.specular,rule.specular,rule.specular,1));
-                    copy.SetFloat("_SurfaceVariation", rule.variation); copy.SetFloat("_FloorTiles", rule.floorTiles ? 1 : 0);
+                    copy.SetFloat("_BossLocalOnly", isolated ? 1 : 0);
+                    if (rule != null)
+                    {
+                        copy.SetFloat("_Smoothness", rule.smoothness); copy.SetColor("_SpecColor", new Color(rule.specular,rule.specular,rule.specular,1));
+                        copy.SetFloat("_SurfaceVariation", rule.variation); copy.SetFloat("_FloorTiles", rule.floorTiles ? 1 : 0);
+                    }
+                    else
+                    {
+                        float metal = originals[slot].HasProperty("_Metallic") ? originals[slot].GetFloat("_Metallic") : 0;
+                        copy.SetColor("_SpecColor", Color.Lerp(new Color(.04f,.04f,.04f), copy.GetColor("_BaseColor"), metal));
+                        copy.SetFloat("_SurfaceVariation", 0); copy.SetFloat("_FloorTiles", 0);
+                    }
                     copy.SetFloat("_TileSize", SurfaceDraft.tileSize); copy.SetFloat("_JointWidth", SurfaceDraft.jointWidth);
                     copy.SetFloat("_JointContrast", SurfaceDraft.jointContrast); copy.SetFloat("_JointNormal", SurfaceDraft.jointNormal);
                     copy.SetFloat("_TileVariation", SurfaceDraft.tileVariation);

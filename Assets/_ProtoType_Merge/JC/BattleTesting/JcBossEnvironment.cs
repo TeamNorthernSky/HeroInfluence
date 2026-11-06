@@ -8,7 +8,7 @@ namespace JC.BattleTesting
     // JC | 2026-11-05 | 공용 낮밤 적용 이후의 환경을 기준으로 보스 전용 보정만 얹습니다.
     // 실행 중 초안·조명·재질은 이 전투의 수명에 묶고, 원본 프로필/무대/공용 파이프라인을 수정하지 않습니다.
     [DisallowMultipleComponent]
-    public sealed class JcBossEnvironment : MonoBehaviour
+    public sealed partial class JcBossEnvironment : MonoBehaviour
     {
         public JcBossEnvironmentProfile Source { get; private set; }
         public JcBossEnvironmentProfile Draft { get; private set; }
@@ -63,6 +63,7 @@ namespace JC.BattleTesting
             var go = new GameObject("추가 라이트") { hideFlags = HideFlags.DontSave | HideFlags.NotEditable };
             go.transform.SetParent(transform, false); lightRoot = go.transform;
             initialized = true;
+            RegisterLocalLighting();
             ApplyDraft();
         }
 
@@ -70,6 +71,9 @@ namespace JC.BattleTesting
         public void ApplyDraft()
         {
             if (!initialized || !isActiveAndEnabled || Draft == null || Stage == null || SceneManager.GetActiveScene() != gameObject.scene) return;
+            // JC | 2026-11-05 | 도시의 밝기는 공통 시간대가 소유합니다. 실내 프로필 변경으로 원경을 덮어쓰지 않습니다.
+            if(!JcBossCityLighting.IsActive(gameObject.scene))
+            {
             foreach (var state in baseLights)
                 if (state.light)
                 {
@@ -88,7 +92,11 @@ namespace JC.BattleTesting
                 for (int coefficient = 0; coefficient < 9; coefficient++) probe[channel, coefficient] *= tint[channel];
             RenderSettings.ambientProbe = probe;
             RenderSettings.reflectionIntensity = baseline.reflection * Mathf.Max(0, Draft.reflectionIntensity);
-            ApplyLights(); ApplyMaterials(); applied = true;
+            }
+            // JC | 2026-11-05 | 창문광과 추가광은 동일한 수광 그룹에 묶고 표면 재생성 뒤에도 분리를 유지합니다.
+            ApplyLights(); ApplyWindows(); ApplyMaterials();
+            if (SurfaceController) SurfaceController.ApplySurfaces();
+            applied = true;
         }
 
         void ApplyLights()
@@ -117,7 +125,7 @@ namespace JC.BattleTesting
                 light.innerSpotAngle = light.spotAngle * Mathf.Clamp01(spec.innerSpotRatio);
                 light.shadows = spec.shadows; light.shadowStrength = Mathf.Clamp01(spec.shadowStrength);
                 light.shadowBias = Mathf.Clamp(spec.shadowBias, 0, 2); light.shadowNormalBias = Mathf.Clamp(spec.shadowNormalBias, 0, 3);
-                light.cullingMask = spec.cullingMask;
+                ConfigureLocalLight(light, spec.cullingMask);
             }
         }
 
@@ -166,14 +174,22 @@ namespace JC.BattleTesting
         {
             if (!initialized) return;
             foreach (var light in localLights) if (light) light.enabled = false;
+            foreach (var light in windowLights) if (light) light.enabled = false;
+            RestoreCityLayers();
             RestoreMaterials();
+            // JC | 2026-11-05 | 도시의 밝기는 공통 시간대가 소유합니다. 실내 프로필 변경으로 원경을 덮어쓰지 않습니다.
+            if(!JcBossCityLighting.IsActive(gameObject.scene))
+            {
             foreach (var state in baseLights)
                 if (state.light) { state.light.color = state.color; state.light.intensity = state.intensity; state.light.shadowStrength = state.shadow; }
-            if (applied && SceneManager.GetActiveScene() == gameObject.scene) baseline.Restore();
+            if (applied && !JcBossCityLighting.IsActive(gameObject.scene) && SceneManager.GetActiveScene() == gameObject.scene) baseline.Restore();
+            }
             applied = false;
+            // JC | 2026-11-05 | 컴포넌트를 끄면 실내 표면의 전용 수광 상태도 해제하여 기존 환경으로 복원합니다.
+            if (SurfaceController) SurfaceController.ApplySurfaces();
         }
         void OnEnable() { if (initialized) ApplyDraft(); }
-        void OnDestroy() { Release(Draft); if (lightRoot) Release(lightRoot.gameObject); }
+        void OnDestroy() { UnregisterLocalLighting(); Release(Draft); if (lightRoot) Release(lightRoot.gameObject); }
         static void Release(Object value)
         {
             if (!value) return;

@@ -49,16 +49,21 @@ namespace JC.Indicators
             if (source.VisualOverride != null && source.VisualOverride != this) return;
             if (!material) material = new Material(borderShader) { name = "탐사 트리거 테두리 (임시)", hideFlags = HideFlags.HideAndDontSave, renderQueue = JcIndicatorRenderOrder.TriggerMain };
             material.SetFloat("_ZWrite", 0);
+            // JC | 2026-11-06 | 탐사 전용 복사본만 일반 투명 패스에서 제외하고 건물 입장 강조 전에 한 번 그립니다.
+            material.SetShaderPassEnabled("UniversalForward", false);
             // JC | 2026-11-04 | 색상 패스에서 장면 깊이와 종류별 마스크를 비교해 계단·건물·인도를 다르게 합성합니다.
             material.SetFloat("_ZTest", (float)CompareFunction.Always);
             if (!outlineMaterial)
             {
                 outlineMaterial = new Material(material) { name = "탐사 트리거 보조선 (임시)", hideFlags = HideFlags.HideAndDontSave, renderQueue = JcIndicatorRenderOrder.TriggerOutline };
+                // JC | 2026-11-06 | 복사본에서도 일반 투명 패스를 명시적으로 끄고 전용 합성만 사용합니다.
+                outlineMaterial.SetShaderPassEnabled("UniversalForward", false);
             }
             if (!fillMaterial)
             {
                 fillMaterial = new Material(borderShader) { name = "탐사 트리거 채움 (임시)", hideFlags = HideFlags.HideAndDontSave };
                 fillMaterial.SetFloat("_ZWrite", 0);
+                fillMaterial.SetShaderPassEnabled("UniversalForward", false);
                 // JC | 2026-11-04 | 탐사 채움도 전용 가림 비교로 인도에만 약하게 투과합니다.
                 fillMaterial.SetFloat("_ZTest", (float)CompareFunction.Always);
                 fillMaterial.renderQueue = JcIndicatorRenderOrder.TriggerFill;
@@ -131,10 +136,12 @@ namespace JC.Indicators
                     var identity = enemy ? enemy.GetComponent<EnemyIdentity>() : null;
                     if (identity && (identity.EnemyGroupKey == "BE161" || identity.EnemyGroupKey == "BE261")) view.arnold = enemy;
                     int ownerId = pair.Key.owner is UnityEngine.Object owner ? owner.GetInstanceID() : pair.Key.GetHashCode();
+                    // JC | 2026-11-06 | 동일 영역의 세 선이 경계 픽셀을 서로 지우지 않도록 공통 영역 식별자를 전달합니다.
+                    int regionId = visual.GetInstanceID();
                     view.borders = new[] {
-                        new JcTriggerAreaDepth.Border(visual.innerBorder, depthMaterial, ownerId, 0),
-                        new JcTriggerAreaDepth.Border(visual.outerBorder, depthMaterial, ownerId, 1),
-                        new JcTriggerAreaDepth.Border(visual.innerOutline, depthMaterial, ownerId, 2)
+                        new JcTriggerAreaDepth.Border(visual.innerBorder, depthMaterial, ownerId, 0, regionId),
+                        new JcTriggerAreaDepth.Border(visual.outerBorder, depthMaterial, ownerId, 1, regionId),
+                        new JcTriggerAreaDepth.Border(visual.innerOutline, depthMaterial, ownerId, 2, regionId)
                     };
                     views.Add(pair.Key, view);
                 }
@@ -213,6 +220,19 @@ namespace JC.Indicators
                     if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy && !renderer.forceRenderingOff &&
                         (camera.cullingMask & (1 << renderer.gameObject.layer)) != 0) borders.Add(border);
                 }
+            }
+        }
+        // JC | 2026-11-06 | 트리거 채움→본선→보조선을 전체 영역 단위로 그려 기존 반투명 합성과 가림 판정을 보존합니다.
+        internal void DrawColors(CommandBuffer command, Camera camera, Plane[] planes, int part)
+        {
+            if (!isActiveAndEnabled || !bound || (camera.scene.IsValid() && camera.scene != gameObject.scene)) return;
+            foreach (var view in views.Values)
+            {
+                var visual = view.visual;
+                var renderer = part == 0 ? visual.interior : part == 1 ? visual.innerBorder : part == 2 ? visual.outerBorder : visual.innerOutline;
+                if (!renderer || !renderer.enabled || renderer.forceRenderingOff || !renderer.gameObject.activeInHierarchy ||
+                    (camera.cullingMask & (1 << renderer.gameObject.layer)) == 0 || !GeometryUtility.TestPlanesAABB(planes, renderer.bounds)) continue;
+                command.DrawRenderer(renderer, renderer.sharedMaterial, 0, 0);
             }
         }
         // JC | 2026-11-04 | 별도 버퍼에만 가림 표면을 그려 이동 표시·말풍선의 장면 깊이는 보존합니다.

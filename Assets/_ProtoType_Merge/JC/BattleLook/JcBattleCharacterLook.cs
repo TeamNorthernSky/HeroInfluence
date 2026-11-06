@@ -88,7 +88,7 @@ public sealed class JcBattleCharacterLook : MonoBehaviour
         if(heroRoot==null || characterShader==null || (!Application.isPlaying && !previewInEditor)){Restore();return;}
         if(Time.realtimeSinceStartupAsDouble>=nextScan){Scan();nextScan=Time.realtimeSinceStartupAsDouble+.5;}
         foreach(var entry in entries.Values)
-            foreach(var m in entry.owned) UpdateMaterial(m,IsMechanical(entry.renderer));
+                foreach(var m in entry.owned) UpdateMaterial(m,IsMechanical(entry.renderer),entry.renderer);
     }
     public void RefreshLook(){nextScan=0;Update();}
     private void Scan()
@@ -120,7 +120,7 @@ public sealed class JcBattleCharacterLook : MonoBehaviour
             for(int i=0;i<original.Length;i++)
             {
                 var src=original[i];if(src==null || src.shader==null || src.shader.name!="Universal Render Pipeline/Lit" || (src.HasProperty("_Surface") && src.GetFloat("_Surface")>.5f))continue;
-                var copy=new Material(src){name=src.name+" [Battle Soft]",hideFlags=HideFlags.HideAndDontSave};copy.shader=characterShader;copy.renderQueue=src.renderQueue;UpdateMaterial(copy,IsMechanical(r));e.owned.Add(copy);shown[i]=copy;
+                var copy=new Material(src){name=src.name+" [Battle Soft]",hideFlags=HideFlags.HideAndDontSave};copy.shader=characterShader;copy.renderQueue=src.renderQueue;UpdateMaterial(copy,IsMechanical(r),r);e.owned.Add(copy);shown[i]=copy;
             }
             if(e.owned.Count==0)continue;
             entries.Add(r,e);r.sharedMaterials=shown;
@@ -137,8 +137,10 @@ public sealed class JcBattleCharacterLook : MonoBehaviour
                 if(mechanicalUnitIds!=null)foreach(var id in mechanicalUnitIds)if(!string.IsNullOrEmpty(id)&&(t.name.EndsWith("_"+id)||t.name.EndsWith("_"+id+"(Clone)")))return true;
         return false;
     }
-    private void UpdateMaterial(Material m,bool mechanical)
+    private void UpdateMaterial(Material m,bool mechanical,Renderer renderer)
     {
+        // JC | 2026-11-05 | 보스 환경 수명 안에서만 자체 밝기를 끄며, 씬/모드 종료 시 다음 갱신에 기존 캐릭터 표현으로 돌아갑니다.
+        m.SetFloat("_BossLocalOnly",JC.BattleTesting.JcBossEnvironment.UsesLocalLighting(renderer)?1:0);
         var texture=m.GetTexture("_BaseMap");bool neko=texture!=null && texture.name.Contains("cutecatgirl");
         var direction=keyDirection.sqrMagnitude>.001f?keyDirection.normalized:Vector3.up;
         m.SetVector("_KeyDirection",direction);m.SetColor("_KeyTint",keyTint);m.SetColor("_FillTint",fillTint);
