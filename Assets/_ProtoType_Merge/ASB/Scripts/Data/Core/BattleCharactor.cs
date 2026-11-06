@@ -425,7 +425,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     public void InitializeCurrentState(float hp, float influence)
     {
-        currentHp = Mathf.Clamp(hp, 0f, MaxHp);
+        // 저장된 HP나 비율로 정한 시작 HP에 소수점이 있어도 정수로 시작한다(0보다 크면 최소 1이라 생사는 그대로).
+        currentHp = Mathf.Clamp(RoundHpValue(hp), 0f, MaxHp);
         CurrentInfluence = Mathf.Clamp(influence, 0f, MaxInfluence);
         IsDead = currentHp <= 0f;
 
@@ -520,6 +521,20 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
     }
 
+    /// <summary>
+    /// HP에 들어가는 값(힐·부활·무력화 복귀·전투 시작 HP)을 정수로 맞춘다. 공격 피해(CombatCalculator)와 같은 반올림이고,
+    /// 0보다 큰 값은 최소 1로 둔다(작은 힐이 사라지거나 살아 있는 유닛이 반올림으로 0 HP가 되지 않도록). 0 이하는 0.
+    /// </summary>
+    public static float RoundHpValue(float value)
+    {
+        if (value <= 0f)
+        {
+            return 0f;
+        }
+
+        return Mathf.Max(1f, Mathf.Floor(value + 0.5f));
+    }
+
     public void ApplyHeal(float amount)
     {
         if (IsDead)
@@ -533,7 +548,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             return;
         }
 
-        float heal = Mathf.Max(0f, amount);
+        // 힐 양은 정수로만 더한다(직접 호출하는 4020 회복 등도 여기서 맞춰진다).
+        float heal = RoundHpValue(amount);
         if (heal <= 0f)
         {
             return;
@@ -678,7 +694,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         IsDead = false;
         RemoveStatusEffect(StatusEffectType.guarded);
         float ratio = Mathf.Clamp01(hpRatio);
-        currentHp = Mathf.Clamp(MaxHp * ratio, 1f, MaxHp);
+        currentHp = Mathf.Clamp(RoundHpValue(MaxHp * ratio), 1f, MaxHp);
 
         // 부활로 대열 경계가 되돌아간다. 사망 시와 대칭으로 재계산한다(IsDead=false 이후).
         RefreshFormationPassiveStatsForAllUnits();
