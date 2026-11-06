@@ -35,8 +35,8 @@ public sealed class AmplifierDeathPolicyContractTests
         var serializedParticipant = new SerializedObject(participant);
         Assert.That(serializedParticipant.FindProperty("_reviveStartPhase").intValue, Is.EqualTo(1),
             "율리아전 페이즈가 없어(항상 1) 첫 사망부터 시체 부활을 걸어야 합니다.");
-        Assert.That(serializedParticipant.FindProperty("_corpseReviveDelayRounds").intValue, Is.EqualTo(2));
-        Assert.That(serializedParticipant.FindProperty("_reviveHpRatio").floatValue, Is.EqualTo(0.5f).Within(0.001f));
+        Assert.That(serializedParticipant.FindProperty("_corpseReviveDelayRounds").intValue, Is.EqualTo(3));
+        Assert.That(serializedParticipant.FindProperty("_reviveHpRatio").floatValue, Is.EqualTo(0.65f).Within(0.001f));
         Assert.That(serializedParticipant.FindProperty("_reviveGroupId").stringValue, Is.EqualTo("YuliaAmplifier"),
             "두 증폭기가 모두 쓰러지면 함께 부활하도록 같은 부활 묶음이어야 합니다.");
     }

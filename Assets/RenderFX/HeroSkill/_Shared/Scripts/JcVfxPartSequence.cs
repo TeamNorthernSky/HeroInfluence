@@ -10,6 +10,8 @@ namespace JC.VFX
     {
         public event Action Impacted;
         public event Action<int> PartStarted;
+        /// <summary>부품의 반복 탄 한 발이 착탄할 때마다(이 조립 안에서 0부터 센 순번). 효과음 전용이며 피해 신호(Impacted)와 별개입니다.</summary>
+        public event Action<int> ProjectileArrived;
         public enum Anchor { Caster, Target, PawCaster, PawTarget }
         public enum Timing { Fixed, ShotLaunch, ShotImpact, PawDeparture, PawArrival }
         public Transform MuzzleSocket { get; set; }
@@ -43,12 +45,14 @@ namespace JC.VFX
         private IReadOnlyList<VfxTarget> targets;
         private int pending;
         private bool impacted;
+        private int projectileArrivals;
         public override void SetTargets(IReadOnlyList<VfxTarget> values) => targets = values;
         public override void Play(Transform origin, Transform target)
         {
             Stop();
             if (origin == null || target == null) return;
             impacted = false;
+            projectileArrivals = 0;
             IsPlaying = true;
             pending = steps.Length;
             for (int i = 0; i < steps.Length; i++) StartCoroutine(RunPart(steps[i], i, origin, target));
@@ -79,6 +83,8 @@ namespace JC.VFX
             effect.SetTargets(targets);
             if (effect is PawForYouVfx paw) paw.OnTargetImpacted += OnImpact;
             if (effect is KAimShotVfx shot) shot.SetMuzzleSocket(MuzzleSocket);
+            var shotVisual = effect.GetComponent<KAimShotParticleVisual>();
+            if (shotVisual != null) shotVisual.RepeatedProjectileArrived += OnProjectileArrived;
             effect.Play(anchor, target);
             PartStarted?.Invoke(stepIndex);
             // 안전 상한은 연출 판정을 대신하지 않고, 잘못 설정된 부품의 잔존만 방지합니다.
@@ -88,6 +94,7 @@ namespace JC.VFX
             if (effect != null)
             {
                 if (effect is PawForYouVfx p) p.OnTargetImpacted -= OnImpact;
+                if (shotVisual != null) shotVisual.RepeatedProjectileArrived -= OnProjectileArrived;
                 effect.Stop();
                 Destroy(effect.gameObject);
             }
@@ -95,6 +102,7 @@ namespace JC.VFX
             pending--;
         }
         private void OnImpact() { if (impacted) return; impacted = true; Impacted?.Invoke(); }
+        private void OnProjectileArrived(int _) => ProjectileArrived?.Invoke(projectileArrivals++);
         public static float ResolveDelay(Step step)
         {
             float delay = step.delay;
@@ -120,6 +128,8 @@ namespace JC.VFX
             {
                 if (effect == null) continue;
                 if (effect is PawForYouVfx paw) paw.OnTargetImpacted -= OnImpact;
+                var shotVisual = effect.GetComponent<KAimShotParticleVisual>();
+                if (shotVisual != null) shotVisual.RepeatedProjectileArrived -= OnProjectileArrived;
                 effect.Stop();
                 Destroy(effect.gameObject);
             }

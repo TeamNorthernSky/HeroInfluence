@@ -28,6 +28,27 @@ public class MapProgressRepository : MonoBehaviour
     private int automaticEndTurnDay;
     private string automaticEndTurnPartyId = string.Empty;
 
+    // Scene-return continuation only; deliberately excluded from save snapshots.
+    public sealed class MobileEncounterContinuation
+    {
+        public string PartyId;
+        public string SceneName;
+        public Vector2Int Grid;
+        public int Day;
+    }
+
+    public MobileEncounterContinuation PendingMobileEncounter { get; private set; }
+
+    public void ReserveMobileEncounter(string partyId, string sceneName, Vector2Int grid, int day)
+    {
+        PendingMobileEncounter = new MobileEncounterContinuation
+        {
+            PartyId = partyId, SceneName = sceneName, Grid = grid, Day = day
+        };
+    }
+
+    public void ClearMobileEncounter() => PendingMobileEncounter = null;
+
     private readonly HashSet<string> collectedItemLookup = new HashSet<string>();
     private readonly HashSet<string> completedEventLookup = new HashSet<string>();
     private readonly HashSet<string> completedMainEventLookup = new HashSet<string>();
@@ -625,11 +646,13 @@ public class MapProgressRepository : MonoBehaviour
         ReplaceList(zoneThreatStates, restoredZoneThreatStates);
         ReplaceList(zoneEnemyLevelStates, restoredZoneEnemyLevelStates);
         RestoreZoneEntryGuidance(restoredZoneEntryGuidanceState);
+        ClearMobileEncounter();
         ClearAutomaticEndTurn();
         RebuildLookups();
     }
     public void ClearAllProgress()
     {
+        ClearMobileEncounter();
         ClearAutomaticEndTurn();
         collectedItemKeys.Clear();
         completedEventKeys.Clear();

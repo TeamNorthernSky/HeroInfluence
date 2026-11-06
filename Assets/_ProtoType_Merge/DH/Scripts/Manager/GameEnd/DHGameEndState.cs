@@ -5,6 +5,7 @@ public static class DHGameEndState
     public static void BeginEnding()
     {
         IsEnding = true;
+        MapProgressRepository.Instance?.ClearMobileEncounter();
         DHWorldEventConditionRuntimeManager.Instance?.CancelPendingChecks();
         DHWorldEventRuntimeManager.Instance?.SuspendConditionEventsForGameEnd();
     }

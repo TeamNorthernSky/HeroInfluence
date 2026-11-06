@@ -60,6 +60,7 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
             _parts.MuzzleSocket = context.SocketTransform;
             _parts.Impacted += OnTargetsImpacted;
             _parts.PartStarted += OnPartStarted;
+            _parts.ProjectileArrived += OnPartProjectileArrived;
         }
         _barrage = _effect as TaoBarrageVfx;
         if (_barrage != null) _barrage.OnTargetsImpacted += OnTargetsImpacted;
@@ -79,6 +80,8 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
         SkillImpactSignalBus.PublishImpact(new ImpactKey(_context.ActionInstanceId), _context.TargetPosition, targets);
     }
     private void OnPartStarted(int stepIndex) => PresentationSfxEvents.PlayEffectStep(_context?.Presentation, stepIndex);
+    // 반복 탄(TwinTrigger 등) 한 발이 닿을 때마다 착탄음만 낸다. 피해 신호(SkillImpactSignalBus)는 보내지 않는다.
+    private void OnPartProjectileArrived(int occurrence) => PresentationSfxEvents.PlayEffectImpact(_context?.Presentation, occurrence);
     public bool Signal(SkillEffectContext context) { Stop(); return true; }
     public void Stop() { StopRunningEffect(); Destroy(gameObject); }
     private IEnumerator SafetyCleanupRoutine(float seconds) { yield return new WaitForSeconds(Mathf.Max(0.1f, seconds)); _safetyRoutine = null; Stop(); }
@@ -96,6 +99,7 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
         {
             _parts.Impacted -= OnTargetsImpacted;
             _parts.PartStarted -= OnPartStarted;
+            _parts.ProjectileArrived -= OnPartProjectileArrived;
         }
         _parts = null;
         if (_effect != null) { _effect.OnFinished -= OnEffectFinished; if (_played) _effect.Stop(); }

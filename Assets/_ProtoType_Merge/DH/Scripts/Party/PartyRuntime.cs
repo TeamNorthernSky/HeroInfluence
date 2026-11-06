@@ -55,6 +55,11 @@ public class PartyRuntime : MonoBehaviour
         interactionController.Dispose();
     }
 
+    private void Update()
+    {
+        interactionController?.TickMobileContinuation();
+    }
+
     private void HandleGridEntered(Vector2Int enteredGrid)
     {
         interactionController?.HandleGridEntered(enteredGrid);

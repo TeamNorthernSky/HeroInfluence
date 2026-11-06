@@ -349,13 +349,13 @@ public sealed class YuliaBattleVfxTests
 
     [TestCase("Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanAmplifier_40002.prefab")]
     [TestCase("Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanAmplifier_40003.prefab")]
-    public void Amplifier_RevivesAfterCountdownAtHalfHp_WithoutPhaseEntryRevive(string path)
+    public void Amplifier_RevivesAfterCountdownAtSixtyFivePercentHp_WithoutPhaseEntryRevive(string path)
     {
         Type type = FindRuntimeType("EncounterParticipant");
         var so = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(path).GetComponent(type));
         Assert.That(so.FindProperty("_immediateRevivePhase").intValue, Is.EqualTo(0), "율리아전 페이즈가 없어 페이즈 진입 즉시 부활은 쓰지 않는다.");
-        Assert.That(so.FindProperty("_reviveHpRatio").floatValue, Is.EqualTo(0.5f).Within(0.0001f), "시체 부활은 HP 50%.");
-        Assert.That(so.FindProperty("_corpseReviveDelayRounds").intValue, Is.EqualTo(2), "사망 후 2라운드 뒤 부활.");
+        Assert.That(so.FindProperty("_reviveHpRatio").floatValue, Is.EqualTo(0.65f).Within(0.0001f), "시체 부활은 HP 65%.");
+        Assert.That(so.FindProperty("_corpseReviveDelayRounds").intValue, Is.EqualTo(3), "사망 후 3라운드 뒤 부활.");
     }
 
     [Test]
