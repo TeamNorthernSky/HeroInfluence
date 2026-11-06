@@ -32,14 +32,7 @@ public class GridManager : MonoBehaviour
     [FormerlySerializedAs("hexRadius")]
     [SerializeField] private float cellSize = 1f;
 
-    [Header("Obstacle Settings")]
-    [Tooltip("이 레이어에 있는 콜라이더를 장애물로 간주합니다.")]
-    [SerializeField] private LayerMask obstacleLayerMask;
-    [SerializeField] private bool useLegacyObstacleColliderFallback;
-    [SerializeField] private LayerMask playerLayerMask;
-    [SerializeField] private LayerMask enemyLayerMask;
-    [SerializeField] private bool useLegacyEnemyColliderFallback;
-    [SerializeField] private LayerMask heroUnionLayerMask;
+    [Header("Registries")]
     [SerializeField] private ItemRegistry itemRegistry;
     [SerializeField] private TutorialItemRegistry tutorialItemRegistry;
     [SerializeField] private EnemyRegistry enemyRegistry;
@@ -53,8 +46,6 @@ public class GridManager : MonoBehaviour
     [SerializeField] private WorldEventRegistry worldEventRegistry;
     [SerializeField] private MainEventRegistry mainEventRegistry;
     [SerializeField] private SubEventRegistry subEventRegistry;
-    [Tooltip("각 셀의 장애물 검사에 사용할 셀 크기 대비 체크 박스 비율입니다. 너무 크면 오탐, 너무 작으면 누락될 수 있습니다.")]
-    [SerializeField, Range(0.1f, 1f)] private float obstacleCheckFill = 0.9f;
 
     [Header("Debug Gizmos")]
     [SerializeField] private bool drawDebugGizmos = true;
@@ -243,10 +234,7 @@ public class GridManager : MonoBehaviour
 
     private bool HasObstacle(Vector2Int grid, bool ignoreGateBlockers)
     {
-        if (levelObstacleCells.Contains(grid) || (!ignoreGateBlockers && gateBlockerCells.Contains(grid)))
-            return true;
-
-        return useLegacyObstacleColliderFallback && HasBlockingCollider(grid, obstacleLayerMask);
+        return levelObstacleCells.Contains(grid) || (!ignoreGateBlockers && gateBlockerCells.Contains(grid));
     }
 
     public bool HasRegisteredObstacleOrGateBlocker(Vector2Int grid)
@@ -678,29 +666,6 @@ public class GridManager : MonoBehaviour
 
             enemy = candidate;
             return true;
-        }
-
-        if (!useLegacyEnemyColliderFallback)
-            return false;
-
-        Vector3 center = GridToWorldCenter(grid);
-        center.y = GetLandSurfaceY() + 0.5f;
-
-        Vector3 halfExtents = new Vector3(cellSize * 0.5f * obstacleCheckFill, 0.5f, cellSize * 0.5f * obstacleCheckFill);
-        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, enemyLayerMask);
-
-        for (int i = 0; i < cols.Length; i++)
-        {
-            Collider col = cols[i];
-            if (col == null)
-                continue;
-
-            if (ignoredTransform != null && (col.transform == ignoredTransform || col.transform.IsChildOf(ignoredTransform)))
-                continue;
-
-            enemy = col.GetComponentInParent<EnemyGridMover>();
-            if (enemy != null)
-                return true;
         }
 
         return false;
@@ -1272,37 +1237,6 @@ public class GridManager : MonoBehaviour
             return false;
 
         return !HasItemOutpostOrEvent(grid);
-    }
-
-    private bool HasBlockingCollider(Vector2Int grid, LayerMask layerMask)
-    {
-        return HasBlockingCollider(grid, layerMask, null);
-    }
-
-    private bool HasBlockingCollider(Vector2Int grid, LayerMask layerMask, Transform ignoredTransform)
-    {
-        Vector3 center = GridToWorldCenter(grid);
-        center.y = GetLandSurfaceY() + 0.5f;
-
-        Vector3 halfExtents = new Vector3(cellSize * 0.5f * obstacleCheckFill, 0.5f, cellSize * 0.5f * obstacleCheckFill);
-        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, layerMask);
-
-        for (int i = 0; i < cols.Length; i++)
-        {
-            var c = cols[i];
-            if (c == null)
-                continue;
-
-            if (landTransform != null && (c.transform == landTransform || c.transform.IsChildOf(landTransform)))
-                continue;
-
-            if (ignoredTransform != null && (c.transform == ignoredTransform || c.transform.IsChildOf(ignoredTransform)))
-                continue;
-
-            return true;
-        }
-
-        return false;
     }
 
     private bool TryGetMultiGridOccupantAtGrid(Vector2Int grid, out MultiGridOccupant occupant, Transform ignoredTransform = null)
