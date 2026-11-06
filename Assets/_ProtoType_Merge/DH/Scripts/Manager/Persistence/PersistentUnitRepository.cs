@@ -196,6 +196,7 @@ public class PersistentUnitRepository : MonoBehaviour
         if (weaponRepository == null || !weaponRepository.TryGetWeaponTemplateKey(weaponInstanceIndex, out string weaponTemplateKey))
             return false;
 
+        weaponRepository.RefreshWeaponStats(weaponInstanceIndex);
         if (!weaponRepository.TryGetWeaponStats(weaponInstanceIndex, out EquipmentStatBlock weaponStats))
             weaponStats = default;
 
