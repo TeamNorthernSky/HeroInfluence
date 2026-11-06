@@ -99,10 +99,9 @@ namespace JC.DebugTools
                 throw new InvalidOperationException("이벤트 또는 구역 진입 안내 중에는 사용할 수 없습니다.");
             var turns = FindFirstObjectByType<TurnManager>();
             var combat = FindFirstObjectByType<CombatEncounterManager>();
-            var prompt = FindFirstObjectByType<CombatPromptService>();
             party = FindFirstObjectByType<PartyRegistry>()?.PlayerParty;
             grid = FindFirstObjectByType<GridManager>();
-            if (turns == null || !turns.IsPlayerTurn || combat != null && combat.IsCombatActive || prompt != null && prompt.IsOpen ||
+            if (turns == null || !turns.IsPlayerTurn || combat != null && combat.IsCombatActive ||
                 party == null || grid == null || party.IsMoving || party.GetComponent<PartyRuntime>()?.IsInputLocked == true)
                 throw new InvalidOperationException("플레이어 파티가 탐험 중 대기 상태일 때 사용할 수 있습니다.");
             if (DefeatedPartyReturnController.IsPartyWaiting(party)) throw new InvalidOperationException("파티 복귀 처리 중입니다.");

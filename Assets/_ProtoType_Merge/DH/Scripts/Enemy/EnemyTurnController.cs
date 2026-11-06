@@ -13,7 +13,6 @@ public class EnemyTurnController : MonoBehaviour
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private AStarPathfinder pathfinder;
     [SerializeField] private CombatEncounterManager combatEncounterManager;
-    [SerializeField] private CombatPromptService combatPromptService;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private LevelZoneLayoutLoader layoutLoader;
     [SerializeField] private MobileEnemyRaidController mobileEnemyRaidController;
@@ -862,9 +861,6 @@ public class EnemyTurnController : MonoBehaviour
 
         if (combatEncounterManager == null)
             combatEncounterManager = FindFirstObjectByType<CombatEncounterManager>();
-
-        if (combatPromptService == null)
-            combatPromptService = FindFirstObjectByType<CombatPromptService>();
 
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();

@@ -32065,7 +32065,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1870279752}
   combatEncounterManager: {fileID: 408417867}
-  combatPromptService: {fileID: 0}
 --- !u!114 &866700049
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41697,8 +41696,6 @@ MonoBehaviour:
   levelData: {fileID: 0}
   levelLoader: {fileID: 0}
   blockEdgeScrollOverButtons: 1
-  blockCameraInputDuringCombatPrompt: 1
-  combatPromptService: {fileID: 0}
   resetKey: 121
   recenterKey: 32
 --- !u!1 &1129557380
@@ -66021,7 +66018,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1870279752}
   combatEncounterManager: {fileID: 408417867}
-  combatPromptService: {fileID: 0}
 --- !u!114 &1826875711
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -72991,7 +72987,6 @@ MonoBehaviour:
   heroUnionRegistry: {fileID: 1889454946}
   pathfinder: {fileID: 1870279751}
   combatEncounterManager: {fileID: 408417867}
-  combatPromptService: {fileID: 0}
   gridManager: {fileID: 1870279752}
   layoutLoader: {fileID: 0}
   mobileEnemyRaidController: {fileID: 0}

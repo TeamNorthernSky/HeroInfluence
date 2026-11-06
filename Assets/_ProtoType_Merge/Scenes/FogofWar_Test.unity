@@ -297,8 +297,6 @@ MonoBehaviour:
   levelData: {fileID: 0}
   levelLoader: {fileID: 0}
   blockEdgeScrollOverButtons: 1
-  blockCameraInputDuringCombatPrompt: 1
-  combatPromptService: {fileID: 0}
   resetKey: 121
   recenterKey: 32
 --- !u!1 &78333756

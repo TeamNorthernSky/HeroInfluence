@@ -51,8 +51,6 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     [Header("UI Blocking")]
     [SerializeField] private bool blockEdgeScrollOverButtons = true;
-    [SerializeField] private bool blockCameraInputDuringCombatPrompt = true;
-    [SerializeField] private CombatPromptService combatPromptService;
 
     [Header("Reset")]
     [SerializeField] private KeyCode resetKey = KeyCode.Y;
@@ -377,8 +375,6 @@ public class QuarterViewCameraFollower : MonoBehaviour
         defaultZoomZ = positionOffset.z;
         zoomZPerY = Mathf.Abs(defaultZoomY) > 0.001f ? defaultZoomZ / defaultZoomY : 0f;
 
-        if (combatPromptService == null)
-            combatPromptService = FindFirstObjectByType<CombatPromptService>();
     }
 
     private void Update()
@@ -955,13 +951,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (externalInputLocked || !JcPointerInput.CanControl || ModalManager.HasAny || WorldInputGate.IsTurnResolving)
             return true;
 
-        if (!blockCameraInputDuringCombatPrompt)
-            return false;
-
-        if (combatPromptService == null)
-            combatPromptService = FindFirstObjectByType<CombatPromptService>();
-
-        return combatPromptService != null && combatPromptService.IsOpen;
+        return false;
     }
 
     private bool IsFollowTargetPartyMoving()

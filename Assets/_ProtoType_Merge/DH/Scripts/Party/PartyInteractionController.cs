@@ -11,7 +11,6 @@ public class PartyInteractionController
 
     private readonly GridManager gridManager;
     private readonly CombatEncounterManager combatEncounterManager;
-    private readonly CombatPromptService combatPromptService;
     private readonly PartyGridMover ownerParty;
     private readonly MonoBehaviour coroutineOwner;
     private readonly Func<Vector2Int> currentGridProvider;
@@ -41,14 +40,12 @@ public class PartyInteractionController
     public PartyInteractionController(
         GridManager gridManager,
         CombatEncounterManager combatEncounterManager,
-        CombatPromptService combatPromptService,
         PartyGridMover ownerParty,
         MonoBehaviour coroutineOwner,
         Func<Vector2Int> currentGridProvider)
     {
         this.gridManager = gridManager;
         this.combatEncounterManager = combatEncounterManager;
-        this.combatPromptService = combatPromptService;
         this.ownerParty = ownerParty;
         this.coroutineOwner = coroutineOwner;
         this.currentGridProvider = currentGridProvider;
@@ -145,7 +142,7 @@ public class PartyInteractionController
         CancelPendingInteraction();
         enemyInteractionInProgress = true;
         IsInputLocked = true;
-        if (EnemyEventEncounterService.TryOpenEncounterChat(ownerParty, enemy, HandleCombatPromptClosed))
+        if (EnemyEventEncounterService.TryOpenEncounterChat(ownerParty, enemy, HandleEnemyEncounterClosed))
         {
             return;
         }
@@ -691,7 +688,7 @@ public class PartyInteractionController
         pendingInteractionCoroutine = null;
     }
 
-    private void HandleCombatPromptClosed(bool startedCombat)
+    private void HandleEnemyEncounterClosed(bool startedCombat)
     {
         enemyInteractionInProgress = startedCombat;
         IsInputLocked = startedCombat;

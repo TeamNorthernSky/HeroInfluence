@@ -150977,8 +150977,6 @@ MonoBehaviour:
   levelData: {fileID: 0}
   levelLoader: {fileID: 0}
   blockEdgeScrollOverButtons: 1
-  blockCameraInputDuringCombatPrompt: 1
-  combatPromptService: {fileID: 0}
   resetKey: 121
   recenterKey: 32
 --- !u!1 &1128080823
@@ -247715,7 +247713,6 @@ GameObject:
   - component: {fileID: 1870279752}
   - component: {fileID: 1870279751}
   - component: {fileID: 1870279750}
-  - component: {fileID: 1870279755}
   - component: {fileID: 1870279756}
   - component: {fileID: 1870279754}
   - component: {fileID: 1870279757}
@@ -247856,28 +247853,6 @@ MonoBehaviour:
   gameClearFlagNames:
   - Set_Flag_MainQuestBoss2Complete
   evaluateClearFlagsOnStart: 1
---- !u!114 &1870279755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1870279747}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc60d30dc9a439d4d82da2f2767dbf42, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  promptPrefab: {fileID: 8250169255024950074, guid: 2e2cb1d58e7924a429b00f45eb164191,
-    type: 3}
-  promptRoot: {fileID: 632746021}
-  victoryResultPrefab: {fileID: 3602089886626745560, guid: 864c0d1b390537b4ea95deb0076f1121,
-    type: 3}
-  defeatResultPrefab: {fileID: 1126212822778769652, guid: 68771df5e33891b4ea255d3c72c89505,
-    type: 3}
-  resultRoot: {fileID: 632746021}
-  combatPanelModal: {fileID: 718570357}
-  modalColor: {r: 0, g: 0, b: 0, a: 0.6}
 --- !u!114 &1870279756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -261790,7 +261765,6 @@ MonoBehaviour:
   heroUnionRegistry: {fileID: 1889454946}
   pathfinder: {fileID: 1870279751}
   combatEncounterManager: {fileID: 408417867}
-  combatPromptService: {fileID: 1870279755}
   gridManager: {fileID: 1870279752}
   layoutLoader: {fileID: 7906642696841274099}
   mobileEnemyRaidController: {fileID: 2000643503}

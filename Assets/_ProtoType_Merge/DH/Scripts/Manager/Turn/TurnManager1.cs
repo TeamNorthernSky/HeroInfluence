@@ -32,7 +32,6 @@
 //    private PartyIdentity autoEndTurnPartyIdentity;
 //    private PartyRuntime autoEndTurnPartyRuntime;
 //    private CombatEncounterManager combatEncounterManager;
-//    private CombatPromptService combatPromptService;
 //    private bool playerMovementStarted;
 //    private int automaticEndTurnReadyFrames;
 
@@ -45,7 +44,6 @@
 //            partyRegistry = FindFirstObjectByType<PartyRegistry>();
 
 //        combatEncounterManager = FindFirstObjectByType<CombatEncounterManager>();
-//        combatPromptService = FindFirstObjectByType<CombatPromptService>();
 
 //        if (enemyTurnController == null)
 //            enemyTurnController = FindFirstObjectByType<EnemyTurnController>();
@@ -220,7 +218,6 @@
 //            return false;
 
 //        if ((combatEncounterManager != null && combatEncounterManager.IsCombatActive) ||
-//            (combatPromptService != null && combatPromptService.IsOpen) ||
 //            (autoEndTurnPartyRuntime != null && autoEndTurnPartyRuntime.IsInputLocked) ||
 //            (ChatManager.Instance != null && ChatManager.Instance.IsRunning) ||
 //            ChatModalController.IsOpen || ModalManager.HasAny ||

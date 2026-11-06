@@ -9,7 +9,6 @@ public class PartyRuntime : MonoBehaviour
     [Header("References")]
     [SerializeField] private GridManager gridManager;
     [SerializeField] private CombatEncounterManager combatEncounterManager;
-    [SerializeField] private CombatPromptService combatPromptService;
 
     private PartyGridMover partyGridMover;
     private PartyInteractionController interactionController;
@@ -22,13 +21,10 @@ public class PartyRuntime : MonoBehaviour
     private void Awake()
     {
         partyGridMover = GetComponent<PartyGridMover>();
-        if (combatPromptService == null)
-            combatPromptService = FindFirstObjectByType<CombatPromptService>();
 
         interactionController = new PartyInteractionController(
             gridManager,
             combatEncounterManager,
-            combatPromptService,
             partyGridMover,
             this,
             partyGridMover.GetCurrentGrid);

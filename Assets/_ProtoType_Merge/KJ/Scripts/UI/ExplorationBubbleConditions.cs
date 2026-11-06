@@ -168,8 +168,7 @@ public sealed class ExplorationBubbleConditions
             (DHWorldEventConditionRuntimeManager.Instance != null && DHWorldEventConditionRuntimeManager.Instance.IsCheckPending) ||
             (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning)) return true;
         var turn = UnityEngine.Object.FindFirstObjectByType<TurnManager>();
-        var combat = UnityEngine.Object.FindFirstObjectByType<CombatPromptService>();
-        return Time.timeScale <= 0f || (turn != null && !turn.IsPlayerTurn) || (combat != null && combat.IsOpen);
+        return Time.timeScale <= 0f || (turn != null && !turn.IsPlayerTurn);
     }
 
     private void RemoveDestroyedObjects()
