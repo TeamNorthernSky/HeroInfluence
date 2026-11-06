@@ -32,8 +32,8 @@ MonoBehaviour:
     innerIntensity: 0.9
     innerOpacity: 1
     buildingOccludedOpacity: 0.15
-    sidewalkOccludedOpacity: 0.275
-    fillSidewalkOccludedOpacity: 0.25
+    sidewalkOccludedOpacity: 1
+    fillSidewalkOccludedOpacity: 1
     minimumHeight: 0.006
     bobAmplitude: 0.02
     bobPeriod: 1.8
