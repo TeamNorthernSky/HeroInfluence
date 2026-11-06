@@ -77,7 +77,7 @@ MonoBehaviour:
   - key: BattleEnd_Victory
     clip: {fileID: 8300000, guid: fd724c96a9244e248b11646a042ca7dd, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 0.7
     loop: 0
     allowOverlap: 1
   - key: Battle_Beam
@@ -449,7 +449,7 @@ MonoBehaviour:
   - key: Explore_TextBubbleNPC
     clip: {fileID: 8300000, guid: 8f483bb7a3df25848bafeb5f3e345e2d, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 0.2
     loop: 0
     allowOverlap: 1
   - key: Explore_TextBubbleCar
