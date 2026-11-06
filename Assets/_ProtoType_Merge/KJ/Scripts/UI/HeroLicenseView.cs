@@ -70,8 +70,8 @@ public sealed class HeroLicenseView : MonoBehaviour
             image.raycastTarget = true;
             var tip = image.GetComponent<LicenseHoverTooltip>();
             if (!tip) tip = image.gameObject.AddComponent<LicenseHoverTooltip>();
-            tip.Bind(skill.SkillName + $" Lv.{level}", SkillTooltipNumbers.FormatPercentageDamage(
-                ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: true, unitIndex: index)), image.sprite,
+            tip.Bind(skill.SkillName + $" Lv.{level}", SkillTooltipNumbers.OmitIPDescription(SkillTooltipNumbers.FormatPercentageDamage(
+                ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: true, unitIndex: index))), image.sprite,
                 hpValue.font, false, SkillTagText.Format(skill));
         }
     }
@@ -117,7 +117,7 @@ public sealed class HeroLicenseView : MonoBehaviour
         var tip = image.GetComponent<CoreSelectionTooltip>();
         if (!tip) tip = image.gameObject.AddComponent<CoreSelectionTooltip>();
         tip.Bind(core, title, core > 0 && core <= coreSprites.Length ? coreSprites[core-1] : null, hpValue.font,
-            UnitIndexField != null ? (int)UnitIndexField.GetValue(owner) : 0);
+            UnitIndexField != null ? (int)UnitIndexField.GetValue(owner) : 0, omitIPDescription: true);
     }
 
     private void BindStatHovers()

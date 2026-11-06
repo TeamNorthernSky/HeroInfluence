@@ -74,6 +74,13 @@ public static class SkillTooltipNumbers
             @"([0-9]+(?:\.[0-9]+)?[%％])\s*(?:의\s*)?대미지", "$1의 대미지");
     }
 
+    /// <summary>표시 화면에서 요청한 경우에만 IP 설명 자리표시자를 생략한다.</summary>
+    public static string OmitIPDescription(string description)
+    {
+        return Regex.Replace(description ?? string.Empty,
+            @"\{IPDescription\}[ \t]*", string.Empty, RegexOptions.IgnoreCase).Trim();
+    }
+
     private static string Number(float value) => value.ToString("R", CultureInfo.InvariantCulture);
     private static string Percent(float value) => (value * 100f).ToString("0.##", CultureInfo.InvariantCulture) + "%";
 }
