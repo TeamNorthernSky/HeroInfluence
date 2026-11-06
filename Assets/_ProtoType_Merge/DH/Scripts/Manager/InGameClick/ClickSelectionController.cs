@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 public class ClickSelectionController : MonoBehaviour
 {
     private const string InvalidObjectClickSfxKey = "Button_Click_Fail";
+    private const string InvalidGroundClickSfxKey = "Explore_MoveFail";
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
@@ -200,7 +201,7 @@ public class ClickSelectionController : MonoBehaviour
         Vector2Int clickedGrid = gridManager.WorldToGrid(landHit.point);
         if (gridManager.HasObstacle(clickedGrid))
         {
-            AudioManager.Instance?.PlaySfx(InvalidObjectClickSfxKey);
+            AudioManager.Instance?.PlaySfx(GetInvalidClickSfxKey(Input.mousePosition));
             return;
         }
 
@@ -211,6 +212,14 @@ public class ClickSelectionController : MonoBehaviour
         }
 
         moveCommandPreviewController.PreviewMoveToGrid(activeMover, clickedGrid);
+    }
+
+    /// <summary>기존 포인터 조회 결과로 실패 효과음만 선택합니다. 이동 상태는 변경하지 않습니다.</summary>
+    public string GetInvalidClickSfxKey(Vector2 screenPosition)
+    {
+        if (!TryGetPointerInteraction(screenPosition, out var target, out _, out _))
+            return InvalidObjectClickSfxKey;
+        return target != null ? InvalidObjectClickSfxKey : InvalidGroundClickSfxKey;
     }
 
     private static bool IsMoverUsable(PartyGridMover mover)

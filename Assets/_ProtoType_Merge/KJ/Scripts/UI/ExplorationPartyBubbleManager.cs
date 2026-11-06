@@ -138,7 +138,12 @@ public sealed class ExplorationPartyBubbleManager : MonoBehaviour
 
     private void OnDestinationUnreachable(PartyGridMover party)
     {
-        if (ShowForParty(party)) AudioManager.Instance?.PlaySfx("Button_Click_Fail");
+        if (ShowForParty(party))
+        {
+            var clicks = ClickSelectionController.Active;
+            string key = clicks != null ? clicks.GetInvalidClickSfxKey(Input.mousePosition) : "Button_Click_Fail";
+            AudioManager.Instance?.PlaySfx(key);
+        }
     }
 
     public void NotifyResourceInteraction(PartyGridMover party, ResourceType type)
