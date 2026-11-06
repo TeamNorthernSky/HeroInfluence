@@ -182,16 +182,33 @@ namespace EnemyAI
                 return EnemyActionDecision.SkipTurn();
             }
 
-            // 기획: 매 턴 원거리 사격. 같은 행에서는 HP가 낮은 대상,
-            // 같은 행이 비면 가장 가까운 대상을 선택한다.
+            // 원거리 사격 70% / 원거리 난사 30%. 선택한 스킬의 대상이 없으면 다른 스킬을 시도한다.
             if (!canUseSkill) return EnemyActionDecision.SkipTurn();
             SkillData shot = self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == 200021);
-            if (shot == null) return EnemyActionDecision.SkipTurn();
-            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, shot, validTargets)
-                .Where(t => validTargets.Contains(t)).ToList();
-            BattleCharactor target = EnemyAiTargetRules.PickSameRowThenLowestHpOrNearest(self, candidates);
-            return target == null ? EnemyActionDecision.SkipTurn()
-                : EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, shot);
+            SkillData barrage = self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == 200022);
+            bool preferShot = UnityEngine.Random.Range(0, 100) < 70;
+            SkillData primary = preferShot ? shot : barrage;
+            SkillData secondary = preferShot ? barrage : shot;
+
+            EnemyActionDecision TryAttack(SkillData skill)
+            {
+                if (skill == null || (SelectingTauntAttack && !IsAttackSkill(skill)))
+                    return EnemyActionDecision.SkipTurn();
+
+                List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForEnemyAI(self, skill, validTargets)
+                    .Where(t => validTargets.Contains(t)).ToList();
+                // 단일 사격은 같은 행 최저 HP 우선, 난사는 유효 대상 중 최저 HP를 중심으로 조준한다.
+                BattleCharactor target = skill == shot
+                    ? EnemyAiTargetRules.PickSameRowThenLowestHpOrNearest(self, candidates)
+                    : GetLowestHpTarget(candidates);
+                return target == null ? EnemyActionDecision.SkipTurn()
+                    : EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, skill);
+            }
+
+            EnemyActionDecision decision = TryAttack(primary);
+            if (!decision.Skip) return decision;
+
+            return TryAttack(secondary);
         }
     }
 
