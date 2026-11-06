@@ -63,7 +63,7 @@ MonoBehaviour:
   EventSfx:
   - Event: 0
     PlayPerHit: 0
-    Key: Battle_Fire01
+    Key: Battle_Fire02
     DurationSeconds: 0
     Occurrence: -1
   MovePrepare:
