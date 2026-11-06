@@ -1091,6 +1091,13 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        if (actor == null || !actor.HasInfluenceForSkill(skillData))
+        {
+            Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
+            onCompleted?.Invoke(false);
+            yield break;
+        }
+
         if (!TryConsumeSkillInfluence(actor, skillData))
         {
             onCompleted?.Invoke(false);
@@ -1224,7 +1231,7 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        if (actor.IsPlayer && actor.CurrentInfluence < Mathf.Max(0f, classSkillRow.IPCost))
+        if (!actor.HasInfluenceForSkill(classSkillRow))
         {
             Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
             onCompleted?.Invoke(false);

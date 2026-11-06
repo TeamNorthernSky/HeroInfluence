@@ -194,7 +194,7 @@ public class AutoBattleController : MonoBehaviour
     private static void TryAddCandidate(List<AutoBattleCandidate> candidates, BattleCharactor actor,
         PendingActionType actionType, SkillData skill)
     {
-        if (skill == null || actor.CurrentInfluence < skill.IPCost) return;
+        if (skill == null || !actor.HasInfluenceForSkill(skill)) return;
 
         List<BattleCharactor> targets = TargetingHelper.GetValidTargetsForSkillData(actor, skill);
         if (targets.Count > 0)

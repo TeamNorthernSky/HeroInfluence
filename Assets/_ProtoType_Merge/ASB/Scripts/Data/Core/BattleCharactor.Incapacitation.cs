@@ -41,7 +41,7 @@ public partial class BattleCharactor
         if (_incapRoundsLeft <= 0)
         {
             IsIncapacitated = false;
-            currentHp = Mathf.Clamp(MaxHp * 0.5f, 1f, MaxHp);   // 복귀 HP = 최대의 50%(확정)
+            currentHp = Mathf.Clamp(RoundHpValue(MaxHp * 0.5f), 1f, MaxHp);   // 복귀 HP = 최대의 50%(확정), 정수 반올림
             OnHpChanged?.Invoke(CurrentHp, MaxHp);
         }
     }
