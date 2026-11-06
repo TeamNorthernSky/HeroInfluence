@@ -77,7 +77,7 @@ MonoBehaviour:
   EventSfx:
   - Event: 2
     PlayPerHit: 0
-    Key: Battle_Beam
+    Key: Battle_Explosion
     DurationSeconds: 0
     Occurrence: 0
   MovePrepare:

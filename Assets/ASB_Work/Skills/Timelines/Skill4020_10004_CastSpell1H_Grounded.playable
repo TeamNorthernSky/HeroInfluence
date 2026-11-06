@@ -234,8 +234,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.2
-  _sfxKey: Battle_Create
+  m_Time: 1.45
+  _sfxKey: Battle_Warp
   _durationSeconds: 0
 --- !u!114 &756802040015299145
 MonoBehaviour:
