@@ -141,6 +141,8 @@ namespace ASB.Work.Battle.SkillExecution
 
         public SkillExecutionResult AddHeal(BattleCharactor caster, BattleCharactor target, float amount, int skillIndex = 0)
         {
+            // 핸들러가 계산한 힐 양을 여기서 정수로 맞춰 둔다. 화면 회복 숫자와 실제 회복(ApplyHeal)이 같은 값을 쓴다.
+            amount = BattleCharactor.RoundHpValue(amount);
             if (caster != null && target != null && amount > 0f)
             {
                 HealContexts.Add(new HealContext

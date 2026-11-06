@@ -353,7 +353,7 @@ public class SkillButtonController : MonoBehaviour
             var button = toggle2 != null ? toggle2.GetComponent<Button>() : null;
             var weapon = actor != null ? actor.EquippedWeaponData : null;
             bool available = ready && button != null && button.IsInteractable() && weapon != null &&
-                actor.CurrentInfluence >= Mathf.Max(0f, weapon.IPCost) &&
+                actor.HasInfluenceForWeaponSkill(weapon) &&
                 battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.WeaponSkill, null);
             coreVisual.SetState(available, ready && toggle2 != null && toggle2.IsOn);
         }

@@ -677,7 +677,7 @@ public class InputHandler : MonoBehaviour
             return false;
         }
 
-        return actor.CurrentInfluence >= Mathf.Max(0f, skillData.IPCost);
+        return actor.HasInfluenceForSkill(skillData);
     }
 
     private void ClearAoEPreview()

@@ -96,6 +96,7 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             choicePanel.SetActive(false);
             return;
         }
+        bool opening = current == null || current.WorldEventId != request.WorldEventId;
         current = request;
         if (request.Style == DHWorldEventPresentationStyle.ConditionReward)
         {
@@ -111,6 +112,9 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             choicePanel.transform.SetAsLastSibling();
             choicePanel.SetActive(true);
         }
+        if (opening && (request.WorldEventId == "R_IF_002" || request.WorldEventId == "S_IF_001"))
+            PopupSoundService.PlayWarningPopup(request.Style == DHWorldEventPresentationStyle.ConditionReward
+                ? rewardPanel : choicePanel);
     }
 
     private void OnPresentationClosed(DHWorldEventPresentationRequest request)

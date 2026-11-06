@@ -24,7 +24,6 @@ public sealed class SectorTwoEnemyAiTests
     {
         Component self = Unit("Rifleman", false, 2, 1, 50);
         AddSkill(self, 200021);
-        AddSkill(self, 200022);
         Component near = Unit("Near", true, 1, 1, 2f);
         Component low = Unit("LowSameRow", true, 0, 1, 1f);
         Component lowestElsewhere = Unit("LowestElsewhere", true, 1, 0, 0.5f);
@@ -36,6 +35,46 @@ public sealed class SectorTwoEnemyAiTests
         Assert.That(Field<object>(decision, "Target"), Is.SameAs(low));
         Assert.That(Field<object>(decision, "SelectedSkill")?.GetType().GetField("skillIndex")
             ?.GetValue(Field<object>(decision, "SelectedSkill")), Is.EqualTo(200021));
+    }
+
+    [Test]
+    public void Rifleman_WithBothSkills_CanUseBarrage()
+    {
+        Component self = Unit("Rifleman", false, 2, 1, 50);
+        AddSkill(self, 200021);
+        AddSkill(self, 200022);
+        Component target = Unit("Target", true, 1, 1, 50);
+
+        UnityEngine.Random.State previousState = UnityEngine.Random.state;
+        try
+        {
+            UnityEngine.Random.InitState(20002);
+            var selected = new HashSet<int>();
+            for (int i = 0; i < 40; i++)
+            {
+                object decision = Decide(20002, self, target);
+                object skill = Field<object>(decision, "SelectedSkill");
+                Assert.That(skill, Is.Not.Null);
+                selected.Add(Field<int>(skill, "skillIndex"));
+            }
+
+            Assert.That(selected, Is.EquivalentTo(new[] { 200021, 200022 }));
+        }
+        finally
+        {
+            UnityEngine.Random.state = previousState;
+        }
+    }
+
+    [Test]
+    public void Rifleman_WhenShotUnavailable_UsesBarrage()
+    {
+        Component self = Unit("Rifleman", false, 2, 1, 50);
+        AddSkill(self, 200022);
+        Component target = Unit("Target", true, 1, 1, 50);
+
+        object decision = Decide(20002, self, target);
+        Assert.That(Field<int>(Field<object>(decision, "SelectedSkill"), "skillIndex"), Is.EqualTo(200022));
     }
 
     [Test]

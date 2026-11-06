@@ -9,6 +9,9 @@ public static class GameSettings
     private const string KeyBGM         = "Settings_BGMVolume";
     private const string KeyEffect      = "Settings_EffectVolume";
     private const string KeyAutoTurnEnd = "Settings_AutoTurnEnd";
+    private const string KeyMasterMuted = "Settings_MasterMuted";
+    private const string KeyBgmMuted = "Settings_BgmMuted";
+    private const string KeyEffectMuted = "Settings_EffectMuted";
 
     public static float MasterVolume  => PlayerPrefs.GetFloat(KeyMaster, 1f);
     public static float BGMVolume     => PlayerPrefs.GetFloat(KeyBGM,    1f);
@@ -16,6 +19,40 @@ public static class GameSettings
     public static int   ResolutionIndex => PlayerPrefs.GetInt(KeyResolution, 2);
     public static bool  IsFullScreen  => PlayerPrefs.GetInt(KeyFullScreen, 1) == 1;
     public static bool AutoTurnEnd => PlayerPrefs.GetInt(KeyAutoTurnEnd, 1) == 1;
+
+    public static SoundSettingsData SavedSound => new SoundSettingsData(MasterVolume, BGMVolume, EffectVolume,
+        PlayerPrefs.GetInt(KeyMasterMuted, 0) != 0, PlayerPrefs.GetInt(KeyBgmMuted, 0) != 0,
+        PlayerPrefs.GetInt(KeyEffectMuted, 0) != 0);
+    private static SoundSettingsData appliedSound;
+    private static bool soundInitialized;
+    public static SoundSettingsData AppliedSound
+    {
+        get
+        {
+            if (!soundInitialized) { appliedSound = SavedSound; soundInitialized = true; }
+            return appliedSound;
+        }
+    }
+
+    // 미리 듣기는 실제 음량만 바꾸고 저장값은 유지한다.
+    public static void PreviewSound(SoundSettingsData value)
+    {
+        appliedSound = value;
+        soundInitialized = true;
+        ApplyToAudioManager();
+    }
+
+    public static void SaveSound(SoundSettingsData value)
+    {
+        PlayerPrefs.SetFloat(KeyMaster, value.Master);
+        PlayerPrefs.SetFloat(KeyBGM, value.Bgm);
+        PlayerPrefs.SetFloat(KeyEffect, value.Effect);
+        PlayerPrefs.SetInt(KeyMasterMuted, value.MasterMuted ? 1 : 0);
+        PlayerPrefs.SetInt(KeyBgmMuted, value.BgmMuted ? 1 : 0);
+        PlayerPrefs.SetInt(KeyEffectMuted, value.EffectMuted ? 1 : 0);
+        PlayerPrefs.Save();
+        PreviewSound(value);
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void RegisterSceneSettings()
@@ -58,24 +95,17 @@ public static class GameSettings
 
     public static void ApplyMasterVolume(float value)
     {
-        value = Mathf.Clamp01(value);
-        if (AudioManager.Instance != null) AudioManager.Instance.SetMasterVolume(value);
-        PlayerPrefs.SetFloat(KeyMaster, value);
-        PlayerPrefs.Save();
+        SaveSound(SavedSound.WithMaster(value));
     }
 
     public static void ApplyBGMVolume(float value)
     {
-        if (AudioManager.Instance != null) AudioManager.Instance.SetBgmVolume(value);
-        PlayerPrefs.SetFloat(KeyBGM, value);
-        PlayerPrefs.Save();
+        SaveSound(SavedSound.WithBgm(value));
     }
 
     public static void ApplyEffectVolume(float value)
     {
-        if (AudioManager.Instance != null) AudioManager.Instance.SetSfxVolume(value);
-        PlayerPrefs.SetFloat(KeyEffect, value);
-        PlayerPrefs.Save();
+        SaveSound(SavedSound.WithEffect(value));
     }
 
     // [KJ 260708] Settings 모달이 지연 초기화(self-deactivate)로 바뀌어도
@@ -83,10 +113,14 @@ public static class GameSettings
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void ApplyOnBoot()
     {
+        appliedSound = SavedSound;
+        soundInitialized = true;
         LoadAndApplyAll();
-        // AudioManager는 씬 오브젝트라 부팅 시점엔 없다. 씬 로드마다 저장값을 다시 넣어 준다.
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded += (_, _) => ApplyToAudioManager();
+        SceneManager.sceneLoaded -= ReapplySoundToScene;
+        SceneManager.sceneLoaded += ReapplySoundToScene;
     }
+
+    private static void ReapplySoundToScene(Scene scene, LoadSceneMode mode) => ApplyToAudioManager();
 
     public static void LoadAndApplyAll()
     {
@@ -98,8 +132,12 @@ public static class GameSettings
     {
         AudioManager audio = AudioManager.Instance;
         if (audio == null) return;
-        audio.SetMasterVolume(MasterVolume);
-        audio.SetBgmVolume(BGMVolume);
-        audio.SetSfxVolume(EffectVolume);
+        var sound = AppliedSound;
+        audio.SetMasterVolume(sound.Master);
+        audio.SetBgmVolume(sound.Bgm);
+        audio.SetSfxVolume(sound.Effect);
+        audio.SetMasterMuted(sound.MasterMuted);
+        audio.SetBgmMuted(sound.BgmMuted);
+        audio.SetSfxMuted(sound.EffectMuted);
     }
 }

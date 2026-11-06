@@ -67,6 +67,20 @@ public static class SkillTooltipNumbers
         });
     }
 
+    /// <summary>백분율 피해량의 조사만 통일하며 회복량·횟수 등은 유지한다.</summary>
+    public static string FormatPercentageDamage(string description)
+    {
+        return Regex.Replace(description ?? string.Empty,
+            @"([0-9]+(?:\.[0-9]+)?[%％])\s*(?:의\s*)?대미지", "$1의 대미지");
+    }
+
+    /// <summary>표시 화면에서 요청한 경우에만 IP 설명 자리표시자를 생략한다.</summary>
+    public static string OmitIPDescription(string description)
+    {
+        return Regex.Replace(description ?? string.Empty,
+            @"\{IPDescription\}[ \t]*", string.Empty, RegexOptions.IgnoreCase).Trim();
+    }
+
     private static string Number(float value) => value.ToString("R", CultureInfo.InvariantCulture);
     private static string Percent(float value) => (value * 100f).ToString("0.##", CultureInfo.InvariantCulture) + "%";
 }

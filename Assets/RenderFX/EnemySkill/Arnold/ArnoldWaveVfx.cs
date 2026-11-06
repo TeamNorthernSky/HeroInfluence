@@ -13,6 +13,7 @@ public sealed class ArnoldWaveVfx : MonoBehaviour, ISkillEffectBehaviour, ISkill
     private Vector3 orbScale;
     private Vector3 chargeScale;
     private Transform leftHand, rightHand;
+    private SkillPresentationData presentation;
     private bool launched;
     private bool orbStarted;
 
@@ -29,6 +30,7 @@ public sealed class ArnoldWaveVfx : MonoBehaviour, ISkillEffectBehaviour, ISkill
     }
     public void Play(SkillEffectContext ctx)
     {
+        presentation = ctx?.Presentation;
         speed = ctx != null ? Mathf.Max(.01f, ctx.PlaybackSpeed) : 1f;
         var animator = ctx?.Caster != null ? ctx.Caster.GetComponentInChildren<Animator>() : null;
         if (animator != null && animator.isHuman)
@@ -108,7 +110,9 @@ public sealed class ArnoldWaveVfx : MonoBehaviour, ISkillEffectBehaviour, ISkill
     }
     private void OnFlightFinished(BattleCharactor actor, Transform projectile, Vector3 position, bool arrived)
     {
-        if (projectile != transform || !arrived || impactPrefab == null) return;
+        if (projectile != transform || !arrived) return;
+        PresentationSfxEvents.PlayEffectImpact(presentation, 0);
+        if (impactPrefab == null) return;
         var impact = Instantiate(impactPrefab, position, Quaternion.identity);
         impact.transform.localScale *= .42f;
         foreach (var ps in impact.GetComponentsInChildren<ParticleSystem>())

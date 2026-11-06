@@ -9,6 +9,7 @@ public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, 
 {
     [SerializeField] private int core;
     private int unitIndex;
+    private bool omitIPDescription;
     [SerializeField] private string label;
     [SerializeField] private Sprite coreIcon;
     [SerializeField] private TMP_FontAsset font;
@@ -18,9 +19,10 @@ public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, 
     private static CoreSelectionTooltip visible;
     private static readonly string[] SkillIcons = { "normal", "multi", "defend", "heal", "debuff" };
 
-    public void Bind(int index, string name, Sprite icon, TMP_FontAsset textFont, int heroIndex = 0)
+    public void Bind(int index, string name, Sprite icon, TMP_FontAsset textFont, int heroIndex = 0, bool omitIPDescription = false)
     {
         core = index; label = name; coreIcon = icon; font = textFont; unitIndex = heroIndex;
+        this.omitIPDescription = omitIPDescription;
         if (panel && panel.gameObject.activeSelf) RefreshContent();
     }
     public void OnPointerEnter(PointerEventData data)
@@ -55,6 +57,8 @@ public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, 
         description.text = data != null ? data.WeaponDescription : "코어 정보를 불러오는 중입니다.";
         skillName.text = data != null ? data.WeaponSkillName : "코어 스킬";
         skillDescription.text = data != null ? WeaponTooltipText.BuildWeaponSkillDesc(data, core, level, unitIndex: unitIndex) : "스킬 정보를 불러오는 중입니다.";
+        if (omitIPDescription)
+            skillDescription.text = SkillTooltipNumbers.OmitIPDescription(skillDescription.text);
         portrait.sprite = coreIcon;
         skillPortrait.sprite = Sprites.Load("UI_Sprite/UI_Icon/CoreSkill/UI_icon_coreSkill_" + SkillIcons[core - 1]);
         skillPortrait.enabled = skillPortrait.sprite != null;
