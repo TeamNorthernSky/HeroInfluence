@@ -24,13 +24,13 @@ MonoBehaviour:
     rimStrength: 0.025
     nekomingShadeFloor: 0.83
     nekomingAlbedoLift: 0.055
-    useMechanicalMolding: 1
+    useMechanicalMolding: 0
     mechanicalUnitIds:
     - 20001
     - 40002
     - 40003
     - 40005
-    moldingStrength: 1
+    moldingStrength: 0
     moldingSharpness: 51.8
     mechanicalShadeFloor: 0.425
     mechanicalLightWrap: 0.128

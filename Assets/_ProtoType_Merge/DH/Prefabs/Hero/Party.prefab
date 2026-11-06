@@ -98,7 +98,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 0}
   combatEncounterManager: {fileID: 0}
-  combatPromptService: {fileID: 0}
 --- !u!65 &3795084462015429464
 BoxCollider:
   m_ObjectHideFlags: 0
