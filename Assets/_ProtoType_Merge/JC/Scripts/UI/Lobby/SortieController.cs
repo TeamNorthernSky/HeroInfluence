@@ -53,7 +53,8 @@ public class SortieController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI stateInfoText;
 
     [Header("한글 기본 폰트 (런타임 생성 텍스트용. 비우면 슬롯 라벨에서 복사)")]
-    [SerializeField] private TMP_FontAsset hangulFont; // = NotoSansKR-Regular SDF
+    // JC | 2026-11-05 | 현재 출격 UI에 연결된 공용 SOYO Maple Regular SDF를 런타임 안내에도 공유합니다.
+    [SerializeField] private TMP_FontAsset hangulFont;
 
     [Header("새 파티(무-상주) 모드 상태 안내")]
     [SerializeField] private string singlePartyStateMessage = "현재 버전에서는 1개 파티만 생성할 수 있습니다.";
@@ -600,7 +601,7 @@ public class SortieController : MonoBehaviour
         stateInfoText = tmp;
     }
 
-    // [JC 260616] 런타임 생성 텍스트용 한글 기본 폰트(NotoSansKR-Regular SDF). 미바인딩이면 슬롯 라벨에서 복사.
+    // JC | 2026-11-05 | SOYO Maple로 연결된 hangulFont를 우선 사용합니다. 기존의 미지정 시 슬롯 라벨 공유 동작을 설명하며 새 폴백을 추가한 것이 아닙니다.
     private TMP_FontAsset ResolveHangulFont()
     {
         if (hangulFont != null) return hangulFont;
