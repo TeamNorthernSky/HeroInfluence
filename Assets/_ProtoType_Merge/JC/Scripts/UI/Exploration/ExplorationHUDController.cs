@@ -91,8 +91,7 @@ public class ExplorationHUDController : MonoBehaviour
         }
 
         // These panels can be shown without registering a Modal.
-        if (FindFirstObjectByType<CombatPromptPanelController>() != null ||
-            FindFirstObjectByType<BattleResultPanel>() != null ||
+        if (FindFirstObjectByType<BattleResultPanel>() != null ||
             FindFirstObjectByType<SkillSelectionPanel>() != null) return false;
 
         foreach (Canvas parentCanvas in nextTurnButton.GetComponentsInParent<Canvas>())

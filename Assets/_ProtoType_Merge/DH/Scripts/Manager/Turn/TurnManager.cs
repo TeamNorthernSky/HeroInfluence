@@ -34,7 +34,6 @@ public class TurnManager : MonoBehaviour
     private PartyIdentity autoEndTurnPartyIdentity;
     private PartyRuntime autoEndTurnPartyRuntime;
     private CombatEncounterManager combatEncounterManager;
-    private CombatPromptService combatPromptService;
     private bool playerMovementStarted;
     private int automaticEndTurnReadyFrames;
 
@@ -47,7 +46,6 @@ public class TurnManager : MonoBehaviour
             partyRegistry = FindFirstObjectByType<PartyRegistry>();
 
         combatEncounterManager = FindFirstObjectByType<CombatEncounterManager>();
-        combatPromptService = FindFirstObjectByType<CombatPromptService>();
 
         if (enemyTurnController == null)
             enemyTurnController = FindFirstObjectByType<EnemyTurnController>();
@@ -230,7 +228,6 @@ public class TurnManager : MonoBehaviour
             return false;
 
         if ((combatEncounterManager != null && combatEncounterManager.IsCombatActive) ||
-            (combatPromptService != null && combatPromptService.IsOpen) ||
             (autoEndTurnPartyRuntime != null && autoEndTurnPartyRuntime.IsInputLocked) ||
             (ChatManager.Instance != null && ChatManager.Instance.IsRunning) ||
             ChatModalController.IsOpen || ModalManager.HasAny ||

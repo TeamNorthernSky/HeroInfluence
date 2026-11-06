@@ -9,7 +9,7 @@ using System.Collections.Generic;
 /// • "표시 순서"(전력평가 / 탐사 HeroBtn / 전투 결과)는 전열(슬롯4·5·6) → 후열(슬롯1·2·3)
 ///   = 진형 grid 인덱스 오름차순으로 통일한다.
 ///
-/// 이 규약을 쓰는 곳: SortieController(JC), CombatPromptService(DH),
+/// 이 규약을 쓰는 곳: SortieController(JC),
 /// ExplorationHeroBoxController(JC), BattleResultPanel(KJ).
 /// 슬롯/순서 규약을 바꿀 때는 여기 한 곳만 고치면 된다.
 /// </summary>

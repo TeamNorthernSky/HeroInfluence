@@ -9180,6 +9180,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53194c5e2822cc44993d83d47a0fc12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  counterDamageMultiplier: 0.35
   _currentBattleSpeed: 1
   battleFlowManager: {fileID: 621159268}
   _visualDirector: {fileID: 621159275}
@@ -9306,6 +9307,13 @@ MonoBehaviour:
     CharacterSpeed: 0
     EffectSpeed: 0.2
   _reactToPreventedDamage: 1
+  _defaultHitCameraPunch:
+    Enabled: 0
+    ZoomAmount: 0.05
+    ZoomInSeconds: 0.04
+    HoldSeconds: 0.04
+    ZoomOutSeconds: 0.15
+  _hitCameraPunchPlayerAttacksOnly: 0
   _enableCommonHitEffect: 1
   _commonHitEffect: {fileID: 0}
   _commonHitEffectOffset: {x: 0, y: 1.1, z: 0}
@@ -17585,7 +17593,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25.7
+  m_fontSize: 26
   m_fontSizeBase: 34
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -21452,13 +21460,13 @@ MonoBehaviour:
   rimStrength: 0.025
   nekomingShadeFloor: 0.83
   nekomingAlbedoLift: 0.055
-  useMechanicalMolding: 1
+  useMechanicalMolding: 0
   mechanicalUnitIds:
   - 20001
   - 40002
   - 40003
   - 40005
-  moldingStrength: 1
+  moldingStrength: 0
   moldingSharpness: 51.8
   mechanicalShadeFloor: 0.425
   mechanicalLightWrap: 0.128

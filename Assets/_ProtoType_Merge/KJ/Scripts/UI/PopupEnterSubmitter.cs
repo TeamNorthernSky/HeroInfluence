@@ -148,9 +148,6 @@ public sealed class PopupEnterSubmitter : MonoBehaviour
         if (TryResolveComponentPopup<BattleResultPanel>(out confirmButton, "Accept"))
             return true;
 
-        if (TryResolveComponentPopup<CombatPromptPanelController>(out confirmButton, "BattleButton"))
-            return true;
-
         return false;
     }
 

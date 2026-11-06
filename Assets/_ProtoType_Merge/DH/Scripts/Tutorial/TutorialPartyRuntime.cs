@@ -9,7 +9,6 @@ public class TutorialPartyRuntime : MonoBehaviour
 {
     [Header("Interaction")]
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private CombatPromptService combatPromptService;
     [SerializeField] private QuarterViewCameraFollower cameraFollower;
 
     [SerializeField] private TutorialPartyComposition composition;
@@ -39,16 +38,12 @@ public class TutorialPartyRuntime : MonoBehaviour
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
 
-        if (combatPromptService == null)
-            combatPromptService = FindFirstObjectByType<CombatPromptService>();
-
         if (cameraFollower == null)
             cameraFollower = ResolveCameraFollower();
 
         interactionController = new PartyInteractionController(
             gridManager,
             null,
-            combatPromptService,
             gridMover,
             this,
             gridMover.GetCurrentGrid);

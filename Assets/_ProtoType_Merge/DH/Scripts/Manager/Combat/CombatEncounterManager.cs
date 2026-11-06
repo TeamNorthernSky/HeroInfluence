@@ -67,35 +67,6 @@ public class CombatEncounterManager : MonoBehaviour
         return IsCombatActive;
     }
 
-    public bool PrepareEnemyCombatContext(PartyGridMover party, EnemyGridMover enemy)
-    {
-        // 지연 로딩이 접수된 동안 다른 조우가 기존 전투 컨텍스트를 덮어쓰지 않습니다.
-        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsSceneLoadPending) return false;
-        if (DHGameEndState.IsEnding)
-            return false;
-
-        if (HasPendingCombatResult())
-            return false;
-
-        if (party == null || enemy == null)
-            return false;
-
-        if (IsCombatActive)
-            return false;
-
-        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
-        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
-        string enemyId = enemy.EnemyId;
-
-        if (!TryRegisterCombatParticipants(party, partyId, enemy, enemyId))
-            return false;
-
-        IsCombatActive = true;
-        ActiveParty = party;
-        ActiveEnemy = enemy;
-        return true;
-    }
-
     public bool BeginEventBattleCombat(PartyGridMover party, CombatEventBattleData eventBattle)
     {
         // 지연 로딩이 접수된 동안 다른 조우가 기존 전투 컨텍스트를 덮어쓰지 않습니다.
