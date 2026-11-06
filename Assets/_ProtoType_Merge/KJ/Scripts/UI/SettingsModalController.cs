@@ -23,6 +23,10 @@ public class SettingsModalController : MonoBehaviour
     [SerializeField] private TMP_Dropdown ScreenModeDropdown;
 
     public bool PendingAutoTurnEnd { get; private set; }
+    public SoundSettingsData PendingSound { get; private set; }
+    private SoundSettingsData soundBeforeOpen;
+    private bool editingSound;
+    public event System.Action<SoundSettingsData> SoundSettingsChanged;
 
     private static readonly (int width, int height)[] Resolutions =
     {
@@ -68,6 +72,9 @@ public class SettingsModalController : MonoBehaviour
 
     private void OnEnable()
     {
+        soundBeforeOpen = GameSettings.AppliedSound;
+        PendingSound = soundBeforeOpen;
+        editingSound = true;
         RefreshSavedValues();
         PopupSoundService.PlayPopup(gameObject);
     }
@@ -75,15 +82,14 @@ public class SettingsModalController : MonoBehaviour
     private void OnDisable()
     {
         // Also handles Escape/outside-click paths that deactivate the modal directly.
-        GameSettings.LoadAndApplyAll();
+        if (editingSound) GameSettings.PreviewSound(soundBeforeOpen);
+        editingSound = false;
     }
 
     private void RefreshSavedValues()
     {
         PendingAutoTurnEnd = GameSettings.AutoTurnEnd;
-        SetVolumeSlider(MasterVolume, GameSettings.MasterVolume);
-        SetVolumeSlider(BackGroundVolume, GameSettings.BGMVolume);
-        SetVolumeSlider(EffectVolume, GameSettings.EffectVolume);
+        RefreshSoundSliders();
         if (ResolutionDropdown != null)
             ResolutionDropdown.SetValueWithoutNotify(GameSettings.ResolutionIndex);
         if (ScreenModeDropdown != null)
@@ -99,9 +105,8 @@ public class SettingsModalController : MonoBehaviour
 
     public void OnApplyButtonClicked()
     {
-        if (MasterVolume != null) GameSettings.ApplyMasterVolume(MasterVolume.value);
-        if (BackGroundVolume != null) GameSettings.ApplyBGMVolume(BackGroundVolume.value);
-        if (EffectVolume != null) GameSettings.ApplyEffectVolume(EffectVolume.value);
+        GameSettings.SaveSound(PendingSound);
+        editingSound = false;
         if (ResolutionDropdown != null && ResolutionDropdown.value != GameSettings.ResolutionIndex)
             GameSettings.ApplyResolution(ResolutionDropdown.value, Resolutions);
         if (ScreenModeDropdown != null && (ScreenModeDropdown.value == 1) != GameSettings.IsFullScreen)
@@ -193,15 +198,15 @@ public class SettingsModalController : MonoBehaviour
     {
         InitSlider(MasterVolume, GameSettings.MasterVolume, v =>
         {
-            if (AudioManager.Instance != null) AudioManager.Instance.SetMasterVolume(v);
+            PreviewSound(PendingSound.WithMaster(v));
         });
         InitSlider(BackGroundVolume, GameSettings.BGMVolume, v =>
         {
-            if (AudioManager.Instance != null) AudioManager.Instance.SetBgmVolume(v);
+            PreviewSound(PendingSound.WithBgm(v));
         });
         InitSlider(EffectVolume, GameSettings.EffectVolume, v =>
         {
-            if (AudioManager.Instance != null) AudioManager.Instance.SetSfxVolume(v);
+            PreviewSound(PendingSound.WithEffect(v));
         });
     }
 
@@ -253,17 +258,28 @@ public class SettingsModalController : MonoBehaviour
 
     public void OnDefaultButtonClicked()
     {
-        const float defaultVolume = 1.0f;
-        SetVolumeSlider(MasterVolume, defaultVolume);
-        SetVolumeSlider(BackGroundVolume, defaultVolume);
-        SetVolumeSlider(EffectVolume, defaultVolume);
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.SetMasterVolume(defaultVolume);
-            AudioManager.Instance.SetBgmVolume(defaultVolume);
-            AudioManager.Instance.SetSfxVolume(defaultVolume);
-        }
+        PreviewSound(new SoundSettingsData(1f, 1f, 1f));
+        RefreshSoundSliders();
     }
+
+    private void PreviewSound(SoundSettingsData value)
+    {
+        PendingSound = value;
+        GameSettings.PreviewSound(value);
+        SoundSettingsChanged?.Invoke(PendingSound);
+    }
+
+    private void RefreshSoundSliders()
+    {
+        SetVolumeSlider(MasterVolume, PendingSound.Master);
+        SetVolumeSlider(BackGroundVolume, PendingSound.Bgm);
+        SetVolumeSlider(EffectVolume, PendingSound.Effect);
+        SoundSettingsChanged?.Invoke(PendingSound);
+    }
+
+    public void ToggleMasterMute() => PreviewSound(PendingSound.WithMasterMuted(!PendingSound.MasterMuted));
+    public void ToggleBgmMute() => PreviewSound(PendingSound.WithBgmMuted(!PendingSound.BgmMuted));
+    public void ToggleEffectMute() => PreviewSound(PendingSound.WithEffectMuted(!PendingSound.EffectMuted));
 
     private static void SetVolumeSlider(Slider slider, float value)
     {
