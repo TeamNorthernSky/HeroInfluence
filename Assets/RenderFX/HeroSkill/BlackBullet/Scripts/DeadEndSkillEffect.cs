@@ -130,6 +130,8 @@ namespace JC.VFX
                     }
                     CurrentPhase = Phase.Condensing;
                     PhaseTime = 0f;
+                    // 효과음 단계 0: 착탄 — 주변에 흩어진 파편이 대상 쪽으로 모이기 시작.
+                    PresentationSfxEvents.PlayEffectStep(context?.Presentation, 0);
                 }
             }
             else if (CurrentPhase == Phase.Condensing)
@@ -147,6 +149,8 @@ namespace JC.VFX
                     BeginAccentFade();
                     CurrentPhase = Phase.Charged;
                     PhaseTime = 0f;
+                    // 효과음 단계 1: 파편이 대상에 다 모임(폭발 직전 맥동 시작).
+                    PresentationSfxEvents.PlayEffectStep(context?.Presentation, 1);
                 }
             }
             else if (CurrentPhase == Phase.Charged)
