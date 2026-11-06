@@ -1,0 +1,292 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c06f6bb442e64448ba56af64e8fbd2, type: 3}
+  m_Name: JC_BankMaterials_Default
+  m_EditorClassIdentifier: 
+  surfaces:
+  - label: "\uAE08\uACE0 \uBB38\xB7\uC190\uC7A1\uC774\xB7\uACBD\uCCA9"
+    source: {fileID: 2100000, guid: d305991cbb0a8c346a8ccd53f061e006, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.55
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBC14\uB2E5"
+    source: {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+    tint: {r: 0.72327036, g: 0.70537275, b: 0.6345673, a: 1}
+    metallic: 0
+    smoothness: 0.595
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.29
+    groutContrast: 0.224
+    tileSize: 3.75
+  - label: "\uB370\uC2A4\uD06C \uC0C1\uD310"
+    source: {fileID: 2100000, guid: b58612d9b208ada41884269a89709969, type: 2}
+    tint: {r: 0.36477977, g: 0.31601375, b: 0.26956993, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uD30C\uB780\uC0C9"
+    source: {fileID: 2100000, guid: d52c8f4aee7db8f4dbf77d9123e33e79, type: 2}
+    tint: {r: 0.19186337, g: 0.42991778, b: 0.6855345, a: 1}
+    metallic: 0
+    smoothness: 0.405
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uC544\uC774\uBCF4\uB9AC\uC0C9"
+    source: {fileID: 2100000, guid: bbca0f85d9b02d24594da555f1e2526e, type: 2}
+    tint: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uB178\uB780\uC0C9"
+    source: {fileID: 2100000, guid: 1e1588efa2182fa4985aac6bd931058d, type: 2}
+    tint: {r: 0.16352195, g: 0.16352195, b: 0.16352195, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uC704 \uC18C\uD488"
+    source: {fileID: 2100000, guid: b0a97e13c880ade4cb44b2360ab2ba56, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAA8\uB2C8\uD130\xB7\uBC1B\uCE68\uB300"
+    source: {fileID: 2100000, guid: 3fad129ddd1bb2a4aadf56073c1e0303, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD604\uAE08\uC778\uCD9C\uAE30"
+    source: {fileID: 2100000, guid: 72a459f29dc23e74f87144e3f574e3c2, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uB178\uB780 \uB760"
+    source: {fileID: 2100000, guid: b900c029e329d3445a25ca0b878e4125, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uD30C\uB780 \uBC1B\uCE68"
+    source: {fileID: 2100000, guid: 4d3ad8e7891098d4785cba4337ee0643, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD\xB7\uAE30\uB465\xB7\uC7A5\uC2DD"
+    source: {fileID: 2100000, guid: c994b8db3634b6848852e703db81c94f, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC18C\uD30C"
+    source: {fileID: 2100000, guid: 506987dcffd3cf04898238921f146576, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD654\uBD84"
+    source: {fileID: 2100000, guid: cd49256b88868504b8e801463d0e87d1, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC0C1\uC544\uC0C9 \uBCBD\xB7\uAE30\uB465\xB7\uBAB0\uB529"
+    source: {fileID: 2100000, guid: 920bace23ddbef94d867eda4bd2bb76b, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uD14C\uB450\uB9AC"
+    source: {fileID: 2100000, guid: 26990b4caad071043a10456a36b05909, type: 2}
+    tint: {r: 0.67295593, g: 0.55656415, b: 0.55656415, a: 1}
+    metallic: 0.117
+    smoothness: 0.4
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC605\uC740 \uB178\uB791 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: d8155ba651bdfd34bbd79e9587047604, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.975, b: 0.85, a: 1}
+    emissionIntensity: 8
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uCD9C\uC785\uAD6C \uD6C4\uBA74 \xB7 \uD770 \uBC1C\uAD11 \uD328\uB110"
+    source: {fileID: 2100000, guid: 105a69a388e6719408d39732ed34b976, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.2
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 1.2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAB0\uB529\xB7\uBB38\uC591 \uC544\uB798 \uBC14 \xB7 \uC6D0\uB798 \uC605\uC740
+      \uB178\uB791"
+    source: {fileID: 2100000, guid: a7f71144791c6b848a93b5d3b0695c67, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC740\uD589 \uBB38\uC591 \xB7 \uAE08\uC18D"
+    source: {fileID: 2100000, guid: 10e5f28f5d7d5cf4bbfd0d1ac10545c7, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uBCF8\uCCB4"
+    source: {fileID: 2100000, guid: f604d6d9ebc418346a2b4cabf23e5c85, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.5
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uAE08\uC0C9 \uB05D\uB2E8"
+    source: {fileID: 2100000, guid: 8ec226c35dfc964428c547b5cdacf2f9, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: e2410faa09725e54f97c8eee5fe9fb53, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.3
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
