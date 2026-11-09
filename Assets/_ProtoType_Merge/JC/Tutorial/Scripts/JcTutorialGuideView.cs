@@ -189,13 +189,31 @@ namespace JC.Tutorial
             var card = panel.transform as RectTransform;
             var text = message.rectTransform;
             if (card == null || text.parent != card) return;
-            float width = Mathf.Max(1, card.rect.width - 64);
-            float height = Mathf.Max(120, message.GetPreferredValues(message.text, width, Mathf.Infinity).y + 8);
-            const float top = 73;
+            // JC | 2026-11-09 | 승인 시안: 바 아래 제목을 왼쪽 기준선에 맞추고 본문과 같은 크기로 표시합니다.
+            // 제목 영역 아래 여백은 시안의 1.5배 간격으로, 본문은 반 글자만 추가 들여씁니다.
+            const float left = 32, headingTop = 44, headingBodyGap = 12;
+            float indent = message.fontSize * .5f;
+            float top = 73;
+            if (heading != null && heading.rectTransform.parent == card)
+            {
+                heading.enableAutoSizing = false;
+                heading.fontSize = message.fontSize;
+                heading.alignment = TextAlignmentOptions.TopLeft;
+                var title = heading.rectTransform;
+                float titleWidth = Mathf.Max(1, card.rect.width - left * 2);
+                float titleHeight = Mathf.Max(message.fontSize * 1.5f, heading.GetPreferredValues(heading.text, titleWidth, Mathf.Infinity).y);
+                title.anchorMin = title.anchorMax = title.pivot = new Vector2(0, 1);
+                title.anchoredPosition = new Vector2(left, -headingTop);
+                title.sizeDelta = new Vector2(titleWidth, titleHeight);
+                top = headingTop + titleHeight + headingBodyGap;
+            }
+            float width = Mathf.Max(1, card.rect.width - left * 2 - indent);
+            // JC | 2026-11-09 | 반 글자 들여쓰기와 단어 줄바꿈 전처리가 적용된 실제 너비로 높이를 계산합니다.
+            text.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+            float height = Mathf.Max(120, message.preferredHeight + 8);
             card.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(minimumMessageHeight, top + height + messageBottomSpace));
-            text.anchorMin = text.anchorMax = new Vector2(.5f, 1);
-            text.pivot = new Vector2(.5f, 1);
-            text.anchoredPosition = new Vector2(0, -top);
+            text.anchorMin = text.anchorMax = text.pivot = new Vector2(0, 1);
+            text.anchoredPosition = new Vector2(left + indent, -top);
             text.sizeDelta = new Vector2(width, height);
         }
         private void LateUpdate() { if (visible) { ApplySideLayout(); FitMessageLayout(); } RenderPresentation(Time.unscaledTime, Time.unscaledDeltaTime); }

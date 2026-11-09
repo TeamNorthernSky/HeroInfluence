@@ -18,11 +18,15 @@ namespace JC.BattleTesting.Editor
                 EditorGUILayout.ObjectField("저장 대상", controller.Source, typeof(JcBossEnvironmentProfile), false);
                 EditorGUILayout.ObjectField("보스 무대", controller.Stage, typeof(Transform), true);
             }
-            EditorGUILayout.HelpBox("테스트와 실제 BE490이 같은 프로필을 사용합니다. 현재 값은 이 전투에만 즉시 반영되며, 플레이 종료 전에 프로필에 저장해야 유지됩니다. 중립값 1/흰색과 빈 목록은 기존 환경을 유지합니다.", MessageType.Info);
+            // JC | 2026-11-05 | 원경은 월드 시간대가 소유하므로 이전 환경 보정 항목이 적용되는 것처럼 표시하지 않습니다.
+            bool worldCity = JcBossCityLighting.IsActive(controller.gameObject.scene);
+            EditorGUILayout.HelpBox("테스트와 실제 BE490이 같은 프로필을 사용합니다. 플레이 종료 전에 저장해야 유지됩니다. 실내·캐릭터는 창문광과 추가 라이트만 받습니다. 원경은 월드의 4개 시간대 조명을 사용합니다.", MessageType.Info);
             var serialized = new SerializedObject(controller.Draft);
             serialized.Update();
-            foreach (string field in new[] { "directionalIntensity", "directionalTint", "shadowStrength", "ambientIntensity", "ambientTint", "reflectionIntensity", "lights", "materials" })
-                EditorGUILayout.PropertyField(serialized.FindProperty(field), true);
+            // JC | 2026-11-05 | 조명 차단과 창문광도 기존 즉시 반영/명시적 프로필 저장 흐름을 사용합니다.
+            foreach (string field in new[] { "isolateInterior", "windows", "directionalIntensity", "directionalTint", "shadowStrength", "ambientIntensity", "ambientTint", "reflectionIntensity", "lights", "materials" })
+                using(new EditorGUI.DisabledScope(worldCity && field!="isolateInterior" && field!="windows" && field!="lights" && field!="materials"))
+                    EditorGUILayout.PropertyField(serialized.FindProperty(field), true);
             if (serialized.ApplyModifiedProperties()) controller.ApplyDraft();
 
             // JC | 2026-11-05 | 씬 참조는 프로필에 저장하지 않고 무대 상대 경로로 바꿔 양쪽 진입 경로에서 재사용합니다.
@@ -41,7 +45,7 @@ namespace JC.BattleTesting.Editor
             }
             if (!string.IsNullOrEmpty(controller.ValidationMessage)) EditorGUILayout.HelpBox(controller.ValidationMessage, MessageType.Warning);
             var pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
-            if (pipeline && controller.Draft.lights.Exists(x => x != null && x.enabled))
+            if (pipeline && (controller.Draft.lights.Exists(x => x != null && x.enabled) || controller.Draft.windows.Exists(x => x != null && x.enabled)))
             {
                 if (pipeline.additionalLightsRenderingMode != LightRenderingMode.PerPixel)
                     EditorGUILayout.HelpBox("현재 품질 설정은 추가 조명을 픽셀 단위로 처리하지 않습니다. 추가 조명/그림자가 제한될 수 있습니다. 공용 품질 설정은 자동 변경하지 않습니다.", MessageType.Warning);

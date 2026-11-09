@@ -9,6 +9,8 @@ using UnityEngine.UI;
 public class DamagePopupPresenter : MonoBehaviour
 {
     private const float NormalDamageIconScale = .65f;
+    // JC | 2026-11-06 | 회복 십자와 + 문자의 중복을 없애고 십자 크기·숫자 간격을 함께 80%로 줄입니다.
+    private const float HealIconScale = .8f;
     private static Sprite healCrossSprite;
     [SerializeField] private GameObject _popupPrefab;
     [SerializeField] private float _popupHeightOffset = 1.5f;
@@ -77,7 +79,8 @@ public class DamagePopupPresenter : MonoBehaviour
         }
         else if (result.IsHeal)
         {
-            label.text = $"+{result.Damage:F0}";
+            // JC | 2026-11-06 | 회복 표시는 십자로 구분하고 수치에는 +를 중복 표기하지 않습니다.
+            label.text = $"{result.Damage:F0}";
             label.color = Color.green;
         }
         else
@@ -86,7 +89,8 @@ public class DamagePopupPresenter : MonoBehaviour
             label.color = result.DamageReduced ? new Color(.25f,.55f,1f) : result.IsCritical ? new Color(1f, .48f, .08f) : new Color(1f, .16f, .12f);
         }
 
-        if (display != null && label != null) display.CenterNumberOverTarget(label, normalDamage ? NormalDamageIconScale : 1f);
+        // JC | 2026-11-06 | 숫자의 월드 앵커는 유지하고 회복 아이콘만 숫자에 가까이 배치합니다.
+        if (display != null && label != null) display.CenterNumberOverTarget(label, normalDamage ? NormalDamageIconScale : result.IsHeal && !result.IsMiss ? HealIconScale : 1f);
         var effect = instance.GetComponent<DamagePopupEffect>();
         if (effect != null) { effect.Follow(result.Target.transform); effect.Play(result.IsCritical); }
     }
@@ -149,7 +153,8 @@ public class DamagePopupPresenter : MonoBehaviour
         image.type = Image.Type.Simple; image.preserveAspect = true; image.raycastTarget = false;
         var rect = image.rectTransform;
         rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one * .5f;
-        rect.anchoredPosition = Vector2.zero; rect.sizeDelta = new Vector2(8, 8);
+        // JC | 2026-11-06 | 단일 십자 실루엣을 유지하면서 기존 8에서 6.4로 축소합니다.
+        rect.anchoredPosition = Vector2.zero; rect.sizeDelta = Vector2.one * (8 * HealIconScale);
         rect.localScale = Vector3.one;
         foreach (var shadow in image.GetComponents<Shadow>()) shadow.enabled = false;
     }

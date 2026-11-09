@@ -88,6 +88,9 @@ namespace JC.Tutorial
             visual = new GameObject("목표 표식 (자동 생성)") { hideFlags = HideFlags.HideAndDontSave, layer = gameObject.layer };
             visual.transform.SetParent(transform,false);
             material = new Material(indicatorShader) { hideFlags = HideFlags.HideAndDontSave };
+            // JC | 2026-11-06 | 불투명 단계의 깊이 기록이 이동 표식을 자르지 않도록 안내 메시를 마지막 월드 안내 순서로 옮깁니다.
+            // 닫힌 입체 메시의 자체 깊이 검사는 유지하고 말풍선·UI(3000)보다 먼저 그립니다.
+            material.renderQueue = JcIndicatorRenderOrder.GuidanceArrow;
             block = new MaterialPropertyBlock();
             floorMesh = new Mesh { name = "TutorialGoalFloor", hideFlags = HideFlags.HideAndDontSave };
             floorRenderer = Part("청색 지면 타일",floorMesh,visual.transform);

@@ -6,21 +6,8 @@ namespace JC.BattleTesting
 {
     // JC | 2026-11-05 | 실외 값의 배율이 아닌 은행 전용 절대값입니다. 낮밤·보스 프로필과 독립적으로 저장합니다.
     [CreateAssetMenu(menuName = "JC/전투/은행 실내 조명 프로필")]
-    public sealed class JcBankEnvironmentProfile : ScriptableObject
+    public sealed class JcBankEnvironmentProfile : JcIndoorEnvironmentProfile
     {
-        // JC | 2026-11-06 | 기존 은행 렌더러의 SSAO를 재사용합니다. 조절값은 이 프로필에 저장하고 렌더러 원본은 저장하지 않습니다.
-        [HideInInspector] public UnityEngine.Rendering.Universal.ScriptableRendererFeature ssaoFeature;
-        [Header("SSAO · 접촉 음영")]
-        [InspectorName("SSAO 사용"), Tooltip("은행의 틈·접점에 생기는 음영을 켜거나 끕니다. 본게임과 BankTestScene이 공유합니다.")]
-        public bool ssaoEnabled = true;
-        [InspectorName("SSAO 강도"), Range(0, 3), Tooltip("접촉 음영의 진하기입니다. 0이면 보이지 않으며 기존값은 0.8입니다.")]
-        public float ssaoIntensity = .8f;
-        [InspectorName("SSAO 반경"), Range(.02f, 2), Tooltip("주변 형상을 검사하는 범위입니다. 클수록 넓게 퍼지고 비용이 증가할 수 있습니다. 기존값은 0.65입니다.")]
-        public float ssaoRadius = .65f;
-        [InspectorName("SSAO 직접광 영향"), Range(0, 1), Tooltip("직접 조명을 받는 부분에도 음영을 얼마나 적용할지 정합니다. 기존값은 0.35입니다.")]
-        public float ssaoDirectLightingStrength = .35f;
-        [InspectorName("SSAO 절반 해상도"), Tooltip("음영을 가로·세로 절반 해상도로 계산합니다. 비용은 줄지만 작은 틈의 선명도가 낮아질 수 있습니다.")]
-        public bool ssaoDownsample;
         [Header("시간대와 무관한 실내 환경광")]
         [Tooltip("태양·하늘 대신 사용하는 고정 실내 간접광 색상입니다.")]
         [ColorUsage(false), InspectorName("실내 음영 색상")] public Color ambientColor = new Color(.65f, .68f, .73f);

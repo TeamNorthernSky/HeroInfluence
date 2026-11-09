@@ -25,14 +25,14 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _EdgeAlpha: 0.14
-    - _FaceAlpha: 0.05
-    - _Thickness: 0.06
-    - _IOR: 1.45
-    - _RefractionStrength: 1
-    - _Absorption: 2
-    - _ReflectionStrength: 0.1
-    - _ReflectionRoughness: 0.25
+    - _Absorption: 0.99
+    - _EdgeAlpha: 0.087
+    - _FaceAlpha: 0.09
+    - _IOR: 1.39
+    - _ReflectionRoughness: 0
+    - _ReflectionStrength: 0.699
+    - _RefractionStrength: 0.86
+    - _Thickness: 0.123
     m_Colors:
-    - _Tint: {r: 0.627451, g: 0.9411765, b: 1, a: 1}
+    - _Tint: {r: 0.346, g: 0.8364881, b: 1, a: 1}
   m_BuildTextureStacks: []

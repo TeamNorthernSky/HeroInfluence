@@ -213,60 +213,20 @@ namespace JC.BattleTesting
                     root.name.StartsWith("BGHouse", StringComparison.Ordinal) || root.name.StartsWith("BGStore", StringComparison.Ordinal) ||
                     root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
-            // JC | 2026-11-05 | 은행은 전용 실내 조명이 환경을 소유합니다. 보스·일반전의 기존 낮밤 경로는 유지합니다.
-            if (!bankSettings) JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bossBackground);
+            // JC | 2026-11-05 | 보스 원경은 실내 보정 대신 월드 조명으로 초기화하고 실내 수광은 별도로 유지합니다.
+            if(!bossBackground && !bankSettings) JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null);
             JC.EnvironmentDetail.JcBattleRoadMarkings.BindScene(scene);
             if (background != null) background.SetActive(true);
             if (clearTutorialArenaTrees) RemoveArenaTrees(scene);
             Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);
             battleCamera = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Camera>()).FirstOrDefault(c => c.CompareTag("MainCamera"));
             if (battleCamera == null) return;
-            bankSettings?.ApplyCamera(battleCamera);
+            // JC | 2026-11-09 | 통합: 렌더러는 공통 실내 조절기가 소유하고 기존 은행 카메라 연결·진형 이동은 보존합니다.
             // JC | 2026-11-06 | 본게임·BankTestScene의 동일 로딩 경로에서 기존 공용 연출기에 은행 구도만 전달합니다.
             // 카메라를 별도 Update에서 제어하지 않고 공격 진입·유지·복귀는 기존 연출기가 담당합니다.
             var bankPresentation = BattlePresentationController.FindInScene(scene);
             if (bankPresentation) bankPresentation.BankBackground = bankSettings;
             var roots = scene.GetRootGameObjects();
-            // JC | 2026-11-05 | 은행 전용 재질 조절기를 설치합니다. 보스전/일반전의 재질 연결은 유지합니다.
-            if (bankSettings && background)
-            {
-                var bankEnvironment = roots.FirstOrDefault(r => r.name == "JC_Environment");
-                if (!bankEnvironment)
-                {
-                    bankEnvironment = new GameObject("JC_Environment");
-                    SceneManager.MoveGameObjectToScene(bankEnvironment, scene);
-                }
-                // JC | 2026-11-06 | 은행 로딩 경로 한 곳에서 본게임·테스트가 같은 접점 프로필과 배경 좌표계를 사용합니다.
-                JC.Environment.JcContactShadingController contactShading = null;
-                if (bankSettings.contactShadingProfile)
-                {
-                    var controls = new GameObject("JC_ContactShading");
-                    controls.transform.SetParent(bankEnvironment.transform, false);
-                    contactShading = controls.AddComponent<JC.Environment.JcContactShadingController>();
-                    contactShading.Initialize(bankSettings.contactShadingProfile, background.transform);
-                }
-                if (bankSettings.materialProfile)
-                {
-                    var controls = new GameObject("JC_BankBackgroundMaterials");
-                    controls.transform.SetParent(bankEnvironment.transform, false);
-                    controls.AddComponent<JcBankBackgroundMaterials>().Initialize(background, bankSettings.materialProfile, contactShading, bankSettings.toonProfile ? bankSettings.toonProfile.surfaceShader : null);
-                }
-                // JC | 2026-11-05 | sceneLoaded 단계에서 실외 적용기를 중지하여 이후 Start가 실내 값을 덮지 않게 합니다.
-                if (bankSettings.environmentProfile)
-                {
-                    var controls = new GameObject("JC_BankEnvironment");
-                    controls.transform.SetParent(bankEnvironment.transform, false);
-                    controls.AddComponent<JcBankEnvironment>().Initialize(bankSettings.environmentProfile, background.transform);
-                }
-                else Debug.LogError("[JC Bank] 공유 실내 조명 프로필이 연결되지 않았습니다.", bankSettings);
-                // JC | 2026-11-06 | 툰 명암만 별도 조절합니다. 플레이어 후면 보조광은 위의 은행 환경 조명이 소유합니다.
-                if (bankSettings.toonProfile)
-                {
-                    var controls = new GameObject("JC_BankToon");
-                    controls.transform.SetParent(bankEnvironment.transform, false);
-                    controls.AddComponent<JcBankToonController>().Initialize(bankSettings.toonProfile);
-                }
-            }
             var player = roots.FirstOrDefault(r => r.name == "PlayerPlace");
             var enemies = roots.FirstOrDefault(r => r.name == "EnemyPlace");
             center = player != null && enemies != null ? (player.transform.position + enemies.transform.position) * .5f : Vector3.zero;
@@ -285,8 +245,7 @@ namespace JC.BattleTesting
             var bossSettings = bossBackground ? JcBossBattleBackground.Load() : null;
             // JC | 2026-11-05 | 유리·표면과 조명 조절기를 같은 환경 루트 아래에서 찾을 수 있게 합니다.
             GameObject bossEnvironmentRoot = null;
-            JcBossBackgroundMaterials bossMaterials = null;
-            if (bossSettings && background)
+            if ((bossSettings || bankSettings) && background)
             {
                 bossEnvironmentRoot = roots.FirstOrDefault(r => r.name == "JC_Environment");
                 if (!bossEnvironmentRoot)
@@ -295,23 +254,20 @@ namespace JC.BattleTesting
                     SceneManager.MoveGameObjectToScene(bossEnvironmentRoot, scene);
                 }
             }
-            if (bossSettings && bossSettings.glassProfile && background)
+            // JC | 2026-11-05 | 기존 실내 조절기가 기준 환경을 잡기 전에 도시 태양과 시간대를 설정합니다.
+            if(bossSettings && background){
+                var cityObject=new GameObject("JC_BossCityLighting");cityObject.transform.SetParent(bossEnvironmentRoot.transform,false);
+                cityObject.AddComponent<JcBossCityLighting>().Initialize(background.transform,bossSettings,lightingHour);
+            }
+            // JC | 2026-11-09 | 실제/테스트의 공용 진입에서 동일한 실내 조절 구조를 설치합니다.
+            // 원경은 위에서 먼저 초기화하고 은행/보스 저장 프로필은 각각 그대로 전달합니다.
+            if ((bossSettings || bankSettings) && background)
             {
-                var materials = new GameObject("JC_BossBackgroundMaterials");
-                materials.transform.SetParent(bossEnvironmentRoot.transform, false);
-                bossMaterials = materials.AddComponent<JcBossBackgroundMaterials>();
-                bossMaterials.Initialize(background, bossSettings.glassProfile, battleCamera, bossSettings.surfaceProfile);
+                var controls = new GameObject("JC_IndoorEnvironment");
+                controls.transform.SetParent(bossEnvironmentRoot.transform,false);
+                controls.AddComponent<JcIndoorEnvironment>().Initialize(background,battleCamera,bankSettings,bossSettings);
             }
             var bossCameraProfile = bossSettings ? bossSettings.cameraProfile : null;
-            // JC | 2026-11-05 | 공용 낮밤/유리 적용 이후에 보스 무대 전용 보정을 설치합니다. 일반 전투에는 생성하지 않습니다.
-            if (bossSettings && bossSettings.environmentProfile && background)
-            {
-                var controls = new GameObject("JC_BossEnvironment");
-                controls.transform.SetParent(bossEnvironmentRoot.transform, false);
-                var environment = controls.AddComponent<JcBossEnvironment>();
-                environment.Initialize(bossSettings.environmentProfile, background.transform);
-                if (bossMaterials) bossMaterials.Environment = environment;
-            }
             if (bossCameraProfile)
             {
                 var controls = new GameObject("JC_BossCamera");
