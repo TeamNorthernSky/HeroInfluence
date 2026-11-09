@@ -492,7 +492,58 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         return targets;
     }
 
-    // 씬 오브젝트를 그대로 표시하며 위치·크기·문자 설정을 덮어쓰지 않는다.
+    // JC | 2026-11-09 | 홍보는 일반 줄간격을 유지하고 문장 간격만 현재의 1.2배로 확대합니다. 경계의 중복 합산은 하지 않습니다.
+    // 원래 배치를 보관해 재표시 때 누적 확대하지 않고, 늘어난 본문 높이만큼 박스·하단 힌트를 함께 조절합니다.
+    private readonly Dictionary<Step, MessagePresentation> spacingLayouts = new Dictionary<Step, MessagePresentation>();
+    private void FitPublicitySpacing(Step step)
+    {
+        if (messageText == null || messageBackground == null) return;
+        if (!spacingLayouts.TryGetValue(step, out var original))
+        {
+            original = new MessagePresentation {
+                message = ElementPresentation.Capture(messageText.rectTransform, messageText),
+                hint = hintText != null ? ElementPresentation.Capture(hintText.rectTransform, hintText) : null,
+                background = ElementPresentation.Capture(messageBackground)
+            };
+            spacingLayouts.Add(step, original);
+        }
+        // 큰 줄간격을 자동 글자 축소로 상쇄하지 않도록 기존 기준 크기를 유지합니다.
+        messageText.enableAutoSizing = false;
+        messageText.fontSize = original.message.autoSize ? original.message.fontSizeMax : original.message.fontSize;
+        JC.Tutorial.JcTutorialGuideView.ApplyBodyLineSpacing(messageText, 2f, 1f);
+        JC.Tutorial.JcTutorialGuideView.BindSentenceSpacing(messageText, false, 2f, 1.2f);
+        float extra = Mathf.Max(0, Mathf.Ceil(messageText.preferredHeight) + 8 - original.message.size.y);
+        messageText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, original.message.size.y + extra);
+        messageBackground.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, original.background.size.y + extra);
+        messageBackground.anchoredPosition = original.background.position;
+        if (hintText != null && original.hint != null)
+        {
+            hintText.rectTransform.anchoredPosition = original.hint.position + Vector2.down * (extra * .5f);
+            // JC | 2026-11-09 | 높이가 낮은 조작 단계도 본문과 하단 힌트 사이 24, 박스 끝 32의 여백을 확보합니다.
+            var bodyCorners = new Vector3[4]; messageText.rectTransform.GetWorldCorners(bodyCorners);
+            float bodyBottom = messageBackground.InverseTransformPoint(bodyCorners[0]).y;
+            hintText.rectTransform.GetWorldCorners(bodyCorners);
+            float hintTop = messageBackground.InverseTransformPoint(bodyCorners[1]).y;
+            float shift = Mathf.Min(0, bodyBottom - 24 - hintTop);
+            hintText.rectTransform.position += messageBackground.TransformVector(new Vector3(0, shift, 0));
+            hintText.rectTransform.GetWorldCorners(bodyCorners);
+            float hintBottom = messageBackground.InverseTransformPoint(bodyCorners[0]).y;
+            float missing = Mathf.Max(0, messageBackground.rect.yMin + 32 - hintBottom);
+            messageBackground.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, messageBackground.rect.height + missing * 2);
+        }
+
+        // JC | 2026-11-09 | 커진 안내가 화면 위/아래로 빠지는 경우에만 기존 Canvas 안으로 이동합니다.
+        var canvas = messageBackground.GetComponentInParent<Canvas>();
+        var canvasRect = canvas != null ? canvas.rootCanvas.transform as RectTransform : null;
+        if (canvasRect == null) return;
+        var corners = new Vector3[4]; messageBackground.GetWorldCorners(corners);
+        float bottom = canvasRect.InverseTransformPoint(corners[0]).y;
+        float top = canvasRect.InverseTransformPoint(corners[1]).y;
+        float delta = top > canvasRect.rect.yMax - 20 ? canvasRect.rect.yMax - 20 - top :
+            bottom < canvasRect.rect.yMin + 20 ? canvasRect.rect.yMin + 20 - bottom : 0;
+        messageBackground.position += canvasRect.TransformVector(new Vector3(0, delta, 0));
+    }
+
     private void PrepareMessage(GameObject panel, Step step)
     {
         messageBackground = step.messageBox;
@@ -521,7 +572,11 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
             graphic.SetGrayscaleFill(true);
             graphic.SetOpaqueFill(true);
         }
-        if (messageText != null) messageText.color = new Color(.94f, .94f, .94f, 1f);
+        if (messageText != null)
+        {
+            messageText.color = new Color(.94f, .94f, .94f, 1f);
+            FitPublicitySpacing(step);
+        }
         if (hintText != null) hintText.color = new Color(.72f, .72f, .72f, 1f);
     }
 
