@@ -914,6 +914,11 @@ public sealed partial class SkillPresentationDirector
             yield break;
         }
 
+        // 파동탄 복귀 상체 관절과 골반 회전은 Idle 첫 프레임에 맞춰 같은 위상으로 복귀한다.
+        // 마지막 Timeline 클립은 상체 연출에 따라 바뀔 수 있으므로 클립 이름으로 판별하지 않는다.
+        bool isUmtWave = presentation.SkillIndex == 200051 &&
+                         actor.PresentationIndex == "20005" && sectionId == null;
+
         List<PlanMoveSpan> moveSpans = CollectPlanMoveSpans(timeline, 1);
         List<PlanReturnSpan> returnSpans = CollectPlanReturnSpans(timeline);
         TimelineMovingAttackSpan movingAttackSpan = movingAttackPoints.HasValue && presentation.MovingAttack != null
@@ -1075,6 +1080,8 @@ public sealed partial class SkillPresentationDirector
         bool stopped = false;
         void OnStopped(PlayableDirector d) => stopped = true;
         director.stopped += OnStopped;
+        UmtWaveLeftFootPlant waveFootPlant = null;
+        bool completedNormally = false;
 
         // 피격/사망 인터럽트: 반응 CrossFade가 Timeline 포즈를 덮기 전에 director를 '동기' 정지시킨다.
         // (플래그만 세우면 PlayableDirector가 같은/다음 프레임에 한 번 더 Evaluate해 Hit/Dead를 덮어쓴다.)
@@ -1084,6 +1091,7 @@ public sealed partial class SkillPresentationDirector
         {
             if (reason == PresentationInterruptReason.None) return;
             interrupt = reason;
+            waveFootPlant?.End();
             if (director != null) director.Stop();
         }
         if (actor != null) actor.PresentationInterruptRequested += OnInterrupt;
@@ -1108,11 +1116,23 @@ public sealed partial class SkillPresentationDirector
                 }
             }
 
+            if (isUmtWave && returnActorToIdle && actor != null &&
+                actor.Anim?.Animator != null)
+            {
+                Animator animator = actor.Anim.Animator;
+                waveFootPlant = actor.GetComponent<UmtWaveLeftFootPlant>();
+                if (waveFootPlant == null)
+                    waveFootPlant = actor.gameObject.AddComponent<UmtWaveLeftFootPlant>();
+                // Timeline의 첫 포즈를 쓰기 전에 현재 Idle의 발 위치를 저장한다.
+                waveFootPlant.Begin(animator);
+            }
+
             director.Play();
             // Play()가 정지 상태의 Director 시간을 초기화할 수 있으므로 그래프를 먼저 연 뒤
             // 구간 시작점으로 이동한다. 범위 밖 Retroactive Marker는 receiver가 차단한다.
             director.time = playbackRange.Start;
             director.Evaluate();
+            waveFootPlant?.ApplyPose();
             // Animator 레일의 AttackPrepare 시작 훅과 같은 시점: 부활 대기가 있으면 재생 시작에서 확정한다(멱등).
             // revive 이펙트는 Timeline의 revive 마커가 발화한다.
             if (_battle.HasPendingRevive) _battle.TriggerPendingRevive();
@@ -1166,12 +1186,26 @@ public sealed partial class SkillPresentationDirector
                         movingAttackSpan.End.time);
                 SnapUnfinishedPlanReturns(actor, returnSpans, origin, originRotation);
             }
+            completedNormally = true;
         }
         finally
         {
             if (actor != null) actor.PresentationInterruptRequested -= OnInterrupt;
             director.stopped -= OnStopped;
+            if (isUmtWave && returnActorToIdle && actor != null &&
+                !actor.IsDead && interrupt == PresentationInterruptReason.None)
+            {
+                // 끝 경계를 넘어 자동 정지한 그래프의 포즈 대신 마지막 유효 프레임을 남긴다.
+                director.time = Math.Max(playbackRange.Start, playbackRange.End - 0.0002d);
+                director.Evaluate();
+                waveFootPlant?.ApplyPose();
+                waveFootPlant?.CaptureReturnPose();
+            }
             director.Stop();               // 그래프 정리
+            waveFootPlant?.ApplyPose();
+            if (!completedNormally || !returnActorToIdle || actor == null || actor.IsDead ||
+                interrupt != PresentationInterruptReason.None)
+                waveFootPlant?.End();
             director.playableAsset = null; // 다음 재생을 위해 바인딩 해제
             if (footGrounding != null) footGrounding.Release();
             // 그래프 해제 시 AnimationTrack의 마지막 루트 포즈가 다시 기록될 수 있다.
@@ -1190,7 +1224,21 @@ public sealed partial class SkillPresentationDirector
         // 인터럽트와 무관하게 계속 진행해 '커밋된 공격은 1회 확정' 규칙을 지킨다.
         if (returnActorToIdle && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
         {
-            actor.Anim?.PlayIdleAnimation();
+            if (isUmtWave)
+            {
+                try
+                {
+                    actor.Anim?.PlayIdleAnimationAtNormalizedTime(0f);
+                    waveFootPlant?.ReleaseToIdle(0.16f);
+                }
+                catch
+                {
+                    waveFootPlant?.End();
+                    throw;
+                }
+            }
+            else
+                actor.Anim?.PlayIdleAnimation();
         }
 
         // ChainLightning: 마커에서 VFX가 시작됐으면 주 타깃 도달까지 기다린다(도달 시 ResolveHit).

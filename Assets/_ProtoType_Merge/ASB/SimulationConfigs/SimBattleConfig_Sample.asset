@@ -37,6 +37,6 @@ MonoBehaviour:
     WeaponKey: HC005
     SkillIndex: 3010
     HpRatio: 1
-  enemyGroupKey: BE121
+  enemyGroupKey: BE161
   eventZoneId: 1
   enemyLevel: 2

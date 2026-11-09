@@ -5,6 +5,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
+using UnityEngine.Timeline;
 
 namespace ASB.Work.EditorTools.Jig
 {
@@ -27,6 +28,7 @@ namespace ASB.Work.EditorTools.Jig
 
         private static GameObject _instance;
         private static PlayableDirector _director;
+        private static UmtWaveLeftFootPlant _waveFootPlant;
 
         /// <summary>
         /// 프리뷰 인스턴스를 만들기 직전 씬이 깨끗했는지. 정리 후 dirty 표시를 되돌리는 데 쓴다.
@@ -52,6 +54,9 @@ namespace ASB.Work.EditorTools.Jig
 
             EditorApplication.quitting -= DestroyInstance;
             EditorApplication.quitting += DestroyInstance;
+
+            EditorApplication.update -= ApplyWaveFootPreview;
+            EditorApplication.update += ApplyWaveFootPreview;
 
             // 이전 세션에서 새어 나온 잔여물 정리(도메인 리로드 중 훅이 못 돈 경우 대비).
             EditorApplication.delayCall += DestroyStrays;
@@ -96,6 +101,11 @@ namespace ASB.Work.EditorTools.Jig
                 return null;
             }
 
+            // Timeline 창의 에디트 모드 프리뷰는 렌더러가 화면 밖으로 판정될 수 있다.
+            // CullUpdateTransforms에서는 Root만 갱신되고 Humanoid 다리 관절이 멈추므로,
+            // 저장되지 않는 프리뷰 인스턴스에서만 항상 애니메이션을 평가한다.
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+
             // Timeline 프리뷰가 클립을 평가하면 AniEvent_* 이벤트가 실제로 디스패치된다.
             // 프리뷰 인스턴스에는 수신기가 없어 Unity가 "has no receiver!" 경고를 매 이벤트마다 낸다.
             //
@@ -126,8 +136,40 @@ namespace ASB.Work.EditorTools.Jig
             return _instance != null ? _instance.GetComponentInChildren<Animator>(true) : null;
         }
 
+        /// <summary>UMT 파동탄의 Jig 재생과 Timeline 창 스크러빙에 런타임과 같은 발 고정을 적용한다.</summary>
+        public static void ApplyWaveFootPreview()
+        {
+            if (_instance == null || _director == null || Application.isPlaying) return;
+            if (!(_director.playableAsset is TimelineAsset timeline) ||
+                timeline.name != "Skill200051_20005")
+            {
+                _waveFootPlant?.End();
+                _waveFootPlant = null;
+                return;
+            }
+
+            if (_waveFootPlant == null)
+            {
+                Animator animator = ResolveAnimator();
+                if (animator == null) return;
+                double time = _director.time;
+                _director.time = 0d;
+                _director.Evaluate();
+                _waveFootPlant = _instance.GetComponent<UmtWaveLeftFootPlant>();
+                if (_waveFootPlant == null)
+                    _waveFootPlant = _instance.AddComponent<UmtWaveLeftFootPlant>();
+                _waveFootPlant.Begin(animator);
+                _director.time = time;
+                _director.Evaluate();
+            }
+
+            _waveFootPlant.ApplyPose();
+        }
+
         public static void DestroyInstance()
         {
+            _waveFootPlant?.End();
+            _waveFootPlant = null;
             // 슬로우 재생이 돌고 있으면 먼저 멈춘다(EditorApplication.update 구독 해제). 네 정리 훅이 모두 이 함수를 지난다.
             JigPreviewPlayback.Stop();
 
