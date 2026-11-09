@@ -275,6 +275,8 @@ namespace JC.BattleTesting
         private BattleResult finalizedResult;
         private string modalMessage;
         private bool modalConfirmed, resultModal, restarting;
+        // JC | 2026-11-09 | 결과음 때문에 정지한 곡만 기억하여 씬 재로드 없는 테스트 재시작 때 복구합니다.
+        private string resultStoppedBgmKey;
         private float savedTimeScale = 1;
         private IDisposable modalLock;
 
@@ -455,6 +457,13 @@ namespace JC.BattleTesting
             foreach (var unit in runtimeUnits) execution.ApplyBattleSpeedToUnit(unit);
             Status = appliedPreset.IsEventBattle ? "전투 진행 중 / " + appliedPreset.encounterKey : "전투 진행 중 / 페이즈 " + Rules.Phase;
             restarting = false;
+            // JC | 2026-11-09 | 새 참가자 구성이 끝난 뒤 기존 곡을 재개합니다. 최초 실행·원래 BGM이 없던 경우에는 새 곡을 강제하지 않습니다.
+            var audio = AudioManager.Instance;
+            if (audio != null && !string.IsNullOrEmpty(resultStoppedBgmKey))
+            {
+                audio.PlayBgm(resultStoppedBgmKey);
+                resultStoppedBgmKey = null;
+            }
             flow.StartBattleLoop();
         }
 
@@ -642,6 +651,13 @@ namespace JC.BattleTesting
         // JC | 2026-11-04 | 탐사 복귀가 없는 테스트 세션에서는 결과창을 여는 시점에 승패음을 재생합니다.
         private void BattleEnded(BattleResult result)
         {
+            // JC | 2026-11-09 | 본게임과 동일하게 승패음 직전에만 BGM을 정지하고, 테스트 초기화용 재생 키를 보관합니다.
+            if (result == BattleResult.Victory || result == BattleResult.Defeat)
+            {
+                var audio = AudioManager.Instance;
+                resultStoppedBgmKey = audio != null ? audio.CurrentBgmKey : null;
+                audio?.StopBgm();
+            }
             // 테스트는 탐사 복귀/보상 지급이 없으므로 종료창에서 승패음을 확인합니다.
             if (result == BattleResult.Victory) PresentationSfxPlayer.Play("BattleEnd_Victory");
             else if (result == BattleResult.Defeat) PresentationSfxPlayer.Play("BattleEnd_Defeat");

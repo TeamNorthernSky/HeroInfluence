@@ -81,7 +81,12 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
         BattleResultView view = GetComponent<BattleResultView>();
         if (view == null) return;
-        if (result == BattleResult.Victory) PresentationSfxPlayer.Play("BattleEnd_Victory");
+        if (result == BattleResult.Victory)
+        {
+            // JC | 2026-11-09 | 기존 결과창 표시 시점에 BGM만 먼저 정지하여 승리음과 겹치지 않게 합니다. 음량·음소거 설정은 보존합니다.
+            AudioManager.Instance?.StopBgm();
+            PresentationSfxPlayer.Play("BattleEnd_Victory");
+        }
 
         if (view.resultTitle != null)
         {

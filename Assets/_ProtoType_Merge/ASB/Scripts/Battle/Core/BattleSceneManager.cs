@@ -380,7 +380,12 @@ public class BattleSceneManager : MonoBehaviour
         Debug.Log($"[BattleSceneManager] TransitionTo target='{target}' returnSceneName='{returnSceneName}' instanceOk={GameSceneManager.Instance != null} fadeOk={SceneFadeController.Instance != null}");
         // [JC 260513] SceneFadeController 영속(GameManager 자식). 없으면 직접 LoadScene fallback.
         SceneFadeController fade = SceneFadeController.Instance;
-        if (defeat) PresentationSfxPlayer.Play("BattleEnd_Defeat");
+        if (defeat)
+        {
+            // JC | 2026-11-09 | 패배음 직전에 전투 BGM을 정지합니다. 연출 대기·보상 처리·탐사 복귀 순서는 그대로 유지합니다.
+            AudioManager.Instance?.StopBgm();
+            PresentationSfxPlayer.Play("BattleEnd_Defeat");
+        }
         if (fade != null)
             fade.FadeToScene(target, fadeOutDuration, fadeInDuration);
         // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.

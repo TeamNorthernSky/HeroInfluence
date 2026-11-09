@@ -238,7 +238,8 @@ public class SkillButtonController : MonoBehaviour
                     // '+' 변형은 별도 스킬 ID이며 협회 강화 단계와 혼용하지 않습니다.
                     slot.icon.sprite = shown != null ? Sprites.Icon.ClassSkill(shown.skillIndex, 1) : null;
                     slot.icon.enabled = slot.icon.sprite != null;
-                    JC.BattleTesting.JcBattleHudLayout.FitMaskedArt(slot.icon);
+                    // JC | 2026-11-09 | 일반·튜토리얼의 스킬 교체 때도 원본 전체와 프레임 안쪽 여백을 유지합니다.
+                    JC.BattleTesting.JcBattleHudLayout.FitSkillIcon(slot.icon);
                 }
                 if (slot.lockedFace != null) slot.lockedFace.SetActive(locked);
                 if (slot.lockedOverlay != null) slot.lockedOverlay.SetActive(locked);

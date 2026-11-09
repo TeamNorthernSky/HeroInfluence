@@ -5,11 +5,14 @@ using UnityEngine.SceneManagement;
 
 namespace JC.Indicators
 {
-    // JC | 2026-11-09 | 이벤트 등록부/프리팹을 바꾸지 않고 실제 메시 깊이와 채움 보호 깊이를 별도 기록합니다.
-    // 카메라 깊이·Sorting Layer·Order·렌더 큐는 쓰지 않으며, 임시 아이콘 재질은 해제 시 복원합니다.
+    // JC | 2026-11-09 | 등록부/프리팹을 바꾸지 않고 메시 소속·깊이·채움 보호를 기록해 자기 이벤트만 가림에서 제외합니다.
+    // 카메라 깊이·Sorting Layer·Order·렌더 큐는 변경하지 않으며, 임시 아이콘 재질은 해제 시 복원합니다.
     internal sealed class JcTriggerMeshVisibility
     {
-        private sealed class Marker { internal SpriteRenderer renderer; internal Material original, copy; internal bool occlusion; }
+        // JC | 2026-11-09 | 느낌표마다 소속 이벤트를 구분합니다. 배경/다른 이벤트는 가림 예외가 아닙니다.
+        private sealed class Marker { internal SpriteRenderer renderer; internal Material original, copy; internal bool occlusion; internal int ownerId; }
+        private static int nextOwnerId;
+        private readonly Dictionary<Renderer, int> meshOwners = new Dictionary<Renderer, int>();
         private readonly Dictionary<SpriteRenderer, Marker> markers = new Dictionary<SpriteRenderer, Marker>();
         private readonly HashSet<SpriteRenderer> currentMarkers = new HashSet<SpriteRenderer>();
         private readonly List<SpriteRenderer> removed = new List<SpriteRenderer>();
@@ -27,7 +30,7 @@ namespace JC.Indicators
         internal void Collect(IReadOnlyList<InteractionOverlayCell> cells, Scene scene)
         {
             if (!shader) shader = Resources.Load<Shader>("JcTriggerMeshVisibility");
-            protectedMeshes.Clear(); currentMarkers.Clear();
+            protectedMeshes.Clear(); currentMarkers.Clear(); meshOwners.Clear();
             var owners = new HashSet<Component>();
             foreach (var cell in cells) if (cell.Owner is Component owner && owner) owners.Add(owner);
             foreach (var owner in owners)
@@ -40,14 +43,20 @@ namespace JC.Indicators
                 var sprite = slot ? slot.GetComponent<SpriteRenderer>() : null;
                 if (!sprite || !sprite.sharedMaterial || !shader) continue;
                 currentMarkers.Add(sprite);
-                if (markers.ContainsKey(sprite)) continue;
-                var original = sprite.sharedMaterial;
-                var copy = new Material(shader) { name = original.name + " (이벤트 메시 가림 제외)", hideFlags = HideFlags.HideAndDontSave,
-                    renderQueue = original.renderQueue };
-                copy.CopyMatchingPropertiesFromMaterial(original);
-                markers.Add(sprite, new Marker { renderer = sprite, original = original, copy = copy, occlusion = sprite.allowOcclusionWhenDynamic });
-                sprite.sharedMaterial = copy;
-                sprite.allowOcclusionWhenDynamic = false;
+                if (!markers.TryGetValue(sprite, out var marker))
+                {
+                    var original = sprite.sharedMaterial;
+                    var copy = new Material(shader) { name = original.name + " (소속 이벤트만 가림 제외)", hideFlags = HideFlags.HideAndDontSave,
+                        renderQueue = original.renderQueue };
+                    copy.CopyMatchingPropertiesFromMaterial(original);
+                    marker = new Marker { renderer = sprite, original = original, copy = copy, occlusion = sprite.allowOcclusionWhenDynamic, ownerId = ++nextOwnerId };
+                    markers.Add(sprite, marker);
+                    copy.SetFloat("_JcMarkerOwner", marker.ownerId);
+                    sprite.sharedMaterial = copy;
+                    sprite.allowOcclusionWhenDynamic = false;
+                }
+                foreach (var r in owner.GetComponentsInChildren<Renderer>(true))
+                    if (protectedMeshes.Contains(r)) meshOwners[r] = marker.ownerId;
             }
             removed.Clear();
             foreach (var pair in markers) if (!pair.Key || !currentMarkers.Contains(pair.Key)) removed.Add(pair.Key);
@@ -66,7 +75,7 @@ namespace JC.Indicators
             }
         }
 
-        internal void Draw(CommandBuffer cmd, Camera camera)
+        internal void Draw(CommandBuffer cmd, Camera camera, string passName)
         {
             if (!shader || (markers.Count == 0 && protectedMeshes.Count == 0)) return;
             if (block == null) { block = new MaterialPropertyBlock(); slotBlock = new MaterialPropertyBlock(); }
@@ -103,14 +112,28 @@ namespace JC.Indicators
                     copy.SetFloat("_MeshCutoff", source.IsKeywordEnabled("_ALPHATEST_ON") && source.HasProperty("_Cutoff") ? source.GetFloat("_Cutoff") : .001f);
                     // 재질을 공유하는 다른 메시도 있으므로 역할 값은 DrawRenderer 직전에 명령으로 기록합니다.
                     cmd.SetGlobalVector("_JcMeshDepthRoles", new Vector4(worldDepth ? 1 : 0, protect ? 1 : 0, 0, 0));
-                    cmd.DrawRenderer(r, copy, slot, copy.FindPass("WorldMeshDepth"));
+                    cmd.SetGlobalFloat("_JcMeshOwner", meshOwners.TryGetValue(r, out int ownerId) ? ownerId : 0);
+                    cmd.DrawRenderer(r, copy, slot, copy.FindPass(passName));
                 }
+            }
+        }
+        // JC | 2026-11-09 | 실제 표시와 같은 알파/가림 판정으로 호버 윤곽선에서 보호할 픽셀만 기록합니다.
+        internal void DrawMarkerCoverage(CommandBuffer cmd, Camera camera)
+        {
+            GeometryUtility.CalculateFrustumPlanes(camera, frustum);
+            foreach (var marker in markers.Values)
+            {
+                var r = marker.renderer;
+                if (!r || !r.enabled || r.forceRenderingOff || !r.gameObject.activeInHierarchy ||
+                    r.sharedMaterial != marker.copy || (camera.cullingMask & (1 << r.gameObject.layer)) == 0 ||
+                    !GeometryUtility.TestPlanesAABB(frustum, r.bounds)) continue;
+                cmd.DrawRenderer(r, marker.copy, 0, marker.copy.FindPass("MarkerCoverage"));
             }
         }
         internal void Clear()
         {
             foreach (var marker in markers.Values) Restore(marker);
-            markers.Clear(); protectedMeshes.Clear(); worldMeshes.Clear();
+            markers.Clear(); protectedMeshes.Clear(); worldMeshes.Clear(); meshOwners.Clear();
             foreach (var m in depthCopies.Values) Destroy(m);
             depthCopies.Clear(); nextScan = 0;
         }
