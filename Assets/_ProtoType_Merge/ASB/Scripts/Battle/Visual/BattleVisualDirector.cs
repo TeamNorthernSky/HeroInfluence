@@ -68,6 +68,18 @@ public class BattleVisualDirector : MonoBehaviour
     [SerializeField] private HitCameraPunchSettings _defaultHitCameraPunch = HitCameraPunchSettings.DefaultOff;
     [Tooltip("켜면 아군이 적을 때릴 때만 타격 카메라 줌을 넣습니다.")]
     [SerializeField] private bool _hitCameraPunchPlayerAttacksOnly;
+    [Header("타격 카메라 흔들림")]
+    [SerializeField] private bool _enableHitCameraShake = true;
+    [SerializeField, Min(0f)] private float _hitCameraShakeStrength = .045f;
+    [SerializeField, Min(0f)] private float _hitCameraShakeSeconds = .12f;
+    [Tooltip("저스티스 스킬 타격의 흔들림 강도 배율입니다.")]
+    [SerializeField, Min(0f)] private float _justiceShakeMultiplier = 2f;
+    [Tooltip("저스티스 크래쉬(기본·강화)의 흔들림 강도 배율입니다.")]
+    [SerializeField, Min(0f)] private float _justiceCrashShakeMultiplier = 3f;
+    [Tooltip("빌런 공격 전체의 흔들림 강도 배율입니다.")]
+    [SerializeField, Min(0f)] private float _villainShakeMultiplier = 2f;
+    private float _lastHitCameraShakeAt = float.NegativeInfinity;
+    private CameraShakeEffect _hitCameraShake;
     [Header("공통 피격 이펙트")]
     [InspectorName("공통 피격 이펙트 사용"), SerializeField] private bool _enableCommonHitEffect = true;
     [Tooltip("비어 있으면 BattleEffects/FX_Common_Hit_Basic를 공통으로 사용합니다.")]
@@ -298,6 +310,7 @@ public class BattleVisualDirector : MonoBehaviour
             PlayJusticeHitEffect(result);
         }
         PlayHitCameraPunch(actor, result);
+        PlayHitCameraShake(actor, result);
         if (_lastMarkerActor == actor && _lastMarkerTarget == result.Target &&
             Time.unscaledTime - _lastMarkerTime < 0.15f) return;
         SkillPresentationData presentation = GetPresentation(result.SkillIndex);
@@ -334,6 +347,31 @@ public class BattleVisualDirector : MonoBehaviour
         punch.Punch(settings, BattleRuntimeSettings.BattleSpeed);
     }
 
+    private void PlayHitCameraShake(BattleCharactor actor, BattleHitResult result)
+    {
+        if (!_enableHitCameraShake || _hitCameraShakeStrength <= 0f || _hitCameraShakeSeconds <= 0f ||
+            Time.unscaledTime - _lastHitCameraShakeAt < .1f) return;
+        _hitCameraShake = CameraShakeEffect.ForCamera(Camera.main);
+        if (_hitCameraShake == null) return;
+        _lastHitCameraShakeAt = Time.unscaledTime;
+        float speed = Mathf.Max(.01f, BattleRuntimeSettings.BattleSpeed);
+        float strength = _hitCameraShakeStrength;
+        float seconds = _hitCameraShakeSeconds;
+        int family = HeroSkillRules.FamilyId(result.SkillIndex);
+        if (actor != null && actor.PresentationIndex == "10001" && family >= 1010 && family <= 1040)
+        {
+            bool crash = family == 1040;
+            strength *= crash ? _justiceCrashShakeMultiplier : _justiceShakeMultiplier;
+            seconds *= crash ? 2f : 1.5f;
+        }
+        else if (actor != null && !actor.IsPlayer)
+        {
+            strength *= _villainShakeMultiplier;
+            seconds *= 1.5f;
+        }
+        _hitCameraShake.PlayNoise(this, strength, seconds / speed);
+    }
+
     private void AddStoppedAnimation(BattleCharactor unit, float speed)
     {
         if (unit == null) return;
@@ -368,6 +406,9 @@ public class BattleVisualDirector : MonoBehaviour
 
     private void OnDisable()
     {
+        if (_hitCameraShake != null) _hitCameraShake.CancelImpact(this);
+        _hitCameraShake = null;
+        _lastHitCameraShakeAt = float.NegativeInfinity;
         _sharedHitKeys.Clear();
         _hitReactionKeys.Clear();
         foreach (Renderer renderer in _bodyFlashes.Keys) SetBodyFlash(renderer, 0f);
