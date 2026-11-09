@@ -4,7 +4,8 @@ using UnityEngine;
 public sealed class TitleExplosionSfx : MonoBehaviour
 {
     private const string SfxKey = "Title_Explore";
-    private const float PlaybackSeconds = 1f;
+    private const float PlaybackSeconds = 3.3f;
+    private const float BgmDelaySeconds = 1f;
     private bool played;
     private AudioManager audioManager;
     private string sceneName;
@@ -24,18 +25,19 @@ public sealed class TitleExplosionSfx : MonoBehaviour
 
         played = true;
         if (audioManager == null) audioManager = AudioManager.Instance;
-        if (audioManager != null && !audioManager.PlaySfxForDuration(SfxKey, PlaybackSeconds, FinishExplosionSfx))
-            FinishExplosionSfx();
+        audioManager?.PlaySfxForDuration(SfxKey, PlaybackSeconds);
+        StartCoroutine(StartBgmAfterDelay());
     }
 
-    private void FinishExplosionSfx()
+    private System.Collections.IEnumerator StartBgmAfterDelay()
     {
-        if (this != null && isActiveAndEnabled)
-            audioManager?.ResumeSceneBgm(sceneName);
+        yield return new WaitForSecondsRealtime(BgmDelaySeconds);
+        audioManager?.ResumeSceneBgm(sceneName);
     }
 
     private void OnDisable()
     {
+        StopAllCoroutines();
         audioManager?.ResumeSceneBgm(sceneName, false);
     }
 }
