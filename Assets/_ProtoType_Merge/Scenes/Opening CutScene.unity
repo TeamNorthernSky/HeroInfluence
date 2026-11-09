@@ -1696,7 +1696,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AspectMode: 0
-  m_AspectRatio: 1.5
+  m_AspectRatio: 1.4996545
 --- !u!1 &1156429489
 GameObject:
   m_ObjectHideFlags: 0
@@ -2098,12 +2098,12 @@ PrefabInstance:
     - target: {fileID: 5265586885921949782, guid: 56ae27ccde5eaa24697e32307deacac4,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 248
+      value: 240
       objectReference: {fileID: 0}
     - target: {fileID: 5265586885921949782, guid: 56ae27ccde5eaa24697e32307deacac4,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 76
+      value: 66
       objectReference: {fileID: 0}
     - target: {fileID: 5265586885921949782, guid: 56ae27ccde5eaa24697e32307deacac4,
         type: 3}
