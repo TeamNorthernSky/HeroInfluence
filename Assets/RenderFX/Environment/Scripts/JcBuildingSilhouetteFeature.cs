@@ -228,6 +228,8 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
         public void Setup(bool enabled, JcBuildingSilhouetteSettings tuning, Camera camera)
         {
             orbit = Vector4.zero;
+            // JC | 2026-11-06 | 튜토리얼은 회전광 범위를 설정하지 않으므로 이전 호버 대상의 범위가 외곽선을 자르지 않게 초기화합니다.
+            orbitBounds = Vector4.zero;
             edgeSmoothing = 0;
             tuningVector = new Vector4(enabled ? 1f : 0f, tuning.opacity, tuning.depthBias, tuning.outlineWidth);
             fill = QualitySettings.activeColorSpace == ColorSpace.Linear ? tuning.fillColor.linear : tuning.fillColor;

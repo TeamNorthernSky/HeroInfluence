@@ -9,18 +9,21 @@ namespace JC.Indicators
     internal static class JcTriggerAreaDepth
     {
         // JC | 2026-11-04 | 테두리 자체 깊이와 지형 종류별 깊이를 분리해 장면 깊이를 오염시키지 않습니다.
-        private sealed class Buffer { internal Camera camera; internal RenderTexture texture, occluders, owners; }
+        // JC | 2026-11-09 | R=월드 메시 깊이, G=이벤트 내부 메시 보호 깊이를 별도 보관합니다.
+        private sealed class Buffer { internal Camera camera; internal RenderTexture texture, occluders, owners, meshes; }
         // JC | 2026-11-05 | 깊이가 같은 윤곽선은 DH 우선순위, 소유자, 부위, 렌더러 순으로 한 번만 선택합니다.
         internal sealed class Border
         {
             internal readonly MeshRenderer renderer;
             internal readonly Material material;
-            internal readonly int ownerId, part, rendererId;
+            internal readonly int ownerId, part, rendererId, regionId;
             internal int priority;
-            internal Border(MeshRenderer renderer, Material material, int ownerId, int part)
+            internal Border(MeshRenderer renderer, Material material, int ownerId, int part, int regionId)
             {
                 this.renderer = renderer; this.material = material; this.ownerId = ownerId; this.part = part;
                 rendererId = renderer ? renderer.GetInstanceID() : 0;
+                // JC | 2026-11-06 | 같은 영역의 본체·보조선은 픽셀 소유권을 공유하고 실제 앞뒤 가림은 깊이로 판정합니다.
+                this.regionId = regionId;
             }
         }
         private static readonly List<Border> borders = new List<Border>();
@@ -46,7 +49,7 @@ namespace JC.Indicators
             if (controllers.Count != 0) return;
             RenderPipelineManager.beginCameraRendering -= PrepareBorders;
             Shader.SetGlobalFloat(activeId, 0);
-            foreach (var buffer in buffers.Values) { Release(buffer.texture); Release(buffer.occluders); Release(buffer.owners); }
+            foreach (var buffer in buffers.Values) { Release(buffer.texture); Release(buffer.occluders); Release(buffer.owners); Release(buffer.meshes); }
             buffers.Clear();
         }
         // JC | 2026-11-05 | URP가 렌더러 속성을 수집하기 전에 표시 순서만 전달합니다.
@@ -59,11 +62,15 @@ namespace JC.Indicators
             {
                 foreach (var controller in controllers) if (controller) controller.CollectBorders(borders, camera);
                 borders.Sort(CompareBorders);
+                // JC | 2026-11-06 | 부품마다 승자를 고르면 MSAA 경계에서 서로의 일부 샘플을 지워 그리드가 비칩니다.
+                // 서로 다른 영역끼리만 고정 우선순위를 적용하며 같은 영역의 세 부품은 한 소유자로 묶습니다.
+                int regionOrder = 0;
                 for (int i = 0; i < borders.Count; i++)
                 {
+                    if (i == 0 || borders[i].regionId != borders[i - 1].regionId) regionOrder++;
                     var renderer = borders[i].renderer;
                     properties.Clear(); renderer.GetPropertyBlock(properties);
-                    properties.SetFloat(orderId, i + 1);
+                    properties.SetFloat(orderId, regionOrder);
                     renderer.SetPropertyBlock(properties);
                 }
             }
@@ -72,6 +79,12 @@ namespace JC.Indicators
         // JC | 2026-11-05 | 진동 콜백보다 먼저 실행되던 beginCameraRendering 대신 URP의 확정된 카메라 행렬을 받습니다.
         // 기존 가림/겹침 마스크 생성은 유지하고 렌더 시점과 카메라별 전역값 수명만 전용 패스가 관리합니다.
         internal static bool HasControllers => controllers.Exists(controller => controller && controller.isActiveAndEnabled);
+        // JC | 2026-11-06 | 깊이 마스크를 준비한 같은 카메라에서 트리거 색상을 먼저 합성합니다.
+        internal static void DrawColors(CommandBuffer command, Camera camera, Plane[] planes)
+        {
+            for (int part = 0; part < 4; part++)
+                foreach (var controller in controllers) if (controller) controller.DrawColors(command, camera, planes, part);
+        }
         internal static void RenderDepth(CommandBuffer command, Camera camera, Matrix4x4 view,
             Matrix4x4 projection, int width, int height)
         {
@@ -79,7 +92,7 @@ namespace JC.Indicators
             if (controllers.Count == 0) { Unregister(null); return; }
             staleCameras.Clear();
             foreach (var pair in buffers) if (!pair.Value.camera) staleCameras.Add(pair.Key);
-            foreach (int stale in staleCameras) { Release(buffers[stale].texture); Release(buffers[stale].occluders); Release(buffers[stale].owners); buffers.Remove(stale); }
+            foreach (int stale in staleCameras) { Release(buffers[stale].texture); Release(buffers[stale].occluders); Release(buffers[stale].owners); Release(buffers[stale].meshes); buffers.Remove(stale); }
             if (properties == null) properties = new MaterialPropertyBlock();
             width = Mathf.Max(1, width); height = Mathf.Max(1, height);
             int id = camera.GetInstanceID();
@@ -89,6 +102,7 @@ namespace JC.Indicators
                 Release(buffer.texture);
                 Release(buffer.occluders);
                 Release(buffer.owners);
+                Release(buffer.meshes);
                 var format = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGFloat) ? RenderTextureFormat.RGFloat : RenderTextureFormat.ARGBFloat;
                 buffer.texture = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear) {
                     name = "JC Trigger Private Depth", hideFlags = HideFlags.HideAndDontSave,
@@ -106,6 +120,11 @@ namespace JC.Indicators
                     filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, antiAliasing = 1
                 };
                 buffer.occluders.Create();
+                buffer.meshes = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear) {
+                    name = "JC Trigger World Mesh Depth", hideFlags = HideFlags.HideAndDontSave,
+                    filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, antiAliasing = 1
+                };
+                buffer.meshes.Create();
             }
             try
             {
@@ -129,6 +148,10 @@ namespace JC.Indicators
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
                 foreach (var controller in controllers) if (controller) controller.DrawOccluders(command, camera, properties);
                 command.SetGlobalTexture("_JcTriggerOccluderDepth", buffer.occluders);
+                command.SetRenderTarget(buffer.meshes);
+                command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
+                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera);
+                command.SetGlobalTexture("_JcTriggerMeshDepth", buffer.meshes);
                 command.SetGlobalFloat(activeId, 1);
             }
             finally { borders.Clear(); }
@@ -137,6 +160,8 @@ namespace JC.Indicators
         {
             int result = b.priority.CompareTo(a.priority);
             if (result == 0) result = a.ownerId.CompareTo(b.ownerId);
+            // JC | 2026-11-06 | 같은 주체가 여러 색상 영역을 가질 때도 영역별 겹침 우선순위는 구분합니다.
+            if (result == 0) result = a.regionId.CompareTo(b.regionId);
             if (result == 0) result = a.part.CompareTo(b.part);
             if (result == 0) result = a.rendererId.CompareTo(b.rendererId);
             return result;

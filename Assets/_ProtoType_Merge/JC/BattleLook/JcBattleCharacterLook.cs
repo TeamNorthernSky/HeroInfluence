@@ -88,7 +88,7 @@ public sealed class JcBattleCharacterLook : MonoBehaviour
         if(heroRoot==null || characterShader==null || (!Application.isPlaying && !previewInEditor)){Restore();return;}
         if(Time.realtimeSinceStartupAsDouble>=nextScan){Scan();nextScan=Time.realtimeSinceStartupAsDouble+.5;}
         foreach(var entry in entries.Values)
-            foreach(var m in entry.owned) UpdateMaterial(m,IsMechanical(entry.renderer),IsPlayerBackFillTarget(entry.renderer));
+                foreach(var m in entry.owned) UpdateMaterial(m,IsMechanical(entry.renderer),entry.renderer);
     }
     public void RefreshLook(){nextScan=0;Update();}
     private void Scan()
@@ -120,7 +120,7 @@ public sealed class JcBattleCharacterLook : MonoBehaviour
             for(int i=0;i<original.Length;i++)
             {
                 var src=original[i];if(src==null || src.shader==null || src.shader.name!="Universal Render Pipeline/Lit" || (src.HasProperty("_Surface") && src.GetFloat("_Surface")>.5f))continue;
-                var copy=new Material(src){name=src.name+" [Battle Soft]",hideFlags=HideFlags.HideAndDontSave};copy.shader=characterShader;copy.renderQueue=src.renderQueue;UpdateMaterial(copy,IsMechanical(r),IsPlayerBackFillTarget(r));e.owned.Add(copy);shown[i]=copy;
+                var copy=new Material(src){name=src.name+" [Battle Soft]",hideFlags=HideFlags.HideAndDontSave};copy.shader=characterShader;copy.renderQueue=src.renderQueue;UpdateMaterial(copy,IsMechanical(r),r);e.owned.Add(copy);shown[i]=copy;
             }
             if(e.owned.Count==0)continue;
             entries.Add(r,e);r.sharedMaterials=shown;
@@ -137,7 +137,6 @@ public sealed class JcBattleCharacterLook : MonoBehaviour
                 if(mechanicalUnitIds!=null)foreach(var id in mechanicalUnitIds)if(!string.IsNullOrEmpty(id)&&(t.name.EndsWith("_"+id)||t.name.EndsWith("_"+id+"(Clone)")))return true;
         return false;
     }
-    // JC | 2026-11-06 | 이름 추정 없이 실제 플레이어 소속·진형·4종 TemplateIndex를 모두 확인합니다. 초기화 전에는 보조광을 받지 않습니다.
     public bool IsPlayerBackFillTarget(Renderer renderer)
     {
         if (!renderer || !heroRoot || !renderer.transform.IsChildOf(heroRoot)) return false;
@@ -145,10 +144,12 @@ public sealed class JcBattleCharacterLook : MonoBehaviour
         if (!unit || !unit.IsPlayer) return false;
         return unit.TemplateIndex == "10001" || unit.TemplateIndex == "10002" || unit.TemplateIndex == "10003" || unit.TemplateIndex == "10004";
     }
-    private void UpdateMaterial(Material m,bool mechanical,bool playerBackFill)
+    private void UpdateMaterial(Material m,bool mechanical,Renderer renderer)
     {
-        // JC | 2026-11-06 | 전용 복제 재질에만 대상 플래그를 기록하여 적군·배경과 원본 재질에는 전파하지 않습니다.
-        m.SetFloat("_JcPlayerBackFillTarget", playerBackFill ? 1 : 0);
+        // JC | 2026-11-05 | 보스 환경 수명 안에서만 자체 밝기를 끄며, 씬/모드 종료 시 다음 갱신에 기존 캐릭터 표현으로 돌아갑니다.
+        // JC | 2026-11-09 | 공통 조절기의 선택을 따르며 플레이어 4종 제한을 복제 재질에만 기록합니다.
+        m.SetFloat("_BossLocalOnly",JC.BattleTesting.JcIndoorEnvironment.UsesLocalCharacterLighting(renderer)?1:0);
+        m.SetFloat("_JcPlayerBackFillTarget",IsPlayerBackFillTarget(renderer)?1:0);
         var texture=m.GetTexture("_BaseMap");bool neko=texture!=null && texture.name.Contains("cutecatgirl");
         var direction=keyDirection.sqrMagnitude>.001f?keyDirection.normalized:Vector3.up;
         m.SetVector("_KeyDirection",direction);m.SetColor("_KeyTint",keyTint);m.SetColor("_FillTint",fillTint);

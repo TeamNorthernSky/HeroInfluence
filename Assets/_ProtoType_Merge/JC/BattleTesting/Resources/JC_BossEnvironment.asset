@@ -11,12 +11,111 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7300fda7b46e411297a174dd61e9f429, type: 3}
   m_Name: JC_BossEnvironment
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+  characterLighting: 0
+  ssaoFeature: {fileID: 0}
+  ssaoEnabled: 0
+  ssaoIntensity: 0.8
+  ssaoRadius: 0.65
+  ssaoDirectLightingStrength: 0.35
+  ssaoDownsample: 0
+  isolateInterior: 1
+  windows:
+  - label: "\uCE21\uBA74 \uCC3D 1"
+    enabled: 1
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay1"
+    intensity: 160
+    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    pitch: 25
+    yaw: 0
+    standOff: 12
+    range: 48
+    softness: 0.025
+    shadows: 2
+    shadowStrength: 1
+  - label: "\uCE21\uBA74 \uCC3D 2"
+    enabled: 1
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay2"
+    intensity: 160
+    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    pitch: 25
+    yaw: 0
+    standOff: 12
+    range: 48
+    softness: 0.025
+    shadows: 2
+    shadowStrength: 1
+  - label: "\uCE21\uBA74 \uCC3D 3"
+    enabled: 1
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay3"
+    intensity: 160
+    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    pitch: 25
+    yaw: 0
+    standOff: 12
+    range: 48
+    softness: 0.025
+    shadows: 2
+    shadowStrength: 1
+  - label: "\uB4A4\uD3B8 \uCC3D 4"
+    enabled: 1
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay4"
+    intensity: 160
+    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    pitch: 25
+    yaw: 0
+    standOff: 12
+    range: 48
+    softness: 0.025
+    shadows: 2
+    shadowStrength: 1
+  - label: "\uB4A4\uD3B8 \uCC3D 5"
+    enabled: 1
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay5"
+    intensity: 160
+    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    pitch: 25
+    yaw: 0
+    standOff: 12
+    range: 48
+    softness: 0.025
+    shadows: 2
+    shadowStrength: 1
+  - label: "\uB4A4\uD3B8 \uCC3D 6"
+    enabled: 1
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay6"
+    intensity: 160
+    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    pitch: 25
+    yaw: 0
+    standOff: 12
+    range: 48
+    softness: 0.025
+    shadows: 2
+    shadowStrength: 1
   directionalIntensity: 1
   directionalTint: {r: 1, g: 1, b: 1, a: 1}
   shadowStrength: 1
   ambientIntensity: 1
   ambientTint: {r: 1, g: 1, b: 1, a: 1}
   reflectionIntensity: 1
-  lights: []
+  lights:
+  - playerBackFill: 1
+    label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
+    enabled: 0
+    type: 1
+    position: {x: 0, y: 6, z: 0}
+    rotation: {x: 25, y: -34.45, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 0.6
+    range: 10
+    spotAngle: 60
+    innerSpotRatio: 0.6
+    shadows: 0
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
   materials: []

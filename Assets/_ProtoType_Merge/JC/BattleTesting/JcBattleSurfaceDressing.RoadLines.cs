@@ -149,6 +149,8 @@ namespace JC.BattleTesting
                 }
             }
 
+            // JC | 2026-11-05 | 도시 원경을 굽는 경우에만 UV 도색 위치 대신 실제 연결 도로 폭의 중앙을 사용합니다.
+            if (centerCityRoads) lines = CenterCityLines(lines, faces);
             foreach (var line in lines)
             {
                 var intervals = new List<Vector2>();
@@ -169,6 +171,7 @@ namespace JC.BattleTesting
                 }
                 // 같은 직선 위라도 횡단보도 너머의 무표시 도로는 별도 구간입니다.
                 connected.RemoveAll(span => !line.seeds.Exists(seed => seed.y > span.x + .001f && seed.x < span.y - .001f));
+                if (centerCityRoads) connected = TrimCityJunctions(line, connected, lines, profile);
                 if (connected.Count == 0) continue;
                 EmitRoadLine(line, connected, profile);
             }

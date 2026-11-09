@@ -6,8 +6,35 @@ namespace JC.BattleTesting
 {
     // JC | 2026-11-05 | BE490에서만 사용하는 보정값입니다. 기본값은 기존 실내·도시 환경을 그대로 유지합니다.
     [CreateAssetMenu(menuName = "JC/전투/보스전 환경 프로필")]
-    public sealed class JcBossEnvironmentProfile : ScriptableObject
+    public sealed class JcBossEnvironmentProfile : JcIndoorEnvironmentProfile
     {
+        // JC | 2026-11-09 | 추가 효과는 기본 비활성으로 시작하여 기존 보스 외형을 유지합니다.
+        public JcBossEnvironmentProfile() { ssaoEnabled = false; }
+
+        // JC | 2026-11-05 | 실내와 캐릭터는 보스 조명만 받고 도시의 낮밤 조명은 그대로 유지합니다.
+        [Header("실내·캐릭터 조명 분리")]
+        [InspectorName("월드 조명 차단"), Tooltip("실내 표면과 캐릭터의 태양광·환경광·환경 반사·자체 밝기 보정을 차단합니다. 창문광과 아래 추가 라이트만 받습니다.")]
+        public bool isolateInterior = true;
+        [InspectorName("창문 투사광"), Tooltip("실제 창문 메시의 크기와 위치를 사용합니다. 모두 끄고 추가 라이트도 끄면 실내·캐릭터는 검게 됩니다.")]
+        public List<WindowLight> windows = new List<WindowLight>();
+
+        [Serializable]
+        public sealed class WindowLight
+        {
+            [InspectorName("이름"), Tooltip("창문 조명 이름입니다.")] public string label = "창문광";
+            [InspectorName("사용"), Tooltip("이 창문의 투사광을 켭니다.")] public bool enabled = true;
+            [InspectorName("창문 경로"), Tooltip("보스 무대 아래 GlassBay 메시 경로입니다.")] public string rendererPath;
+            [InspectorName("밝기"), Min(0), Tooltip("창문에서 들어오는 실제 조명의 밝기입니다.")] public float intensity = 160;
+            [InspectorName("색상"), ColorUsage(false), Tooltip("실내로 들어오는 빛의 색상입니다.")] public Color color = new Color(1,.93f,.83f);
+            [InspectorName("아래로 기울기"), Range(1,75), Tooltip("실내를 향하는 빛의 하향 각도입니다.")] public float pitch = 25;
+            [InspectorName("좌우 방향"), Range(-60,60), Tooltip("창 안쪽 정면 방향에서 좌우로 회전합니다.")] public float yaw;
+            [InspectorName("창밖 광원 거리"), Min(1), Tooltip("창문 중심에서 투사 광원까지의 거리입니다. 클수록 빛이 평행하게 들어옵니다.")] public float standOff = 12;
+            [InspectorName("도달 거리"), Min(1), Tooltip("광원에서 빛이 도달하는 월드 거리입니다.")] public float range = 48;
+            [InspectorName("가장자리 부드러움"), Range(.001f,.2f), Tooltip("창문 마스크 가장자리의 흐림 비율입니다.")] public float softness = .025f;
+            [InspectorName("그림자"), Tooltip("창틀과 캐릭터 등의 실제 그림자를 사용합니다. 현재 품질의 추가광 그림자 설정을 따릅니다.")] public LightShadows shadows = LightShadows.Soft;
+            [InspectorName("그림자 강도"), Range(0,1), Tooltip("이 창문광의 그림자 강도입니다.")] public float shadowStrength = 1;
+        }
+
         [Header("기존 실내·외부 환경에 더하는 보정")]
         [Min(0), Tooltip("기존 방향광 밝기에 곱합니다. 1이면 기존 밝기를 유지합니다.")]
         [InspectorName("기존 방향광 밝기 배율")] public float directionalIntensity = 1;
@@ -34,6 +61,8 @@ namespace JC.BattleTesting
         [Serializable]
         public sealed class LocalLight
         {
+            // JC | 2026-11-09 | 은행과 같은 조명 측 전용 설정이며 기본값은 꺼짐입니다.
+            [InspectorName("플레이어 4종 후면 보조광"), Tooltip("일반 표면 대신 플레이어 4종의 뒷면만 비춥니다. 실제 Light 그림자는 만들지 않습니다.")] public bool playerBackFill;
             [Tooltip("하위 라이트 오브젝트 이름입니다.")] [InspectorName("이름")] public string label = "추가 조명";
             [Tooltip("이 라이트 사용 여부입니다.")] [InspectorName("사용")] public bool enabled = true;
             [Tooltip("점광원 또는 원뿔형 스폿 조명입니다.")] [InspectorName("조명 종류")] public LocalLightType type = LocalLightType.Spot;

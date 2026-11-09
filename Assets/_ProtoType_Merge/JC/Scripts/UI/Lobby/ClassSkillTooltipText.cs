@@ -108,7 +108,10 @@ public static class ClassSkillTooltipText
     /// <summary>습득 안내 전용 문장 변환입니다. 다른 툴팁의 표시 방식은 유지합니다.</summary>
     internal static string BuildAcquisitionDescription(string description, float value, float subValue)
     {
-        return ReplaceBattleCoefficients(description, "ClassSkill", value, subValue);
+        // JC | 2026-11-09: 일반·튜토리얼의 스킬 습득/강화 안내에서만 IP 서술을 생략합니다.
+        // 원본 설명과 전투 툴팁의 현재 IP 구간 표현은 유지하고 기존 공용 생략 함수를 재사용합니다.
+        return SkillTooltipNumbers.OmitIPDescription(
+            ReplaceBattleCoefficients(description, "ClassSkill", value, subValue));
     }
 
     /// <summary>전투 화면에서만 사용합니다. 수치 계산 없이 표시용 능력치 수식을 문장으로 바꿉니다.</summary>

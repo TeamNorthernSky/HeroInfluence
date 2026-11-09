@@ -39,6 +39,8 @@ Shader "JC/VFX/HealAuraGlow"
         Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" "IgnoreProjector"="True" }
         Blend One One
         ZWrite Off
+        // JC | 2026-11-06 | 안쪽 면은 장면 깊이, 바깥 면은 실제 캐릭터 픽셀만 예외로 두어 망토 위에 합성합니다.
+        ZTest Always
         Cull Off
 
         Pass
@@ -46,7 +48,12 @@ Shader "JC/VFX/HealAuraGlow"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 3.5
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            TEXTURE2D_X(_JcSkillCharacterMask);
+            SAMPLER(sampler_JcSkillCharacterMask);
+            float _JcSkillCharacterMaskActive;
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
             struct Varyings {
@@ -54,6 +61,7 @@ Shader "JC/VFX/HealAuraGlow"
                 float3 posOS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
                 float3 viewDirWS : TEXCOORD2;
+                float eyeDepth : TEXCOORD3;
             };
 
             CBUFFER_START(UnityPerMaterial)
@@ -86,11 +94,19 @@ Shader "JC/VFX/HealAuraGlow"
                 OUT.posOS = IN.positionOS.xyz;
                 OUT.normalWS = normalize(TransformObjectToWorldNormal(IN.normalOS));
                 OUT.viewDirWS = GetWorldSpaceViewDir(p.positionWS);
+                OUT.eyeDepth = -TransformWorldToView(p.positionWS).z;
                 return OUT;
             }
 
-            half4 frag (Varyings IN) : SV_Target
+            half4 frag (Varyings IN, FRONT_FACE_TYPE frontFace : FRONT_FACE_SEMANTIC) : SV_Target
             {
+                // JC | 2026-11-06 | 전체 투과는 금지합니다. 앞면+캐릭터 마스크만 깊이 예외이고 뒷면·건물·바닥은 기존 가림을 유지합니다.
+                float2 screenUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
+                float rawDepth = SampleSceneDepth(screenUV);
+                float sceneDepth = unity_OrthoParams.w > .5 ? LinearDepthToEyeDepth(rawDepth) : LinearEyeDepth(rawDepth, _ZBufferParams);
+                bool aboveCharacter = IS_FRONT_VFACE(frontFace, true, false) && _JcSkillCharacterMaskActive > .5 &&
+                    SAMPLE_TEXTURE2D_X(_JcSkillCharacterMask, sampler_JcSkillCharacterMask, screenUV).r > .5;
+                if (!aboveCharacter) clip(sceneDepth + .001 - IN.eyeDepth);
                 // 세로 정규화: 오브젝트 Y [-YExtent,+YExtent] → h [0(bottom),1(top)]
                 float h = saturate(IN.posOS.y / max(_YExtent, 1e-4) * 0.5 + 0.5);
                 float ang = atan2(IN.posOS.z, IN.posOS.x);
