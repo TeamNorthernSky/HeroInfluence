@@ -110,6 +110,8 @@ namespace JC.VFX.Seam
 
         private void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if (!ShowOverlay) return;
             if (!InDemoScene()) return;   // 부트씬·본게임 씬에 안내가 뜨지 않게
 

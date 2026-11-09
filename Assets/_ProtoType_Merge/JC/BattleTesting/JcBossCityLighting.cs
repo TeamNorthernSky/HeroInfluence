@@ -130,7 +130,8 @@ namespace JC.BattleTesting
             var layout = toolbar.GetComponent<HorizontalLayoutGroup>(); layout.spacing = 3;
             layout.padding = new RectOffset(2, 2, 2, 2); layout.childForceExpandWidth = true; layout.childForceExpandHeight = true;
             layout.childControlWidth = true; layout.childControlHeight = true;
-            var font = panel.GetComponentInChildren<TMP_Text>(true)?.font;
+            // JC | 2026-11-09 | 콘솔에 추가하는 시간대 버튼도 개발자 Noto 및 자동 대체 정책을 사용합니다.
+            var font = DebugPanelManager.ResolveDeveloperFont();
             string[] names = { "아침", "오후", "저녁", "새벽" };
             for (int i = 0; i < 4; i++)
             {

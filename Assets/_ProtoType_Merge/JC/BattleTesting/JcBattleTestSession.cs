@@ -210,8 +210,8 @@ namespace JC.BattleTesting
                 if (cameraViewLabels[i] != null) cameraViewLabels[i].text = (requestedView == i ? "> " : "") + names[i] + " [" + keys[i] + "]";
         }
 
-        // JC | 2026-11-05 | 두 전투 테스트씬의 실제 SOYO Maple 연결에 맞춰 안내를 정리합니다. 기존 글꼴 선택 순서는 유지합니다.
-        [Tooltip("카메라 버튼에 사용할 한글 글꼴입니다. 씬 UI와 같은 SOYO Maple 글꼴을 명시적으로 연결합니다.")]
+        // JC | 2026-11-09 | 테스트 조작 버튼은 Noto 우선이며, 기존 슬롯은 Noto 누락 시에만 대체로 사용합니다.
+        [Tooltip("개발자 Noto 글꼴이 없을 때 사용할 카메라 버튼 대체 글꼴입니다.")]
         public TMPro.TMP_FontAsset cameraToolbarFont;
 
         private void BuildCameraToolbar()
@@ -225,12 +225,8 @@ namespace JC.BattleTesting
             scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = 0.5f;
-            var font = cameraToolbarFont;
-            if (font == null)
-            {
-                var existingText = FindObjectsOfType<TMPro.TMP_Text>(true).FirstOrDefault(x => x.gameObject.scene == gameObject.scene && x.name == "ActorName" && x.font != null);
-                font = existingText != null ? existingText.font : TMPro.TMP_Settings.defaultFontAsset;
-            }
+            // JC | 2026-11-09 | 전투 HUD의 ActorName 글꼴을 찾지 않고 개발자용 글꼴을 사용합니다.
+            var font = DebugPanelManager.ResolveDeveloperFont(cameraToolbarFont);
             for (int i = 0; i < 3; i++)
             {
                 int view = i;
@@ -663,6 +659,8 @@ namespace JC.BattleTesting
         }
         private void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if (modalMessage == null) return;
             // Modal의 차단 영역은 화면 전체입니다. 뒤쪽 게임 입력은 FlowLock/TimeScale로도 차단합니다.
             GUI.ModalWindow(GetInstanceID(), new Rect((Screen.width - 560) / 2f, (Screen.height - 230) / 2f, 560, 230), _ => {

@@ -218,6 +218,8 @@ namespace JC.VFX.Seam
 
         private void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if (pendingBand == 0) return;
             float left = Mathf.Max(0f, pendingUntil - Time.unscaledTime);
             GUI.Label(new Rect(12, 190, 460, 22),
