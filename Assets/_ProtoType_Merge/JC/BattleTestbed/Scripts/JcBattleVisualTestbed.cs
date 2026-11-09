@@ -265,6 +265,8 @@ namespace JC.BattleTestbed
 
         private void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if (!showHelp) return;
             GUI.Box(new Rect(12, 12, 570, 58), $"BATTLE VISUAL TESTBED   |   Z 초기화   |   G 첫 히어로 사망\n{status}");
         }

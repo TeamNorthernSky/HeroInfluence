@@ -33,9 +33,15 @@ namespace JC.Tutorial
         private RectTransform guidedTooltip;
         private bool savedNavigation;
         private EventSystem guidedEventSystem;
-        private const int IntroSkill = 3010;
+        // JC | 2026-11-09 | 첫 턴 설명에서 지정한 각 히어로의 실제 기본 스킬로 클릭 안내와 허용 입력을 일치시킵니다.
+        private int IntroSkill => characterId == "10001" ? 1010 : characterId == "10002" ? 2010 :
+            characterId == "10004" ? 4010 : 3010;
         private const int FreeGuidePhase = 5;
-        private bool FreeGuide => detailed && guidedPhase == FreeGuidePhase;
+        // JC | 2026-11-09 | 4인 소개 후 돌아오는 블랙불릿 턴에 코어 설명만 독립적으로 표시합니다.
+        // 기존 0~5 단계 번호와 두 번째 전투 진형 안내를 유지하며 코어 사용을 강제하지 않습니다.
+        private const int CoreSkillGuidePhase = 6;
+        private bool IsCoreSkillGuide => !formation && guidedPhase == CoreSkillGuidePhase;
+        private bool FreeGuide => !formation && guidedPhase == FreeGuidePhase;
         private RectTransform currentTurnFocus;
         public bool GuidedActive => guidedActive;
         // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
@@ -50,10 +56,11 @@ namespace JC.Tutorial
             .SelectMany(r => r.GetComponentsInChildren<T>(true)).FirstOrDefault();
 
         public bool BeginCharacter(BattleCharactor actor, string id) => BeginGuided(actor, id, false);
+        public bool BeginCoreSkill(BattleCharactor actor) => BeginGuided(actor, "10003", false, true);
 
         public bool BeginFormation(BattleCharactor actor) => BeginGuided(actor, null, true);
 
-        private bool BeginGuided(BattleCharactor actor, string id, bool showFormation)
+        private bool BeginGuided(BattleCharactor actor, string id, bool showFormation, bool coreOnly = false)
         {
             if (guidedActive || actor == null || view == null || view.panel == null || resultShield == null ||
                 stepTexts == null || stepTexts.Length == 0 || stepTexts[0] == null) return false;
@@ -64,7 +71,7 @@ namespace JC.Tutorial
             guidedInput = SceneComponent<InputHandler>();
             guidedSkills = SceneComponent<SkillButtonController>();
             if (guidedFlow == null || guidedInput == null || guidedSkills == null) return false;
-            guidedActor = actor; characterId = id; formation = showFormation; detailed = !formation && id == "10003";
+            guidedActor = actor; characterId = id; formation = showFormation; detailed = !formation && !coreOnly && id == "10003";
             if (formation) formationGrid = SceneComponent<ASB.Work.BattleGrid.BattleGridManager>();
             savedBody = guidedBody.text;
             var bodyRect = guidedBody.rectTransform;
@@ -75,7 +82,8 @@ namespace JC.Tutorial
             bodyRect.SetParent(layoutPanel, false);
             bodyRect.anchorMin = bodyRect.anchorMax = bodyRect.pivot = new Vector2(.5f, 1);
             guidedBody.enableAutoSizing = false;
-            JcTutorialGuideView.BindWordWrapping(guidedBody);
+            // JC | 2026-11-09 | 첫 전투 소개·코어 설명만 문장 경계를 30% 확대하고 두 번째 전투 진형 안내는 유지합니다.
+            ApplyBattleSentenceSpacing(guidedBody, !formation);
             guidedActive = true; activeGuide = this;
             view.FixedBattleOutline = true;
             guidedEventSystem = EventSystem.current;
@@ -104,7 +112,7 @@ namespace JC.Tutorial
             EnsureNextButton();
             BeginNotice(null);
             noticeOpen = false; instructionStep = -1;
-            SetGuidedPhase(0);
+            SetGuidedPhase(coreOnly ? CoreSkillGuidePhase : 0);
             return true;
         }
 
@@ -112,20 +120,31 @@ namespace JC.Tutorial
         {
             if (!guidedActive) return true;
             if (!FreeGuide || nextPending || actor != guidedActor || action != PendingActionType.ClassSkill) return false;
-            return target == null || (target != null && !target.IsPlayer && !target.IsDead &&
+            // JC | 2026-11-09 | 회복 스킬의 아군 선택도 허용합니다. 적/아군별 실제 대상 판정은 기존 스킬 타기팅을 따릅니다.
+            return target == null || (target != null && !target.IsDead &&
                 guidedInput.PendingSkill != null && guidedInput.PendingSkill.skillIndex == IntroSkill);
         }
         public static bool AllowsSkill(Scene scene, PendingActionType action, int skill)
         {
             var g = activeGuide;
             return g == null || !g.guidedActive || g.gameObject.scene != scene ||
-                (g.FreeGuide && action == PendingActionType.ClassSkill && skill == IntroSkill && !g.nextPending);
+                (g.FreeGuide && action == PendingActionType.ClassSkill && skill == g.IntroSkill && !g.nextPending);
+        }
+        // JC | 2026-11-09 | 젬파워 사용·선택은 그대로 차단하고 첫 턴 스킬 선택 안내의 올바른 버튼만 강조합니다.
+        // UI가 선택 취소/토글 갱신을 하기 전에 호출하므로 잘못 누른 클릭이 기존 선택을 변경하지 않습니다.
+        public static bool RedirectGemPowerClick(Scene scene)
+        {
+            var g = activeGuide;
+            if (g == null || !g.guidedActive || g.gameObject.scene != scene || !g.FreeGuide || g.nextPending) return false;
+            var button = g.guidedSkills.FindSkillButton(g.IntroSkill);
+            if (button != null) g.view.RestartSkillRedirect((RectTransform)button.transform);
+            return true;
         }
         public static void SkillSelected(Scene scene, BattleCharactor actor, SkillData skill)
         {
             var g = activeGuide;
             if (g != null && g.guidedActive && g.gameObject.scene == scene && g.FreeGuide &&
-                actor == g.guidedActor && skill != null && skill.skillIndex == IntroSkill)
+                actor == g.guidedActor && skill != null && skill.skillIndex == g.IntroSkill)
             {
                 g.EndGuided(true);
                 // 선택 성공과 같은 프레임에 숨깁니다. 다음 소개에서는 기존 페이드를 다시 사용합니다.
@@ -217,7 +236,13 @@ namespace JC.Tutorial
                     JcTutorialText.Get("battleguide.guided.006", "스킬에 따라 공격할 수 있는 열과 대상이 달라집니다.\n사용할 스킬을 선택한 뒤, 바닥에 표시되는 공격 가능한 대상을 확인해 보세요.") };
                 title = titles[phase]; text = texts[phase];
             }
-            else if (phase == 0)
+            else if (IsCoreSkillGuide)
+            {
+                title = JcTutorialText.Get("battleguide.core.001", "코어 스킬 사용하기");
+                text = JcTutorialText.Get("battleguide.core.002", "코어 스킬은 공용으로 사용할 수 있는 전투 보조 스킬로 협회에서 강화하고 제작할 수 있습니다.");
+            }
+            // JC | 2026-11-09 | 세 히어로는 소개 후 동일 설명을 유지한 채 클릭 인디케이터 단계로 이어집니다.
+            else if (phase == 0 || (phase == FreeGuidePhase && !detailed))
             {
                 switch (characterId)
                 {
@@ -242,8 +267,6 @@ namespace JC.Tutorial
                 title = titles[phase]; text = texts[phase];
             }
             guidedBody.text = text; view.SetContent(title, "");
-            view.heading.enableAutoSizing = false; view.heading.fontSize = guidedBody.fontSize;
-            view.heading.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, guidedBody.fontSize * 1.5f);
             nextButton.gameObject.SetActive(!FreeGuide);
             nextButton.interactable = true;
             nextLabel.text = formation && phase == 2 ? JcTutorialText.Get("battleguide.guided.025", "전투 시작") : JcTutorialText.Get("battleguide.guided.026", "다음");
@@ -252,17 +275,13 @@ namespace JC.Tutorial
 
             foreach (var button in continueButtons) if (button != null) button.gameObject.SetActive(false);
             view.SetPanelSuppressed(false); view.SetVisible(true);
-            // 모든 새 소개/조작 안내에 같은 여백을 적용합니다. 중첩 Text 부모 크기에 의존하지 않습니다.
+            // JC | 2026-11-09 | 첫 전투 소개와 두 번째 전투 진형 안내를 탐사의 제목·본문 배치 함수로 통일합니다.
+            // 전투별 패널 너비와 다음 버튼 공간은 유지하고 줄간격·제목 위치·본문 반 글자 들여쓰기를 공유합니다.
             var canvasRect = layoutPanel.parent as RectTransform;
             float width = Mathf.Min(820, canvasRect != null ? Mathf.Max(320, canvasRect.rect.width - 64) : 820);
-            float textWidth = width - 64;
-            // 실제 Rect 너비·텍스트 전처리·리치 텍스트 문단 간격을 함께 반영합니다.
-            guidedBody.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, textWidth);
-            float textHeight = Mathf.Ceil(guidedBody.preferredHeight) + 8;
-            float height = Mathf.Max(FreeGuide ? 260 : 300, 96 + textHeight + (FreeGuide ? 40 : 80));
-            guidedBody.rectTransform.sizeDelta = new Vector2(textWidth, textHeight);
-            guidedBody.rectTransform.anchoredPosition = new Vector2(0, -96);
-            layoutPanel.sizeDelta = new Vector2(width, height);
+            layoutPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+            view.FitMessageLayout(guidedBody, FreeGuide ? 260 : 300, FreeGuide ? 40 : 80);
+            float height = layoutPanel.rect.height;
             bool lower = phase == 3 || phase == 4;
             layoutPanel.anchorMin = layoutPanel.anchorMax = new Vector2(.5f, lower ? 0 : 1);
             layoutPanel.anchoredPosition = new Vector2(0, (lower ? 1 : -1) * (height * .5f + 20));
@@ -284,6 +303,18 @@ namespace JC.Tutorial
                 return;
             }
             if (formation) { UpdateFormationFocus(); return; }
+            // JC | 2026-11-09 | 임시 코어 단계는 설명·확인만 제공하며 특정 캐릭터/스킬을 강조하거나 선택시키지 않습니다.
+            if (IsCoreSkillGuide)
+            {
+                allowedPointer = null;
+                view.SetVisible(true, null, JcTutorialGuideView.FocusPresentation.BorderOnly);
+                view.ShowBadgeOutline(null, false);
+                dim.SetTargets(layoutPanel, null);
+                dim.SetExtraTargets(Array.Empty<RectTransform>());
+                dim.SetTooltip(null); dim.SetRoundedTarget(null, 0);
+                dim.gameObject.SetActive(true); resultShield.SetActive(true);
+                return;
+            }
             if (detailed)
             {
                 if (guidedEnemy == null || guidedEnemy.IsDead)
@@ -329,6 +360,8 @@ namespace JC.Tutorial
             if (nextPending && !Input.GetMouseButton(0))
             {
                 if (formation && guidedPhase < 2) SetGuidedPhase(guidedPhase + 1);
+                // JC | 2026-11-09 | 네코밍·루미나·저스티스 소개를 닫아도 선택 안내를 유지합니다. 코어 설명/진형은 제외합니다.
+                else if (!formation && !detailed && guidedPhase == 0) SetGuidedPhase(FreeGuidePhase);
                 else if (!detailed) EndGuided(true);
                 else SetGuidedPhase(guidedPhase + 1);
             }
@@ -370,6 +403,8 @@ namespace JC.Tutorial
         {
             if (!guidedActive) return;
             guidedActive = false; formation = false;
+            // JC | 2026-11-09 | 올바른 선택·턴 변경·전투 종료·비활성화 시 수렴 효과와 클릭 안내를 즉시 정리합니다.
+            view.SetActionHint(JcTutorialGuideView.ActionHint.None);
             if (dim != null) dim.SetTooltip(null);
             guidedTooltip = null;
             view.ShowBadgeOutline(null, false);

@@ -247,9 +247,14 @@ namespace JC.Indicators
             surfaces.Draw(command, camera, depthMaterial, properties);
         }
         // JC | 2026-11-09 | 별도 깊이 버퍼만 사용하므로 다른 인디케이터의 장면 깊이에는 영향을 주지 않습니다.
-        internal void DrawWorldMeshes(CommandBuffer command, Camera camera)
+        internal void DrawWorldMeshes(CommandBuffer command, Camera camera, string passName)
         {
-            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.Draw(command, camera);
+            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.Draw(command, camera, passName);
+        }
+        // JC | 2026-11-09 | 느낌표의 실제 노출 영역만 호버 합성 보호 대상으로 전달합니다.
+        internal void DrawMarkerCoverage(CommandBuffer command, Camera camera)
+        {
+            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.DrawMarkerCoverage(command, camera);
         }
         private static Color Tint(Color color, float intensity, float opacity)
         { color *= Mathf.Max(0, intensity); color.a = Mathf.Clamp01(opacity); return color; }

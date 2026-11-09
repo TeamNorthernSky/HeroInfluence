@@ -10,7 +10,8 @@ namespace JC.Indicators
     {
         // JC | 2026-11-04 | 테두리 자체 깊이와 지형 종류별 깊이를 분리해 장면 깊이를 오염시키지 않습니다.
         // JC | 2026-11-09 | R=월드 메시 깊이, G=이벤트 내부 메시 보호 깊이를 별도 보관합니다.
-        private sealed class Buffer { internal Camera camera; internal RenderTexture texture, occluders, owners, meshes; }
+        // JC | 2026-11-09 | 최근접 메시 소속과 그 소속을 제외한 깊이를 분리해, 자기 메시 뒤의 건물도 가림에 반영합니다.
+        private sealed class Buffer { internal Camera camera; internal RenderTexture texture, occluders, owners, meshes, meshOwners, otherMeshes, markerCoverage; }
         // JC | 2026-11-05 | 깊이가 같은 윤곽선은 DH 우선순위, 소유자, 부위, 렌더러 순으로 한 번만 선택합니다.
         internal sealed class Border
         {
@@ -49,7 +50,7 @@ namespace JC.Indicators
             if (controllers.Count != 0) return;
             RenderPipelineManager.beginCameraRendering -= PrepareBorders;
             Shader.SetGlobalFloat(activeId, 0);
-            foreach (var buffer in buffers.Values) { Release(buffer.texture); Release(buffer.occluders); Release(buffer.owners); Release(buffer.meshes); }
+            foreach (var buffer in buffers.Values) { Release(buffer.texture); Release(buffer.occluders); Release(buffer.owners); Release(buffer.meshes); ReleaseMarkerBuffers(buffer); }
             buffers.Clear();
         }
         // JC | 2026-11-05 | URP가 렌더러 속성을 수집하기 전에 표시 순서만 전달합니다.
@@ -92,7 +93,7 @@ namespace JC.Indicators
             if (controllers.Count == 0) { Unregister(null); return; }
             staleCameras.Clear();
             foreach (var pair in buffers) if (!pair.Value.camera) staleCameras.Add(pair.Key);
-            foreach (int stale in staleCameras) { Release(buffers[stale].texture); Release(buffers[stale].occluders); Release(buffers[stale].owners); Release(buffers[stale].meshes); buffers.Remove(stale); }
+            foreach (int stale in staleCameras) { Release(buffers[stale].texture); Release(buffers[stale].occluders); Release(buffers[stale].owners); Release(buffers[stale].meshes); ReleaseMarkerBuffers(buffers[stale]); buffers.Remove(stale); }
             if (properties == null) properties = new MaterialPropertyBlock();
             width = Mathf.Max(1, width); height = Mathf.Max(1, height);
             int id = camera.GetInstanceID();
@@ -103,6 +104,7 @@ namespace JC.Indicators
                 Release(buffer.occluders);
                 Release(buffer.owners);
                 Release(buffer.meshes);
+                ReleaseMarkerBuffers(buffer);
                 var format = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGFloat) ? RenderTextureFormat.RGFloat : RenderTextureFormat.ARGBFloat;
                 buffer.texture = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear) {
                     name = "JC Trigger Private Depth", hideFlags = HideFlags.HideAndDontSave,
@@ -125,6 +127,11 @@ namespace JC.Indicators
                     filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, antiAliasing = 1
                 };
                 buffer.meshes.Create();
+                // JC | 2026-11-09 | 소속/외부 깊이는 한 채널만 필요하므로 지원되는 장치에서는 메모리를 절반으로 줄입니다.
+                var singleFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RFloat) ? RenderTextureFormat.RFloat : format;
+                buffer.meshOwners = CreateMarkerBuffer("JC Event Mesh Owners", width, height, singleFormat);
+                buffer.otherMeshes = CreateMarkerBuffer("JC Other Owner Depth", width, height, singleFormat);
+                buffer.markerCoverage = CreateMarkerBuffer("JC Visible Event Marker", width, height, RenderTextureFormat.ARGB32);
             }
             try
             {
@@ -150,12 +157,37 @@ namespace JC.Indicators
                 command.SetGlobalTexture("_JcTriggerOccluderDepth", buffer.occluders);
                 command.SetRenderTarget(buffer.meshes);
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
-                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera);
+                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshDepth");
                 command.SetGlobalTexture("_JcTriggerMeshDepth", buffer.meshes);
+                // JC | 2026-11-09 | 이벤트마다 깊이 RT를 만들지 않고 최근접 소유자와 그 밖의 두 층으로 판정합니다.
+                // 자기 이벤트가 앞에 있어도 그 뒤/아이콘 앞의 다른 건물을 놓치지 않습니다.
+                command.SetRenderTarget(buffer.meshOwners);
+                command.ClearRenderTarget(false, true, new Color(float.MaxValue, float.MaxValue, 0, 0));
+                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshOwner");
+                command.SetGlobalTexture("_JcTriggerMeshOwners", buffer.meshOwners);
+                command.SetRenderTarget(buffer.otherMeshes);
+                command.ClearRenderTarget(false, true, new Color(65504, 65504, 0, 0));
+                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "OtherOwnerDepth");
+                command.SetGlobalTexture("_JcTriggerOtherMeshDepth", buffer.otherMeshes);
                 command.SetGlobalFloat(activeId, 1);
+                command.SetRenderTarget(buffer.markerCoverage);
+                command.ClearRenderTarget(false, true, Color.clear);
+                foreach (var controller in controllers) if (controller) controller.DrawMarkerCoverage(command, camera);
+                command.SetGlobalTexture("_JcEventMarkerCoverage", buffer.markerCoverage);
             }
             finally { borders.Clear(); }
         }
+        // JC | 2026-11-09 | 카메라/해상도 변경과 해제 시 소유권 및 느낌표 마스크의 수명을 함께 정리합니다.
+        private static RenderTexture CreateMarkerBuffer(string name, int width, int height, RenderTextureFormat format)
+        {
+            var texture = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear) {
+                name = name, hideFlags = HideFlags.HideAndDontSave, filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp, antiAliasing = 1
+            };
+            texture.Create(); return texture;
+        }
+        private static void ReleaseMarkerBuffers(Buffer buffer)
+        { Release(buffer.meshOwners); Release(buffer.otherMeshes); Release(buffer.markerCoverage); }
         private static int CompareBorders(Border a, Border b)
         {
             int result = b.priority.CompareTo(a.priority);

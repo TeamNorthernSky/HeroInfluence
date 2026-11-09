@@ -136,7 +136,8 @@ namespace JC.BattleTesting
             const float height = 88, gap = 10;
             Place("CoreSkillPanel", 0, -204, 0, height, true);
             Place("CoreSkillPanel/Button_Skill_2", 16, 0, -32, height, true);
-            Place("CoreSkillPanel/Title", 104, 0, -120, height, true);
+            // JC | 2026-11-09 | 확대된 아이콘만큼 스킬명을 10만큼 옮기고 우측 경계는 유지합니다.
+            Place("CoreSkillPanel/Title", 114, 0, -130, height, true);
             var title = Rect("CoreSkillPanel/Title").GetComponent<TMP_Text>();
             title.alignment = TextAlignmentOptions.MidlineLeft;
             Place("HeroSkillPanel", 0, -302, 0, height * 4 + gap * 3, true);
@@ -146,10 +147,13 @@ namespace JC.BattleTesting
             {
                 string path = paths[i]; var row = Rect(path); if (row == null) continue;
                 if(i > 0) Place(path, 16, -(height + gap) * (i - 1), -32, height, true);
-                Place(path + "/IconVisual", 8, -10, 68, 68);
+                // JC | 2026-11-09 | 사용자 수정 시안에 맞춰 묶음을 68→78로 확대하고 행의 세로 중앙은 유지합니다.
+                Place(path + "/IconVisual", 8, -5, 78, 78);
+                // JC | 2026-11-09 | 초기 표시와 잠긴 슬롯도 스킬 전용 여백을 적용합니다.
+                FitSkillIcon(Rect(path + "/IconVisual/Mask/SkillIcon")?.GetComponent<Image>());
                 if (i > 0)
                 {
-                    Place(path + "/SkillName", 88, 0, -130, height, true);
+                    Place(path + "/SkillName", 98, 0, -140, height, true);
                     var text = Rect(path + "/SkillName").GetComponent<TMP_Text>();
                     text.alignment = TextAlignmentOptions.MidlineLeft; text.enableWordWrapping = false;
                     text.enableAutoSizing = true; text.fontSize = text.fontSizeMax = 22; text.fontSizeMin = 16;
@@ -202,7 +206,8 @@ namespace JC.BattleTesting
                     foreach (Transform part in padlock) part.gameObject.SetActive(false);
                     padlock.anchorMin = padlock.anchorMax = new Vector2(0, 1);
                     padlock.pivot = new Vector2(.5f, .5f);
-                    padlock.anchoredPosition = new Vector2(42, -44);
+                    // JC | 2026-11-09 | 잠금 표시는 커진 아이콘의 중앙을 따라갑니다.
+                    padlock.anchoredPosition = new Vector2(47, -44);
                     padlock.sizeDelta = new Vector2(46.8f, 57.2f);
                     var lockImage = padlock.GetComponent<Image>() ?? padlock.gameObject.AddComponent<Image>();
                     lockImage.overrideSprite = null; lockImage.sprite = lockedSkillSprite;
@@ -274,6 +279,53 @@ namespace JC.BattleTesting
                 r.offsetMin = new Vector2(4, 1); r.offsetMax = new Vector2(-4, -1);
                 label.alignment = TextAlignmentOptions.Midline;
                 label.enableAutoSizing = true; label.fontSizeMax = 19; label.fontSizeMin = 13;
+            }
+        }
+
+        // JC | 2026-11-09 | 스킬 원본 전체를 프레임의 사선 모서리 안에 넣습니다. 초상화의 확대 맞춤과 분리합니다.
+        public static void FitSkillIcon(Image image)
+        {
+            if (image == null || !(image.transform.parent is RectTransform mask) ||
+                mask.GetComponent<Mask>() == null || mask.parent == null || mask.parent.name != "IconVisual") return;
+
+            // JC | 2026-11-09 | EnvelopeParent와 기존 112% 확대를 해제하고, 크기 변경에도 비율·안쪽 여백을 유지합니다.
+            if (image.TryGetComponent<AspectRatioFitter>(out var fit))
+            {
+                fit.aspectMode = AspectRatioFitter.AspectMode.None;
+                fit.enabled = false;
+            }
+            // JC | 2026-11-09 | 직전 시안의 8% 여백을 기준 크기로 유지하고, 추가 요청에 따라 내부 그림만 18% 확대합니다.
+            const float inset = .08f;
+            var art = image.rectTransform;
+            art.localScale = Vector3.one * 1.18f;
+            art.anchorMin = new Vector2(inset, inset);
+            art.anchorMax = new Vector2(1f - inset, 1f - inset);
+            art.pivot = new Vector2(.5f, .5f);
+            art.offsetMin = art.offsetMax = Vector2.zero;
+            image.type = Image.Type.Simple;
+            image.useSpriteMesh = false;
+            image.preserveAspect = true;
+
+            // JC | 2026-11-09 | 프레임과 바탕의 슬라이스 규격을 일치시켜 바깥 검은 모서리를 제거합니다.
+            // JC | 2026-11-09 | 내부 그림 확대와 무관하게 직전 시안의 프레임 두께·윤곽을 유지합니다. 초상화에는 적용하지 않습니다.
+            var background = mask.parent.Find("Background")?.GetComponent<Image>();
+            var silhouette = mask.GetComponent<Image>();
+            var frame = mask.parent.Find("Frame")?.GetComponent<Image>();
+            // JC | 2026-11-09 | 작은 테스트 HUD도 같은 비율의 윤곽·안쪽 안전 영역을 갖도록 크기에 비례시킵니다.
+            float sliceScale = 120f / Mathf.Max(1f, Mathf.Min(mask.rect.width, mask.rect.height));
+            foreach (var part in new[] { frame, silhouette, background })
+            {
+                if (part == null) continue;
+                part.type = Image.Type.Sliced;
+                part.pixelsPerUnitMultiplier = sliceScale;
+                part.preserveAspect = false;
+            }
+            if (background != null && silhouette != null)
+            {
+                background.overrideSprite = null;
+                background.sprite = silhouette.sprite;
+                background.material = null;
+                background.color = new Color32(2, 1, 11, 255);
             }
         }
 

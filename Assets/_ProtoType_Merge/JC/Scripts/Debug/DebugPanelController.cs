@@ -58,6 +58,14 @@ public class DebugPanelController : MonoBehaviour
 
         SetupDragAndResize(panelRect);
         BuildInputBar();
+        // JC | 2026-11-09 | 기존 로그/탭과 동적 입력/기록/크기조절 문구 모두 개발자 글꼴로 통일합니다.
+        var developerFont = DebugPanelManager.ResolveDeveloperFont(logContent != null ? logContent.font : null);
+        foreach (var text in debugCanvasObj.GetComponentsInChildren<TMP_Text>(true))
+        {
+            text.font = developerFont;
+            if (developerFont != null) text.fontSharedMaterial = developerFont.material;
+        }
+        if (commandInput != null) commandInput.fontAsset = developerFont;
 
         debugCanvasObj.SetActive(false);
         BindLogButtons();

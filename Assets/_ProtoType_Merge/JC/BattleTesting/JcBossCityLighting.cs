@@ -78,7 +78,8 @@ namespace JC.BattleTesting
             RenderSettings.sun = Sun;
             // JC | 2026-11-05 | 먼 원경까지 그림자를 계산하되 공용 품질 에셋 자체는 변경하지 않습니다.
             previousPipeline = QualitySettings.renderPipeline;
-            var source = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+            // JC | 2026-11-09 | 다중 창문광·천장광은 보스 전용 Forward+를 쓰고 종료 시 기존 품질로 복원합니다.
+            var source = settings.interiorPipeline ? settings.interiorPipeline : GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             if (source)
             {
                 pipeline = Instantiate(source); pipeline.hideFlags = HideFlags.DontSave;
@@ -129,7 +130,8 @@ namespace JC.BattleTesting
             var layout = toolbar.GetComponent<HorizontalLayoutGroup>(); layout.spacing = 3;
             layout.padding = new RectOffset(2, 2, 2, 2); layout.childForceExpandWidth = true; layout.childForceExpandHeight = true;
             layout.childControlWidth = true; layout.childControlHeight = true;
-            var font = panel.GetComponentInChildren<TMP_Text>(true)?.font;
+            // JC | 2026-11-09 | 콘솔에 추가하는 시간대 버튼도 개발자 Noto 및 자동 대체 정책을 사용합니다.
+            var font = DebugPanelManager.ResolveDeveloperFont();
             string[] names = { "아침", "오후", "저녁", "새벽" };
             for (int i = 0; i < 4; i++)
             {

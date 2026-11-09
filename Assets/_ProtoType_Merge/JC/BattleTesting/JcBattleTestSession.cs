@@ -210,8 +210,8 @@ namespace JC.BattleTesting
                 if (cameraViewLabels[i] != null) cameraViewLabels[i].text = (requestedView == i ? "> " : "") + names[i] + " [" + keys[i] + "]";
         }
 
-        // JC | 2026-11-05 | 두 전투 테스트씬의 실제 SOYO Maple 연결에 맞춰 안내를 정리합니다. 기존 글꼴 선택 순서는 유지합니다.
-        [Tooltip("카메라 버튼에 사용할 한글 글꼴입니다. 씬 UI와 같은 SOYO Maple 글꼴을 명시적으로 연결합니다.")]
+        // JC | 2026-11-09 | 테스트 조작 버튼은 Noto 우선이며, 기존 슬롯은 Noto 누락 시에만 대체로 사용합니다.
+        [Tooltip("개발자 Noto 글꼴이 없을 때 사용할 카메라 버튼 대체 글꼴입니다.")]
         public TMPro.TMP_FontAsset cameraToolbarFont;
 
         private void BuildCameraToolbar()
@@ -225,12 +225,8 @@ namespace JC.BattleTesting
             scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = 0.5f;
-            var font = cameraToolbarFont;
-            if (font == null)
-            {
-                var existingText = FindObjectsOfType<TMPro.TMP_Text>(true).FirstOrDefault(x => x.gameObject.scene == gameObject.scene && x.name == "ActorName" && x.font != null);
-                font = existingText != null ? existingText.font : TMPro.TMP_Settings.defaultFontAsset;
-            }
+            // JC | 2026-11-09 | 전투 HUD의 ActorName 글꼴을 찾지 않고 개발자용 글꼴을 사용합니다.
+            var font = DebugPanelManager.ResolveDeveloperFont(cameraToolbarFont);
             for (int i = 0; i < 3; i++)
             {
                 int view = i;
@@ -279,6 +275,8 @@ namespace JC.BattleTesting
         private BattleResult finalizedResult;
         private string modalMessage;
         private bool modalConfirmed, resultModal, restarting;
+        // JC | 2026-11-09 | 결과음 때문에 정지한 곡만 기억하여 씬 재로드 없는 테스트 재시작 때 복구합니다.
+        private string resultStoppedBgmKey;
         private float savedTimeScale = 1;
         private IDisposable modalLock;
 
@@ -459,6 +457,13 @@ namespace JC.BattleTesting
             foreach (var unit in runtimeUnits) execution.ApplyBattleSpeedToUnit(unit);
             Status = appliedPreset.IsEventBattle ? "전투 진행 중 / " + appliedPreset.encounterKey : "전투 진행 중 / 페이즈 " + Rules.Phase;
             restarting = false;
+            // JC | 2026-11-09 | 새 참가자 구성이 끝난 뒤 기존 곡을 재개합니다. 최초 실행·원래 BGM이 없던 경우에는 새 곡을 강제하지 않습니다.
+            var audio = AudioManager.Instance;
+            if (audio != null && !string.IsNullOrEmpty(resultStoppedBgmKey))
+            {
+                audio.PlayBgm(resultStoppedBgmKey);
+                resultStoppedBgmKey = null;
+            }
             flow.StartBattleLoop();
         }
 
@@ -646,6 +651,13 @@ namespace JC.BattleTesting
         // JC | 2026-11-04 | 탐사 복귀가 없는 테스트 세션에서는 결과창을 여는 시점에 승패음을 재생합니다.
         private void BattleEnded(BattleResult result)
         {
+            // JC | 2026-11-09 | 본게임과 동일하게 승패음 직전에만 BGM을 정지하고, 테스트 초기화용 재생 키를 보관합니다.
+            if (result == BattleResult.Victory || result == BattleResult.Defeat)
+            {
+                var audio = AudioManager.Instance;
+                resultStoppedBgmKey = audio != null ? audio.CurrentBgmKey : null;
+                audio?.StopBgm();
+            }
             // 테스트는 탐사 복귀/보상 지급이 없으므로 종료창에서 승패음을 확인합니다.
             if (result == BattleResult.Victory) PresentationSfxPlayer.Play("BattleEnd_Victory");
             else if (result == BattleResult.Defeat) PresentationSfxPlayer.Play("BattleEnd_Defeat");
@@ -663,6 +675,8 @@ namespace JC.BattleTesting
         }
         private void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if (modalMessage == null) return;
             // Modal의 차단 영역은 화면 전체입니다. 뒤쪽 게임 입력은 FlowLock/TimeScale로도 차단합니다.
             GUI.ModalWindow(GetInstanceID(), new Rect((Screen.width - 560) / 2f, (Screen.height - 230) / 2f, 560, 230), _ => {

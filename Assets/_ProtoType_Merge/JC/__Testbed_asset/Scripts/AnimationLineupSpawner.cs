@@ -69,8 +69,8 @@ public class AnimationLineupSpawner : MonoBehaviour
         tmp.fontSize = labelFontSize;
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.rectTransform.sizeDelta = new Vector2(4f, 1f);
-        if (labelFont != null)
-            tmp.font = labelFont;
+        // JC | 2026-11-09 | 애니메이션 검수용 상태 이름도 개발자 Noto 우선이며 기존 슬롯은 누락 시 대체로 사용합니다.
+        tmp.font = DebugPanelManager.ResolveDeveloperFont(labelFont);
         return tmp;
     }
 }

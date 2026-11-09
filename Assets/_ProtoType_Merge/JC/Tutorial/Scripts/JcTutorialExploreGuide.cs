@@ -496,7 +496,8 @@ namespace JC.Tutorial
                 CurrentGuideStep = "association-entry";
                 SetShield(false); SetContinue(false);
                 view.blockPanelRaycasts = false;
-                view.SetContent(JcTutorialText.Get("exploreguide.029", "협회 입장"), JcTutorialText.Get("exploreguide.030", "빛 테두리로 강조된 건물을 더블클릭하세요."));
+                // JC | 2026-11-09 | 탐사 안내의 문장 경계만 30% 확대하고 줄간격은 유지합니다.
+                view.SetContent(JcTutorialText.Get("exploreguide.029", "협회 입장"), JcTutorialText.Get("exploreguide.030", "빛 테두리로 강조된 건물을 더블클릭하세요."), sentenceIncrease: 1.3f);
                 view.SetVisible(true, associationFocus, JcTutorialGuideView.FocusPresentation.BuildingOutline);
                 SetQuest(JcTutorialText.Get("exploreguide.031", "점령한 건물을 더블클릭하세요"));
                 SetTurnAvailable(false);
@@ -583,7 +584,8 @@ namespace JC.Tutorial
             explanationKey = key; explanationFocus = focus;
             PresentationOpenedFrame = Time.frameCount;
             view.blockPanelRaycasts = true;
-            CurrentGuideStep = key; view.SetContent(JcTutorialText.Get("exploreguide.042", "탐사 · ") + title, text);
+            // JC | 2026-11-09 | 설명형 탐사 메시지의 문장 간격만 30% 늘립니다.
+            CurrentGuideStep = key; view.SetContent(JcTutorialText.Get("exploreguide.042", "탐사 · ") + title, text, sentenceIncrease: 1.3f);
             SetShield(true); SetContinue(true); view.SetVisible(true, focus, ExplanationStyle(key)); HideMarker();
         }
         public void ContinueExplanation()
@@ -623,7 +625,8 @@ namespace JC.Tutorial
             CurrentGuideStep = step;
             SetShield(false); SetContinue(false);
             view.blockPanelRaycasts = false;
-            view.SetContent(title, text); view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.PointerAbove);
+            // JC | 2026-11-09 | 조작형 탐사 메시지도 같은 문장 간격을 적용합니다.
+            view.SetContent(title, text, sentenceIncrease: 1.3f); view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.PointerAbove);
             view.SetActionHint(step == "camera-scroll-practice" ? JcTutorialGuideView.ActionHint.ScrollRight : JcTutorialGuideView.ActionHint.None);
         }
         private void SetTurnAvailable(bool available)

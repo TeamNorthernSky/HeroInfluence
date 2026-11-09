@@ -29,6 +29,12 @@ namespace JC.BattleTesting.Editor
                     EditorGUILayout.PropertyField(serialized.FindProperty(field), true);
             if (serialized.ApplyModifiedProperties()) controller.ApplyDraft();
 
+            // JC | 2026-11-09 | 도시 월드 조명 잠금과 독립된 보스 색 변화 설정도 같은 초안/저장 경로를 씁니다.
+            serialized.Update();
+            foreach (string field in new[] { "battlePulseEnabled", "battlePulseColor", "battlePulseMix", "battlePulseSeconds", "battlePulseInterval" })
+                EditorGUILayout.PropertyField(serialized.FindProperty(field));
+            if (serialized.ApplyModifiedProperties()) controller.ApplyDraft();
+
             // JC | 2026-11-05 | 씬 참조는 프로필에 저장하지 않고 무대 상대 경로로 바꿔 양쪽 진입 경로에서 재사용합니다.
             var renderer = (Renderer)EditorGUILayout.ObjectField("셰이딩 대상 추가", null, typeof(Renderer), true);
             if (renderer)
