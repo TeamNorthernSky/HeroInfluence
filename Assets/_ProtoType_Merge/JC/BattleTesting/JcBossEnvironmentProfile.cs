@@ -6,8 +6,11 @@ namespace JC.BattleTesting
 {
     // JC | 2026-11-05 | BE490에서만 사용하는 보정값입니다. 기본값은 기존 실내·도시 환경을 그대로 유지합니다.
     [CreateAssetMenu(menuName = "JC/전투/보스전 환경 프로필")]
-    public sealed class JcBossEnvironmentProfile : ScriptableObject
+    public sealed class JcBossEnvironmentProfile : JcIndoorEnvironmentProfile
     {
+        // JC | 2026-11-09 | 추가 효과는 기본 비활성으로 시작하여 기존 보스 외형을 유지합니다.
+        public JcBossEnvironmentProfile() { ssaoEnabled = false; }
+
         // JC | 2026-11-05 | 실내와 캐릭터는 보스 조명만 받고 도시의 낮밤 조명은 그대로 유지합니다.
         [Header("실내·캐릭터 조명 분리")]
         [InspectorName("월드 조명 차단"), Tooltip("실내 표면과 캐릭터의 태양광·환경광·환경 반사·자체 밝기 보정을 차단합니다. 창문광과 아래 추가 라이트만 받습니다.")]
@@ -58,6 +61,8 @@ namespace JC.BattleTesting
         [Serializable]
         public sealed class LocalLight
         {
+            // JC | 2026-11-09 | 은행과 같은 조명 측 전용 설정이며 기본값은 꺼짐입니다.
+            [InspectorName("플레이어 4종 후면 보조광"), Tooltip("일반 표면 대신 플레이어 4종의 뒷면만 비춥니다. 실제 Light 그림자는 만들지 않습니다.")] public bool playerBackFill;
             [Tooltip("하위 라이트 오브젝트 이름입니다.")] [InspectorName("이름")] public string label = "추가 조명";
             [Tooltip("이 라이트 사용 여부입니다.")] [InspectorName("사용")] public bool enabled = true;
             [Tooltip("점광원 또는 원뿔형 스폿 조명입니다.")] [InspectorName("조명 종류")] public LocalLightType type = LocalLightType.Spot;

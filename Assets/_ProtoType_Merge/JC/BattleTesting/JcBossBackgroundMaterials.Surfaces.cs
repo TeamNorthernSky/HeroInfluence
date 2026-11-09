@@ -9,6 +9,8 @@ namespace JC.BattleTesting
         public JcBossSurfaceProfile SurfaceSource { get; private set; }
         public JcBossSurfaceProfile SurfaceDraft { get; private set; }
         public JcBossEnvironment Environment { get; set; }
+        // JC | 2026-11-09 | 원경을 제외한 실내 복제 재질만 공통 접점 음영에 등록합니다.
+        public JC.Environment.JcContactShadingController ContactShading { get; set; }
         readonly Dictionary<Renderer, Material[]> surfaceOriginals = new Dictionary<Renderer, Material[]>();
         readonly List<SurfaceBinding> surfaceBindings = new List<SurfaceBinding>();
         sealed class SurfaceBinding { public Material copy; public JcBossSurfaceProfile.Surface settings; }
@@ -35,7 +37,8 @@ namespace JC.BattleTesting
                 {
                     JcBossSurfaceProfile.Surface rule = null;
                     foreach (var item in SurfaceDraft.surfaces)
-                        if (item != null && item.source && item.source == originals[slot] &&
+                        // JC | 2026-11-09 | 승인된 내보내기 대응표로 원본 설정을 찾아 석재·책상·카펫·줄눈 연결을 복구합니다.
+                        if (item != null && item.source && item.source == SurfaceDraft.ResolveSource(originals[slot]) &&
                             (string.IsNullOrEmpty(item.rendererPath) || stageRoot.Find(item.rendererPath) == renderer.transform)) rule = item;
                     // JC | 2026-11-05 | 금속 창틀/몰딩도 실내에 포함합니다. 조절 규칙이 없는 재질은 기존 표면값을 유지합니다.
                     bool isolated = Environment && Environment.Isolated && Environment.IsInterior(renderer) && originals[slot] &&
@@ -60,10 +63,12 @@ namespace JC.BattleTesting
                     copy.SetFloat("_TileVariation", SurfaceDraft.tileVariation);
                     copy.SetMatrix("_WorldToStage", stageRoot.worldToLocalMatrix);
                     var scale = stageRoot.lossyScale; copy.SetVector("_StageScale", new Vector4(Mathf.Abs(scale.x),Mathf.Abs(scale.y),Mathf.Abs(scale.z),1));
+                    if (ContactShading && Environment && Environment.IsInterior(renderer)) ContactShading.RegisterMaterial(copy, SurfaceDraft.ResolveSource(originals[slot]), true);
                     result[slot] = copy; surfaceBindings.Add(new SurfaceBinding { copy = copy, settings = rule }); changed = true;
                 }
                 if (changed) { surfaceOriginals.Add(renderer, originals); renderer.sharedMaterials = result; }
             }
+            if (ContactShading) ContactShading.ApplyDraft();
             if (Environment) Environment.ResumeMaterialOverrides();
         }
 
@@ -77,7 +82,12 @@ namespace JC.BattleTesting
         {
             foreach (var entry in surfaceOriginals) if (entry.Key) entry.Key.sharedMaterials = entry.Value;
             surfaceOriginals.Clear();
-            foreach (var entry in surfaceBindings) Release(entry.copy);
+            foreach (var entry in surfaceBindings)
+            {
+                // JC | 2026-11-09 | Destroy가 다음 프레임까지 지연되어도 이전 표면을 음영 대상으로 중복 계산하지 않습니다.
+                if(ContactShading) ContactShading.UnregisterMaterial(entry.copy);
+                Release(entry.copy);
+            }
             surfaceBindings.Clear();
         }
     }

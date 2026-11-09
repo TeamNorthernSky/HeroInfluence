@@ -23,6 +23,22 @@ namespace JC.BattleTesting
         [InspectorName("표면별 설정"), Tooltip("같은 재질에 여러 항목이 맞으면 아래쪽 항목이 우선합니다. 원본 재질 에셋은 수정하지 않습니다.")]
         public List<Surface> surfaces = new List<Surface>();
 
+        // JC | 2026-11-09 | 내보내기가 생성한 별도 재질을 원본 설정에 명시적으로 대응시킵니다.
+        // 이름 비교는 사용하지 않아 같은 이름의 도시 재질이나 다른 슬롯을 잘못 보정하지 않습니다.
+        [HideInInspector] public List<ExportedMaterial> exportedMaterials = new List<ExportedMaterial>();
+        [Serializable] public sealed class ExportedMaterial { public Material source, exported; }
+        public Material ResolveSource(Material material)
+        {
+            foreach(var pair in exportedMaterials) if(pair!=null && pair.exported==material && pair.source) return pair.source;
+            return material;
+        }
+        public void RegisterExported(Material source, Material exported)
+        {
+            if(!source || !exported || source==exported)return;
+            exportedMaterials.RemoveAll(p=>p==null || p.exported==exported);
+            exportedMaterials.Add(new ExportedMaterial {source=source,exported=exported});
+        }
+
         [Serializable]
         public sealed class Surface
         {

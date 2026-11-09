@@ -118,6 +118,23 @@ namespace JC.BattleTesting
             return result;
         }
 
+        // JC | 2026-11-09 | 공통 조절기 중지/재개도 종료와 같은 복원 경계를 사용하며 조절 초안은 보존합니다.
+        void OnDisable()
+        {
+            if (Environment) Environment.SuspendMaterialOverrides();
+            RestoreSurfaces();
+            foreach(var entry in originalGlassMaterials) if(entry.Key && entry.Key.sharedMaterial==GlassDraft) entry.Key.sharedMaterial=entry.Value;
+            foreach(var entry in originalMeshes) if(entry.Key) entry.Key.sharedMesh=entry.Value;
+            if(cameraData) { cameraData.requiresColorOption=originalColor; cameraData.requiresDepthOption=originalDepth; }
+            appliedThickness=-1;
+        }
+        void OnEnable()
+        {
+            if(!GlassDraft)return;
+            foreach(var pane in panes) if(pane) pane.sharedMaterial=GlassDraft;
+            if(cameraData) { cameraData.requiresColorOption=CameraOverrideOption.On; cameraData.requiresDepthOption=CameraOverrideOption.On; }
+            ApplyGlass(); ApplySurfaces();
+        }
         void OnDestroy()
         {
             instances.Remove(this);

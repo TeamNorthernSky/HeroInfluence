@@ -12,6 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7300fda7b46e411297a174dd61e9f429, type: 3}
   m_Name: JC_BossEnvironment
   m_EditorClassIdentifier: 
+  characterLighting: 0
+  ssaoFeature: {fileID: 0}
+  ssaoEnabled: 0
+  ssaoIntensity: 0.8
+  ssaoRadius: 0.65
+  ssaoDirectLightingStrength: 0.35
+  ssaoDownsample: 0
   isolateInterior: 1
   windows:
   - label: "\uCE21\uBA74 \uCC3D 1"
@@ -92,5 +99,23 @@ MonoBehaviour:
   ambientIntensity: 1
   ambientTint: {r: 1, g: 1, b: 1, a: 1}
   reflectionIntensity: 1
-  lights: []
+  lights:
+  - playerBackFill: 1
+    label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
+    enabled: 0
+    type: 1
+    position: {x: 0, y: 6, z: 0}
+    rotation: {x: 25, y: -34.45, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 0.6
+    range: 10
+    spotAngle: 60
+    innerSpotRatio: 0.6
+    shadows: 0
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
   materials: []

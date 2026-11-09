@@ -48,6 +48,18 @@ namespace JC.BackgroundEditing
             foreach(var f in root.GetComponentsInChildren<MeshFilter>(true))f.sharedMesh=(Mesh)Copy(f.sharedMesh);
             foreach(var r in root.GetComponentsInChildren<Renderer>(true))r.sharedMaterials=r.sharedMaterials.Select(m=>(Material)Copy(m)).ToArray();
         }
+        // JC | 2026-11-09 | 배경 재출력 때도 프로필의 원본 재질과 새 복제본을 대응시켜 조절 연결을 유지합니다.
+        public void BindSurfaceProfile(JcBossSurfaceProfile profile)
+        {
+            if(!profile)return;
+            foreach(var pair in cache)
+                if(pair.Key is Material original && pair.Value is Material exported)
+                {
+                    var source=profile.ResolveSource(original);
+                    if(profile.surfaces.Any(s=>s!=null && s.source==source))profile.RegisterExported(source,exported);
+                }
+            EditorUtility.SetDirty(profile);AssetDatabase.SaveAssetIfDirty(profile);
+        }
     }
     public static partial class BackgroundOps
     {
@@ -67,11 +79,14 @@ namespace JC.BackgroundEditing
                 city.AddComponent<JcBossCityTime>().worldLighting=true;
                 foreach(var c in output.GetComponentsInChildren<Component>(true))if(!(c is Transform)&&!(c is MeshFilter)&&!(c is MeshRenderer)&&!(c is JcBossCityTime)&&!(c is Light)&&!(c is DayNightLightController)&&!(c is UnityEngine.Rendering.Universal.UniversalAdditionalLightData))UnityEngine.Object.DestroyImmediate(c);
                 ApplyStageFraming(d,output);
-                AssetDatabase.StartAssetEditing();try{new AssetCopier(dir+"/Assets",true).RemapHierarchy(output);}finally{AssetDatabase.StopAssetEditing();}
+                var copier=new AssetCopier(dir+"/Assets",true);
+                AssetDatabase.StartAssetEditing();try{copier.RemapHierarchy(output);}finally{AssetDatabase.StopAssetEditing();}
                 string file=dir+"/BossStage.prefab";PrefabUtility.SaveAsPrefabAsset(output,file);AssetDatabase.SaveAssets();
                 var dependencies=AssetDatabase.GetDependencies(file,true);
                 var invalid=dependencies.Where(p=>p.StartsWith("Assets/_MiscLocal/",StringComparison.Ordinal)||(p.StartsWith("Assets/",StringComparison.Ordinal)&&p.Contains("/Editor/"))||p==Boss+"BossCity_Source.prefab"||p.StartsWith(Boss+"SourceMeshes/",StringComparison.Ordinal)).ToArray();
                 if(invalid.Length>0)throw new InvalidOperationException("로컬/편집 의존성이 남았습니다: "+string.Join("\n",invalid));
+                // JC | 2026-11-09 | 결과 검증 후 저장 연결만 갱신하며 기존 표면 조절값은 변경하지 않습니다.
+                copier.BindSurfaceProfile(JcBossBattleBackground.Load()?.surfaceProfile);
                 File.WriteAllLines(dir+"/Dependencies.txt",dependencies);AssetDatabase.ImportAsset(dir+"/Dependencies.txt");
                 AssetDatabase.ExportPackage(dependencies.Where(p=>p.StartsWith("Assets/",StringComparison.Ordinal)).ToArray(),dir+"/BossBackground.unitypackage",ExportPackageOptions.Default);
                 if(selectResult){Selection.activeObject=AssetDatabase.LoadAssetAtPath<GameObject>(file);EditorGUIUtility.PingObject(Selection.activeObject);}return file;

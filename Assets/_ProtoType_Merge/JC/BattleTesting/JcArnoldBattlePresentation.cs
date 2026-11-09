@@ -214,14 +214,14 @@ namespace JC.BattleTesting
                     root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
             // JC | 2026-11-05 | 보스 원경은 실내 보정 대신 월드 조명으로 초기화하고 실내 수광은 별도로 유지합니다.
-            if(!bossBackground) JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null);
+            if(!bossBackground && !bankSettings) JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null);
             JC.EnvironmentDetail.JcBattleRoadMarkings.BindScene(scene);
             if (background != null) background.SetActive(true);
             if (clearTutorialArenaTrees) RemoveArenaTrees(scene);
             Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);
             battleCamera = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Camera>()).FirstOrDefault(c => c.CompareTag("MainCamera"));
             if (battleCamera == null) return;
-            bankSettings?.ApplyCamera(battleCamera);
+            // JC | 2026-11-09 | 은행 렌더러 선택/복원은 공통 실내 조절기가 소유합니다.
             var roots = scene.GetRootGameObjects();
             var player = roots.FirstOrDefault(r => r.name == "PlayerPlace");
             var enemies = roots.FirstOrDefault(r => r.name == "EnemyPlace");
@@ -230,8 +230,7 @@ namespace JC.BattleTesting
             var bossSettings = bossBackground ? JcBossBattleBackground.Load() : null;
             // JC | 2026-11-05 | 유리·표면과 조명 조절기를 같은 환경 루트 아래에서 찾을 수 있게 합니다.
             GameObject bossEnvironmentRoot = null;
-            JcBossBackgroundMaterials bossMaterials = null;
-            if (bossSettings && background)
+            if ((bossSettings || bankSettings) && background)
             {
                 bossEnvironmentRoot = roots.FirstOrDefault(r => r.name == "JC_Environment");
                 if (!bossEnvironmentRoot)
@@ -245,24 +244,15 @@ namespace JC.BattleTesting
                 var cityObject=new GameObject("JC_BossCityLighting");cityObject.transform.SetParent(bossEnvironmentRoot.transform,false);
                 cityObject.AddComponent<JcBossCityLighting>().Initialize(background.transform,bossSettings,lightingHour);
             }
-            if (bossSettings && bossSettings.glassProfile && background)
+            // JC | 2026-11-09 | 실제/테스트의 공용 진입에서 동일한 실내 조절 구조를 설치합니다.
+            // 원경은 위에서 먼저 초기화하고 은행/보스 저장 프로필은 각각 그대로 전달합니다.
+            if ((bossSettings || bankSettings) && background)
             {
-                var materials = new GameObject("JC_BossBackgroundMaterials");
-                materials.transform.SetParent(bossEnvironmentRoot.transform, false);
-                bossMaterials = materials.AddComponent<JcBossBackgroundMaterials>();
-                bossMaterials.Initialize(background, bossSettings.glassProfile, battleCamera, bossSettings.surfaceProfile);
+                var controls = new GameObject("JC_IndoorEnvironment");
+                controls.transform.SetParent(bossEnvironmentRoot.transform,false);
+                controls.AddComponent<JcIndoorEnvironment>().Initialize(background,battleCamera,bankSettings,bossSettings);
             }
             var bossCameraProfile = bossSettings ? bossSettings.cameraProfile : null;
-            // JC | 2026-11-05 | 공용 낮밤/유리 적용 이후에 보스 무대 전용 보정을 설치합니다. 일반 전투에는 생성하지 않습니다.
-            if (bossSettings && bossSettings.environmentProfile && background)
-            {
-                var controls = new GameObject("JC_BossEnvironment");
-                controls.transform.SetParent(bossEnvironmentRoot.transform, false);
-                var environment = controls.AddComponent<JcBossEnvironment>();
-                environment.Initialize(bossSettings.environmentProfile, background.transform);
-                // JC | 2026-11-05 | 실내 조명 분리 상태가 금속을 포함한 모든 실내 표면에 반영되도록 연결 후 재적용합니다.
-                if (bossMaterials) { bossMaterials.Environment = environment; environment.SurfaceController = bossMaterials; bossMaterials.ApplySurfaces(); }
-            }
             if (bossCameraProfile)
             {
                 var controls = new GameObject("JC_BossCamera");

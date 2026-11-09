@@ -10,6 +10,9 @@ namespace JC.BattleTesting
         public GameObject visualPrefab;
         public JcBossCameraProfile cameraProfile;
         public Material glassProfile;
+        // JC | 2026-11-09 | 은행과 같은 계산기를 사용하지만 보스 테스트/BE490 전용 프로필만 참조합니다.
+        [Tooltip("보스 전용 툰 설정입니다. 기본 꺼짐이며 은행 프로필과 독립적입니다.")] public JcBankToonProfile toonProfile;
+        [Tooltip("보스 실내 전용 접점 음영입니다. 원경에는 적용하지 않습니다.")] public JC.Environment.JcContactShadingProfile contactShadingProfile;
         // JC | 2026-11-05 | 테스트와 실제 BE490이 같은 전용 환경 보정을 사용하며 일반 전투 프로필과 분리합니다.
         [Tooltip("기존 환경 위에 적용할 보스전 전용 조명·음영·무대 재질 설정입니다.")]
         public JcBossEnvironmentProfile environmentProfile;

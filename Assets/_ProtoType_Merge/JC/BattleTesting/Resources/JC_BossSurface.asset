@@ -67,3 +67,18 @@ MonoBehaviour:
     smoothness: 0.18
     specular: 0.04
     variation: 0
+  exportedMaterials:
+  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
+    exported: {fileID: 2100000, guid: a4f6e8cd8afb14747b966b92c45b529e, type: 2}
+  - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
+    exported: {fileID: 2100000, guid: 953df449190c46343bba439997b910bf, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: 63b5d244e7d9cb24bbc7fcc4c27d6312, type: 2}
+  - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
+    exported: {fileID: 2100000, guid: 8dc2cdb037043154abf1480f60471784, type: 2}
+  - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
+    exported: {fileID: 2100000, guid: 938fa7908a6ebbe46a9ec6ddb3706cb0, type: 2}
+  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
+    exported: {fileID: 2100000, guid: fbeedfd5476598349915ca1f8618322f, type: 2}
+  - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
+    exported: {fileID: 2100000, guid: c8c564801c2633b4f87b1111c7af07a3, type: 2}

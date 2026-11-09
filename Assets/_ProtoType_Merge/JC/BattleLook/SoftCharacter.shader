@@ -20,6 +20,8 @@ Shader "JC/Battle/SoftCharacter"
   _KeyDirection("Key Direction",Vector)=(.4,.8,-.3,0)
   _KeyTint("Key Tint",Color)=(1,.98,.94,1)
   _FillTint("Fill Tint",Color)=(.87,.92,1,1)
+  // JC | 2026-11-09 | 후면광은 실제 플레이어 4종 복제 재질만 받습니다.
+  [HideInInspector] _JcPlayerBackFillTarget("Player Back Fill Target",Float)=0
   [HideInInspector] _BossLocalOnly("보스 전용 조명만",Float)=0
  }
  SubShader
@@ -38,6 +40,8 @@ Shader "JC/Battle/SoftCharacter"
    // JC | 2026-11-05 | BE490에서는 기존 자체 명암 대신 실제 창문/추가광 및 그림자를 받습니다.
    #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
    #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+   // JC | 2026-11-09 | 선택형 실내 실제광 모드에서도 은행의 기존 주변 음영을 수신합니다.
+   #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
    #pragma multi_compile_fragment _ _LIGHT_COOKIES
    #pragma multi_compile _ _FORWARD_PLUS
    #pragma multi_compile_fog
@@ -50,7 +54,7 @@ Shader "JC/Battle/SoftCharacter"
    float4 _BaseMap_ST,_EmissionMap_ST,_KeyDirection;
    half4 _BaseColor,_EmissionColor,_KeyTint,_FillTint;
    float _Cutoff,_ShadeFloor,_Wrap,_ShadowStrength,_AlbedoLift,_RimStrength,_Saturation,_MoldingStrength,_MoldingSharpness,_HitFlash;
-   float _BossLocalOnly;
+   float _BossLocalOnly, _JcPlayerBackFillTarget;
    CBUFFER_END
    float4 _JcDayNight, _JcNightReadability;
    struct A{float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;};
@@ -69,12 +73,23 @@ Shader "JC/Battle/SoftCharacter"
      SurfaceData surface=(SurfaceData)0; surface.albedo=albedo.rgb; surface.alpha=albedo.a; surface.smoothness=.25; surface.occlusion=1;
      InputData inputData=(InputData)0; inputData.positionWS=i.positionWS; inputData.normalWS=n; inputData.viewDirectionWS=GetWorldSpaceNormalizeViewDir(i.positionWS);
      inputData.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(i.positionCS);
-     half4 localColor=JcBossLocalSurface(inputData,surface); localColor.a=albedo.a; return localColor;
+     // JC | 2026-11-09 | 선택형 은행 실제광 경로의 주광 그림자/실내 간접광 입력을 완성합니다. 보스 GI는 계속 차단합니다.
+     inputData.shadowCoord=TransformWorldToShadowCoord(i.positionWS);
+     inputData.shadowMask=half4(1,1,1,1);
+     inputData.bakedGI=_JcIndoorMode.x>1.5?SampleSH(n):half3(0,0,0);
+     // JC | 2026-11-09 | 은행 실제광은 실내 환경을, 보스는 창문/추가광만 계산합니다.
+     half4 localColor=_JcIndoorMode.x>1.5 ? JcBankPbr(inputData,surface) : JcBossLocalSurface(inputData,surface,2);
+     localColor.rgb+=albedo.rgb*JcBankCharacterFill(n)*saturate(_JcPlayerBackFillTarget);
+     localColor.a=albedo.a; return localColor;
     }
     float lightAmount=smoothstep(-max(.01,_Wrap),1,dot(n,normalize(_KeyDirection.xyz)));
+    // JC | 2026-11-09 | 은행의 기존 단계 명암을 보존하며 보스도 동일 옵션으로 조절합니다.
+    lightAmount=JcBankCharacterRamp(lightAmount);
     half3 lighting=lerp(_FillTint.rgb*_ShadeFloor,_KeyTint.rgb,lightAmount);
     Light main=GetMainLight(TransformWorldToShadowCoord(i.positionWS));
     lighting*=lerp(1,main.shadowAttenuation,_ShadowStrength);
+    lighting*=lerp(half3(1,1,1),lerp(_JcBankToonTint.rgb,half3(1,1,1),lightAmount),saturate(_JcBankToon.x*_JcBankToonOptions.y));
+    lighting+=JcBankCharacterFill(n)*saturate(_JcPlayerBackFillTarget);
     half3 color=lerp(albedo.rgb,sqrt(max(albedo.rgb,0)),_AlbedoLift)*lighting;
     half luminance=dot(color,half3(.2126,.7152,.0722));
     color=max(0,lerp(luminance.xxx,color,_Saturation));
@@ -87,6 +102,7 @@ Shader "JC/Battle/SoftCharacter"
     color=color*(1-crease*_MoldingStrength*.4)+_KeyTint.rgb*highlight*_MoldingStrength*.22;
     if(_JcDayNight.x>.5)color*=max(.01,_JcNightReadability.y);
     color+=SAMPLE_TEXTURE2D(_EmissionMap,sampler_EmissionMap,i.uv).rgb*_EmissionColor.rgb;
+    color*=JcIndoorOcclusion(i.positionWS,n);
     color=lerp(color,half3(1,1,1),saturate(_HitFlash));
     return half4(MixFog(color,i.fog),albedo.a);
    }

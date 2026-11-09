@@ -47,6 +47,8 @@ Shader "JC/Environment/Boss Interior Surface"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
             #include "Assets/_ProtoType_Merge/JC/BattleTesting/JcBossLocalLighting.hlsl"
+            // JC | 2026-11-09 | 보스 표면에만 공통 접점 음영을 적용하며 도시 재질은 등록하지 않습니다.
+            #include "Assets/_ProtoType_Merge/JC/Environment/ContactShading/JcContactShading.hlsl"
             float _BossLocalOnly;
             float _SurfaceVariation,_FloorTiles,_TileSize,_JointWidth,_JointContrast,_JointNormal,_TileVariation;
             float4x4 _WorldToStage;
@@ -86,8 +88,10 @@ Shader "JC/Environment/Boss Interior Surface"
                 }
                 // JC | 2026-11-05 | 원본 색·큰 면을 보존하면서 약한 반사, 기존 그림자와 추가 라이트를 그대로 받습니다.
                 // JC | 2026-11-05 | 실내 차단 모드에서는 안개/환경 반사도 밝기 하한을 만들지 않게 제외합니다.
+                surface.albedo=JcApplyContactShading(surface.albedo,input.positionWS);
                 if(_BossLocalOnly>.5)return JcBossLocalSurface(data,surface);
-                half4 color=UniversalFragmentPBR(data,surface);
+                half4 color=JcBankPbr(data,surface);
+                color.rgb*=JcIndoorOcclusion(data.positionWS,data.normalWS);
                 color.rgb=MixFog(color.rgb,data.fogCoord);color.a=1;return color;
             }
             ENDHLSL
