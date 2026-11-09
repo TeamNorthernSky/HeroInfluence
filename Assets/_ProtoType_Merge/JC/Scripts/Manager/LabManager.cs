@@ -8,8 +8,8 @@ using UnityEngine;
 ///   1) 스킬 장착 변경 — 영웅의 CurrentSkillIndex를 DH PersistentUnitRepository.UpdateUnitRuntimeState로 writeback (실결선/비침습).
 ///   2) 스킬 강화 저장 단계(1=기본, 5=+4) — 영웅별·스킬별 강화 레벨을 JC측 in-memory로 보관.
 ///
-/// 기본판과 습득한 강화판은 같은 강화 기록을 사용합니다. 현재 강화 단계는 리스크 확률(HeroSkillRules.RiskChance)에만
-/// 연결되어 있고, 전투 계수는 DHCsvTemplateCatalog에서 Lv1로 고정됩니다.
+/// 기본판과 습득한 강화판은 같은 강화 기록을 사용합니다. 강화 단계 1~5가 전투 테이블(ClassSkill) 계수 Lv1~Lv5로 적용됩니다.
+/// (전투 진입 시 BattleCharactor가 단계별 계수를 스킬 복사본에 넣습니다. 리스크 확률은 기획 보류로 사용처 없음.)
 /// 단계 상한 5는 자원 데이터 테이블 V2.3 '연구소' 시트(to_skill_level 2~5)에 맞춥니다. 이전 저장의 6(+5)은 불러올 때 5로 맞춰집니다.
 ///
 /// 비용·조건 출처: AssociationResourceCatalog (H.I 자원 데이터 테이블 V2.3 '연구소' 시트).
@@ -209,7 +209,7 @@ public class LabManager : MonoBehaviour
     }
 
     /// <summary>스킬 강화 한 단계: 레벨 +1. 자원 차감은 호출자(LabModalController)가 별도 처리.
-    /// 위력은 변형별 고정값이며, 이 단계는 리스크 확률과 전투 시전 데이터에 반영됩니다.</summary>
+    /// 올린 단계는 다음 전투부터 스킬 계수에 반영됩니다.</summary>
     public bool TryUpgradeSkill(int unitIndex, int skillIndex)
     {
         if (!CanUpgradeSkill(unitIndex, skillIndex)) return false;

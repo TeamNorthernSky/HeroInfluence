@@ -280,23 +280,26 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             : 0f;
     }
 
-    /// <summary>Returns class skill value for the given skill level.</summary>
+    /// <summary>ClassSkill 시트의 계수 열 수(Lv1~Lv5). 연구소 강화 단계 1~5가 이 열에 대응합니다.</summary>
+    private const int ClassSkillTableMaxLevel = 5;
+
+    private static int ClampClassSkillLevel(int level) => Mathf.Clamp(level, 1, ClassSkillTableMaxLevel);
+
+    /// <summary>스킬 계수(Lv1~Lv5 중 해당 단계). 범위를 벗어난 단계는 1~5로 맞춥니다.</summary>
     public float GetClassSkillValueAtLevel(int skillIndex, int level)
     {
         EnsureLoaded();
         return classSkillTemplateLookup.TryGetValue(skillIndex, out DHClassSkillTemplate template)
-            ? (HeroSkillRules.IsCurrentHeroSkill(skillIndex) ? template.ValueLv1
-                : LeveledFloat(template.ValueLv1, template.ValueLv2, template.ValueLv3, template.ValueLv4, template.ValueLv5, level))
+            ? LeveledFloat(template.ValueLv1, template.ValueLv2, template.ValueLv3, template.ValueLv4, template.ValueLv5, ClampClassSkillLevel(level))
             : 0f;
     }
 
-    /// <summary>Returns class skill sub-value for the given skill level.</summary>
+    /// <summary>스킬 추가 계수(Lv1~Lv5 중 해당 단계). 범위를 벗어난 단계는 1~5로 맞춥니다.</summary>
     public float GetClassSkillSubValueAtLevel(int skillIndex, int level)
     {
         EnsureLoaded();
         return classSkillTemplateLookup.TryGetValue(skillIndex, out DHClassSkillTemplate template)
-            ? (HeroSkillRules.IsCurrentHeroSkill(skillIndex) ? template.SubValueLv1
-                : LeveledFloat(template.SubValueLv1, template.SubValueLv2, template.SubValueLv3, template.SubValueLv4, template.SubValueLv5, level))
+            ? LeveledFloat(template.SubValueLv1, template.SubValueLv2, template.SubValueLv3, template.SubValueLv4, template.SubValueLv5, ClampClassSkillLevel(level))
             : 0f;
     }
 

@@ -1206,7 +1206,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         var skill = availableSkills?.Find(s => s != null && s.skillIndex == skillId && s.acquireLevel <= Level);
         if (skill == null) return false;
         if (!UsesTutorialEquipment && SourceData != null && GameManager.Instance?.Lab != null)
-            skill.enhancementLevel = GameManager.Instance.Lab.GetSkillLevel(SourceData.UnitIndex, skill.skillIndex);
+            ApplyHeroSkillLevel(skill, GameManager.Instance.Lab.GetSkillLevel(SourceData.UnitIndex, skill.skillIndex));
         castSelectedSkill = skill;
         SelectedSkillData = skill;
         return true;
