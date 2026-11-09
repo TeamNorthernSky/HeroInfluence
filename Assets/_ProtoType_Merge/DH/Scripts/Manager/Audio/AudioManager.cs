@@ -32,6 +32,7 @@ public sealed class AudioManager : MonoBehaviour
     private readonly Dictionary<string, Coroutine> loopingSfxStopCoroutines = new Dictionary<string, Coroutine>();
     private readonly List<AudioSource> timedSfxSources = new List<AudioSource>();
     private readonly HashSet<UnityEngine.Object> bgmDuckRequests = new HashSet<UnityEngine.Object>();
+    private string deferredBgmScene;
     private string currentBgmKey;
     private float currentBgmDefaultVolume = 1f;
     public bool MasterMuted { get; private set; }
@@ -84,6 +85,7 @@ public sealed class AudioManager : MonoBehaviour
     {
         SceneManager.sceneLoaded -= HandleSceneLoaded;
         bgmDuckRequests.Clear();
+        deferredBgmScene = null;
         if (Instance == this) StopBgm();
     }
 
@@ -246,19 +248,24 @@ public sealed class AudioManager : MonoBehaviour
 
     public void PlaySfxForDuration(string key, float durationSeconds)
     {
+        PlaySfxForDuration(key, durationSeconds, null);
+    }
+
+    public bool PlaySfxForDuration(string key, float durationSeconds, System.Action onCompleted)
+    {
         if (clipCatalog == null)
-            return;
+            return false;
 
         string normalizedKey = DHAudioClipCatalog.NormalizeKey(key);
         if (string.IsNullOrWhiteSpace(normalizedKey))
-            return;
+            return false;
 
         if (!TryGetSfxEntry(normalizedKey, out DHAudioClipEntry entry) || entry.Clip == null)
-            return;
+            return false;
 
         float clampedDuration = Mathf.Max(0f, durationSeconds);
         if (clampedDuration <= 0f)
-            return;
+            return false;
 
         float playbackDuration = Mathf.Min(clampedDuration, entry.Clip.length);
         if (!entry.AllowOverlap)
@@ -266,7 +273,7 @@ public sealed class AudioManager : MonoBehaviour
             if (sfxBlockedUntil.TryGetValue(entry.Key, out float blockedUntil) &&
                 Time.unscaledTime < blockedUntil)
             {
-                return;
+                return false;
             }
 
             sfxBlockedUntil[entry.Key] = Time.unscaledTime + playbackDuration;
@@ -274,7 +281,7 @@ public sealed class AudioManager : MonoBehaviour
 
         AudioSource source = GetAvailableTimedSfxSource();
         if (source == null)
-            return;
+            return false;
 
         source.Stop();
         source.clip = entry.Clip;
@@ -282,7 +289,8 @@ public sealed class AudioManager : MonoBehaviour
         source.volume = GetSfxPlaybackVolume(entry);
         source.Play();
 
-        StartCoroutine(StopTimedSfxAfter(source, playbackDuration));
+        StartCoroutine(StopTimedSfxAfter(source, playbackDuration, onCompleted));
+        return true;
     }
 
     public void PlayLoopingSfx(string key)
@@ -339,6 +347,9 @@ public sealed class AudioManager : MonoBehaviour
 
     public void PlayBgmForScene(string sceneName)
     {
+        if (string.Equals(deferredBgmScene, NormalizeSceneName(sceneName), System.StringComparison.OrdinalIgnoreCase))
+            return;
+
         if (TryGetSceneBgmKey(sceneName, out string bgmKey))
         {
             PlayBgm(bgmKey);
@@ -347,6 +358,23 @@ public sealed class AudioManager : MonoBehaviour
 
         if (stopBgmWhenSceneHasNoBinding)
             StopBgm();
+    }
+
+    public void DeferSceneBgm(string sceneName)
+    {
+        deferredBgmScene = NormalizeSceneName(sceneName);
+        StopBgm();
+    }
+
+    public void ResumeSceneBgm(string sceneName, bool play = true)
+    {
+        if (!string.Equals(deferredBgmScene, NormalizeSceneName(sceneName), System.StringComparison.OrdinalIgnoreCase))
+            return;
+
+        deferredBgmScene = null;
+        if (play && playBgmOnSceneLoaded &&
+            string.Equals(SceneManager.GetActiveScene().name, NormalizeSceneName(sceneName), System.StringComparison.OrdinalIgnoreCase))
+            PlayBgmForScene(sceneName);
     }
 
     public void PrepareSceneBgmTransition(string sceneName)
@@ -639,15 +667,16 @@ public sealed class AudioManager : MonoBehaviour
         source.clip = null;
     }
 
-    private System.Collections.IEnumerator StopTimedSfxAfter(AudioSource source, float durationSeconds)
+    private System.Collections.IEnumerator StopTimedSfxAfter(AudioSource source, float durationSeconds, System.Action onCompleted)
     {
         yield return new WaitForSecondsRealtime(durationSeconds);
 
-        if (source == null)
-            yield break;
-
-        source.Stop();
-        source.clip = null;
+        if (source != null)
+        {
+            source.Stop();
+            source.clip = null;
+        }
+        onCompleted?.Invoke();
     }
 
     private static string NormalizeSceneName(string sceneName)
