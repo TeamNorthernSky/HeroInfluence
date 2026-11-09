@@ -1311,6 +1311,14 @@ public class BattleManager : MonoBehaviour
             ?.Caster;
         if (originalCaster == null) return requests;
 
+        // 2명 이상을 때리는 공격(연격·저스티스 크래쉬·대쉬 등)은 반격하지 않는다.
+        // 개별 히트의 CanTriggerCounter는 피해 직전 재계산으로 다시 켜질 수 있어 여기서 시전 단위로 막는다.
+        if (!CounterattackRules.IsSingleTargetAttack(result.Skill, result.DamageContexts))
+        {
+            Debug.Log($"[Combat] 반격 제외: 단일 대상 공격이 아님 (skill={result.Skill?.skillKey ?? "null"})");
+            return requests;
+        }
+
         // 투사체 전달 결과는 더 이상 반격 성립에 관여하지 않는다. 연출은 규칙을 취소할 수 없다.
         var candidates = result.DamageContexts
             .Where(ctx => ctx != null && ctx.CanTriggerCounter && CounterattackRules.IsEligibleHit(ctx))

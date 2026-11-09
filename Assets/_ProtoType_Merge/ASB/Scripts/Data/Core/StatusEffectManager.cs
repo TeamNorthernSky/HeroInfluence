@@ -119,6 +119,22 @@ public sealed class StatusEffectManager
         return removed && RequiresStatRecalculation(effectType);
     }
 
+    /// <summary>
+    /// 걸려 있는 상태효과를 모두 지운다(사망·부활 정리용). 스탯 재계산이 필요한 효과가 있었으면 true.
+    /// </summary>
+    public bool ClearAllStatusEffects()
+    {
+        if (activeEffects.Count == 0)
+        {
+            return false;
+        }
+
+        bool requiresRecalculation = activeEffects.Exists(x => x != null && RequiresStatRecalculation(x.effectType));
+        activeEffects.Clear();
+        owner?.NotifyStatusEffectsChanged();
+        return requiresRecalculation;
+    }
+
     public bool RemoveStatusEffectFromSource(StatusEffectType effectType, BattleCharactor source)
     {
         if (source == null || activeEffects.Count == 0) return false;

@@ -48,9 +48,10 @@ public partial class BattleCharactor
             foreach (var skill in learned)
             {
                 var copy = CloneSkillData(skill);
-                copy.enhancementLevel = SourceData != null && GameManager.Instance?.Lab != null
+                int enhancementLevel = SourceData != null && GameManager.Instance?.Lab != null
                     ? GameManager.Instance.Lab.GetSkillLevel(SourceData.UnitIndex, skill.skillIndex)
-                    : (HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx) ? Mathf.Clamp(skillLevel, 1, 6) : 1);
+                    : (HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx) ? Mathf.Clamp(skillLevel, LabManager.BaseSkillLevel, LabManager.MaxSkillLevel) : 1);
+                ApplyHeroSkillLevel(copy, enhancementLevel);
                 availableSkills.Add(copy);
             }
             RebuildClassSkillSlots();
@@ -104,7 +105,7 @@ public partial class BattleCharactor
         {
             SkillData copy = CloneSkillData(skill);
             copy.enhancementLevel = HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx)
-                ? Mathf.Clamp(skillLevel, 1, 6) : 1;
+                ? Mathf.Clamp(skillLevel, LabManager.BaseSkillLevel, LabManager.MaxSkillLevel) : 1;
             availableSkills.Add(copy);
         }
         RebuildClassSkillSlots();
@@ -150,6 +151,24 @@ public partial class BattleCharactor
         classSkillIndex = first != null ? first.skillIndex : fallbackSkillIdx;
         selectedSkillIndex = first != null ? Mathf.Max(0, availableSkills.IndexOf(first)) : 0;
         SelectedSkillData = availableSkills.Count > 0 ? availableSkills[selectedSkillIndex] : null;
+    }
+
+    /// <summary>
+    /// 연구소 강화 단계를 스킬 복사본에 넣고, 영웅 스킬이면 그 단계의 계수(Lv1~Lv5)로 바꿉니다.
+    /// 영웅 스킬 표에 없는 스킬(적·코어 등)은 단계만 넣고 계수는 그대로 둡니다.
+    /// </summary>
+    private static void ApplyHeroSkillLevel(SkillData skill, int level)
+    {
+        if (skill == null) return;
+        skill.enhancementLevel = Mathf.Clamp(level, LabManager.BaseSkillLevel, LabManager.MaxSkillLevel);
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog == null || !HeroSkillRules.IsCurrentHeroSkill(skill.skillIndex) ||
+            !catalog.TryGetClassSkillTemplate(skill.skillIndex, out _))
+            return;
+
+        skill.skillValue = catalog.GetClassSkillValueAtLevel(skill.skillIndex, skill.enhancementLevel);
+        skill.skillSubValue = catalog.GetClassSkillSubValueAtLevel(skill.skillIndex, skill.enhancementLevel);
     }
 
     private static SkillData TryResolveSkillDataForPlayerPattern(DHCsvTemplateCatalog catalog, int skillIdx)

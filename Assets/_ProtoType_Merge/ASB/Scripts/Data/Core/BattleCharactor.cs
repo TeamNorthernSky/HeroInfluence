@@ -640,6 +640,18 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
     }
 
+    /// <summary>
+    /// 걸려 있는 상태효과를 모두 지운다. 사망·부활 때 불러서 죽기 전 도발·방어력 감소·보호막 등이
+    /// 부활 뒤까지 남지 않게 한다. 스탯에 영향을 주던 효과가 있었으면 스탯을 다시 계산한다.
+    /// </summary>
+    public void ClearAllStatusEffects()
+    {
+        if (Effects.ClearAllStatusEffects())
+        {
+            RecalculateStats(applyCurrentHpClamp: true);
+        }
+    }
+
     public bool HasStatusEffect(StatusEffectType effectType)
     {
         return Effects.HasStatusEffect(effectType);
@@ -671,7 +683,11 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
         IsDead = true;
         currentHp = 0f;
-        RemoveStatusEffect(StatusEffectType.guarded);
+        // 죽으면 걸려 있던 상태효과를 모두 지운다(대신 맞기 포함). 부활해도 죽기 전 효과가 되살아나지 않는다.
+        // 충전·휴식 예약도 함께 정리해 충전 표시 마커와 예약 상태를 맞춘다.
+        ClearCharge();
+        SetPendingRest(false);
+        ClearAllStatusEffects();
 
         // 사망 후 남은 팀원의 대열 패시브(고정 전열 CounterRate / 후열 CriticalRate)를 다시 계산한다.
         // IsDead=true 이후에 호출해야 이 유닛이 경계 계산에서 빠진다.
@@ -710,7 +726,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
 
         IsDead = false;
-        RemoveStatusEffect(StatusEffectType.guarded);
+        // 사망 때 이미 지웠지만, 죽어 있는 동안 걸린 효과가 있어도 깨끗한 상태로 돌아오도록 한 번 더 정리한다.
+        ClearAllStatusEffects();
         float ratio = Mathf.Clamp01(hpRatio);
         currentHp = Mathf.Clamp(RoundHpValue(MaxHp * ratio), 1f, MaxHp);
 
@@ -1189,7 +1206,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         var skill = availableSkills?.Find(s => s != null && s.skillIndex == skillId && s.acquireLevel <= Level);
         if (skill == null) return false;
         if (!UsesTutorialEquipment && SourceData != null && GameManager.Instance?.Lab != null)
-            skill.enhancementLevel = GameManager.Instance.Lab.GetSkillLevel(SourceData.UnitIndex, skill.skillIndex);
+            ApplyHeroSkillLevel(skill, GameManager.Instance.Lab.GetSkillLevel(SourceData.UnitIndex, skill.skillIndex));
         castSelectedSkill = skill;
         SelectedSkillData = skill;
         return true;

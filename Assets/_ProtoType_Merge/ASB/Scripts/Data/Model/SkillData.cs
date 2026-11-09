@@ -20,7 +20,7 @@ public class SkillData
     public int slot;                    // §5-7 적 스킬 슬롯(1/2), 그 외 0. skillIndex%10 판정 대체
     [Tooltip("원본 스킬의 리스크 식별값입니다. 리스크 실행부가 연결될 때 이 시전의 종류를 판별합니다.")]
     public string riskKey;
-    [Tooltip("이번 시전의 협회 강화 저장 단계입니다. 1=기본, 6=+5이며 기본판·강화판이 공유합니다.")]
+    [Tooltip("이번 시전의 연구소 강화 단계입니다. 1=기본, 5=+4이며 기본판·강화판이 공유합니다. 영웅 스킬은 이 단계의 계수가 skillValue/skillSubValue에 들어갑니다.")]
     public int enhancementLevel = 1;
     public float RiskChance => string.IsNullOrEmpty(riskKey) ? 0f : HeroSkillRules.RiskChance(enhancementLevel);
     public string skillClass;
