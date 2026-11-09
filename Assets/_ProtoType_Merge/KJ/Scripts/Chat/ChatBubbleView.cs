@@ -206,7 +206,12 @@ public class ChatBubbleView : MonoBehaviour
         if (nameText != null)
         {
             nameText.text = charName ?? string.Empty;
-            if (nameText.GetPreferredValues(nameText.text).x > 150f && nameText.text.Contains(" "))
+            string compactName = nameText.text.Replace(" ", "").Replace("\n", "").Replace("\r", "");
+            if (compactName == "겁많은빌런")
+                nameText.text = "<nobr>겁 많은</nobr>\n<nobr>빌런</nobr>";
+            else if (compactName == "수다스러운빌런")
+                nameText.text = "<nobr>수다스러운</nobr>\n<nobr>빌런</nobr>";
+            else if (nameText.GetPreferredValues(nameText.text).x > 150f && nameText.text.Contains(" "))
                 nameText.text = nameText.text.Replace(" ", "\n");
             nameText.gameObject.SetActive(!isNarration); // 나레이션은 화자가 없다 (레이아웃에서 제외)
         }
