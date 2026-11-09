@@ -34,6 +34,9 @@ public sealed class AudioManager : MonoBehaviour
     private readonly HashSet<UnityEngine.Object> bgmDuckRequests = new HashSet<UnityEngine.Object>();
     private string currentBgmKey;
     private float currentBgmDefaultVolume = 1f;
+    public bool MasterMuted { get; private set; }
+    public bool BgmMuted { get; private set; }
+    public bool SfxMuted { get; private set; }
     private float sceneBgmFadeVolume = 1f;
     private bool sceneBgmTransitionActive;
     private AudioSource bgmLoopSource;
@@ -236,7 +239,8 @@ public sealed class AudioManager : MonoBehaviour
         }
 
         sfxSource.PlayOneShot(entry.Clip, GetSfxPlaybackVolume(entry));
-        if (string.Equals(normalizedKey, "Button_Click_Fail", System.StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(normalizedKey, "Button_Click_Fail", System.StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalizedKey, "Explore_MoveFail", System.StringComparison.OrdinalIgnoreCase))
             MouseClickSfx.NotifyClickFailPlayed();
     }
 
@@ -386,6 +390,21 @@ public sealed class AudioManager : MonoBehaviour
         RefreshLoopingSfxVolumes();
     }
 
+    public void SetMasterMuted(bool muted) { MasterMuted = muted; ApplyMuteState(); }
+    public void SetBgmMuted(bool muted) { BgmMuted = muted; ApplyMuteState(); }
+    public void SetSfxMuted(bool muted) { SfxMuted = muted; ApplyMuteState(); }
+
+    private void ApplyMuteState()
+    {
+        ApplyBgmSourceVolume();
+        if (sfxSource != null) sfxSource.mute = MasterMuted || SfxMuted;
+        foreach (var source in timedSfxSources)
+            if (source != null) source.mute = MasterMuted || SfxMuted;
+        foreach (var source in loopingSfxSources.Values)
+            if (source != null) source.mute = MasterMuted || SfxMuted;
+        RefreshLoopingSfxVolumes();
+    }
+
     public void SetBgmVolume(float volume)
     {
         bgmVolume = Mathf.Clamp01(volume);
@@ -524,7 +543,7 @@ public sealed class AudioManager : MonoBehaviour
 
     private void ApplyBgmSourceVolume()
     {
-        float volume = masterVolume * bgmVolume * currentBgmDefaultVolume * sceneBgmFadeVolume *
+        float volume = (MasterMuted || BgmMuted ? 0f : masterVolume * bgmVolume) * currentBgmDefaultVolume * sceneBgmFadeVolume *
             (bgmDuckRequests.Count > 0 ? 0.5f : 1f);
         if (bgmSource != null)
             bgmSource.volume = volume;
@@ -534,6 +553,7 @@ public sealed class AudioManager : MonoBehaviour
 
     private float GetSfxPlaybackVolume(DHAudioClipEntry entry)
     {
+        // 개별 재생 음량은 보관하고 AudioSource.mute로 출력을 차단한다.
         return masterVolume * sfxVolume * entry.DefaultVolume;
     }
 
@@ -563,6 +583,7 @@ public sealed class AudioManager : MonoBehaviour
         AudioSource source = gameObject.AddComponent<AudioSource>();
         source.playOnAwake = false;
         source.loop = false;
+        source.mute = MasterMuted || SfxMuted;
         return source;
     }
 
@@ -571,6 +592,7 @@ public sealed class AudioManager : MonoBehaviour
         AudioSource source = gameObject.AddComponent<AudioSource>();
         source.playOnAwake = false;
         source.loop = true;
+        source.mute = MasterMuted || SfxMuted;
         loopingSfxSources[key] = source;
         return source;
     }

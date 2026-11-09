@@ -109,10 +109,10 @@ public class PartyRecoveryAreaController : MonoBehaviour
             if (unitIndex <= 0)
                 continue;
 
-            if (!unitRepository.HealUnitToIngameMaxHp(unitIndex, out float healedHp))
+            if (!unitRepository.HealUnitToIngameMaxHp(unitIndex, out _))
                 continue;
 
-            ApplySceneUnitHp(party, unitIndex, healedHp);
+            RefreshSceneUnitState(party, unitIndex);
             recoveredCount++;
         }
     }
@@ -135,7 +135,7 @@ public class PartyRecoveryAreaController : MonoBehaviour
         return composition != null ? composition.UnitIndices : System.Array.Empty<int>();
     }
 
-    private static void ApplySceneUnitHp(PartyGridMover party, int unitIndex, float healedHp)
+    private static void RefreshSceneUnitState(PartyGridMover party, int unitIndex)
     {
         PartyUnitState[] unitStates = party.GetComponentsInChildren<PartyUnitState>(true);
         for (int i = 0; i < unitStates.Length; i++)
@@ -144,8 +144,8 @@ public class PartyRecoveryAreaController : MonoBehaviour
             if (unitState == null || unitState.UnitIndex != unitIndex)
                 continue;
 
-            unitState.SetCurrentHp(healedHp);
-            unitState.SetIncapacitated(false);
+            // 코어 교체 뒤에는 최대 체력도 바뀌므로, 회복된 현재 체력과 장착 정보를 함께 갱신한다.
+            unitState.RefreshFromRepository();
         }
     }
 

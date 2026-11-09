@@ -220,8 +220,7 @@ public class WeaponPersistentRepository : MonoBehaviour
 
             RepairWeaponTemplateKey(data);
 
-            if (IsDefault(data.CachedWeaponStats))
-                RefreshWeaponStats(data);
+            RefreshWeaponStats(data);
         }
 
         if (nextWeaponIndex <= highestWeaponIndex)
@@ -230,34 +229,35 @@ public class WeaponPersistentRepository : MonoBehaviour
 
     private bool RefreshWeaponStats(WeaponPersistentData data)
     {
+        if (!TryResolveWeaponStats(data, out EquipmentStatBlock stats))
+            return false;
+
+        data.SetCachedWeaponStats(stats);
+        return true;
+    }
+
+    private static bool TryResolveWeaponStats(WeaponPersistentData data, out EquipmentStatBlock stats)
+    {
+        stats = default;
         if (data == null)
             return false;
 
-        EquipmentStatBlock stats = ResolveWeaponStats(data);
-        data.SetCachedWeaponStats(stats);
-        return !IsDefault(stats);
-    }
-
-    private static EquipmentStatBlock ResolveWeaponStats(WeaponPersistentData data)
-    {
-        if (data == null)
-            return default;
-
         string weaponTemplateKey = GetResolvedWeaponTemplateKey(data);
         if (string.IsNullOrEmpty(weaponTemplateKey))
-            return default;
+            return false;
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null)
-            return default;
+            return false;
 
         int level = Mathf.Clamp(data.Level, BaseWeaponLevel, MaxWeaponLevel);
         if (catalog.TryGetWeaponTemplate(weaponTemplateKey, out DHWeaponTemplate template) && template != null)
-            return EquipmentStatBlock.FromStatBlock(template.GetBonusStatsAtLevel(level));
+        {
+            stats = EquipmentStatBlock.FromStatBlock(template.GetBonusStatsAtLevel(level));
+            return true;
+        }
 
-        return catalog.TryGetWeaponStats(weaponTemplateKey, out EquipmentStatBlock baseStats)
-            ? baseStats
-            : default;
+        return catalog.TryGetWeaponStats(weaponTemplateKey, out stats);
     }
 
     private static bool IsDefault(EquipmentStatBlock stats)

@@ -19,6 +19,8 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     private BattleCharactor currentUnit;
     private bool isHovering;
+    // JC | 2026-11-06: 고정 설명창을 사용하지 않는 기존 호버 툴팁도 IP 구간 변경을 반영합니다.
+    private int displayedIpBand = -1;
 
     private void Awake()
     {
@@ -59,6 +61,14 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
     public void OnPointerEnter(PointerEventData eventData) { isHovering = true; ShowTip(); }
     public void OnPointerExit(PointerEventData eventData) { isHovering = false; HideTip(); }
 
+    // JC | 2026-11-06: 호버를 유지해도 현재 시전자의 IP 문구를 갱신하며 같은 구간에서는 다시 열지 않습니다.
+    private void LateUpdate()
+    {
+        if (fixedDescription == null && isHovering && currentUnit != null &&
+            displayedIpBand != ClassSkillTooltipText.GetBattleIpBand(currentUnit.CurrentInfluence))
+            ShowTip();
+    }
+
     private void ShowTip()
     {
         var button = GetComponent<UnityEngine.UI.Button>();
@@ -71,13 +81,16 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
         var tip = SkillTooltip.Instance;
         if (tip == null || currentUnit == null) return;
 
+        // JC | 2026-11-06: 툴팁 본문을 만든 시점의 IP 구간을 기억합니다.
+        displayedIpBand = ClassSkillTooltipText.GetBattleIpBand(currentUnit.CurrentInfluence);
+
         RectTransform target = transform as RectTransform;
         var gm = GameManager.Instance;
         int uIdx = currentUnit.SourceData != null ? currentUnit.SourceData.UnitIndex : 0;
 
         if (skillType == SkillButtonType.ClassSkill)
         {
-            // HeroInfoModal slot0과 동일: 장착 클래스 스킬 아이콘 + Lv + 계수치환 desc.
+            // JC | 2026-11-06: 아이콘/이름/레벨은 유지하고 본문만 전투 전용 확정 문구로 표시합니다.
             currentUnit.ResolveSelectedSkill();
             SkillData sd = currentUnit.SelectedSkillData;
             if (sd == null) return;
@@ -87,14 +100,12 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
             tip.ShowInfo(
                 Sprites.Icon.ClassSkill(sd.skillIndex, lv),
                 $"{sd.skillName} Lv.{lv}",
-                currentUnit.UsesTutorialEquipment
-                    ? ClassSkillTooltipText.ReplaceBattleCoefficients(sd.description, "ClassSkill", sd.skillValue, sd.skillSubValue)
-                    : ClassSkillTooltipText.BuildDesc(sd, lv, percentageValues: true, caster: currentUnit),
+                ClassSkillTooltipText.BuildBattleDesc(sd.skillIndex, false, currentUnit.CurrentInfluence),
                 target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
         }
         else
         {
-            // HeroInfoModal slot2와 동일: 무기스킬 아이콘 + 무기 레벨 Lv + BuildWeaponSkillDesc.
+            // JC | 2026-11-06: 코어 스킬도 일반/튜토리얼 구분 없이 동일한 전투 설명 규칙을 사용합니다.
             WeaponData wd = currentUnit.EquippedWeaponData;
             if (wd == null || wd.WeaponSkillIndex <= 0) return;
             int wIdx = currentUnit.EquippedWeaponIndex > 0
@@ -106,9 +117,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
             tip.ShowInfo(
                 Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl),
                 $"{wd.WeaponSkillName} Lv.{wl}",
-                currentUnit.UsesTutorialEquipment
-                    ? ClassSkillTooltipText.ReplaceBattleCoefficients(wd.WeaponSkillDescription, "WeaponSkill", wd.WeaponSkillValue, wd.WeaponSkillSubValue)
-                    : WeaponTooltipText.BuildWeaponSkillDesc(wd, wIdx, wl, percentageValues: true, caster: currentUnit),
+                ClassSkillTooltipText.BuildBattleDesc(wd.WeaponSkillIndex, true, currentUnit.CurrentInfluence),
                 target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
         }
     }
