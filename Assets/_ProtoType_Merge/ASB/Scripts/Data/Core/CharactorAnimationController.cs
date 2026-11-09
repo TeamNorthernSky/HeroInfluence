@@ -633,6 +633,15 @@ public class CharactorAnimationController : MonoBehaviour
             _animator.CrossFade(StateIdle, CrossFadeDuration, 0, _idleStartNormalizedTime);
     }
 
+    /// <summary>Base Layer Idle을 지정한 정규화 시각에서 바로 재생합니다.</summary>
+    public void PlayIdleAnimationAtNormalizedTime(float normalizedTime)
+    {
+        if (_animator == null) return;
+
+        // 이전 Animator 상태와 블렌드하면 Timeline 밖에서 왼발이 다시 움직일 수 있다.
+        _animator.Play(StateIdle, 0, Mathf.Repeat(normalizedTime, 1f));
+    }
+
     /// <summary>피격·사망·부활 등 범용 연출. Has Exit Time 영향을 받지 않도록 CrossFade로 즉시 전환합니다.</summary>
     public void PlayGenericAnimation(string actionType) => PlayGenericAnimation(actionType, null);
 

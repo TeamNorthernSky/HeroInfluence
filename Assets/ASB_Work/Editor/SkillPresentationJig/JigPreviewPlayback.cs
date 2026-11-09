@@ -214,6 +214,7 @@ namespace ASB.Work.EditorTools.Jig
 
             director.time = t;
             director.Evaluate();
+            JigPreviewInstance.ApplyWaveFootPreview();
             _lastSetTime = t;
 
             // Cue 미리보기 구동 — 이 tick 구간에 걸린 Cue 발화 + 스폰 이펙트 dt 진행.
