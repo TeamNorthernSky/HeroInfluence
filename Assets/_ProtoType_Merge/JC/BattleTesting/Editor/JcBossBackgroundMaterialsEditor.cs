@@ -76,8 +76,9 @@ namespace JC.BattleTesting.Editor
             EditorGUILayout.Space(); EditorGUILayout.LabelField("실내 표면 · 큼직한 바닥 줄눈",EditorStyles.boldLabel);
             using(new EditorGUI.DisabledScope(true)) EditorGUILayout.ObjectField("저장 대상",settings.SurfaceSource,typeof(JcBossSurfaceProfile),false);
             var serialized = new SerializedObject(settings.SurfaceDraft); serialized.Update();
-            foreach(var field in new[]{"tileSize","jointWidth","jointContrast","jointNormal","tileVariation","surfaces"})
+            foreach(var field in new[]{"tileSize","jointWidth","jointContrast","jointNormal","tileVariation"})
                 EditorGUILayout.PropertyField(serialized.FindProperty(field),true);
+            DrawSurfaceList(serialized.FindProperty("surfaces"));
             if(serialized.ApplyModifiedProperties())settings.ApplySurfaces();
             if(GUILayout.Button("현재 실내 표면 값을 프로필에 저장"))
             {
@@ -89,6 +90,35 @@ namespace JC.BattleTesting.Editor
             }
             if(GUILayout.Button("실내 표면 저장값 다시 적용"))settings.ReloadSurfaces();
             EditorGUILayout.HelpBox("유리와 실내 표면은 각각 저장합니다. 두 프로필 모두 테스트와 실제 BE490에 적용됩니다. 줄눈은 얕은 표면 표현이며 바닥 높이·전투 셀은 바꾸지 않습니다.",MessageType.Info);
+        }
+
+        // JC | 2026-11-05 | 숫자 항목에 가려졌던 분리 카펫과 바닥 전용 설정을 대상 이름으로 바로 찾게 표시합니다.
+        static void DrawSurfaceList(SerializedProperty surfaces)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("표면별 설정", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(surfaces.FindPropertyRelative("Array.size"), new GUIContent("설정 수"));
+            for (int i = 0; i < surfaces.arraySize; i++)
+            {
+                var item = surfaces.GetArrayElementAtIndex(i);
+                var source = item.FindPropertyRelative("source").objectReferenceValue as Material;
+                string material = source ? source.name : "재질 미지정";
+                string title = material;
+                switch (material)
+                {
+                    case "DeskCarpet": title = "책상 아래 붉은 카펫 · DeskCarpet"; break;
+                    case "WovenEmblem": title = "중앙 카펫 · WovenEmblem"; break;
+                    case "FurnitureLacquer": title = "책상 · FurnitureLacquer"; break;
+                    case "HallStone": title = item.FindPropertyRelative("rendererPath").stringValue == "FinalStage/Floor"
+                        ? "홀 바닥 · HallStone" : "홀 벽·기둥 · HallStone"; break;
+                    case "WarmStone": title = "웜스톤 · WarmStone"; break;
+                }
+                item.isExpanded = EditorGUILayout.Foldout(item.isExpanded, title, true);
+                if (!item.isExpanded) continue;
+                using (new EditorGUI.IndentLevelScope())
+                    foreach (var field in new[] { "source", "rendererPath", "floorTiles", "smoothness", "specular", "variation" })
+                        EditorGUILayout.PropertyField(item.FindPropertyRelative(field), true);
+            }
         }
     }
 }

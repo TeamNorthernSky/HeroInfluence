@@ -163,6 +163,8 @@ namespace JC.BattleTesting
         public void ApplyDraft()
         {
             if (!applied || !Draft || !Stage || !isActiveAndEnabled || SceneManager.GetActiveScene() != gameObject.scene) return;
+            // JC | 2026-11-09 | 하위 조명 편집/저장값 복원도 공통 명암 선택을 즉시 반영합니다.
+            GetComponentInParent<JcIndoorEnvironment>()?.ApplySharedSettings();
             // JC | 2026-11-06 | 기존 환경 초안 적용과 같은 타이밍에 SSAO를 미리보기합니다.
             ApplySsao();
             RenderSettings.skybox = null; RenderSettings.sun = null; RenderSettings.fog = false;
@@ -188,7 +190,8 @@ namespace JC.BattleTesting
                 var go = new GameObject("은행 조명") { hideFlags = HideFlags.DontSave };
                 go.transform.SetParent(lightRoot, false);
                 var light = go.AddComponent<Light>(); light.hideFlags = HideFlags.HideInInspector;
-                lights.Add(light); go.AddComponent<JcBankLightControl>().Bind(this, lights.Count - 1);
+                // JC | 2026-11-09 | 은행과 보스에서 동일한 하위 광원 편집기를 사용합니다.
+                lights.Add(light); go.AddComponent<JcIndoorLightControl>().Bind(this, lights.Count - 1);
             }
             for (int i = 0; i < count; i++)
             {
@@ -204,27 +207,13 @@ namespace JC.BattleTesting
                     var fixture = Instantiate(spec.fixturePrefab, light.transform, false);
                     fixture.name = "월마운트 램프 외형"; fixtures.Add(light, fixture); fixtureSources.Add(light, spec.fixturePrefab);
                 }
-                light.transform.SetPositionAndRotation(Stage.TransformPoint(spec.position), Stage.rotation * Quaternion.Euler(spec.rotation));
-                // JC | 2026-11-06 | 전용 보조광은 일반 렌더러를 비추지 않고 허용된 플레이어 재질에만 같은 방향광을 전달합니다.
-                // 별도 레이어를 바꿔 전투 판정에 영향을 주지 않도록 일반 Light의 cullingMask는 0으로 고정합니다.
-                if (spec.playerBackFill)
-                {
-                    light.type = LightType.Directional; light.cullingMask = 0; light.shadows = LightShadows.None;
-                    light.color = spec.color; light.intensity = Mathf.Clamp01(spec.intensity);
-                    Shader.SetGlobalVector("_JcBankFillDirection", -light.transform.forward);
-                    Shader.SetGlobalVector("_JcBankFillColor", spec.color.linear * (spec.enabled ? light.intensity : 0));
-                    continue;
-                }
-                // JC | 2026-11-06 | 벽 램프 보조광도 천장 쪽 넓은 스폿으로 옮겼습니다. 종류는 저장 프로필을 그대로 따릅니다.
-                // JC | 2026-11-05 | 실내 방향광을 명시적 주광으로 지정하며 외부 태양은 계속 차단합니다.
-                light.type = spec.type == JcBankEnvironmentProfile.LocalLightType.Directional ? LightType.Directional :
-                    spec.type == JcBankEnvironmentProfile.LocalLightType.Point ? LightType.Point : LightType.Spot;
+                // JC | 2026-11-09 | 은행 저장 번호를 의미로 변환한 뒤 보스와 동일한 광원 적용기를 사용합니다.
+                light.cullingMask = -1;
+                JcIndoorLightSettings.Apply(light, Stage, spec.label, spec.enabled, JcIndoorLightSettings.Resolve(spec.type),
+                    spec.position, spec.rotation, spec.color, spec.intensity, Mathf.Max(1,spec.range), Mathf.Min(170,spec.spotAngle),
+                    spec.innerSpotRatio, spec.shadows, spec.shadowStrength, spec.shadowBias, spec.shadowNormalBias);
+                if (spec.playerBackFill) { JcIndoorLightSettings.ApplyPlayerFill(light,spec.enabled); continue; }
                 if (light.type == LightType.Directional && light.enabled && !RenderSettings.sun) RenderSettings.sun = light;
-                light.color = spec.color; light.intensity = Mathf.Max(0, spec.intensity);
-                light.range = Mathf.Max(1, spec.range); light.spotAngle = Mathf.Clamp(spec.spotAngle, 1, 170);
-                light.innerSpotAngle = light.spotAngle * Mathf.Clamp01(spec.innerSpotRatio);
-                light.shadows = spec.shadows; light.shadowStrength = Mathf.Clamp01(spec.shadowStrength);
-                light.shadowBias = Mathf.Clamp(spec.shadowBias, 0, 2); light.shadowNormalBias = Mathf.Clamp(spec.shadowNormalBias, 0, 3);
             }
             IndoorProbe.enabled = true; IndoorProbe.transform.position = Stage.TransformPoint(Draft.reflectionPosition);
             IndoorProbe.size = new Vector3(Mathf.Max(1, Draft.reflectionSize.x), Mathf.Max(1, Draft.reflectionSize.y), Mathf.Max(1, Draft.reflectionSize.z));

@@ -30,7 +30,7 @@ Shader "JC/Environment/Boss Window Glass"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-            // JC | 2026-11-05 | 실제 보스 카메라는 원본 해상도 색을 사용하고, 에셋/씬 미리보기는 URP 기본 색 복사를 사용합니다.
+            // JC | 2026-11-05 | 보스와 해당 무대를 보는 SceneView는 각각 자기 카메라의 원본 해상도 투과색을 사용합니다.
             TEXTURE2D_X(_JcBossGlassColor); SAMPLER(sampler_JcBossGlassColor);
             float _JcBossGlassColorReady;
             CBUFFER_START(UnityPerMaterial)

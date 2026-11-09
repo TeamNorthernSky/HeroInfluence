@@ -6,6 +6,8 @@ Shader "JC/Battle/Hover Outline"
         _AlphaClip ("원본 알파 잘라내기 사용", Float) = 0
         _Cutoff ("원본 알파 임계값", Float) = 0.5
         _SourceAlpha ("원본 색상 알파", Float) = 1
+        // JC | 2026-11-06 | 회복 기둥용 마스크만 실제로 보이는 캐릭터 표면과 깊이 일치를 요구합니다.
+        _RequireDepthMatch ("장면 깊이 일치 사용", Float) = 0
         _OutlineColor ("호버 외곽선 색상", Color) = (1,0.08,0.06,1)
         _Convergence ("수렴 거리와 글로우 세기 (런타임 계산)", Vector) = (0,0,0,0)
         _OutlineStep ("화면 픽셀 두께의 UV 변환값", Vector) = (0.001,0.001,0,0)
@@ -30,6 +32,7 @@ Shader "JC/Battle/Hover Outline"
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             float4 _BaseMap_ST;
             float _AlphaClip, _Cutoff, _SourceAlpha;
+            float _RequireDepthMatch;
             struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
             struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float eyeDepth : TEXCOORD1; UNITY_VERTEX_OUTPUT_STEREO };
             Varyings MaskVert(Attributes input)
@@ -50,6 +53,8 @@ Shader "JC/Battle/Hover Outline"
                 float depth = SampleSceneDepth(GetNormalizedScreenSpaceUV(input.positionCS));
                 float sceneDepth = unity_OrthoParams.w > 0.5 ? LinearDepthToEyeDepth(depth) : LinearEyeDepth(depth, _ZBufferParams);
                 clip(sceneDepth + 0.003 - input.eyeDepth);
+                // JC | 2026-11-06 | 호버 경로는 유지하고 스킬 마스크에 가상 앞쪽 표면이 섞이지 않게 합니다.
+                if (_RequireDepthMatch > .5) clip(.003 - abs(sceneDepth - input.eyeDepth));
                 return 1;
             }
             ENDHLSL

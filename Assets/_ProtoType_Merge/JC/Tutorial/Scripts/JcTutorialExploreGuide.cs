@@ -345,12 +345,9 @@ namespace JC.Tutorial
                 return;
             }
             if (moving) { ShowAction("moving", JcTutorialText.Get("exploreguide.004", "탐사 · 이동"), JcTutorialText.Get("explore.movingText", movingText)); HideMarker(); return; }
-            if (movement.CurrentOrder >= 2 && !Seen("early-camera-explanation"))
-            {
-                PlayMissionClear("first-move");
-                Explain("early-camera-explanation", JcTutorialText.Get("exploreguide.005", "카메라 이동"), JcTutorialText.Get("exploreguide.006", "마우스를 화면 가장자리로 옮기면 카메라가 이동합니다.\nW A S D 키로도 위·왼쪽·아래·오른쪽을 볼 수 있습니다.\n영웅의 이동은 목표 위치를 마우스로 클릭하세요."), null, time);
-                return;
-            }
+            // JC | 2026-11-09 | 앞쪽 카메라 설명을 제거하고 첫 이동 완료 뒤 이동력 안내로 바로 연결합니다.
+            // 성공음은 기존 완료 기록으로 한 번만 재생하며 뒤쪽 카메라 설명·실습은 유지합니다.
+            if (movement.CurrentOrder >= 2) PlayMissionClear("first-move");
             if (movement.CurrentOrder == 2 && !Seen("move-gauge-pulse") && movementGauge != null)
             {
                 if (movementGaugePulse != null) movementGaugePulse.Stop();
@@ -575,7 +572,8 @@ namespace JC.Tutorial
         {
             if (key == "association-entry-explanation") return JcTutorialGuideView.FocusPresentation.BuildingExplanation;
             if (key == "capture-move-explanation") return JcTutorialGuideView.FocusPresentation.DimmedExplanation;
-            if (key == "mouse-move-explanation" || key == "early-camera-explanation" || key == "resources" ||
+            // JC | 2026-11-09 | 삭제된 앞쪽 카메라 단계의 표시 설정만 제거합니다.
+            if (key == "mouse-move-explanation" || key == "resources" ||
                 key == "camera-scroll-explanation" || key == "association-entry-explanation") return JcTutorialGuideView.FocusPresentation.DimmedExplanation;
             if (key == "automatic-turn" || key == "exhausted" || key == "move-gauge-pulse") return JcTutorialGuideView.FocusPresentation.Spotlight;
             return key != null && key.StartsWith("resource-") ? JcTutorialGuideView.FocusPresentation.ResourceBlock : JcTutorialGuideView.FocusPresentation.PointerAbove;
@@ -596,13 +594,8 @@ namespace JC.Tutorial
             if (explanationKey == null) return;
             string completedKey = explanationKey;
             Mark(completedKey);
-            // 카메라 설명에서 이동력 확인까지 디밍과 입력 차단을 끊지 않는다.
-            if (completedKey == "early-camera-explanation" && movement.CurrentOrder == 2 && !Seen("move-gauge-pulse") && movementGauge != null)
-            {
-                if (movementGaugePulse != null) movementGaugePulse.Stop();
-                Explain("move-gauge-pulse", JcTutorialText.Get("exploreguide.043", "이동력 확인"), JcTutorialText.Get("exploreguide.044", "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다."), movementGauge, Time.unscaledTime);
-                return;
-            }
+            // JC | 2026-11-09 | 카메라 설명의 연속 전환 경로를 없애 이동력 문구는 007/008 한 쌍만 사용합니다.
+            // 공통 종료 처리와 클릭 해제 대기는 유지해 안내를 닫는 클릭이 월드로 전달되지 않도록 합니다.
             if (completedKey == "mouse-move-explanation" && Application.isPlaying && !exiting && initialCameraMove == null)
             {
                 initialCameraMove = StartCoroutine(AdjustCameraView(true, "first-move-camera-view", 0, true));

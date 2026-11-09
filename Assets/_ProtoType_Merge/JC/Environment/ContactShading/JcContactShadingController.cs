@@ -28,6 +28,7 @@ namespace JC.Environment
             public Material original;
             public Shader originalShader;
             public bool applied;
+            public bool preserveShader;
         }
 
         public void Initialize(JcContactShadingProfile profile, Transform backgroundAnchor)
@@ -52,13 +53,18 @@ namespace JC.Environment
             ApplyDraft();
         }
 
-        public void RegisterMaterial(Material preview, Material original)
+        public void RegisterMaterial(Material preview, Material original, bool preserveShader = false)
         {
             if (!preview || !original || preview == original)
                 throw new ArgumentException("접점 음영에는 원본과 다른 복제 재질을 등록해야 합니다.");
+            // JC | 2026-11-09 | 표면 재생성으로 해제된 복제본을 제거해 편집 때마다 등록 수가 증가하지 않게 합니다.
+            bindings.RemoveAll(b => !b.preview);
             if (bindings.Exists(b => b.preview == preview)) return;
-            bindings.Add(new Binding { preview = preview, original = original, originalShader = preview.shader });
+            bindings.Add(new Binding { preview = preview, original = original, originalShader = preview.shader, preserveShader = preserveShader });
         }
+
+        // JC | 2026-11-09 | 재질 소유자가 표면을 교체하기 전에 연결을 명시적으로 해제합니다.
+        public void UnregisterMaterial(Material preview) => bindings.RemoveAll(b => b.preview == preview);
 
         public void ApplyDraft()
         {
@@ -79,7 +85,7 @@ namespace JC.Environment
                 bool target = draft.shadingEnabled && draft.targetMaterials != null && Array.IndexOf(draft.targetMaterials, binding.original) >= 0;
                 if (!target) { Restore(binding); continue; }
                 // JC | 2026-11-06 | 은행 소유자가 접점+툰 셰이더를 미리 지정해도 원본의 URP Lit 호환 여부로 검증합니다.
-                if (!draft.contactShader || !binding.original || binding.original.shader.name != "Universal Render Pipeline/Lit")
+                if (!binding.preserveShader && (!draft.contactShader || !binding.original || binding.original.shader.name != "Universal Render Pipeline/Lit"))
                 {
                     Restore(binding);
                     Debug.LogError("[JC 접점 음영] Contact Lit 셰이더와 URP Lit 원본 재질이 필요합니다: " + binding.original.name, this);
@@ -89,7 +95,8 @@ namespace JC.Environment
                 {
                     // JC | 2026-11-06 | 기존 줄눈·노멀·발광 키워드를 보존하여 표면 조절기와 함께 사용합니다.
                     var keywords = binding.preview.shaderKeywords;
-                    binding.preview.shader = draft.contactShader;
+                    // JC | 2026-11-09 | 보스의 실내 셰이더는 이미 같은 접점 계산을 포함하므로 교체하지 않습니다.
+                    if (!binding.preserveShader) binding.preview.shader = draft.contactShader;
                     binding.preview.shaderKeywords = keywords;
                     binding.applied = true;
                 }

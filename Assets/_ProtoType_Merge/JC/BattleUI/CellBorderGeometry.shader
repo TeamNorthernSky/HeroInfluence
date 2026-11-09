@@ -1,5 +1,7 @@
 Shader "JC/Battle/CellBorderGeometry"
 {
+    // JC | 2026-11-06 | 전투 재질은 채움 2880/테두리 2881, ZWrite=0으로 스킬보다 먼저 합성합니다.
+    // 탐사 재질의 전용 깊이 마스크·순서와 공유 셰이더 기본값은 기존 조절 경로를 유지합니다.
     Properties
     {
         _BaseMap ("Fill Texture", 2D) = "white" {}
@@ -64,7 +66,12 @@ Shader "JC/Battle/CellBorderGeometry"
                 if (_JcTriggerDepthUvFlip > .5) uv.y = 1 - uv.y;
                 return uv;
             }
-            float TriggerDepthTolerance(float eyeDepth) { return max(.0001, eyeDepth * .000002); }
+            // JC | 2026-11-06 | MSAA 색상 표면과 단일 샘플 깊이 마스크의 픽셀 내 위치 차이를 보정합니다.
+            // 고정 월드 오차만 쓰면 경사진 테두리에 구멍이 나 그 아래 이동 그리드가 점선처럼 비칩니다.
+            float TriggerDepthTolerance(float eyeDepth)
+            {
+                return max(max(.0001, eyeDepth * .000002), fwidth(eyeDepth) * .75);
+            }
             struct DepthAttributes { float4 positionOS:POSITION; };
             struct DepthVaryings { float4 positionCS:SV_POSITION; float eyeDepth:TEXCOORD0; float3 world:TEXCOORD1; };
             DepthVaryings DepthVert(DepthAttributes input)
@@ -137,8 +144,10 @@ Shader "JC/Battle/CellBorderGeometry"
                         clip(occluder+tolerance-eyeDepth);
                         // JC | 2026-11-05 | 동률인 선은 한 번만 합성합니다. 앞쪽의 반투명 보조선 너머 본체를 보이는 기존 표현은 유지합니다.
                         float2 owners=SAMPLE_TEXTURE2D_LOD(_JcTriggerBorderOwners,sampler_JcTriggerBorderOwners,uv,0).rg;
-                        float winner=_TriggerDepthKind<1.5 && eyeDepth>nearest.g+tolerance ? owners.r : owners.g;
-                        clip(.25-abs(winner-_TriggerBorderOrder));
+                        // JC | 2026-11-06 | 본체는 본체 소유권으로 비교해 반투명 보조선 뒤에서도 유지합니다.
+                        // 픽셀 중심 밖의 MSAA 부분 샘플은 단일 샘플 마스크에 소유자가 없으므로 지우지 않습니다.
+                        float winner=_TriggerDepthKind<1.5 ? owners.r : owners.g;
+                        if (winner < 65504) clip(.25-abs(winner-_TriggerBorderOrder));
                     }
                     // JC | 2026-11-04 | 실제로 픽셀을 가리는 표면만 분류합니다. 캐릭터 뒤의 건물을 잘못 투과하지 않습니다.
                     float raw=SampleSceneDepth(GetNormalizedScreenSpaceUV(v.positionCS));

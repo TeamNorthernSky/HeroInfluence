@@ -15,12 +15,14 @@ namespace JC.Indicators
         {
             internal readonly MeshRenderer renderer;
             internal readonly Material material;
-            internal readonly int ownerId, part, rendererId;
+            internal readonly int ownerId, part, rendererId, regionId;
             internal int priority;
-            internal Border(MeshRenderer renderer, Material material, int ownerId, int part)
+            internal Border(MeshRenderer renderer, Material material, int ownerId, int part, int regionId)
             {
                 this.renderer = renderer; this.material = material; this.ownerId = ownerId; this.part = part;
                 rendererId = renderer ? renderer.GetInstanceID() : 0;
+                // JC | 2026-11-06 | 같은 영역의 본체·보조선은 픽셀 소유권을 공유하고 실제 앞뒤 가림은 깊이로 판정합니다.
+                this.regionId = regionId;
             }
         }
         private static readonly List<Border> borders = new List<Border>();
@@ -59,11 +61,15 @@ namespace JC.Indicators
             {
                 foreach (var controller in controllers) if (controller) controller.CollectBorders(borders, camera);
                 borders.Sort(CompareBorders);
+                // JC | 2026-11-06 | 부품마다 승자를 고르면 MSAA 경계에서 서로의 일부 샘플을 지워 그리드가 비칩니다.
+                // 서로 다른 영역끼리만 고정 우선순위를 적용하며 같은 영역의 세 부품은 한 소유자로 묶습니다.
+                int regionOrder = 0;
                 for (int i = 0; i < borders.Count; i++)
                 {
+                    if (i == 0 || borders[i].regionId != borders[i - 1].regionId) regionOrder++;
                     var renderer = borders[i].renderer;
                     properties.Clear(); renderer.GetPropertyBlock(properties);
-                    properties.SetFloat(orderId, i + 1);
+                    properties.SetFloat(orderId, regionOrder);
                     renderer.SetPropertyBlock(properties);
                 }
             }
@@ -72,6 +78,12 @@ namespace JC.Indicators
         // JC | 2026-11-05 | 진동 콜백보다 먼저 실행되던 beginCameraRendering 대신 URP의 확정된 카메라 행렬을 받습니다.
         // 기존 가림/겹침 마스크 생성은 유지하고 렌더 시점과 카메라별 전역값 수명만 전용 패스가 관리합니다.
         internal static bool HasControllers => controllers.Exists(controller => controller && controller.isActiveAndEnabled);
+        // JC | 2026-11-06 | 깊이 마스크를 준비한 같은 카메라에서 트리거 색상을 먼저 합성합니다.
+        internal static void DrawColors(CommandBuffer command, Camera camera, Plane[] planes)
+        {
+            for (int part = 0; part < 4; part++)
+                foreach (var controller in controllers) if (controller) controller.DrawColors(command, camera, planes, part);
+        }
         internal static void RenderDepth(CommandBuffer command, Camera camera, Matrix4x4 view,
             Matrix4x4 projection, int width, int height)
         {
@@ -137,6 +149,8 @@ namespace JC.Indicators
         {
             int result = b.priority.CompareTo(a.priority);
             if (result == 0) result = a.ownerId.CompareTo(b.ownerId);
+            // JC | 2026-11-06 | 같은 주체가 여러 색상 영역을 가질 때도 영역별 겹침 우선순위는 구분합니다.
+            if (result == 0) result = a.regionId.CompareTo(b.regionId);
             if (result == 0) result = a.part.CompareTo(b.part);
             if (result == 0) result = a.rendererId.CompareTo(b.rendererId);
             return result;
