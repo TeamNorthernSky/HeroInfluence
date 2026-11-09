@@ -389,9 +389,10 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
-        if (!HasEnoughInfluenceForAction(actor, actionType))
+        // 스킬 사용에 IP 조건은 없습니다. 사용할 스킬을 찾지 못한 행동만 거절합니다.
+        if (actor.IsPlayer && (!TryResolveSkillData(actor, actionType, out SkillData actionSkill) || actionSkill == null))
         {
-            Debug.LogWarning("[InputHandler] Influence 부족 (선택 불가)");
+            Debug.LogWarning($"[InputHandler] 사용할 스킬을 찾지 못했습니다 (선택 불가): action={actionType}");
             ResetTargetingState();
             return;
         }
@@ -663,21 +664,6 @@ public class InputHandler : MonoBehaviour
             default:
                 return false;
         }
-    }
-
-    private bool HasEnoughInfluenceForAction(BattleCharactor actor, PendingActionType actionType)
-    {
-        if (actor == null || !actor.IsPlayer)
-        {
-            return true;
-        }
-
-        if (!TryResolveSkillData(actor, actionType, out SkillData skillData) || skillData == null)
-        {
-            return false;
-        }
-
-        return actor.HasInfluenceForSkill(skillData);
     }
 
     private void ClearAoEPreview()

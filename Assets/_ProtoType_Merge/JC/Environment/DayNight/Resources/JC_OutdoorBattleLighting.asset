@@ -38,10 +38,10 @@ MonoBehaviour:
     exposure: 0.25
     screenTint: {r: 0.9025157, g: 0.9153941, b: 1, a: 1}
   - sunlight: 0.95
-    sunShadow: 1.6
+    sunShadow: 5
     secondarySun: 0.55
     sunlightTint: {r: 1, g: 1, b: 1, a: 1}
-    ambient: 1.61
-    characterBrightness: 1.17
-    exposure: 0.12
+    ambient: 0.85
+    characterBrightness: 0.83
+    exposure: 0.6
     screenTint: {r: 0.8459119, g: 0.84997636, b: 1, a: 1}

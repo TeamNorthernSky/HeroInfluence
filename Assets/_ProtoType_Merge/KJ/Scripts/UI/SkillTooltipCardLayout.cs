@@ -62,17 +62,6 @@ public static class SkillTooltipCardLayout
         icon.raycastTarget = false;
     }
 
-    private static TMP_Text Label(RectTransform root, TMP_Text source, string name)
-    {
-        var child = root.Find(name);
-        if (child != null) return child.GetComponent<TMP_Text>();
-        var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        go.transform.SetParent(root, false);
-        var label = go.GetComponent<TextMeshProUGUI>();
-        if (source != null) label.font = source.font;
-        return label;
-    }
-
     private static void HidePanelImage(RectTransform panel)
     {
         if (panel != null && panel.TryGetComponent<Image>(out var image)) image.enabled = false;
@@ -101,7 +90,8 @@ public static class SkillTooltipCardLayout
     }
 
     public static void Compare(RectTransform root, Image icon, TMP_Text name, TMP_Text current,
-        Image nextIcon, TMP_Text nextName, TMP_Text next, RectTransform oldPanel)
+        Image nextIcon, TMP_Text nextName, TMP_Text next, RectTransform oldPanel,
+        float curRatio, float nextRatio, TMP_Text level = null)
     {
         root.sizeDelta = new Vector2(500f, 646f);
         HidePanelImage(oldPanel);
@@ -113,15 +103,13 @@ public static class SkillTooltipCardLayout
             name.text = System.Text.RegularExpressions.Regex.Replace(title, @"\s+(?:기본|\+\d+|Lv\.?\s*\d+)\s*$", "");
         Text(name, root, 170f, 52f, 295f, 48f, 31f, true);
         string currentBody = SplitEffect(current != null ? current.text : "", out string currentUpgrade);
-        string nextBody = SplitEffect(next != null ? next.text : "", out string nextUpgrade);
-        // Training and other shared callers do not include an association footer.
+        string nextBody = SplitEffect(next != null ? next.text : "", out _);
+        // 강화 문구가 없으면 스킬 이름에서 현재 레벨을 읽는다.
         if (string.IsNullOrEmpty(currentUpgrade)) currentUpgrade = title;
-        if (string.IsNullOrEmpty(nextUpgrade)) nextUpgrade = nextName != null ? nextName.text : "";
         if (current != null) current.text = currentBody;
         if (next != null) next.text = nextBody;
         Text(current, root, 40f, 225f, 424f, 102f, 24f, false);
         Text(next, root, 40f, 475f, 424f, 97f, 24f, false);
-        var level = Label(root, name, "SkillLevel");
         int number = 1;
         var match = System.Text.RegularExpressions.Regex.Match(currentUpgrade, @"\+(\d+)");
         if (match.Success && int.TryParse(match.Groups[1].Value, out int enhancement)) number = enhancement + 1;
@@ -130,14 +118,21 @@ public static class SkillTooltipCardLayout
             match = System.Text.RegularExpressions.Regex.Match(title, @"Lv\.?\s*(\d+)");
             if (match.Success && int.TryParse(match.Groups[1].Value, out int explicitLevel)) number = explicitLevel;
         }
-        level.text = "Lv." + number;
-        Text(level, root, 174f, 108f, 130f, 38f, 28f, true, true);
-        var currentFooter = Label(root, name, "CurrentUpgrade");
-        currentFooter.text = currentUpgrade;
-        Text(currentFooter, root, 36f, 335f, 430f, 42f, 25f, true, true);
-        var nextFooter = Label(root, name, "NextUpgrade");
-        nextFooter.text = nextUpgrade;
-        Text(nextFooter, root, 36f, 584f, 430f, 42f, 25f, true, true);
+        if (level != null) level.text = "Lv." + number;
+        foreach (var label in root.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (label.name == "CurrentUpgrade" || label.name == "NextUpgrade")
+                label.gameObject.SetActive(false);
+            else if (label.name == "CurRatio" || label.name == "NextRatio")
+            {
+                bool isCurrent = label.name == "CurRatio";
+                string percent = ((isCurrent ? curRatio : nextRatio) * 100f)
+                    .ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+                label.text = (isCurrent ? "현재 레벨 : " : "다음 레벨 : ") + "공격력의 " + percent + "%의 피해";
+                label.gameObject.SetActive(true);
+                label.enabled = true;
+            }
+        }
         IgnoreInput(root);
     }
 

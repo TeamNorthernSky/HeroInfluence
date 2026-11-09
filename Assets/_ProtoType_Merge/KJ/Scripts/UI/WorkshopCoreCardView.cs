@@ -18,6 +18,11 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
     [SerializeField, Range(0f, 8f)] private float glowIntensity = 2f;
     private static readonly System.Reflection.FieldInfo SelectedCoreField = typeof(WorkshopModalController)
         .GetField("selectedCore", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+    private static readonly System.Reflection.FieldInfo CardsField = typeof(WorkshopModalController)
+        .GetField("cards", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+    private static readonly System.Reflection.FieldInfo SelectedUnitField = typeof(WorkshopModalController)
+        .GetField("selectedUnitIndex", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+    private CoreSelectionTooltip coreTooltip;
     private Button button;
     private Image face;
     private Image hoverImage;
@@ -33,6 +38,7 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
 
     private void Awake()
     {
+        BindCoreTooltip();
         button = GetComponent<Button>();
         face = button != null ? button.targetGraphic as Image : null;
         if (face == null || face.sprite == null) return;
@@ -77,8 +83,25 @@ public sealed class WorkshopCoreCardView : MonoBehaviour, IPointerEnterHandler, 
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        BindCoreTooltip();
         hovered = true;
         hoverStarted = Time.unscaledTime;
+    }
+
+    private void BindCoreTooltip()
+    {
+        if (selectionOwner == null) selectionOwner = GetComponentInParent<WorkshopModalController>();
+        if (selectionOwner == null || CardsField == null) return;
+        var cards = CardsField.GetValue(selectionOwner) as System.Collections.Generic.List<WorkshopModalController.CoreCard>;
+        if (cards == null || coreIndex < 0 || coreIndex >= cards.Count) return;
+        var card = cards[coreIndex];
+        if (card == null || card.button == null || card.button.gameObject != gameObject) return;
+        if (coreTooltip == null)
+            coreTooltip = GetComponent<CoreSelectionTooltip>() ?? gameObject.AddComponent<CoreSelectionTooltip>();
+        int hero = SelectedUnitField != null ? (int)SelectedUnitField.GetValue(selectionOwner) : -1;
+        coreTooltip.Bind(coreIndex + 1, card.nameText != null ? card.nameText.text : "코어",
+            card.icon != null ? card.icon.sprite : null, card.nameText != null ? card.nameText.font : null,
+            Mathf.Max(0, hero), omitIPDescription: true);
     }
 
     public void OnPointerExit(PointerEventData eventData) => hovered = false;

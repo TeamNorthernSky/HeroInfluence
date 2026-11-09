@@ -148,6 +148,7 @@ public sealed class DHTurnStartSnapshotStore : MonoBehaviour
         RefreshSections();
 
         data.hasData = true;
+        data.hasGameState = true;
         data.savedAt = capturedAt;
         data.saveVersion = 1;
 

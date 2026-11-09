@@ -443,6 +443,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
     }
 
+    // 스킬 사용에는 IP 조건·소모가 없습니다(IPCost 데이터는 남아 있지만 읽지 않음). IP는 데미지 배율 등에만 쓰입니다.
+    // 아래 소모 함수는 JC 테스트 씬 복사본(JcBattleManager)만 사용합니다.
     public bool TryConsumeInfluence(float amount)
     {
         float required = Mathf.Max(0f, amount);
@@ -454,24 +456,6 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         CurrentInfluence -= required;
         OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
         return true;
-    }
-
-    /// <summary>
-    /// 스킬 사용에 필요한 IP 조건(선택·자동전투·실행이 모두 이 판정을 쓴다).
-    /// 무기(코어) 스킬은 현재 IP가 0이면 사용할 수 없다(IP는 소모하지 않음). 그 밖에는 현재 IP ≥ IPCost. 적은 검사하지 않는다.
-    /// </summary>
-    public bool HasInfluenceForSkill(SkillData skill)
-        => skill != null && HasInfluenceFor(skill.category == SkillCategory.Weapon, skill.IPCost);
-
-    /// <summary>장착 무기 스킬의 IP 조건. UI가 매 프레임 SkillData를 만들지 않고 확인할 때 쓴다.</summary>
-    public bool HasInfluenceForWeaponSkill(WeaponData weapon)
-        => weapon != null && HasInfluenceFor(true, weapon.IPCost);
-
-    private bool HasInfluenceFor(bool weaponSkill, float cost)
-    {
-        if (!IsPlayer) return true;
-        if (weaponSkill && CurrentInfluence <= 0f) return false;
-        return CurrentInfluence >= Mathf.Max(0f, cost);
     }
 
     /// <summary>전투 결과에 따른 Influence 비율 보정. ratio 1.1 = +10%, 0.9 = -10%</summary>

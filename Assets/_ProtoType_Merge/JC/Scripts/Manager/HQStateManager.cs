@@ -27,7 +27,7 @@ public class HQStateManager : MonoBehaviour
     [Header("부서별 선행 조건 (부서 N이 1단계 되려면 의존 부서들이 모두 충족)")]
     [SerializeField] private List<PrerequisiteEntry> prerequisites = new List<PrerequisiteEntry>();
 
-    [Header("본부 매턴 자금 (단계별, 1단계부터). 추후 CSV 가능")]
+    [Header("이전 본부 수입 (호환용 보존, 실제 수입은 본부자금 테이블 사용)")]
     [SerializeField] private int[] hqTurnIncome = new[] { 1000, 1500, 2000 };
 
     [Serializable]
@@ -113,9 +113,14 @@ public class HQStateManager : MonoBehaviour
     public int GetTurnIncomeAt(HQDepartment d, int level)
     {
         if (d != HQDepartment.Headquarters) return 0;
-        if (level <= 0 || hqTurnIncome == null) return 0;
-        int idx = Mathf.Clamp(level - 1, 0, hqTurnIncome.Length - 1);
-        return hqTurnIncome[idx];
+        return AssociationCosts.TryFund(level, out var row) ? row.ResourceAmount : 0;
+    }
+
+    public int GetHeadquartersIncomeForDay(int day)
+    {
+        if (day <= 1 || !AssociationCosts.TryFund(GetLevel(HQDepartment.Headquarters), out var row)) return 0;
+        // 1일차는 시작 시점이며, 주기만큼 턴이 지난 5/9/13일차에 4턴 수입을 지급한다.
+        return (day - 1) % row.ResourceCycle == 0 ? row.ResourceAmount : 0;
     }
 
     public IReadOnlyDictionary<ResourceType, int> GetUpgradeCost(HQDepartment d, int currentLevel)

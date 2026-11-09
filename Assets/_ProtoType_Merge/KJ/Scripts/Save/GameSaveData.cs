@@ -12,6 +12,7 @@ public class GameSaveData : ScriptableObject
 {
     // ── 메타 (SaveSlotData 호환 필드명 유지) ──
     public bool hasData;
+    public bool hasGameState;
     public string savedAt;
     public int saveVersion = 1;
 

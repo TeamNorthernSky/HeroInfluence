@@ -42,6 +42,51 @@ namespace JC.Tutorial
         private static readonly WordWrap wordWrap=new WordWrap();
         public static void BindWordWrapping(TMP_Text text) { if(text!=null) {text.textPreprocessor=wordWrap;text.enableWordWrapping=true;} }
 
+        // JC | 2026-11-09 | 탐사·전투·협회의 일반 줄간격만 현재 기준에서 30% 확대합니다.
+        // 홍보는 adjustment=1로 기존 간격을 유지합니다. 글꼴 높이를 포함한 고정 기준으로 계산해 누적을 막습니다.
+        public const float TutorialBodyLineSpacing = 4f;
+        private const float SpacingReduction = .6f;
+        public static void ApplyBodyLineSpacing(TMP_Text text, float multiplier = 1.5f, float adjustment = 1.3f)
+        {
+            if (text == null || text.font == null) return;
+            float naturalEm = text.font.faceInfo.lineHeight / text.font.faceInfo.pointSize * text.font.faceInfo.scale;
+            text.lineSpacing = ((naturalEm + TutorialBodyLineSpacing * .01f) * multiplier * SpacingReduction * adjustment - naturalEm) * 100f;
+        }
+
+        // JC | 2026-11-09 | 문장 경계는 직전 문장 간격 전체의 60%인 독립 간격으로 대체합니다.
+        // TMP가 line-height에도 일반 lineSpacing을 더하므로 그 값을 미리 빼서 두 간격의 중복 합산을 막습니다.
+        // 홍보에만 adjustment=1.2로 문장 간격을 20% 확대하고 다른 안내의 문장 간격은 유지합니다.
+        private sealed class SentenceSpacing : ITextPreprocessor
+        {
+            private readonly TMP_Text label;
+            public readonly bool wrapWords;
+            public readonly float multiplier;
+            public readonly float adjustment;
+            public readonly bool useCurrentLine;
+            // JC | 2026-11-09 | 전용 문장 간격이 없던 안내는 현재 줄 높이를 기준으로 경계만 늘립니다.
+            public SentenceSpacing(TMP_Text label, bool wrapWords, float multiplier, float adjustment, bool useCurrentLine) { this.label = label; this.wrapWords = wrapWords; this.multiplier = multiplier; this.adjustment = adjustment; this.useCurrentLine = useCurrentLine; }
+            public string PreprocessText(string text)
+            {
+                if (label.font != null)
+                {
+                    float naturalEm = label.font.faceInfo.lineHeight / label.font.faceInfo.pointSize * label.font.faceInfo.scale;
+                    float sentenceEm = (useCurrentLine ? naturalEm + label.lineSpacing * .01f :
+                        ((naturalEm + TutorialBodyLineSpacing * .01f) * multiplier + .5f) * SpacingReduction) * adjustment;
+                    float height = sentenceEm - label.lineSpacing * .01f;
+                    string gap = height.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture);
+                    // JC | 2026-11-09 | 문장 끝 색상 태그와 다음 줄 들여쓰기도 보존합니다. 쉼표 뒤·자동 줄바꿈은 일반 간격입니다.
+                    text = System.Text.RegularExpressions.Regex.Replace(text, @"(?<=[.!?。！？])(?<closing>(?:</[^>]+>)*)[ \t]*\r?\n(?=[ \t]*\S)",
+                        "${closing}<line-height=" + gap + "em>\n</line-height>");
+                }
+                return wrapWords ? wordWrap.PreprocessText(text) : text;
+            }
+        }
+        public static void BindSentenceSpacing(TMP_Text text, bool wrapWords = false, float multiplier = 1.5f, float adjustment = 1f, bool useCurrentLine = false)
+        {
+            if (text != null && !(text.textPreprocessor is SentenceSpacing spacing && spacing.wrapWords == wrapWords && spacing.multiplier == multiplier && spacing.adjustment == adjustment && spacing.useCurrentLine == useCurrentLine))
+                text.textPreprocessor = new SentenceSpacing(text, wrapWords, multiplier, adjustment, useCurrentLine);
+        }
+
         [Header("표현")]
         [Min(0), Tooltip("안내가 나타나고 사라지는 시간(초)입니다. 0이면 즉시 전환하며 게임 시간 배율과 무관합니다.")]
         public float fadeDuration = .2f;
@@ -152,7 +197,7 @@ namespace JC.Tutorial
             var edit = contentEdits.Find(e => e.sourceTitle == sourceTitle && e.sourceBody == sourceBody);
             if (edit == null) { edit = new ContentEdit { sourceTitle = sourceTitle, sourceBody = sourceBody, title = heading != null ? heading.text : sourceTitle, body = message != null ? message.text : sourceBody }; contentEdits.Add(edit); }
             if (text == heading) edit.title = value; else edit.body = value;
-            SetContent(sourceTitle, sourceBody);
+            SetContent(sourceTitle, sourceBody, sourceSentenceSpacing, sourceSentenceIncrease);
             return JsonUtility.ToJson(new ContentEdits { edits = contentEdits });
         }
         public void SetContentEdits(string json) => contentEdits = JsonUtility.FromJson<ContentEdits>(json).edits ?? new System.Collections.Generic.List<ContentEdit>();
@@ -160,14 +205,21 @@ namespace JC.Tutorial
         private readonly Vector3[] corners = new Vector3[4];
         public bool IsRequestedVisible => visible;
 
+        private bool sourceSentenceSpacing;
+        private float sourceSentenceIncrease = 1f;
         private void Awake() { BindWordWrapping(message); if (panel != null) panel.alpha = 0; SetVisible(false); }
-        public void SetContent(string title, string body)
+        public void SetContent(string title, string body, bool sentenceSpacing = false, float sentenceIncrease = 1f)
         {
             if (sourceTitle != title) SetActionHint(ActionHint.None);
             sourceTitle = title; sourceBody = body;
+            sourceSentenceSpacing = sentenceSpacing;
+            sourceSentenceIncrease = sentenceIncrease;
             var edit = contentEdits.Find(e => e.sourceTitle == title && e.sourceBody == body);
             if (edit != null) { title = edit.title; body = edit.body; }
             BindWordWrapping(message); if (heading != null && heading.text != title) heading.text = title; if (message != null && message.text != body) message.text = body;
+            // JC | 2026-11-09 | 첨부 홍보 도입은 기존 전용 간격 1.5배, 일반 탐사 안내는 기존 경계 1.3배를 선택 적용합니다.
+            if (sentenceSpacing) BindSentenceSpacing(message, true, adjustment: sentenceIncrease);
+            else if (sentenceIncrease != 1f) BindSentenceSpacing(message, true, adjustment: sentenceIncrease, useCurrentLine: true);
         }
         // 전투 안내만 고정 외곽선으로 표시합니다. 탐사 연출 설정은 보존합니다.
         public bool FixedBattleOutline { get; set; }
@@ -186,22 +238,32 @@ namespace JC.Tutorial
         public void FitMessageLayout()
         {
             if (panel == null || message == null) return;
+            FitMessageLayout(message, minimumMessageHeight, messageBottomSpace);
+        }
+
+        // JC | 2026-11-09 | 전투의 기존 단계별 본문도 탐사와 같은 제목·본문 기준선으로 배치합니다.
+        // 중첩 부모와 버튼 이벤트를 보존하고 패널 좌표만 변환하므로 기존 씬 참조를 바꾸지 않습니다.
+        public void FitMessageLayout(TMP_Text bodyText, float minimumHeight, float bottomSpace)
+        {
+            if (panel == null || bodyText == null) return;
             var card = panel.transform as RectTransform;
-            var text = message.rectTransform;
-            if (card == null || text.parent != card) return;
+            var text = bodyText.rectTransform;
+            if (card == null || !text.IsChildOf(card)) return;
+            ApplyBodyLineSpacing(bodyText);
+            bodyText.alignment = TextAlignmentOptions.TopLeft;
             // JC | 2026-11-09 | 승인 시안: 바 아래 제목을 왼쪽 기준선에 맞추고 본문과 같은 크기로 표시합니다.
             // 제목 영역 아래 여백은 시안의 1.5배 간격으로, 본문은 반 글자만 추가 들여씁니다.
             const float left = 32, headingTop = 44, headingBodyGap = 12;
-            float indent = message.fontSize * .5f;
+            float indent = bodyText.fontSize * .5f;
             float top = 73;
             if (heading != null && heading.rectTransform.parent == card)
             {
                 heading.enableAutoSizing = false;
-                heading.fontSize = message.fontSize;
+                heading.fontSize = bodyText.fontSize;
                 heading.alignment = TextAlignmentOptions.TopLeft;
                 var title = heading.rectTransform;
                 float titleWidth = Mathf.Max(1, card.rect.width - left * 2);
-                float titleHeight = Mathf.Max(message.fontSize * 1.5f, heading.GetPreferredValues(heading.text, titleWidth, Mathf.Infinity).y);
+                float titleHeight = Mathf.Max(bodyText.fontSize * 1.5f, heading.GetPreferredValues(heading.text, titleWidth, Mathf.Infinity).y);
                 title.anchorMin = title.anchorMax = title.pivot = new Vector2(0, 1);
                 title.anchoredPosition = new Vector2(left, -headingTop);
                 title.sizeDelta = new Vector2(titleWidth, titleHeight);
@@ -210,11 +272,11 @@ namespace JC.Tutorial
             float width = Mathf.Max(1, card.rect.width - left * 2 - indent);
             // JC | 2026-11-09 | 반 글자 들여쓰기와 단어 줄바꿈 전처리가 적용된 실제 너비로 높이를 계산합니다.
             text.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-            float height = Mathf.Max(120, message.preferredHeight + 8);
-            card.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(minimumMessageHeight, top + height + messageBottomSpace));
+            float height = Mathf.Max(120, bodyText.preferredHeight + 8);
+            card.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(minimumHeight, top + height + bottomSpace));
             text.anchorMin = text.anchorMax = text.pivot = new Vector2(0, 1);
-            text.anchoredPosition = new Vector2(left + indent, -top);
             text.sizeDelta = new Vector2(width, height);
+            text.position = card.TransformPoint(new Vector3(card.rect.xMin + left + indent, card.rect.yMax - top, 0));
         }
         private void LateUpdate() { if (visible) { ApplySideLayout(); FitMessageLayout(); } RenderPresentation(Time.unscaledTime, Time.unscaledDeltaTime); }
 
@@ -242,7 +304,8 @@ namespace JC.Tutorial
             focusFrame.SetRadius(FixedBattleOutline ? 0 : originalFocusRadius.Value);
             focusFrame.SetGlowWidth(FixedBattleOutline ? 0 : originalFocusGlow.Value);
             focusFrame.gameObject.SetActive(showFocus); pointer.gameObject.SetActive(showFocus);
-            if(convergingOutlines!=null)foreach(var outline in convergingOutlines)if(outline!=null)outline.gameObject.SetActive(showFocus && !FixedBattleOutline);
+            // JC | 2026-11-09 | 스킬 교정 중에는 위 안내 Canvas에서 재사용하는 수렴 Graphic을 일반 포커스가 끄지 않도록 합니다.
+            if(redirectedSkill==null && convergingOutlines!=null)foreach(var outline in convergingOutlines)if(outline!=null)outline.gameObject.SetActive(showFocus && !FixedBattleOutline);
             if (!showFocus) return;
             var parent = focusFrame.rectTransform.parent as RectTransform;
             if (parent == null) return;
@@ -287,17 +350,7 @@ namespace JC.Tutorial
             focusFrame.SetBorderWidth(focus == centeredPointerTarget ? centeredBorderWidth : 6);
             if(convergenceTarget!=focus){convergenceTarget=focus;convergenceElapsed=0;}
             convergenceElapsed+=Mathf.Max(0,delta);
-            if(!FixedBattleOutline && convergingOutlines!=null)for(int i=0;i<convergingOutlines.Length;i++) {
-                    var o=convergingOutlines[i];if(o==null)continue;
-                    float cycle=Mathf.Repeat(convergenceElapsed,3);
-                    o.gameObject.SetActive(cycle<2);if(cycle>=2)continue;
-                    float progress=Mathf.Repeat(cycle+i/(float)convergingOutlines.Length,1);
-                    float extra=ConvergenceExpansion*(1-Mathf.SmoothStep(0,1,progress));
-                    Vector2 lo=Vector2.Max(min-Vector2.one*extra,parent.rect.min+Vector2.one*(o.GlowWidth+1));
-                    Vector2 hi=Vector2.Min(max+Vector2.one*extra,parent.rect.max-Vector2.one*(o.GlowWidth+1));
-                    o.rectTransform.localPosition=(lo+hi)*.5f;o.rectTransform.sizeDelta=hi-lo;
-                    o.color=new Color(accent.r,accent.g,accent.b,Mathf.Sin(progress*Mathf.PI)*.65f);o.AnimateSweep(time);
-                }
+            if(!FixedBattleOutline && redirectedSkill==null)RenderConvergingOutlines(parent,min,max,convergenceElapsed,time);
             if (focusPresentation == FocusPresentation.Spotlight || focusPresentation == FocusPresentation.BorderOnly) { pointer.gameObject.SetActive(false); return; }
             if(compactPointerSize==Vector2.zero)compactPointerSize=pointer.rectTransform.sizeDelta;
             pointer.color = accent;
@@ -319,6 +372,22 @@ namespace JC.Tutorial
                     : Mathf.Min(parent.rect.yMax - halfPointer - 2, max.y + pointerGap + pointerTravel * pulse + halfPointer), 0);
         }
 
+        // JC | 2026-11-09 | 기존 이동력 수렴식을 추출해 오클릭 교정에도 그대로 사용합니다. 폭·속도·밝기·주기는 동일합니다.
+        private void RenderConvergingOutlines(RectTransform parent, Vector2 min, Vector2 max, float elapsed, float time)
+        {
+            if(convergingOutlines==null)return;
+            for(int i=0;i<convergingOutlines.Length;i++) {
+                var o=convergingOutlines[i];if(o==null)continue;
+                float cycle=Mathf.Repeat(elapsed,3);
+                o.gameObject.SetActive(cycle<2);if(cycle>=2)continue;
+                float progress=Mathf.Repeat(cycle+i/(float)convergingOutlines.Length,1);
+                float extra=ConvergenceExpansion*(1-Mathf.SmoothStep(0,1,progress));
+                Vector2 lo=Vector2.Max(min-Vector2.one*extra,parent.rect.min+Vector2.one*(o.GlowWidth+1));
+                Vector2 hi=Vector2.Min(max+Vector2.one*extra,parent.rect.max-Vector2.one*(o.GlowWidth+1));
+                o.rectTransform.localPosition=(lo+hi)*.5f;o.rectTransform.sizeDelta=hi-lo;
+                o.color=new Color(accent.r,accent.g,accent.b,Mathf.Sin(progress*Mathf.PI)*.65f);o.AnimateSweep(time);
+            }
+        }
         private void OnDisable()
         {
             SetActionHint(ActionHint.None);

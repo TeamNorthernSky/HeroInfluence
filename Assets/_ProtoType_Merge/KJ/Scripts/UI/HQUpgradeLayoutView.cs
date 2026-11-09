@@ -75,7 +75,9 @@ public sealed class HQUpgradeLayoutView : MonoBehaviour
         switch (dept)
         {
             case HQDepartment.Headquarters:
-                return $"• 매 턴 획득 자금 {hq.GetTurnIncomeAt(dept, level):N0}\n• 시설 건설 / 업그레이드";
+                return AssociationCosts.TryFund(level, out var fund)
+                    ? $"• {fund.ResourceCycle}턴마다 획득 자금 {fund.ResourceAmount:N0}\n• 시설 건설 / 업그레이드"
+                    : "본부 자금 데이터 확인 필요";
             case HQDepartment.Publicity:
                 int cost = PublicityManager.GetProgressCostAt(level);
                 if (!PublicityManager.TryGetPromotionRules(level, out var promotion))
