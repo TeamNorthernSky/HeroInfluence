@@ -58,9 +58,9 @@ public class GameLoadGate : MonoBehaviour
         if (isContinue)
         {
             restoreData = LoadSaveData(SaveSlotRepository.CurrentSlot);
-            if (restoreData == null || !restoreData.hasData)
+            if (!SaveSlotRepository.CanContinue(restoreData))
             {
-                Debug.LogWarning($"[GameLoadGate] 이어하기 실패 — 슬롯 {SaveSlotRepository.CurrentSlot} 저장 데이터 없음. 새 게임으로 폴백.");
+                Debug.LogWarning($"[GameLoadGate] 슬롯 {SaveSlotRepository.CurrentSlot}에 완성된 본게임 저장 데이터가 없어 새 게임으로 시작합니다.");
                 if (restoreData != null) UnityEngine.Object.Destroy(restoreData);
                 restoreData = null;
                 isContinue = false;

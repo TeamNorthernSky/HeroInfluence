@@ -99,7 +99,7 @@ public class SaveSlotPanel : MonoBehaviour
             TMP_Text label = slotButtons[i].GetComponentInChildren<TMP_Text>();
             if (label != null)
                 label.text = data.hasData
-                    ? $"<b>슬롯 {i + 1}</b>\n<size=32>{data.savedAt}\n저장됨</size>"
+                    ? $"<b>슬롯 {i + 1}</b>\n<size=32>{data.savedAt}\n{(data.hasGameState ? "저장됨" : "새 게임 시작")}</size>"
                     : $"<b>슬롯 {i + 1}</b>\n<size=32>저장 가능</size>";
 
             // [KJ 260716] 데이터 유무별 슬롯 배경 교체 (스프라이트 미할당 시 기존 이미지 유지)
@@ -132,7 +132,7 @@ public class SaveSlotPanel : MonoBehaviour
         if (pendingSlotIndex < 0) return;
 
         SaveSlotData data = SaveSlotRepository.Load(pendingSlotIndex);
-        if (data.hasData) // 저장할 데이터가 있으면
+        if (data.hasGameState)
         {
             SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
             SaveSlotRepository.IsContinue = true;              // [KJ 260714] 이어하기 — GameLoadGate가 복원 분기로 진입
