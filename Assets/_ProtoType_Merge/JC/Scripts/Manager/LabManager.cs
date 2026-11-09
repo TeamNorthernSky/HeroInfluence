@@ -6,12 +6,13 @@ using UnityEngine;
 /// 연구소(Research) 시스템 영속 매니저. GameManager 영속 자식. TrainingManager 패턴 복제.
 /// 두 가지 기능을 다룬다:
 ///   1) 스킬 장착 변경 — 영웅의 CurrentSkillIndex를 DH PersistentUnitRepository.UpdateUnitRuntimeState로 writeback (실결선/비침습).
-///   2) 스킬 강화 저장 단계(1=기본, 6=+5) — 영웅별·스킬별 강화 레벨을 JC측 in-memory로 보관.
+///   2) 스킬 강화 저장 단계(1=기본, 5=+4) — 영웅별·스킬별 강화 레벨을 JC측 in-memory로 보관.
 ///
-/// 기본판과 습득한 강화판은 같은 강화 기록을 사용합니다. 협회 강화는 V1.4 리스크 확률에 적용하며
-/// 위력은 스킬 변형의 계수로 결정합니다. 기존 저장의 1~5는 기본~+4로 보존합니다.
+/// 기본판과 습득한 강화판은 같은 강화 기록을 사용합니다. 현재 강화 단계는 리스크 확률(HeroSkillRules.RiskChance)에만
+/// 연결되어 있고, 전투 계수는 DHCsvTemplateCatalog에서 Lv1로 고정됩니다.
+/// 단계 상한 5는 자원 데이터 테이블 V2.3 '연구소' 시트(to_skill_level 2~5)에 맞춥니다. 이전 저장의 6(+5)은 불러올 때 5로 맞춰집니다.
 ///
-/// 비용·조건 출처: H.I 자원 데이터 테이블 V1.4 '협회-연구소' 시트.
+/// 비용·조건 출처: AssociationResourceCatalog (H.I 자원 데이터 테이블 V2.3 '연구소' 시트).
 /// </summary>
 [DisallowMultipleComponent]
 public class LabManager : MonoBehaviour
@@ -19,7 +20,7 @@ public class LabManager : MonoBehaviour
     public event Action OnStateChanged;
 
     public const int BaseSkillLevel = 1;
-    public const int MaxSkillLevel = 6; // 기본(1) + 협회 강화 5단계
+    public const int MaxSkillLevel = 5; // 기본(1) + 연구소 강화 4단계 (자원 V2.3 to_skill_level 2~5)
 
     // 협회-연구소 시트: to_skill_level 2/3/4/5 도달 시 비용. 인덱스 = toLevel - 2.
     // 소모 자원: 자금(Money) + 히어로 메달(Chip). [JC 260617] 인스펙터 편집 가능하도록 직렬화.
@@ -175,7 +176,7 @@ public class LabManager : MonoBehaviour
         return belongsToClass && skill.AcquireLevel <= Mathf.Max(1, unit.Level);
     }
 
-    /// <summary>V1.4: 기본 35%, 협회 강화마다 7%p 감소, +5에서 0%. 기본판과 강화판이 공유합니다.</summary>
+    /// <summary>V1.4 공식: 기본 35%, 강화 단계마다 7%p 감소(최대 단계 5=+4에서 7%). 기본판과 강화판이 공유합니다.</summary>
     public float GetSkillRiskChance(int unitIndex, int skillIndex) => HeroSkillRules.RiskChance(GetSkillLevel(unitIndex, skillIndex));
 
     // ─── 스킬 강화 레벨 조회 ───────────────────────────────────
@@ -307,17 +308,6 @@ public class LabManager : MonoBehaviour
 
     private void RebuildLookup()
     {
-        // 기존 씬/세이브의 네 비용을 보존하고 승인된 +5 비용만 보충합니다.
-        if (upgradeCostMoney != null && upgradeCostMoney.Length == 4)
-        {
-            Array.Resize(ref upgradeCostMoney, 5);
-            upgradeCostMoney[4] = 1000;
-        }
-        if (upgradeCostChip != null && upgradeCostChip.Length == 4)
-        {
-            Array.Resize(ref upgradeCostChip, 5);
-            upgradeCostChip[4] = 10;
-        }
         lookup.Clear();
         for (int i = 0; i < entries.Count; i++)
         {
