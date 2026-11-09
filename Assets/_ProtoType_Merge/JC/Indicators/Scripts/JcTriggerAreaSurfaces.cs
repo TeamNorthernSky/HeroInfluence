@@ -95,6 +95,9 @@ namespace JC.Indicators
                 }
             }
         }
+        // JC | 2026-11-09 | 단차 예외 대상만 실제 인도 상면을 읽으며 일반 영역의 평면 높이 정책은 그대로 둡니다.
+        internal float CellHeight(Vector2Int cell, float ground)
+        { return pavementHeights.TryGetValue(cell, out float pavement) ? Mathf.Max(ground, pavement) : ground; }
         internal float GroundHeight(IReadOnlyList<InteractionOverlayCell> cells)
         {
             // JC | 2026-11-04 | 도로를 포함하거나 변을 맞댄 영역만 도로 평면에 둡니다. 대각선 근접은 제외합니다.

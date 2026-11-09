@@ -52,6 +52,8 @@ Shader "JC/Battle/CellBorderGeometry"
             TEXTURE2D(_JcTriggerBorderDepth); SAMPLER(sampler_JcTriggerBorderDepth);
             TEXTURE2D(_JcTriggerBorderOwners); SAMPLER(sampler_JcTriggerBorderOwners);
             TEXTURE2D(_JcTriggerOccluderDepth); SAMPLER(sampler_JcTriggerOccluderDepth);
+            // JC | 2026-11-09 | 부유 채움보다 낮은 발·소품도 원래 메시 실루엣을 보존합니다.
+            TEXTURE2D(_JcTriggerMeshDepth); SAMPLER(sampler_JcTriggerMeshDepth);
             float4x4 _JcTriggerDepthVP, _JcTriggerDepthView;
             float _JcTriggerDepthActive, _JcTriggerDepthUvFlip;
             float _TriggerSurfaceKind;
@@ -143,6 +145,12 @@ Shader "JC/Battle/CellBorderGeometry"
                     // JC | 2026-11-04 | 실제로 픽셀을 가리는 표면만 분류합니다. 캐릭터 뒤의 건물을 잘못 투과하지 않습니다.
                     float raw=SampleSceneDepth(GetNormalizedScreenSpaceUV(v.positionCS));
                     float sceneEye=unity_OrthoParams.w>.5?LinearDepthToEyeDepth(raw):LinearEyeDepth(raw,_ZBufferParams);
+                    if (_TriggerDepthKind>2.5)
+                    {
+                        float objectEye=SAMPLE_TEXTURE2D_LOD(_JcTriggerMeshDepth,sampler_JcTriggerMeshDepth,uv,0).g;
+                        // JC | 2026-11-09 | 장면 표면보다 앞이거나 같은 내부 메시를 보호합니다. 투명 소품/깊이 샘플 경계도 포함하되 건물·인도 뒤에 숨은 메시의 구멍은 만들지 않습니다.
+                        if (objectEye<65000 && objectEye<=sceneEye+max(.004,sceneEye*.00003)) clip(-1);
+                    }
                     if (sceneEye+max(.002,eyeDepth*.00002)<eyeDepth)
                     {
                         float4 surface=SAMPLE_TEXTURE2D_LOD(_JcTriggerOccluderDepth,sampler_JcTriggerOccluderDepth,uv,0);

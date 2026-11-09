@@ -9,7 +9,8 @@ namespace JC.Indicators
     internal static class JcTriggerAreaDepth
     {
         // JC | 2026-11-04 | 테두리 자체 깊이와 지형 종류별 깊이를 분리해 장면 깊이를 오염시키지 않습니다.
-        private sealed class Buffer { internal Camera camera; internal RenderTexture texture, occluders, owners; }
+        // JC | 2026-11-09 | R=월드 메시 깊이, G=이벤트 내부 메시 보호 깊이를 별도 보관합니다.
+        private sealed class Buffer { internal Camera camera; internal RenderTexture texture, occluders, owners, meshes; }
         // JC | 2026-11-05 | 깊이가 같은 윤곽선은 DH 우선순위, 소유자, 부위, 렌더러 순으로 한 번만 선택합니다.
         internal sealed class Border
         {
@@ -46,7 +47,7 @@ namespace JC.Indicators
             if (controllers.Count != 0) return;
             RenderPipelineManager.beginCameraRendering -= PrepareBorders;
             Shader.SetGlobalFloat(activeId, 0);
-            foreach (var buffer in buffers.Values) { Release(buffer.texture); Release(buffer.occluders); Release(buffer.owners); }
+            foreach (var buffer in buffers.Values) { Release(buffer.texture); Release(buffer.occluders); Release(buffer.owners); Release(buffer.meshes); }
             buffers.Clear();
         }
         // JC | 2026-11-05 | URP가 렌더러 속성을 수집하기 전에 표시 순서만 전달합니다.
@@ -79,7 +80,7 @@ namespace JC.Indicators
             if (controllers.Count == 0) { Unregister(null); return; }
             staleCameras.Clear();
             foreach (var pair in buffers) if (!pair.Value.camera) staleCameras.Add(pair.Key);
-            foreach (int stale in staleCameras) { Release(buffers[stale].texture); Release(buffers[stale].occluders); Release(buffers[stale].owners); buffers.Remove(stale); }
+            foreach (int stale in staleCameras) { Release(buffers[stale].texture); Release(buffers[stale].occluders); Release(buffers[stale].owners); Release(buffers[stale].meshes); buffers.Remove(stale); }
             if (properties == null) properties = new MaterialPropertyBlock();
             width = Mathf.Max(1, width); height = Mathf.Max(1, height);
             int id = camera.GetInstanceID();
@@ -89,6 +90,7 @@ namespace JC.Indicators
                 Release(buffer.texture);
                 Release(buffer.occluders);
                 Release(buffer.owners);
+                Release(buffer.meshes);
                 var format = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGFloat) ? RenderTextureFormat.RGFloat : RenderTextureFormat.ARGBFloat;
                 buffer.texture = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear) {
                     name = "JC Trigger Private Depth", hideFlags = HideFlags.HideAndDontSave,
@@ -106,6 +108,11 @@ namespace JC.Indicators
                     filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, antiAliasing = 1
                 };
                 buffer.occluders.Create();
+                buffer.meshes = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear) {
+                    name = "JC Trigger World Mesh Depth", hideFlags = HideFlags.HideAndDontSave,
+                    filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, antiAliasing = 1
+                };
+                buffer.meshes.Create();
             }
             try
             {
@@ -129,6 +136,10 @@ namespace JC.Indicators
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
                 foreach (var controller in controllers) if (controller) controller.DrawOccluders(command, camera, properties);
                 command.SetGlobalTexture("_JcTriggerOccluderDepth", buffer.occluders);
+                command.SetRenderTarget(buffer.meshes);
+                command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
+                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera);
+                command.SetGlobalTexture("_JcTriggerMeshDepth", buffer.meshes);
                 command.SetGlobalFloat(activeId, 1);
             }
             finally { borders.Clear(); }
