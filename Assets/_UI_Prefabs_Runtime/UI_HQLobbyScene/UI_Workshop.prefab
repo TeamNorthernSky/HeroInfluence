@@ -535,6 +535,7 @@ GameObject:
   - component: {fileID: 9017697252252160488}
   - component: {fileID: 7950585559572317366}
   - component: {fileID: 1049598833216392021}
+  - component: {fileID: 102630574945609911}
   m_Layer: 0
   m_Name: CoreCard1
   m_TagString: Untagged
@@ -705,6 +706,22 @@ MonoBehaviour:
   intensity: 3
   spread: 0.08
   breathe: 1
+--- !u!114 &102630574945609911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549750115539533373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056f04b608e19534daa4a36378be0cae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  core: 2
+  label: Core
+  coreIcon: {fileID: 21300000, guid: 45ee830012879ff429535400bc8fcbd8, type: 3}
+  font: {fileID: 11400000, guid: 53dd59ef54e18694497db82ee254f327, type: 2}
 --- !u!1 &615162085289347147
 GameObject:
   m_ObjectHideFlags: 0
@@ -884,6 +901,7 @@ GameObject:
   - component: {fileID: 8890765125287369059}
   - component: {fileID: 7188157742602441371}
   - component: {fileID: 2454547734651155612}
+  - component: {fileID: 4210110060435683489}
   m_Layer: 0
   m_Name: CoreCard3
   m_TagString: Untagged
@@ -1054,6 +1072,22 @@ MonoBehaviour:
   intensity: 3
   spread: 0.08
   breathe: 1
+--- !u!114 &4210110060435683489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 865649101453697935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056f04b608e19534daa4a36378be0cae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  core: 4
+  label: Core
+  coreIcon: {fileID: 21300000, guid: 0c4906b6d660f0c4ab11261db00dd7d5, type: 3}
+  font: {fileID: 11400000, guid: 53dd59ef54e18694497db82ee254f327, type: 2}
 --- !u!1 &1032222900964982362
 GameObject:
   m_ObjectHideFlags: 0
@@ -2086,6 +2120,7 @@ GameObject:
   - component: {fileID: 6276131202191750627}
   - component: {fileID: 4014237618898612645}
   - component: {fileID: 796685925432925992}
+  - component: {fileID: 7056175109073585217}
   m_Layer: 0
   m_Name: CoreCard4
   m_TagString: Untagged
@@ -2256,6 +2291,22 @@ MonoBehaviour:
   intensity: 3
   spread: 0.08
   breathe: 1
+--- !u!114 &7056175109073585217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999338409064716583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056f04b608e19534daa4a36378be0cae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  core: 5
+  label: Core
+  coreIcon: {fileID: 21300000, guid: 1abc62750c7502f4386a4199907a5cd3, type: 3}
+  font: {fileID: 11400000, guid: 53dd59ef54e18694497db82ee254f327, type: 2}
 --- !u!1 &2246519064352334179
 GameObject:
   m_ObjectHideFlags: 0
@@ -4317,8 +4368,8 @@ MonoBehaviour:
   buildDesc: "\uC601\uC6C5\uC758 \uC7A5\uBE44\uB97C \uC81C\uC791 \xB7 \uAC15\uD654
     \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uD64D\uBCF4\uBD80 Lv.1"
-  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \uC7A5\uBE44 \uC81C\uC791
-    \xB7 \uAC15\uD654\uAC00 \uAC00\uB2A5\uD569\uB2C8\uB2E4."
+  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \n\uC7A5\uBE44 \uC81C\uC791
+    \xB7 \uAC15\uD654\uAC00 \n\uAC00\uB2A5\uD569\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 5954465075921008077}
   - {fileID: 185262264999685831}
@@ -5443,6 +5494,7 @@ GameObject:
   - component: {fileID: 1289646092306571394}
   - component: {fileID: 2070427770844293174}
   - component: {fileID: 1153722223403664235}
+  - component: {fileID: 5257541180341610361}
   m_Layer: 0
   m_Name: CoreCard0
   m_TagString: Untagged
@@ -5613,6 +5665,22 @@ MonoBehaviour:
   intensity: 3
   spread: 0.08
   breathe: 1
+--- !u!114 &5257541180341610361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7287441491990009162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056f04b608e19534daa4a36378be0cae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  core: 1
+  label: Core
+  coreIcon: {fileID: 21300000, guid: 718967d5fe12e264ba7bdc2a74ea9f0d, type: 3}
+  font: {fileID: 11400000, guid: 53dd59ef54e18694497db82ee254f327, type: 2}
 --- !u!1 &7371160848491403634
 GameObject:
   m_ObjectHideFlags: 0
@@ -7706,6 +7774,7 @@ GameObject:
   - component: {fileID: 8188519383598259043}
   - component: {fileID: 237068892100600353}
   - component: {fileID: 7837095794333043634}
+  - component: {fileID: 3386367689827804657}
   m_Layer: 0
   m_Name: CoreCard2
   m_TagString: Untagged
@@ -7876,6 +7945,22 @@ MonoBehaviour:
   intensity: 3
   spread: 0.08
   breathe: 1
+--- !u!114 &3386367689827804657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9158836982789376429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 056f04b608e19534daa4a36378be0cae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  core: 3
+  label: Core
+  coreIcon: {fileID: 21300000, guid: 3c4f29ce5d4f3cd4cbe7f8251cfb13c1, type: 3}
+  font: {fileID: 11400000, guid: 53dd59ef54e18694497db82ee254f327, type: 2}
 --- !u!1 &9212469499562821451
 GameObject:
   m_ObjectHideFlags: 0

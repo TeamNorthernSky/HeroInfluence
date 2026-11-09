@@ -2050,7 +2050,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 52.45
+  m_fontSize: 58
   m_fontSizeBase: 58
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2418,7 +2418,7 @@ MonoBehaviour:
     \uAD50\uD658\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uC5F0\uAD6C\uC18C Lv.1 + \uACF5\uBC29
     Lv.1"
-  upgradeDesc: "\uC790\uC6D0 \uAD50\uD658 \uD6A8\uC728\uC774 \uC99D\uAC00\uD569\uB2C8\uB2E4."
+  upgradeDesc: "\uC790\uC6D0 \uAD50\uD658 \uD6A8\uC728\uC774 \n\uC99D\uAC00\uD569\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 3261812971407130097}
   - {fileID: 9040102010385409787}
@@ -2667,7 +2667,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 52.45
+  m_fontSize: 58
   m_fontSizeBase: 58
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2952,7 +2952,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 45.55
+  m_fontSize: 53
   m_fontSizeBase: 58
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4733,12 +4733,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40
+  m_fontSize: 45
   m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 20
-  m_fontSizeMax: 40
+  m_fontSizeMax: 45
   m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 4096
@@ -4983,7 +4983,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 60.75
+  m_fontSize: 64
   m_fontSizeBase: 64
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -5283,7 +5283,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 52.45
+  m_fontSize: 58
   m_fontSizeBase: 58
   m_fontWeight: 400
   m_enableAutoSizing: 1
