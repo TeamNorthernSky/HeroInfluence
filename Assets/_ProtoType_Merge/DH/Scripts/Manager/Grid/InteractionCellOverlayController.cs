@@ -123,6 +123,9 @@ public class InteractionCellOverlayController : MonoBehaviour
 
     private readonly Dictionary<Vector2Int, object> desiredOwners = new Dictionary<Vector2Int, object>();
     private readonly List<InteractionOverlayCell> visibleCells = new List<InteractionOverlayCell>();
+    // JC | 2026-11-09: 윤곽선 전용 소유권입니다. 기존 desiredCells/encounterCells를 바꾸지 않아
+    // DH의 이동·호버·클릭·전투 판정은 보존하고, 고정 전투 > 이동 적 > 협회 순으로 표시만 나눕니다.
+    private readonly Dictionary<Vector2Int, InteractionOverlayCell> visualCellsByGrid = new Dictionary<Vector2Int, InteractionOverlayCell>();
     private IInteractionCellOverlayVisual visualOverride;
     // JC | 2026-11-04 | 범위 판정과 클릭 처리는 기존 DH 셀이 담당하고, 외형만 연결된 영역 렌더러에 위임합니다.
     public IInteractionCellOverlayVisual VisualOverride
@@ -242,14 +245,10 @@ public class InteractionCellOverlayController : MonoBehaviour
         if (visualOverride != null)
         {
             visibleCells.Clear();
-            foreach (var pair in desiredCells)
-            {
-                Color color = pair.Value == OverlayCellType.External && externalDesiredCellColors.TryGetValue(pair.Key, out var external)
-                    ? external : GetColor(pair.Value);
-                // JC | 2026-11-05 | 셀 선택·접촉 판정은 기존 결과를 사용하고, 이미 계산된 종류의 표시 우선순위만 함께 전달합니다.
-                visibleCells.Add(new InteractionOverlayCell(desiredOwners[pair.Key], pair.Key, color, GetPriority(pair.Value)));
-            }
-            // JC | 2026-11-04 | 클릭 셀과 소유자를 기존 판정에서 얻어 표시 전용 윤곽에 넘깁니다.
+            // JC | 2026-11-09: 클릭 후보를 만든 결과와 분리한 표시 셀만 기존 윤곽 생성기에 전달합니다.
+            // 중첩 전용 그룹 없이 고정 영역을 온전히 남기고 이동 적은 남은 셀의 경계로 그립니다.
+            foreach (var cell in visualCellsByGrid.Values)
+                visibleCells.Add(cell);
             visualOverride.RenderCells(visibleCells, gridManager);
         }
     }
@@ -260,6 +259,8 @@ public class InteractionCellOverlayController : MonoBehaviour
         desiredOwners.Clear();
         encounterCells.Clear();
         externalDesiredCellColors.Clear();
+        // JC | 2026-11-09: 이동·소멸·점령으로 바뀐 원본 영역을 매번 다시 합성해 이전 잘림이 남지 않게 합니다.
+        visualCellsByGrid.Clear();
         AddMainEventInteractionCells();
         AddEnemyEncounterCells();
         AddOutpostInteractionCells();
@@ -345,6 +346,9 @@ public class InteractionCellOverlayController : MonoBehaviour
                         continue;
 
                     Vector2Int grid = enemyGrid + new Vector2Int(x, y);
+                    // JC | 2026-11-09: 다른 적의 본체 셀도 원래 표시 영역 후보에는 포함합니다.
+                    // 아래 DH 논리 상태 필터는 그대로 두어 고정 영역에 시각적인 구멍만 생기는 것을 막습니다.
+                    TrySetVisualCell(grid, OverlayCellType.Enemy, enemy);
                     EnemyEncounterZoneState state = gridManager.GetEnemyEncounterZoneState(grid, out _);
                     if (state != EnemyEncounterZoneState.SingleEnemyZone
                         && state != EnemyEncounterZoneState.OverlappedEnemyZone)
@@ -430,6 +434,8 @@ public class InteractionCellOverlayController : MonoBehaviour
         if (gridManager != null && gridManager.HasObstacle(grid))
             return false;
 
+        // JC | 2026-11-09: 기존 판정의 선점 여부와 무관하게 원본 후보를 표시용 합성에 전달합니다.
+        TrySetVisualCell(grid, type, owner);
         if (desiredCells.TryGetValue(grid, out OverlayCellType existing)
             && GetPriority(existing) >= GetPriority(type))
         {
@@ -439,6 +445,24 @@ public class InteractionCellOverlayController : MonoBehaviour
         desiredCells[grid] = type;
         desiredOwners[grid] = owner;
         return true;
+    }
+
+    // JC | 2026-11-09: 렌더에서만 중첩 색상을 일반 적 색상으로 통일하고 소유권 우선순위를 적용합니다.
+    // 고정 적·메인이벤트·적 전초기지·적기지는 동일한 고정 전투 표시 우선순위입니다.
+    // 외부 표시와 비전투 색상은 기존 규칙을 유지하며, 이 결과는 논리/클릭 데이터에 역으로 쓰지 않습니다.
+    private void TrySetVisualCell(Vector2Int grid, OverlayCellType type, object owner)
+    {
+        if (gridManager != null && gridManager.HasObstacle(grid))
+            return;
+        if (type == OverlayCellType.OverlappedEnemy)
+            type = OverlayCellType.Enemy;
+        int priority = type == OverlayCellType.Enemy
+            ? (owner is EnemyGridMover enemy && !enemy.IsStatic ? 3 : 5)
+            : GetPriority(type);
+        if (visualCellsByGrid.TryGetValue(grid, out var existing) && existing.Priority >= priority)
+            return;
+        Color color = type == OverlayCellType.External ? externalOverlaySets[owner].Color : GetColor(type);
+        visualCellsByGrid[grid] = new InteractionOverlayCell(owner, grid, color, priority);
     }
 
     private void HideRemovedZones()
@@ -542,6 +566,9 @@ public class InteractionCellOverlayController : MonoBehaviour
     private void ClearActiveOverlays()
     {
         visualOverride?.ClearCells();
+        // JC | 2026-11-09: 연결 해제 시 표시 전용 셀과 소유자 참조도 함께 비웁니다.
+        visualCellsByGrid.Clear();
+        visibleCells.Clear();
         encounterCells.Clear();
         encounterBounds.Clear();
         foreach (KeyValuePair<Vector2Int, OverlayInstance> pair in activeOverlays)
