@@ -336,7 +336,6 @@ public class SkillButtonController : MonoBehaviour
             {
                 if (slot == null || slot.visual == null) continue;
                 bool available = ready && slot.button != null && slot.button.IsInteractable() && slot.skill != null &&
-                    actor.CurrentInfluence >= Mathf.Max(0f, slot.skill.IPCost) &&
                     battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.ClassSkill, null);
                 slot.visual.SetState(available, ready && slot.toggle != null && slot.toggle.IsOn);
             }
@@ -345,7 +344,6 @@ public class SkillButtonController : MonoBehaviour
             var button = toggle2 != null ? toggle2.GetComponent<Button>() : null;
             var weapon = actor != null ? actor.EquippedWeaponData : null;
             bool available = ready && button != null && button.IsInteractable() && weapon != null &&
-                actor.HasInfluenceForWeaponSkill(weapon) &&
                 battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.WeaponSkill, null);
             coreVisual.SetState(available, ready && toggle2 != null && toggle2.IsOn);
         }

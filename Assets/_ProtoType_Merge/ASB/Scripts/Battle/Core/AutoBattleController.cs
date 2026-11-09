@@ -190,11 +190,11 @@ public class AutoBattleController : MonoBehaviour
         if (inputHandler != null) inputHandler.IsAutoBattleActive = false;
     }
 
-    /// <summary>IP가 충분하고 유효 타겟이 있는 스킬만 후보에 넣습니다.</summary>
+    /// <summary>유효 타겟이 있는 스킬만 후보에 넣습니다. (스킬 사용에 IP 조건은 없음)</summary>
     private static void TryAddCandidate(List<AutoBattleCandidate> candidates, BattleCharactor actor,
         PendingActionType actionType, SkillData skill)
     {
-        if (skill == null || !actor.HasInfluenceForSkill(skill)) return;
+        if (skill == null) return;
 
         List<BattleCharactor> targets = TargetingHelper.GetValidTargetsForSkillData(actor, skill);
         if (targets.Count > 0)
