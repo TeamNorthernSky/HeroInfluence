@@ -57,12 +57,22 @@ public sealed class ExplorationActionPointBubble : MonoBehaviour
     private Vector2 defaultTextOffsetMax;
     private readonly System.Collections.Generic.Dictionary<Graphic, Material> foregroundMaterials =
         new System.Collections.Generic.Dictionary<Graphic, Material>();
+    private static Material textOverlayTemplate;
+
+    private void OnEnable() => TMPro_EventManager.TEXT_CHANGED_EVENT.Add(OnTextChanged);
+    private void OnDisable() => TMPro_EventManager.TEXT_CHANGED_EVENT.Remove(OnTextChanged);
+
+    private void OnTextChanged(Object changed)
+    {
+        if (changed == messageText) ApplyForegroundRendering();
+    }
 
     private void ApplyForegroundRendering()
     {
         if (GetComponent<Canvas>().renderMode != RenderMode.WorldSpace) return;
         messageText.transform.SetAsLastSibling();
-        messageText.ForceMeshUpdate();
+        if (textOverlayTemplate == null)
+            textOverlayTemplate = Resources.Load<Material>("PartyBubbleTextOverlay");
         foreach (var graphic in GetComponentsInChildren<Graphic>(true))
         {
             var text = graphic as TMP_Text;
@@ -70,12 +80,16 @@ public sealed class ExplorationActionPointBubble : MonoBehaviour
             var source = text != null ? text.fontSharedMaterial
                 : subMesh != null ? subMesh.sharedMaterial : graphic.material;
             if (source == null) continue;
+            if (foregroundMaterials.TryGetValue(graphic, out var existing) && source == existing)
+                continue;
             if (!foregroundMaterials.TryGetValue(graphic, out var material) || source != material)
             {
                 if (material != null) Destroy(material);
                 material = new Material(source) { name = "PartyBubbleForeground" };
                 foregroundMaterials[graphic] = material;
             }
+            if ((text != null || subMesh != null) && textOverlayTemplate != null)
+                material.shader = textOverlayTemplate.shader;
             // Keep shared UI/font materials untouched. Both UI and TMP must ignore world depth.
             material.SetInt("unity_GUIZTestMode", (int)UnityEngine.Rendering.CompareFunction.Always);
             if (material.HasProperty("_ZTestMode"))
@@ -147,6 +161,7 @@ public sealed class ExplorationActionPointBubble : MonoBehaviour
         gameObject.SetActive(true);
         FitBubbleToText();
         entrance.Play(Vector2.zero);
+        messageText.ForceMeshUpdate();
         ApplyForegroundRendering();
         FollowCharacter();
     }
