@@ -1199,6 +1199,7 @@ public sealed partial class SkillPresentationDirector
                 director.time = Math.Max(playbackRange.Start, playbackRange.End - 0.0002d);
                 director.Evaluate();
                 waveFootPlant?.ApplyPose();
+                waveFootPlant?.CaptureReturnPose();
             }
             director.Stop();               // 그래프 정리
             waveFootPlant?.ApplyPose();
@@ -1228,7 +1229,7 @@ public sealed partial class SkillPresentationDirector
                 try
                 {
                     actor.Anim?.PlayIdleAnimationAtNormalizedTime(0f);
-                    waveFootPlant?.ReleaseToIdle(0.10f);
+                    waveFootPlant?.ReleaseToIdle(0.16f);
                 }
                 catch
                 {

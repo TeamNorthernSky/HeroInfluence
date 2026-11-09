@@ -1,7 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// UMT 파동탄 동안 왼발을 시작 지점에 고정한다. Timeline이 뼈 포즈를 쓴 뒤에만 적용한다.
+/// UMT 파동탄 동안 왼발을 고정하고, 복귀 시 하체 포즈를 Idle까지 잇는다.
+/// Timeline이 뼈 포즈를 쓴 뒤에만 적용한다.
 /// </summary>
 [DefaultExecutionOrder(10000)]
 public sealed class UmtWaveLeftFootPlant : MonoBehaviour
@@ -12,9 +13,20 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
     private Transform _upper;
     private Transform _lower;
     private Transform _foot;
+    private Transform _hips;
+    private Transform _rightUpper;
+    private Transform _rightLower;
+    private Transform _rightFoot;
     private Vector3 _anchorLocalPosition;
     private Quaternion _anchorLocalRotation;
     private Vector3 _kneeBendLocalDirection;
+    private Vector3 _rightAnchorLocalPosition;
+    private Quaternion _rightAnchorLocalRotation;
+    private Vector3 _rightKneeBendLocalDirection;
+    private Transform[] _returnBones;
+    private Quaternion[] _returnRotations;
+    private Vector3 _returnHipLocalPosition;
+    private bool _hasReturnPose;
     private Animator _animator;
     private bool _active;
     private bool _releasing;
@@ -40,6 +52,10 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
         _upper = animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
         _lower = animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
         _foot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+        _hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+        _rightUpper = animator.GetBoneTransform(HumanBodyBones.RightUpperLeg);
+        _rightLower = animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+        _rightFoot = animator.GetBoneTransform(HumanBodyBones.RightFoot);
         if (_upper == null || _lower == null || _foot == null) return false;
 
         _anchorLocalPosition = transform.InverseTransformPoint(anchorWorldPosition);
@@ -51,6 +67,30 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
         _kneeBendLocalDirection = transform.InverseTransformDirection(bend.normalized);
         _active = true;
         return true;
+    }
+
+    /// <summary>Timeline의 마지막 하체 포즈를 저장해 Idle 첫 프레임까지 부드럽게 잇는다.</summary>
+    public void CaptureReturnPose()
+    {
+        _hasReturnPose = false;
+        if (!_active || _hips == null || _rightUpper == null ||
+            _rightLower == null || _rightFoot == null) return;
+
+        _returnBones = new[] { _hips, _upper, _lower, _foot,
+            _rightUpper, _rightLower, _rightFoot };
+        _returnRotations = new Quaternion[_returnBones.Length];
+        for (int i = 0; i < _returnBones.Length; i++)
+            _returnRotations[i] = _returnBones[i].localRotation;
+        _returnHipLocalPosition = _hips.localPosition;
+
+        _rightAnchorLocalPosition = transform.InverseTransformPoint(_rightFoot.position);
+        _rightAnchorLocalRotation = Quaternion.Inverse(transform.rotation) * _rightFoot.rotation;
+        Vector3 legAxis = (_rightFoot.position - _rightUpper.position).normalized;
+        Vector3 bend = Vector3.ProjectOnPlane(_rightLower.position - _rightUpper.position, legAxis);
+        if (bend.sqrMagnitude < 0.000001f)
+            bend = Vector3.ProjectOnPlane(transform.forward, legAxis);
+        _rightKneeBendLocalDirection = transform.InverseTransformDirection(bend.normalized);
+        _hasReturnPose = true;
     }
 
     public void ReleaseToIdle(float durationSeconds)
@@ -66,6 +106,9 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
     {
         _active = false;
         _releasing = false;
+        _hasReturnPose = false;
+        _returnBones = null;
+        _returnRotations = null;
         _animator = null;
     }
 
@@ -91,25 +134,53 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
             End();
             return;
         }
-        ApplyPose(weight);
+        if (_releasing && _hasReturnPose)
+        {
+            float progress = Mathf.Clamp01(_releaseElapsed / _releaseDuration);
+            ApplyReturnPose(1f - Mathf.SmoothStep(0f, 1f, progress));
+            // 골반이 Idle로 옮겨지는 동안 양발은 마지막 Timeline 위치를 유지한다.
+            ApplyPose();
+            ApplyFootPose(_rightUpper, _rightLower, _rightFoot,
+                _rightAnchorLocalPosition, _rightAnchorLocalRotation,
+                _rightKneeBendLocalDirection, 1f);
+        }
+        else
+            ApplyPose(weight);
     }
 
     public void ApplyPose() => ApplyPose(1f);
 
     private void ApplyPose(float weight)
     {
-        if (!_active || _upper == null || _lower == null || _foot == null) return;
+        if (!_active) return;
+        ApplyFootPose(_upper, _lower, _foot, _anchorLocalPosition,
+            _anchorLocalRotation, _kneeBendLocalDirection, weight);
+    }
 
-        Vector3 target = Vector3.Lerp(_foot.position,
-            transform.TransformPoint(_anchorLocalPosition), weight);
-        Quaternion targetRotation = Quaternion.Slerp(_foot.rotation,
-            transform.rotation * _anchorLocalRotation, weight);
-        if (Vector3.SqrMagnitude(_foot.position - target) < 0.00000025f &&
-            Quaternion.Angle(_foot.rotation, targetRotation) < 0.1f)
+    private void ApplyReturnPose(float weight)
+    {
+        _hips.localPosition = Vector3.Lerp(_hips.localPosition, _returnHipLocalPosition, weight);
+        for (int i = 0; i < _returnBones.Length; i++)
+            _returnBones[i].localRotation = Quaternion.Slerp(
+                _returnBones[i].localRotation, _returnRotations[i], weight);
+    }
+
+    private void ApplyFootPose(Transform upper, Transform lower, Transform foot,
+        Vector3 anchorLocalPosition, Quaternion anchorLocalRotation,
+        Vector3 kneeBendLocalDirection, float weight)
+    {
+        if (upper == null || lower == null || foot == null) return;
+
+        Vector3 target = Vector3.Lerp(foot.position,
+            transform.TransformPoint(anchorLocalPosition), weight);
+        Quaternion targetRotation = Quaternion.Slerp(foot.rotation,
+            transform.rotation * anchorLocalRotation, weight);
+        if (Vector3.SqrMagnitude(foot.position - target) < 0.00000025f &&
+            Quaternion.Angle(foot.rotation, targetRotation) < 0.1f)
             return;
-        Vector3 root = _upper.position;
-        Vector3 mid = _lower.position;
-        Vector3 tip = _foot.position;
+        Vector3 root = upper.position;
+        Vector3 mid = lower.position;
+        Vector3 tip = foot.position;
         float upperLength = Vector3.Distance(root, mid);
         float lowerLength = Vector3.Distance(mid, tip);
         if (upperLength < 0.0001f || lowerLength < 0.0001f) return;
@@ -119,7 +190,7 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
             upperLength + lowerLength - 0.0001f);
         Vector3 axis = toTarget.normalized;
         Vector3 bend = Vector3.ProjectOnPlane(
-            transform.TransformDirection(_kneeBendLocalDirection), axis).normalized;
+            transform.TransformDirection(kneeBendLocalDirection), axis).normalized;
         if (bend.sqrMagnitude < 0.0001f)
             bend = Vector3.ProjectOnPlane(mid - root, axis).normalized;
         if (bend.sqrMagnitude < 0.0001f) return;
@@ -129,14 +200,14 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
             (2f * distance * upperLength), -1f, 1f);
         Vector3 desiredMid = root + axis * (cosAngle * upperLength) +
                              bend * (Mathf.Sqrt(1f - cosAngle * cosAngle) * upperLength);
-        _upper.rotation = Quaternion.FromToRotation(mid - root, desiredMid - root) * _upper.rotation;
+        upper.rotation = Quaternion.FromToRotation(mid - root, desiredMid - root) * upper.rotation;
 
-        Vector3 newMid = _lower.position;
-        _lower.rotation = Quaternion.FromToRotation(_foot.position - newMid, target - newMid) *
-                          _lower.rotation;
+        Vector3 newMid = lower.position;
+        lower.rotation = Quaternion.FromToRotation(foot.position - newMid, target - newMid) *
+                         lower.rotation;
 
         // 원본 루트 동작 때문에 다리가 짧아지는 구간만 보정한다.
-        _foot.position = Vector3.MoveTowards(_foot.position, target, MaxShinExtension);
-        _foot.rotation = targetRotation;
+        foot.position = Vector3.MoveTowards(foot.position, target, MaxShinExtension);
+        foot.rotation = targetRotation;
     }
 }
