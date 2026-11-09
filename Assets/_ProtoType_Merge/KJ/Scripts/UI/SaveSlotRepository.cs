@@ -7,7 +7,7 @@ public static class SaveSlotRepository
     public static int CurrentSlot = -1;
 
     // [KJ 260714] 이어하기 여부. true면 GameLoadGate가 새게임 리셋 대신 CurrentSlot 저장 데이터를 복원한다.
-    // 새게임/이어하기 파일 모두 hasData=true가 될 수 있어(신규 슬롯은 껍데기 저장) 파일 내용으로 구분 불가 → 명시 플래그 사용.
+    // hasData reserves a slot; hasGameState identifies a completed exploration save.
     public static bool IsContinue = false;
 
     private static string GetPath(int slotIndex) =>
@@ -17,7 +17,36 @@ public static class SaveSlotRepository
     {
         string path = GetPath(slotIndex);
         if (!File.Exists(path)) return new SaveSlotData { hasData = false };
-        return JsonUtility.FromJson<SaveSlotData>(File.ReadAllText(path));
+        var saved = JsonUtility.FromJson<SlotStateProbe>(File.ReadAllText(path));
+        if (saved == null) return new SaveSlotData();
+        return new SaveSlotData
+        {
+            hasData = saved.hasData,
+            savedAt = saved.savedAt,
+            // Older complete saves have no hasGameState field, so validate their payload too.
+            hasGameState = HasPlayableState(saved.hasData, saved.currentDay,
+                saved.units?.Length ?? 0, saved.parties?.Length ?? 0, saved.resources?.Length ?? 0)
+        };
+    }
+
+    public static bool CanContinue(GameSaveData data)
+    {
+        return data != null && HasPlayableState(data.hasData, data.currentDay,
+            data.units?.Count ?? 0, data.parties?.Count ?? 0, data.resources?.Count ?? 0);
+    }
+
+    private static bool HasPlayableState(bool hasData, int day, int units, int parties, int resources)
+    {
+        return hasData && day >= 1 && units > 0 && parties > 0 && resources > 0;
+    }
+
+    [System.Serializable]
+    private sealed class SlotStateProbe : SaveSlotData
+    {
+        public int currentDay;
+        public UnitPersistentDataDiskRow[] units;
+        public PartyPersistentData[] parties;
+        public GameSaveData.ResourceEntry[] resources;
     }
 
     public static void Save(int slotIndex)
@@ -25,6 +54,7 @@ public static class SaveSlotRepository
         var data = new SaveSlotData
         {
             hasData = true,
+            hasGameState = false,
             savedAt = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm")
         };
         File.WriteAllText(GetPath(slotIndex), JsonUtility.ToJson(data));
