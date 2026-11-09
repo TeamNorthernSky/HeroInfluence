@@ -5,6 +5,11 @@ using UnityEngine;
 // displayEntries(스프라이트/이름 프리셋)는 DH 보유 유지. JC OutpostNoticeModalController가 표시.
 public class OutpostPanelUI : MonoBehaviour
 {
+
+    //[SerializeField] private string UITitle;
+    //[SerializeField] private string description;
+    //[SerializeField] private string description;
+
     [Header("Display Presets")]
     [SerializeField] private OutpostUnlockDisplayEntry[] displayEntries = Array.Empty<OutpostUnlockDisplayEntry>();
 
@@ -25,7 +30,7 @@ public class OutpostPanelUI : MonoBehaviour
 
         ExplorationModalEvents.RaiseOutpostNotice(new OutpostNoticeRequest {
             title       = $"{name} 해방",
-            description = $"빌런에게서 '{name}' 해방\n매턴 '{resourceName}' '{amount}' 지급",
+            description = $"빌런에게서 {name} 탈환"/*"\n 4턴 마다 {resourceName} {amount} 지급"*/,
             amount         = amount,
             buildingSprite = entry.BuildingSprite,
             resourceSprite = entry.ResourceSprite,

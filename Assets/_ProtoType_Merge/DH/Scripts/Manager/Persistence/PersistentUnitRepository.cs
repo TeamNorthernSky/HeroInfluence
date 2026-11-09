@@ -406,6 +406,23 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
+    public bool AddCoreEnhancementBonus(int unitIndex, StatBlock bonus)
+    {
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data) || data == null) return false;
+        float previousHp = data.CurrentHp;
+        float previousMaxHp = data.IngameStats.HP;
+        data.SetEventBonusStats(data.EventBonusStats + bonus);
+        if (!ApplyWeaponState(data, data.EquippedWeaponInstanceIndex, data.CurrentWeaponKey, data.CurrentWeaponStats)) return false;
+        // 살아 있는 영웅은 최대 HP 증가분만큼 현재 HP도 올린다. 부활은 별도 기능이다.
+        float hpGain = Mathf.Max(0f, data.IngameStats.HP - previousMaxHp);
+        if (previousHp > 0f && hpGain > 0f)
+            data.ApplyRuntimeState(data.UnitTemplateKey, data.Level, data.BaseStats, data.LevelupStats,
+                data.CurrentSkillIndex, data.CurrentWeaponKey, data.CurrentWeaponStats, data.IngameStats,
+                Mathf.Min(data.IngameStats.HP, previousHp + hpGain), data.Exp, data.MaxExp,
+                data.SkillLevel, data.EquippedWeaponInstanceIndex, data.CurrentInfluence, data.IsIncapacitated);
+        return true;
+    }
+
     public bool ApplyEventRewardStats(
         int unitIndex,
         float hpBonus,
@@ -833,6 +850,9 @@ public class PersistentUnitRepository : MonoBehaviour
         nextUnitIndex = Mathf.Max(1, restoredNextUnitIndex);
         RebuildLookup();
         EnsureDefaultWeaponInstances();
+        // 이전 저장본의 IngameStats에 남아 있는 장착 보너스도 새 정책으로 다시 계산한다.
+        foreach (var data in units)
+            ApplyWeaponState(data, data.EquippedWeaponInstanceIndex, data.CurrentWeaponKey, data.CurrentWeaponStats);
     }
     public void ClearAllUnits()
     {

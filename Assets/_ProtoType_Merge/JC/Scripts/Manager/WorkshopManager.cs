@@ -9,7 +9,7 @@ using UnityEngine;
 ///   - 소유는 계정 단위: entries/lookup의 키가 weaponIndex(1~5) 하나다. 유닛 축이 없다.
 ///   - 장착은 유닛 단위: PersistentUnitRepository.EquippedWeaponInstanceIndex가 유일한 출처이므로
 ///     장착 API(GetEquippedWeaponIndex/EquipWeapon/EnsureDefaultEquipped)의 unitIndex는 그대로 유지된다.
-///   - 템플릿당 인스턴스 1개 → 코어를 강화하면 장착한 모든 영웅에 동시 반영(기획 의도).
+///   - 템플릿당 인스턴스 1개 → 코어 레벨/스킬은 공유, 강화 능력치 증가분은 선택 영웅에게만 영구 지급.
 ///   - 제작 = CreateWeapon + 소유 등록까지. 자동 장착은 하지 않는다(장착은 모달의 「장착」 버튼 전담).
 ///   - 자원 차감은 호출자(WorkshopModalController) 담당. 매니저는 상태만 바꾼다.
 ///
@@ -171,15 +171,39 @@ public class WorkshopManager : MonoBehaviour
         return GetDepartmentLevel() >= reqLevel;
     }
 
-    /// <summary>코어 강화 한 단계. 인스턴스가 계정 공유이므로 장착한 모든 영웅에 동시 반영된다.</summary>
-    public bool TryEnhance(int weaponIndex)
+    public bool CanEnhanceForUnit(int weaponIndex, int unitIndex)
     {
-        if (!CanEnhance(weaponIndex)) return false;
+        var repo = PersistentUnitRepository.Instance;
+        return CanEnhance(weaponIndex) && repo != null && repo.TryGetUnit(unitIndex, out var unit) && unit != null;
+    }
+
+    /// <summary>공유 코어 레벨을 올리고, 이번 단계의 증가분은 선택 영웅에게만 영구 지급한다.</summary>
+    public bool TryEnhance(int weaponIndex, int unitIndex)
+    {
+        if (!CanEnhanceForUnit(weaponIndex, unitIndex)) return false;
         int inst = GetInstanceIndex(weaponIndex);
         var weaponRepo = WeaponPersistentRepository.Instance;
         if (inst <= 0 || weaponRepo == null) return false;
 
+        int level = GetWeaponLevel(weaponIndex);
+        var catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog == null || !catalog.TryGetWeaponBonusAtLevel(weaponIndex, level, out var before)
+            || !catalog.TryGetWeaponBonusAtLevel(weaponIndex, level + 1, out var after)) return false;
+        var bonus = new StatBlock(
+            hp: after.HP - before.HP, atk: after.Atk - before.Atk, def: after.DEF - before.DEF,
+            luck: 0f, speed: after.Speed - before.Speed,
+            criticalRate: after.CriticalRate - before.CriticalRate,
+            counterRate: after.CounterRate - before.CounterRate, avoidRate: after.AvoidRate - before.AvoidRate);
+
         if (!weaponRepo.TryEnhanceWeapon(inst)) return false;
+        if (!PersistentUnitRepository.Instance.AddCoreEnhancementBonus(unitIndex, bonus))
+        {
+            // 강화 보상 저장에 실패하면 코어 레벨도 복원해 UI의 비용 환불과 일치시킨다.
+            if (weaponRepo.TryGetWeapon(inst, out var weapon)) weapon.SetLevel(level);
+            weaponRepo.RefreshWeaponStats(inst);
+            PersistentUnitRepository.Instance.RefreshUnitsEquippedWithWeapon(inst);
+            return false;
+        }
         OnStateChanged?.Invoke();
         return true;
     }

@@ -224,6 +224,12 @@ public class LabModalController : MonoBehaviour
 
     private void OnHeroSelected(int unitIndex)
     {
+        if (selectedUnitIndex != unitIndex)
+        {
+            completionMsgUntil = 0f;
+            if (completionRoutine != null) { StopCoroutine(completionRoutine); completionRoutine = null; }
+            if (stateInfoText != null) stateInfoText.gameObject.SetActive(false);
+        }
         selectedUnitIndex = unitIndex;
         EnsureDefaultEquipped(unitIndex); // [JC 260617] 기본 장착 스킬 미지정(CurrentSkillIndex=0)이면 첫 습득 스킬 자동 장착
         ClearSelection();
