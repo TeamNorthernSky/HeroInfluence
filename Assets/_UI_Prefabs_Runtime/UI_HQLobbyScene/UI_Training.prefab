@@ -386,7 +386,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 17.95
+  m_fontSize: 18
   m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1876,7 +1876,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 17.95
+  m_fontSize: 18
   m_fontSizeBase: 26
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2086,15 +2086,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 52
-  m_fontSizeBase: 52
+  m_fontSize: 55
+  m_fontSizeBase: 55
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -2771,7 +2771,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 100, y: -91}
+  m_AnchoredPosition: {x: 100, y: -79}
   m_SizeDelta: {x: 450, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7347225305301282700
@@ -2811,7 +2811,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4278190335
   m_fontColor: {r: 1, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -3145,7 +3145,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 17.95
+  m_fontSize: 18
   m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3519,7 +3519,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 17.95
+  m_fontSize: 18
   m_fontSizeBase: 26
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4685,7 +4685,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -3.6}
   m_SizeDelta: {x: 144.1, y: 46}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7076409427873866480
@@ -4982,7 +4982,7 @@ MonoBehaviour:
     \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uC5F0\uAD6C\uC18C Lv.1 + \uACF5\uBC29
     Lv.1"
-  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \uC601\uC6C5 \uB2A5\uB825\uCE58
+  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \uC601\uC6C5 \n\uB2A5\uB825\uCE58
     \uAC15\uD654\uAC00 \uAC00\uB2A5\uD569\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 964745219396226795}
@@ -5157,12 +5157,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 34
+  m_fontSize: 45
   m_fontSizeBase: 34
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 26
-  m_fontSizeMax: 34
+  m_fontSizeMax: 45
   m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 4096

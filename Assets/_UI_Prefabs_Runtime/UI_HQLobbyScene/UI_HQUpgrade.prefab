@@ -2348,7 +2348,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 55.2
+  m_fontSize: 58
   m_fontSizeBase: 58
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2712,7 +2712,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "\uD611\uD68C\uC758 \uC6B4\uC601\uACFC \uC2DC\uC124 \uD655\uC7A5\uC744
-    \uC9C0\uC6D0\uD569\uB2C8\uB2E4."
+    \n\uC9C0\uC6D0\uD569\uB2C8\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
@@ -2873,7 +2873,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 41.4
+  m_fontSize: 48
   m_fontSizeBase: 48
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3732,7 +3732,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 51.75
+  m_fontSize: 58
   m_fontSizeBase: 58
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4407,7 +4407,7 @@ MonoBehaviour:
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 30
+  m_fontSizeMax: 35
   m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -4613,7 +4613,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 439, y: -504}
-  m_SizeDelta: {x: 186, y: 66}
+  m_SizeDelta: {x: 188, y: 66}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &8300172240048273435
 CanvasRenderer:
@@ -5832,7 +5832,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 35.9
+  m_fontSize: 36
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -5966,7 +5966,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 41.4
+  m_fontSize: 48
   m_fontSizeBase: 48
   m_fontWeight: 400
   m_enableAutoSizing: 1
