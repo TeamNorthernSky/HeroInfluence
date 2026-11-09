@@ -21,6 +21,7 @@ public class SkillTooltip : MonoBehaviour
 
     [Header("TipC (2~5레벨: 현재↔다음 비교)")]
     [SerializeField] private GameObject tipCRoot;
+    public TMP_Text tipCLevel;
     [SerializeField] private Image tipCCurIcon;
     [SerializeField] private TMP_Text tipCCurName;
     [SerializeField] private TMP_Text tipCCurEffect;
@@ -60,6 +61,11 @@ public class SkillTooltip : MonoBehaviour
         EnsurePromoted();
         if (tipBRoot != null) tipBRect = tipBRoot.GetComponent<RectTransform>();
         if (tipCRoot != null) tipCRect = tipCRoot.GetComponent<RectTransform>();
+        if (tipCLevel == null && tipCRoot != null)
+        {
+            var levelObject = tipCRoot.transform.Find("SkillLevel");
+            if (levelObject != null) tipCLevel = levelObject.GetComponent<TMP_Text>();
+        }
         if (tipBRect != null) tipBRootBaseW = tipBRect.sizeDelta.x;
         if (tipBDescPanel != null) { tipBDescBaseH = tipBDescPanel.sizeDelta.y; tipBDescPanelBaseW = tipBDescPanel.sizeDelta.x; }
         if (tipBDesc != null) tipBDescBaseW = tipBDesc.rectTransform.sizeDelta.x;
@@ -141,7 +147,8 @@ public class SkillTooltip : MonoBehaviour
     }
 
     public void ShowCompare(Sprite curIcon, string curName, string curEffect,
-                            Sprite nextIcon, string nextName, string nextEffect, RectTransform target)
+                            Sprite nextIcon, string nextName, string nextEffect, RectTransform target,
+                            float curRatio, float nextRatio)
     {
         Hide();
         if (tipCRoot == null || target == null) return;
@@ -152,7 +159,7 @@ public class SkillTooltip : MonoBehaviour
         if (tipCCurEffect != null) tipCCurEffect.text = curEffect;
         if (tipCNextEffect != null) tipCNextEffect.text = nextEffect;
         SkillTooltipCardLayout.Compare(tipCRect, tipCCurIcon, tipCCurName, tipCCurEffect,
-            tipCNextIcon, tipCNextName, tipCNextEffect, tipCDescPanel);
+            tipCNextIcon, tipCNextName, tipCNextEffect, tipCDescPanel, curRatio, nextRatio, tipCLevel);
         tipCRoot.SetActive(true);
         transform.SetAsLastSibling();
         var ctr = Center(target);
