@@ -27,6 +27,8 @@ namespace JC.Indicators
         private bool geometryDirty = true;
         // JC | 2026-11-04 | 실제 도로 메시로 영역 전체 높이를 고정하고 가림 표면 분류를 재사용합니다.
         private readonly JcTriggerAreaSurfaces surfaces = new JcTriggerAreaSurfaces();
+        // JC | 2026-11-09 | 기존 Owner를 재사용해 내부 메시 보호와 메인 이벤트 느낌표의 선택적 깊이 판정을 관리합니다.
+        private readonly JcTriggerMeshVisibility meshVisibility = new JcTriggerMeshVisibility();
 
         public JcTriggerAreaProfile Profile => profile;
         public JcTriggerAreaSettings Settings => settings;
@@ -100,6 +102,7 @@ namespace JC.Indicators
         public void RenderCells(IReadOnlyList<InteractionOverlayCell> cells, GridManager grid)
         {
             surfaces.Refresh(gameObject.scene, grid);
+            meshVisibility.Collect(cells, gameObject.scene);
             foreach (var list in groups.Values) list.Clear();
             foreach (var cell in cells)
             {
@@ -147,18 +150,20 @@ namespace JC.Indicators
                 }
                 // JC | 2026-11-04 | 인도 셀 높이 차이를 제거하고 도로에 접한 모든 셀을 같은 평면에 둡니다.
                 float ground = surfaces.GroundHeight(pair.Value);
-                bool changed = view.ground != ground || geometryDirty || view.region == null || view.region.CellSize != grid.CellSize || view.region.Cells.Count != pair.Value.Count;
+                // JC | 2026-11-09 | 구역2 MainQuest3-1만 인도 높이를 반영합니다. 다른 이벤트와 실제 셀 판정은 유지합니다.
+                bool stepped = pair.Key.owner is MainEventObject main && main.ZoneId == 2 && main.EventKey == "MainQuest3-1";
+                bool changed = view.ground != ground || geometryDirty || view.region == null || view.region.StepHeights != stepped || view.region.CellSize != grid.CellSize || view.region.Cells.Count != pair.Value.Count;
                 if (!changed)
                     foreach (var cell in pair.Value)
-                        if (!view.region.Cells.TryGetValue(cell.Grid - view.anchor, out float y) || y != ground) { changed = true; break; }
+                        if (!view.region.Cells.TryGetValue(cell.Grid - view.anchor, out float y) || y != (stepped ? surfaces.CellHeight(cell.Grid, ground) : ground)) { changed = true; break; }
                 if (changed)
                 {
                     view.ground = ground;
                     view.anchor = pair.Value[0].Grid;
                     view.position = grid.GridToWorldCenter(view.anchor);
                     view.position.y = 0;
-                    view.region = new BattleCellBorderMesh.Region { CellSize = grid.CellSize };
-                    foreach (var cell in pair.Value) view.region.Cells[cell.Grid - view.anchor] = ground;
+                    view.region = new BattleCellBorderMesh.Region { CellSize = grid.CellSize, StepHeights = stepped };
+                    foreach (var cell in pair.Value) view.region.Cells[cell.Grid - view.anchor] = stepped ? surfaces.CellHeight(cell.Grid, ground) : ground;
                     view.region.Trace(); view.visual.SetRegion(view.region);
                 }
                 // JC | 2026-11-05 | 최종 셀로 메시를 갱신한 뒤에만 정지한 아놀드의 윤곽선을 다시 표시합니다.
@@ -241,10 +246,16 @@ namespace JC.Indicators
             if (!bound || !depthMaterial || (camera.scene.IsValid() && camera.scene != gameObject.scene)) return;
             surfaces.Draw(command, camera, depthMaterial, properties);
         }
+        // JC | 2026-11-09 | 별도 깊이 버퍼만 사용하므로 다른 인디케이터의 장면 깊이에는 영향을 주지 않습니다.
+        internal void DrawWorldMeshes(CommandBuffer command, Camera camera)
+        {
+            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.Draw(command, camera);
+        }
         private static Color Tint(Color color, float intensity, float opacity)
         { color *= Mathf.Max(0, intensity); color.a = Mathf.Clamp01(opacity); return color; }
         public void ClearCells()
         {
+            meshVisibility.Clear();
             foreach (var view in views.Values) if (view.visual) Dispose(view.visual.gameObject);
             views.Clear(); groups.Clear();
         }
