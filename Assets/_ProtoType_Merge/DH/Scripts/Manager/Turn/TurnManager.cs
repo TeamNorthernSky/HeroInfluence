@@ -40,6 +40,8 @@ public class TurnManager : MonoBehaviour
     public bool IsEnemyTurnRunning => enemyTurnRunning;
     public bool IsPlayerTurn => !enemyTurnRunning && !completingTurn && pendingEnemyTurnStartCoroutine == null;
 
+    public GameObject PNL_PressNextTurn;
+
     private void Awake()
     {
         if (partyRegistry == null)
@@ -79,6 +81,11 @@ public class TurnManager : MonoBehaviour
             return;
         }
 
+        if(PNL_PressNextTurn == null)
+        {
+            PNL_PressNextTurn = GameObject.Find("PNL_PressNextTurn");
+        }
+
         StartCoroutine(CaptureInitialTurnStartSnapshotAfterSceneReady());
     }
 
@@ -91,11 +98,17 @@ public class TurnManager : MonoBehaviour
 
         ClearAutomaticEndTurn();
 
+        // [KJ 2026-11-09] 행동력 모두 소모하고 전투 패배, 채팅이 끝난 후 턴 지나는 연출일때 다음 턴 누르도록 안내하는 패널 비활성화
+        foreach (var panel in FindObjectsByType<ExplorationDefeatBlockPanelController>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+            panel.HideForNextTurn();
+
         // [JC 260615] 턴 전환 시작 → 월드 입력 차단(다음 턴 income 모달 확인 시 해제).
         // 적 턴 진행 중은 물론, 씬 전환 직후·모달 표시 전의 틈에도 탐사 오브젝트 인터랙션(본부 더블클릭 등)을 막는다.
         WorldInputGate.IsTurnResolving = true;
 
         pendingEnemyTurnStartCoroutine = StartCoroutine(StartEnemyTurnAfterPendingThreats());
+
     }
 
     private void LateUpdate()

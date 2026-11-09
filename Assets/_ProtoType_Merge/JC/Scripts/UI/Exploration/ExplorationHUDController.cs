@@ -20,16 +20,21 @@ public class ExplorationHUDController : MonoBehaviour
     [SerializeField] private Button nextTurnButton;           // BTN_Explor_NextTurn
     [SerializeField] private TurnManager turnManager;
 
+    [Header("턴 종료 시 숨길 패널")]
+    public GameObject pressNextTurnPanel;
+
     private const int DaysPerWeek = 7;
     private TurnManager subscribedTM;
     private bool listenerHooked;
     private Canvas canvas;
     private GraphicRaycaster graphicRaycaster;
+    private ExplorationDefeatBlockPanelController defeatBlockPanelController;
 
     private void Awake()
     {
         canvas = GetComponent<Canvas>();
         graphicRaycaster = GetComponent<GraphicRaycaster>();
+        defeatBlockPanelController = GetComponent<ExplorationDefeatBlockPanelController>();
         ResolveMissing();
         HookButton();
     }
@@ -175,6 +180,8 @@ public class ExplorationHUDController : MonoBehaviour
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
         if (turnManager == null) return;
         if (!turnManager.IsPlayerTurn) return;
+        if (defeatBlockPanelController != null) defeatBlockPanelController.HideForNextTurn();
+        if (pressNextTurnPanel != null) pressNextTurnPanel.SetActive(false);
         if (nextTurnButton != null) nextTurnButton.interactable = false;
         turnManager.EndPlayerTurn();
     }
