@@ -25,6 +25,17 @@ namespace JC.DebugTools
 
         public static JcZone1WarpView Create(Transform parent, Action cancel, Action<Vector2> click)
         {
+            // JC | 2026-11-05 | 탐사 UI의 SOYO Maple 전환에 맞춰 기존 HUD 글꼴을 공유합니다.
+            // 같은 탐사씬의 숨겨진 UI도 포함해 패널 표시 상태에 의존하지 않으며, 글꼴 누락 시 기존 치트 종료 경로로 알립니다.
+            TMP_FontAsset hudFont = null;
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            foreach (var text in FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (text.gameObject.scene == scene && text.font != null &&
+                    text.font.name.StartsWith("SOYO Maple", StringComparison.OrdinalIgnoreCase))
+                { hudFont = text.font; break; }
+            if (hudFont == null)
+                throw new InvalidOperationException("탐사 UI의 SOYO Maple 글꼴을 찾을 수 없습니다. 치트를 종료합니다.");
+
             var go = new GameObject("JC 구간 테스트", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(Image));
             go.transform.SetParent(parent, false);
             var canvas = go.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 32000;
@@ -32,11 +43,7 @@ namespace JC.DebugTools
             scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = .5f;
             go.GetComponent<Image>().color = Color.clear;
             var view = go.AddComponent<JcZone1WarpView>(); view.cancel = cancel; view.mapClick = click;
-            view.font = TMP_Settings.defaultFontAsset;
-            // 현재 HUD가 사용하는 한글 폰트를 우선 재사용합니다.
-            foreach (var text in FindObjectsByType<TMP_Text>(FindObjectsSortMode.None))
-                if (text.font != null && text.font.name.IndexOf("NotoSansKR", StringComparison.OrdinalIgnoreCase) >= 0)
-                { view.font = text.font; break; }
+            view.font = hudFont;
             return view;
         }
 

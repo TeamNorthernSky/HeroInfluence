@@ -41,8 +41,7 @@ public class SkillButtonController : MonoBehaviour
     [SerializeField] private TMP_Text descriptionTitle;
     [Tooltip("호버·선택 스킬의 설명 또는 스킬 선택 안내를 표시합니다.")]
     [SerializeField] private TMP_Text descriptionBody;
-    [Tooltip("켜면 공격력 비율로, 끄면 현재 영웅의 능력치를 적용한 수치로 설명합니다.")]
-    [SerializeField] private bool descriptionPercentageValues = true;
+    // JC | 2026-11-06: 확정 IP 문구를 사용하므로 기존 씬의 백분율 옵션은 더 이상 사용하지 않습니다.
     [Tooltip("효과·거리·대상 순서의 태그 글자입니다. 각 글자의 부모는 개별 태그 배경이며 안내 상태에서는 숨깁니다.")]
     [SerializeField] private TMP_Text[] descriptionTags = Array.Empty<TMP_Text>();
 
@@ -53,6 +52,8 @@ public class SkillButtonController : MonoBehaviour
     public Button HoveredSkillButton => hoveredSkillButton;
     private bool descriptionBattleEnded;
     private BattleCharactor displayedUnit;
+    // JC | 2026-11-06: 같은 IP 구간에서는 설명/스크롤을 유지하고 경계를 넘을 때만 갱신합니다.
+    private int descriptionIpBand = -1;
     private CanvasGroup panelInput;
     private Material lockedIconMaterial;
 
@@ -304,27 +305,11 @@ public class SkillButtonController : MonoBehaviour
             return;
         }
 
-        // 기존 공용 툴팁과 같은 설명/강화 조회를 사용합니다. 강화 단계와 데이터 원본의 불일치는 별도 확인 대상입니다.
-        var gm = GameManager.Instance;
-        int unitIndex = unit.SourceData != null ? unit.SourceData.UnitIndex : 0;
-        string body;
-        if (unit.UsesTutorialEquipment)
-        {
-            // 같은 ID의 일반 전투 템플릿/협회 강화값이 전용 설명을 덮어쓰지 않도록 실제 시전 데이터를 표시합니다.
-            body = ClassSkillTooltipText.ReplaceBattleCoefficients(skill.description,
-                action == PendingActionType.WeaponSkill ? "WeaponSkill" : "ClassSkill", skill.skillValue, skill.skillSubValue);
-        }
-        else if (action == PendingActionType.WeaponSkill && unit.EquippedWeaponData != null)
-        {
-            int weaponIndex = unit.EquippedWeaponIndex > 0 ? unit.EquippedWeaponIndex : (unit.SourceData?.CurrentWeaponIndex ?? 0);
-            int level = gm != null && gm.Workshop != null && unitIndex > 0 ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(weaponIndex)) : 1;
-            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level, percentageValues: descriptionPercentageValues, caster: unit);
-        }
-        else
-        {
-            int level = gm != null && gm.Lab != null && unitIndex > 0 ? gm.Lab.GetSkillLevel(unitIndex, skill.skillIndex) : (unit.SourceData?.SkillLevel ?? 1);
-            body = ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: descriptionPercentageValues, caster: unit);
-        }
+        // JC | 2026-11-06: 실제 선택/호버 스킬 ID와 행동 유닛 IP로 전투 전용 확정 문구를 표시합니다.
+        // 전투 수치, 장비 주입 및 로비·연구소의 설명 경로는 변경하지 않습니다.
+        descriptionIpBand = ClassSkillTooltipText.GetBattleIpBand(unit.CurrentInfluence);
+        string body = ClassSkillTooltipText.BuildBattleDesc(skill.skillIndex,
+            action == PendingActionType.WeaponSkill, unit.CurrentInfluence);
         SetDescription(skill.skillName, body, skill);
     }
 
@@ -333,6 +318,13 @@ public class SkillButtonController : MonoBehaviour
         var actor = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
         // 턴 팝업 중에도 이름/초상화와 같은 유닛의 스킬을 표시합니다. 입력 허용 시점은 바꾸지 않습니다.
         if (displayedUnit != actor) RefreshSkills();
+        // JC | 2026-11-06: 설명을 연 채 IP가 변해도 현재 구간을 표시합니다. 비주얼 연결 유무와 무관하게 갱신합니다.
+        if (actor != null && actor.IsPlayer && !descriptionBattleEnded &&
+            descriptionIpBand != ClassSkillTooltipText.GetBattleIpBand(actor.CurrentInfluence))
+        {
+            descriptionIpBand = ClassSkillTooltipText.GetBattleIpBand(actor.CurrentInfluence);
+            RefreshDescription();
+        }
         ApplyTurnVisibility();
         if (coreVisual == null && (!HasHeroSlots || !System.Array.Exists(heroSlots, s => s != null && s.visual != null))) return;
         bool ready = actor != null && actor.IsPlayer && !actor.IsDead && !descriptionBattleEnded &&
@@ -344,7 +336,6 @@ public class SkillButtonController : MonoBehaviour
             {
                 if (slot == null || slot.visual == null) continue;
                 bool available = ready && slot.button != null && slot.button.IsInteractable() && slot.skill != null &&
-                    actor.CurrentInfluence >= Mathf.Max(0f, slot.skill.IPCost) &&
                     battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.ClassSkill, null);
                 slot.visual.SetState(available, ready && slot.toggle != null && slot.toggle.IsOn);
             }
@@ -353,7 +344,6 @@ public class SkillButtonController : MonoBehaviour
             var button = toggle2 != null ? toggle2.GetComponent<Button>() : null;
             var weapon = actor != null ? actor.EquippedWeaponData : null;
             bool available = ready && button != null && button.IsInteractable() && weapon != null &&
-                actor.HasInfluenceForWeaponSkill(weapon) &&
                 battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.WeaponSkill, null);
             coreVisual.SetState(available, ready && toggle2 != null && toggle2.IsOn);
         }

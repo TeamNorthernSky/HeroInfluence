@@ -210,7 +210,8 @@ namespace JC.BattleTesting
                 if (cameraViewLabels[i] != null) cameraViewLabels[i].text = (requestedView == i ? "> " : "") + names[i] + " [" + keys[i] + "]";
         }
 
-        [Tooltip("카메라 버튼에 사용할 한글 글꼴입니다. 씬의 Noto Sans KR 글꼴을 명시적으로 연결합니다.")]
+        // JC | 2026-11-05 | 두 전투 테스트씬의 실제 SOYO Maple 연결에 맞춰 안내를 정리합니다. 기존 글꼴 선택 순서는 유지합니다.
+        [Tooltip("카메라 버튼에 사용할 한글 글꼴입니다. 씬 UI와 같은 SOYO Maple 글꼴을 명시적으로 연결합니다.")]
         public TMPro.TMP_FontAsset cameraToolbarFont;
 
         private void BuildCameraToolbar()

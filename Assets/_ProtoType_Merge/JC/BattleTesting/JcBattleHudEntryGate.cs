@@ -36,10 +36,12 @@ namespace JC.BattleTesting
         public static void Install(Scene scene, BattleFlowManager flow)
         {
             if (flow == null || Find(scene) != null) return;
-            if(!scene.GetRootGameObjects().Any(root => root.GetComponentInChildren<JC.Environment.JcDayNightController>(true)!=null))
+            // JC | 2026-11-05 | 실내 조명 연결 뒤 HUD 진입 경로가 은행 낮밤 적용기를 다시 생성하지 않도록 제외합니다.
+            bool bankIndoor = JcBankBattleBackground.Load()?.Matches(CombatContext.Instance) == true ||
+                scene.GetRootGameObjects().Any(root => root.GetComponentInChildren<JcBankEnvironment>(true) != null);
+            if(!bankIndoor && !scene.GetRootGameObjects().Any(root => root.GetComponentInChildren<JC.Environment.JcDayNightController>(true)!=null))
                 JC.Environment.JcDayNightController.EnsureBattle(scene,JC.Environment.JcDayNightController.CurrentHours,
                 JC.Environment.JcDayNightController.CurrentProfile,
-                JcBankBattleBackground.Load()?.Matches(CombatContext.Instance)==true ||
                 JcBossBattleBackground.Load()?.Matches(CombatContext.Instance)==true);
             var owner = new GameObject("JC_BattleHudEntryGate");
             SceneManager.MoveGameObjectToScene(owner, scene);

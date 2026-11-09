@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-/// <summary>Observes named UI popups and CommonUI modals without modifying shared controllers.</summary>
+/// <summary>Observes named UI popups, CommonUI and lobby modals without modifying shared controllers.</summary>
 public sealed class PopupSoundService : MonoBehaviour
 {
     private static PopupSoundService instance;
@@ -88,7 +88,8 @@ public sealed class PopupSoundService : MonoBehaviour
         if (target.GetComponent<SettingsModalController>() != null) return true;
         if (target.GetComponent<SaveSlotPanel>() != null) return true;
         if (target.GetComponent<Modal>() != null &&
-            target.GetComponentInParent<CommonUIManager>(true) != null) return true;
+            (target.GetComponentInParent<CommonUIManager>(true) != null ||
+             target.scene.name == "HQLobbyScene" || target.scene.name == "TutorialLobbyScene")) return true;
         if (target.GetComponent<RectTransform>() == null || target.GetComponentInParent<Canvas>(true) == null)
             return false;
         if (IsUpgradeResult(target)) return true;
@@ -106,6 +107,13 @@ public sealed class PopupSoundService : MonoBehaviour
 
     public static void PlayPopup(GameObject source)
     {
+        PlayPopup(source, source != null && IsUpgradeResult(source) ? "Association_Build" : "Popup");
+    }
+
+    public static void PlayWarningPopup(GameObject source) => PlayPopup(source, "PopupWarning");
+
+    private static void PlayPopup(GameObject source, string key)
+    {
         if (source == null || !source.activeInHierarchy) return;
         if (playedFrame.TryGetValue(source, out int frame) && frame == Time.frameCount) return;
         // Enabling a parent window also enables its children; that is one window opening.
@@ -119,7 +127,7 @@ public sealed class PopupSoundService : MonoBehaviour
 #endif
         playedFrame[source] = Time.frameCount;
         MouseClickSfx.NotifyPopupSoundPlayed();
-        Emit(IsUpgradeResult(source) ? "Association_Build" : "Popup");
+        Emit(key);
     }
 
     private static bool IsUpgradeResult(GameObject source)

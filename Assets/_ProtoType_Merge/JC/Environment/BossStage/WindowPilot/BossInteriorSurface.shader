@@ -9,7 +9,8 @@ Shader "JC/Environment/Boss Interior Surface"
         _SpecColor("반사 색",Color)=(.02,.02,.02,1)
         _OcclusionMap("음영 맵",2D)="white"{} _OcclusionStrength("음영",Float)=1
         _EmissionMap("발광 맵",2D)="white"{} _EmissionColor("발광",Color)=(0,0,0,0)
-        _SurfaceVariation("표면 거칠기 변화",Range(0,.2))=.035
+        // JC | 2026-11-05 | 프로필의 강화된 거칠기 조절 범위와 재질 Inspector 범위를 일치시킵니다.
+        _SurfaceVariation("표면 거칠기 변화",Range(0,1))=.035
         _FloorTiles("바닥 줄눈 사용",Float)=0
         _TileSize("타일 한 변 길이",Float)=4
         _JointWidth("줄눈 폭",Float)=.025
@@ -19,6 +20,7 @@ Shader "JC/Environment/Boss Interior Surface"
         [HideInInspector] _Surface("Surface",Float)=0
         [HideInInspector] _Cull("Cull",Float)=2
         [HideInInspector] _Cutoff("Cutoff",Float)=.5
+        [HideInInspector] _BossLocalOnly("보스 전용 조명만",Float)=0
     }
     SubShader
     {
@@ -35,6 +37,8 @@ Shader "JC/Environment/Boss Interior Surface"
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
+            // JC | 2026-11-05 | 창문 마스크가 실제 추가광에 적용되도록 URP 쿠키 변형을 포함합니다.
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
             #pragma multi_compile _ _FORWARD_PLUS
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
@@ -42,6 +46,10 @@ Shader "JC/Environment/Boss Interior Surface"
             #define _SPECULAR_SETUP 1
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
+            #include "Assets/_ProtoType_Merge/JC/BattleTesting/JcBossLocalLighting.hlsl"
+            // JC | 2026-11-09 | 보스 표면에만 공통 접점 음영을 적용하며 도시 재질은 등록하지 않습니다.
+            #include "Assets/_ProtoType_Merge/JC/Environment/ContactShading/JcContactShading.hlsl"
+            float _BossLocalOnly;
             float _SurfaceVariation,_FloorTiles,_TileSize,_JointWidth,_JointContrast,_JointNormal,_TileVariation;
             float4x4 _WorldToStage;
             float4 _StageScale;
@@ -79,7 +87,11 @@ Shader "JC/Environment/Boss Interior Surface"
                     data.normalWS=normalize(data.normalWS-right*slope.x-forward*slope.y);
                 }
                 // JC | 2026-11-05 | 원본 색·큰 면을 보존하면서 약한 반사, 기존 그림자와 추가 라이트를 그대로 받습니다.
-                half4 color=UniversalFragmentPBR(data,surface);
+                // JC | 2026-11-05 | 실내 차단 모드에서는 안개/환경 반사도 밝기 하한을 만들지 않게 제외합니다.
+                surface.albedo=JcApplyContactShading(surface.albedo,input.positionWS);
+                if(_BossLocalOnly>.5)return JcBossLocalSurface(data,surface);
+                half4 color=JcBankPbr(data,surface);
+                color.rgb*=JcIndoorOcclusion(data.positionWS,data.normalWS);
                 color.rgb=MixFog(color.rgb,data.fogCoord);color.a=1;return color;
             }
             ENDHLSL

@@ -15,6 +15,17 @@ namespace JC.VFX
     [RequireComponent(typeof(MeshRenderer))]
     public class HealAuraGlow : MonoBehaviour
     {
+        // JC | 2026-11-06 | 표시 중인 기둥이 있는 카메라에서만 캐릭터 가림 마스크를 요청합니다. 풀링 비활성화도 해제합니다.
+        private static readonly System.Collections.Generic.HashSet<HealAuraGlow> visibleAuras = new System.Collections.Generic.HashSet<HealAuraGlow>();
+        public static bool HasVisibleAura(Camera camera)
+        {
+            foreach (var aura in visibleAuras)
+                if (aura && aura.isActiveAndEnabled && aura._playing && aura._mr && aura._mr.enabled && !aura._mr.forceRenderingOff &&
+                    (camera.cullingMask & (1 << aura.gameObject.layer)) != 0) return true;
+            return false;
+        }
+        private void OnEnable() { if (_playing) visibleAuras.Add(this); }
+        private void OnDisable() => visibleAuras.Remove(this);
         [Header("런타임 프리뷰")]
         [Tooltip("지정하면 livePreview에서 이 프리셋 값을 매 프레임 반영.")]
         [SerializeField] private HealAuraGlowPreset preset;
@@ -116,6 +127,8 @@ namespace JC.VFX
             _center = center;
             if (livePreview && preset) PullFromPreset();
             _playing = true;
+            // JC | 2026-11-06 | 상위 오케스트레이터가 자식 OnEnable보다 먼저 시작해도 표시 등록을 보장합니다.
+            visibleAuras.Add(this);
             _mr.enabled = true;
             ApplyTransform();
             ApplyVisual();
@@ -125,6 +138,8 @@ namespace JC.VFX
         public void Stop()
         {
             _playing = false;
+            // JC | 2026-11-06 | 기둥이 종료되면 추가 캐릭터 마스크 렌더 요청도 종료합니다.
+            visibleAuras.Remove(this);
             if (_mr) _mr.enabled = false;
         }
 

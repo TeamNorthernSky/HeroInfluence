@@ -52,10 +52,11 @@ public sealed class BattlePresentationController : MonoBehaviour
     [InspectorName("원거리 적 공격 시 대상도 함께 표시")]
     [Tooltip("적 원거리 공격에서 시전자와 피격 대상을 함께 담습니다.")]
     public bool frameEnemyRangedTarget = true;
-    [InspectorName("블랙불릿 공격 시 대상도 함께 표시"), Tooltip("블랙불릿과 피격 대상을 함께 담고, 후열 대상이 잘리지 않도록 화각을 조절합니다.")]
+    // JC | 2026-11-06 | 일반 전투의 블랙불릿 구도는 투영 범위에 맞춰 중심과 화각을 함께 계산합니다.
+    [InspectorName("블랙불릿 공격 시 대상도 함께 표시"), Tooltip("블랙불릿과 피격 대상을 함께 담습니다. 은행에서 직접 저장한 1~4번 스킬은 공유 프로필의 고정 구도를 우선 사용합니다. 저장 구도를 끈 스킬은 신체 범위에 맞춰 조절합니다. 보스 전용 연출은 기존 설정을 사용합니다.")]
     public bool frameBlackBulletTarget = true;
     [InspectorName("원거리 공격 초점의 피격자 비중"), Range(.5f, .8f)]
-    [Tooltip("원거리 구도의 피격 대상 비중입니다. 값이 클수록 대상을 향합니다.")]
+    [Tooltip("원거리 적 구도의 피격 대상 비중입니다. 값이 클수록 대상을 향합니다. 블랙불릿의 화면 범위 구도는 이 값 대신 두 인물의 투영 중심을 사용합니다.")]
     public float rangedTargetFocusWeight = 0.65f;
     [Header("루미나 투사체 연출")]
     [Tooltip("루미나 투사체와 연쇄 효과를 카메라 초점이 따라갑니다.")]
@@ -108,6 +109,9 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool attackZoomActive;
     public bool IsAttackCameraActive => attackZoomActive;
     public JcBossCamera BossCamera { get; set; }
+    // JC | 2026-11-06 | ASB 공용 연출기 안의 기존 JC 카메라 경로에 은행 전용 설정을 주입합니다.
+    // 은행 로더가 연결한 씬만 사용하며, 일반전·보스·기획팀 Preview에는 연결하지 않습니다.
+    public JcBankBattleBackground BankBackground { get; set; }
     private Vector3 attackCameraPosition;
     private Quaternion attackCameraRotation;
     private float attackCameraFov, attackCameraOrthoSize;
@@ -195,8 +199,17 @@ public sealed class BattlePresentationController : MonoBehaviour
         var position = previewCamera.transform.position;
         var rotation = previewCamera.transform.rotation;
         float fov = previewCamera.fieldOfView;
+        // JC | 2026-11-06 | ASB 공용 연출 경로 안에서 블랙불릿의 화면 범위를 계산합니다.
+        // 별도 카메라 제어나 각도 임계값 없이 진입·유지 모두 같은 구도 계산을 사용합니다.
+        if (UseProjectedPairFraming)
+        {
+            ResolveProjectedPair(position, out var targetRotation, out var targetFov);
+            float blend = 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime);
+            rotation = Quaternion.Slerp(rotation, targetRotation, blend);
+            fov = Mathf.Lerp(fov, targetFov, blend);
+        }
         Vector3 direction = AttackFocusPosition - position;
-        if (direction.sqrMagnitude > .001f)
+        if (!UseProjectedPairFraming && direction.sqrMagnitude > .001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             rotation = projectileFocusLatched
@@ -205,7 +218,7 @@ public sealed class BattlePresentationController : MonoBehaviour
                 : Quaternion.Slerp(previewCamera.transform.rotation, targetRotation,
                     1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
         }
-        if (focusNekoBarrage || (frameRangedPair && attackFocusTarget != null) || (focusNekoHeal && (nekoHealProjectiles.Count > 0 || nekoHealTargets.Count > 0)))
+        if (!UseProjectedPairFraming && (focusNekoBarrage || (frameRangedPair && attackFocusTarget != null) || (focusNekoHeal && (nekoHealProjectiles.Count > 0 || nekoHealTargets.Count > 0))))
         {
             float neededFov = Mathf.Max(attackZoomBaseFov,
                 RequiredPairFov(position, rotation));
@@ -213,6 +226,77 @@ public sealed class BattlePresentationController : MonoBehaviour
                 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
         }
         ApplyCameraPose(position,rotation,fov);
+    }
+
+    // JC | 2026-11-06 | 블랙불릿만 시작 시 확정한 두 인물의 구도를 복귀까지 보관합니다.
+    // 표적 소멸이 시전자 단독 구도로 전환되는 조건이 되지 않게 합니다.
+    // 보스·다른 캐릭터의 구도와 기존 카메라 이동 경로는 변경하지 않습니다.
+    private bool blackBulletPairActive;
+    private Vector3 blackBulletActorAnchor;
+    private Vector3 blackBulletTargetAnchor;
+    // JC | 2026-11-06 | 공격 시작 시 선택한 은행 스킬 구도를 보관하여 표적 소멸·이동에도 연출 도중 변경하지 않습니다.
+    private bool bankSkillShotActive;
+    private Vector3 bankSkillShotPosition;
+    private Quaternion bankSkillShotRotation;
+    private float bankSkillShotFov;
+    private bool UseProjectedPairFraming => blackBulletPairActive || bankSkillShotActive;
+
+    private void ResolveProjectedPair(Vector3 position, out Quaternion rotation, out float fov)
+    {
+        // JC | 2026-11-06 | 저장 구도도 기존 진입·유지 계산 경로로 반환하여 도착 후 신체 전용 구도로 되돌아가지 않게 합니다.
+        if (bankSkillShotActive)
+        {
+            rotation = bankSkillShotRotation;
+            fov = bankSkillShotFov;
+            return;
+        }
+        // JC | 2026-11-06 | 근접 젬 스킬도 출발점과 표적을 포함한 시작 범위를 사용합니다.
+        // 접근할수록 두 신체 사이가 좁아져 과확대되거나, 복귀 동작에 따라 재확대되는 일을 막습니다.
+        ResolvePairFraming(blackBulletActorAnchor, blackBulletTargetAnchor,
+            position, previewCamera.aspect, out rotation, out fov);
+    }
+
+    // JC | 2026-11-06 | 월드 좌표의 피격자 가중 평균은 원근 투영 후 중심과 다릅니다.
+    // 기존 신체 여유(반폭 .6, 발 -.25~머리 2.45)를 가진 두 상자의 투영 범위를
+    // 가운데에 맞추고 화면의 84% 안에 담습니다. 기존 FOV를 하한으로 쓰지 않아
+    // 두 인물이 가까우면 실제로 좁은 화각을 선택합니다. 카메라에 값을 쓰지 않는 순수 계산입니다.
+    private static void ResolvePairFraming(Vector3 actor, Vector3 target, Vector3 position,
+        float aspect, out Quaternion rotation, out float fov)
+    {
+        rotation = Quaternion.LookRotation((actor + target) * .5f + Vector3.up * 1.1f - position);
+        Vector2 minimum = default, maximum = default;
+        for (int iteration = 0; iteration < 10; iteration++)
+        {
+            PairProjection(actor, target, position, rotation, out minimum, out maximum);
+            var center = (minimum + maximum) * .5f;
+            rotation = Quaternion.LookRotation(rotation * new Vector3(center.x, center.y, 1f));
+        }
+        PairProjection(actor, target, position, rotation, out minimum, out maximum);
+        float tangent = Mathf.Max(Mathf.Max(Mathf.Abs(minimum.y), Mathf.Abs(maximum.y)),
+            Mathf.Max(Mathf.Abs(minimum.x), Mathf.Abs(maximum.x)) / Mathf.Max(.01f, aspect));
+        fov = 2f * Mathf.Atan(tangent / .84f) * Mathf.Rad2Deg;
+    }
+
+    // JC | 2026-11-06 | 가까운 시전자와 먼 표적 각각의 깊이로 투영합니다.
+    // 발·머리 두 점만 확대하던 계산과 달리 신체 폭과 깊이를 함께 포함하며 매 프레임 할당하지 않습니다.
+    private static void PairProjection(Vector3 actor, Vector3 target, Vector3 position,
+        Quaternion rotation, out Vector2 minimum, out Vector2 maximum)
+    {
+        minimum = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+        maximum = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+        var inverse = Quaternion.Inverse(rotation);
+        for (int unit = 0; unit < 2; unit++)
+            for (int corner = 0; corner < 8; corner++)
+            {
+                var point = (unit == 0 ? actor : target) + new Vector3(
+                    (corner & 1) == 0 ? -.6f : .6f,
+                    (corner & 2) == 0 ? -.25f : 2.45f,
+                    (corner & 4) == 0 ? -.6f : .6f);
+                var local = inverse * (point - position);
+                var projected = new Vector2(local.x, local.y) / Mathf.Max(.01f, local.z);
+                minimum = Vector2.Min(minimum, projected);
+                maximum = Vector2.Max(maximum, projected);
+            }
     }
 
     private void ApplyCameraPose(Vector3 position, Quaternion rotation, float fov)
@@ -688,6 +772,28 @@ public sealed class BattlePresentationController : MonoBehaviour
                 !BattleManager.IsMeleeSkillRange(actor, skill)) ||
              (frameBlackBulletTarget && actor.IsPlayer && actor.PresentationIndex == "10003" && !target.IsPlayer));
         if (shouldFrameRifleBarrage) frameRangedPair = true;
+        // JC | 2026-11-06 | ASB 공용 연출 안의 기존 JC 블랙불릿 구도만 시작 시 확정합니다.
+        // 대상 사망·파괴 이후에도 이 상태를 유지하고 RestoreAttackCamera에서 해제합니다.
+        blackBulletPairActive = !BossCamera && frameRangedPair && actor.IsPlayer &&
+            actor.PresentationIndex == "10003" && target != null && rifleBarrageUnits.Count == 0;
+        if (blackBulletPairActive)
+        {
+            blackBulletActorAnchor = actor.transform.position;
+            blackBulletTargetAnchor = target.transform.position;
+        }
+        // JC | 2026-11-06 | 기존 JC 후열 전용 구도를 은행 블랙불릿 4개 스킬의 저작 구도로 확장합니다.
+        // ASB 전투 판정은 바꾸지 않고 공격 시작 때 주 대상의 점유 칸으로 4스킬×6타겟 중 하나를 선택합니다.
+        // 기본·강화는 같은 스킬 슬롯이며 대상 이동·사망 이후에도 시작 구도를 유지합니다. 보스·다른 캐릭터는 제외합니다.
+        var bankShot = !BossCamera && BankBackground && BankBackground.skillCameraProfile &&
+            actor.IsPlayer && actor.PresentationIndex == "10003" && skill != null && target && !target.IsPlayer && target.OccupiedCell
+            ? BankBackground.skillCameraProfile.FindEnabled(skill.skillIndex, target.OccupiedCell.Coords) : null;
+        bankSkillShotActive = bankShot != null;
+        if (bankSkillShotActive)
+        {
+            // 공격 중 저장값이 바뀌어도 현재 연출은 시작 시의 구도를 유지하고 다음 공격부터 반영합니다.
+            // JC | 2026-11-06 | 편집 미리보기와 같은 원근감 계산 결과를 한 번만 확정합니다. 전열 기존 배율 1은 그대로 유지합니다.
+            bankShot.Resolve(out bankSkillShotPosition, out bankSkillShotRotation, out bankSkillShotFov);
+        }
         attackZoomActive = true;
         try
         {
@@ -704,6 +810,18 @@ public sealed class BattlePresentationController : MonoBehaviour
                 BossCamera.BeginAim(actor.transform, target ? target.transform : enemyPlace);
                 BossCamera.ResolveAim(out zoomPosition,out zoomRotation,out zoomFov);
                 corner = (attackCameraPosition + zoomPosition) * .5f;
+            }
+            // JC | 2026-11-06 | 블랙불릿은 유지 구도와 동일한 투영 계산으로 줌 목적지를 정합니다.
+            else if (UseProjectedPairFraming)
+            {
+                // JC | 2026-11-06 | 직접 저장한 목적지로 연결하며 기존 보간/복귀 코루틴을 재사용합니다.
+                // 중간 제어점도 출발과 도착의 중앙에 두어 반대 방향으로 꺾이거나 과도하게 접근하지 않습니다.
+                if (bankSkillShotActive)
+                {
+                    zoomPosition = bankSkillShotPosition;
+                    corner = (attackCameraPosition + zoomPosition) * .5f;
+                }
+                ResolveProjectedPair(zoomPosition, out zoomRotation, out zoomFov);
             }
             else if (frameRangedPair)
                 zoomFov = Mathf.Max(zoomFov, RequiredPairFov(zoomPosition,
@@ -752,7 +870,10 @@ public sealed class BattlePresentationController : MonoBehaviour
             t = 1f - (1f - t) * (1f - t);
             Vector3 cameraPosition = (1f - t) * (1f - t) * startPosition +
                 2f * (1f - t) * t * corner + t * t * position;
-            if (focusActor && attackFocusActor != null)
+            // JC | 2026-11-06 | 이동 경로에서도 같은 계산을 사용하여 도착 직후 구도가 튀지 않게 합니다.
+            if (focusActor && UseProjectedPairFraming)
+                ResolveProjectedPair(cameraPosition, out rotation, out fov);
+            else if (focusActor && attackFocusActor != null)
                 rotation = Quaternion.LookRotation(AttackFocusPosition - cameraPosition);
             ApplyCameraPose(cameraPosition, Quaternion.Slerp(startRotation, rotation, t), Mathf.Lerp(startFov, fov, t));
             previewCamera.orthographicSize = Mathf.Lerp(startSize, orthoSize, t);
@@ -760,7 +881,10 @@ public sealed class BattlePresentationController : MonoBehaviour
         }
         if (previewCamera != null)
         {
-            if (focusActor && attackFocusActor != null)
+            // JC | 2026-11-06 | 즉시 이동(진입 시간 0)도 같은 최종 구도로 수렴합니다.
+            if (focusActor && UseProjectedPairFraming)
+                ResolveProjectedPair(position, out rotation, out fov);
+            else if (focusActor && attackFocusActor != null)
                 rotation = Quaternion.LookRotation(AttackFocusPosition - position);
             ApplyCameraPose(position, rotation, fov);
             previewCamera.orthographicSize = orthoSize;
@@ -776,6 +900,15 @@ public sealed class BattlePresentationController : MonoBehaviour
             previewCamera.orthographicSize = attackCameraOrthoSize;
         }
         attackZoomActive = false;
+        // JC | 2026-11-06 | 정상 복귀·중단 모두 같은 정리 경로에서 블랙불릿 구도를 해제합니다.
+        blackBulletPairActive = false;
+        // JC | 2026-11-06 | 정상 종료·중단 모두 저장 구도 상태를 정리하여 다음 스킬에 남지 않게 합니다.
+        bankSkillShotActive = false;
+        bankSkillShotPosition = default;
+        bankSkillShotRotation = Quaternion.identity;
+        bankSkillShotFov = 0f;
+        blackBulletActorAnchor = default;
+        blackBulletTargetAnchor = default;
         if (BossCamera) BossCamera.EndAttack();
         followAttackFocus = false;
         focusShieldGuard = false;

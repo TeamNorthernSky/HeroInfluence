@@ -244,7 +244,8 @@ public class WorkshopModalController : MonoBehaviour
         int selLevel = selOwned ? Mathf.Max(WorkshopManager.BaseWeaponLevel, ws.GetWeaponLevel(sel)) : 0;
 
         if (detailTitleText != null) detailTitleText.text = valid ? CoreName(selectedCore) : "-";
-        if (detailDescText != null) detailDescText.text = valid ? CoreDesc(selectedCore) : string.Empty;
+        if (detailDescText != null) detailDescText.text = valid
+            ? SkillTooltipNumbers.OmitIPDescription(CoreDesc(selectedCore)) : string.Empty;
         if (sharedLevelText != null) sharedLevelText.text = selOwned ? $"Lv.{selLevel}" : NoValue;
 
         ApplyActionBar(ws, eco, valid, sel, selOwned, selLevel, deptLevel, unlocked);

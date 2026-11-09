@@ -15,10 +15,11 @@ public class InfirmaryManager : MonoBehaviour
     [SerializeField] private int[] reviveHpPercent = { 30, 40, 50 };
     [SerializeField] private int reviveCost  = 0;
 
+    // 기존 저장 데이터 복원과의 호환용. 회복 횟수 판정에는 사용하지 않는다.
     private readonly HashSet<int> healedThisTurn = new HashSet<int>();
 
     // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출
-    public IEnumerable<int> HealedUnitsThisTurn => healedThisTurn;
+    public IEnumerable<int> HealedUnitsThisTurn => Array.Empty<int>();
     private HQStateManager hq;
     public event Action OnStateChanged;
 
@@ -33,7 +34,7 @@ public class InfirmaryManager : MonoBehaviour
     public int GetRevivePercent() =>  reviveHpPercent[LvIdx];
     public int GetReviveCost()    =>  reviveCost;
 
-    public bool HealedThisTurn(int idx) => healedThisTurn.Contains(idx);
+    public bool HealedThisTurn(int idx) => false;
 
     public void SubscribeHQ(HQStateManager hqManager)
     {
@@ -57,7 +58,7 @@ public class InfirmaryManager : MonoBehaviour
 
     public bool CanHeal(int idx)
     {
-        if (!IsUnlocked || !VisitedHQ || HealedThisTurn(idx)) return false;
+        if (!IsUnlocked || !VisitedHQ) return false;
         if (!TryGetHp(idx, out float cur, out float max)) return false;
         if (cur <= 0f || cur >= max) return false;
         int cost = GetHealCost();
@@ -68,7 +69,7 @@ public class InfirmaryManager : MonoBehaviour
 
     public bool CanRevive(int idx)
     {
-        if (!IsUnlocked || !VisitedHQ || HealedThisTurn(idx)) return false;
+        if (!IsUnlocked || !VisitedHQ) return false;
         if (!TryGetHp(idx, out float cur, out _)) return false;
         if (cur > 0f) return false;
         var eco = GameManager.Instance?.Economy;
@@ -81,7 +82,6 @@ public class InfirmaryManager : MonoBehaviour
         if (percent <= 0 || GetHealCost() < 0) return false;
         var repo = PersistentUnitRepository.Instance;
         if (repo == null || !repo.HealUnitByPercent(idx, percent, false, out _)) return false;
-        healedThisTurn.Add(idx);
         OnStateChanged?.Invoke();
         return true;
     }
@@ -90,8 +90,7 @@ public class InfirmaryManager : MonoBehaviour
     {
         var repo = PersistentUnitRepository.Instance;
         if (repo == null || !repo.HealUnitByPercent(idx, GetRevivePercent(), true, out _)) return false;
-        // [KJ] 부활은 healedThisTurn에 넣지 않는다 — 같은 턴에 부활 후 회복까지 허용.
-        // 이중 부활은 CanRevive의 cur > 0 가드가 막고, 이중 회복은 TryHeal의 등록이 막는다.
+        // 부활 후 현재 체력이 양수가 되므로 CanRevive에서 중복 부활을 막는다.
         OnStateChanged?.Invoke();
         return true;
     }

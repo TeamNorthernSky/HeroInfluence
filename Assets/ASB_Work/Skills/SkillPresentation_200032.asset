@@ -84,6 +84,16 @@ MonoBehaviour:
       Timing: 0
       Time: 0
       CueId: e75d937ab14a42c88500eaf81af7c668
+    - CueName: guard_cast_self
+      EffectIds: 48810100
+      SoundIds:
+      Operation: 0
+      InstanceKey:
+      Anchor: 0
+      Socket: 0
+      Timing: 0
+      Time: 0
+      CueId: 5f3a75f77e2b4317ad451a3aa8cff035
   Move:
     Enabled: 1
     UseUnitMovement: 1

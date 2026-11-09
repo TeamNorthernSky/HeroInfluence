@@ -197,14 +197,20 @@ public sealed class TutorialOutpostObject : MonoBehaviour
             return;
 
         EnsureRenderersCached();
+        bool changed = false;
         for (int i = 0; i < targetRenderers.Length; i++)
         {
             Renderer renderer = targetRenderers[i];
             if (renderer == null)
                 continue;
 
+            // JC | 2026-11-06 | 동일 점령 상태를 클릭한 경우 시간대 조명의 복사 재질을 원본으로 되돌리지 않습니다.
+            // 점령 색상 원본이 실제로 달라진 경우만 기존 슬롯을 교체하며 입장/점령 판정은 그대로 유지합니다.
+            if (JC.Environment.JcNightMaterialBindings.Original(renderer.sharedMaterial) == material) continue;
             renderer.sharedMaterial = material;
+            changed = true;
         }
+        if (changed) JC.Environment.JcDayNightController.RefreshBuildingWindows(gameObject.scene);
     }
 
     private void ApplyOverlayColor()

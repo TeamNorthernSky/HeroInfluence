@@ -170,5 +170,7 @@ public class ExplorationDefeatBlockPanelController : MonoBehaviour
     }
 
     // 턴 종료를 누르면 연결된 패널을 즉시 숨긴다.
-    private void OnClickNextTurn() => DespawnPanel();
+    public void HideForNextTurn() => DespawnPanel();
+
+    private void OnClickNextTurn() => HideForNextTurn();
 }

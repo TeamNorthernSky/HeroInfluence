@@ -14,6 +14,9 @@ namespace JC.BattleTesting
         [ColorUsage(false,true),Tooltip("야간 창문 불빛 색상입니다.")] public Color windowColor=new Color(1,.74f,.36f);
         readonly List<Renderer> targets=new List<Renderer>();
         public double Hour {get; private set;}
+        // JC | 2026-11-05 | 실제 월드 조명에서는 예전 베이크용 색 곱셈을 중복 적용하지 않습니다.
+        [HideInInspector] public bool worldLighting;
+        public void UseWorldLighting(){worldLighting=true;foreach(var r in GetComponentsInChildren<Renderer>(true)){r.SetPropertyBlock(null);for(int i=0;i<r.sharedMaterials.Length;i++)r.SetPropertyBlock(null,i);}}
         void OnEnable(){if(!Application.isPlaying)SetHour(previewHour);}
         void Awake(){if(Application.isPlaying)SetHour(CaptureHour());}
         public static double CaptureHour()
@@ -23,7 +26,7 @@ namespace JC.BattleTesting
         }
         public void SetHour(double hour)
         {
-            Hour=hour;if(profile==null)profile=Resources.Load<JcDayNightProfile>("JC_DayNight_Default");
+            Hour=hour;if(worldLighting)return;if(profile==null)profile=Resources.Load<JcDayNightProfile>("JC_DayNight_Default");
             if(profile==null)return;
             if(targets.Count==0)targets.AddRange(GetComponentsInChildren<Renderer>(true));
             var key=profile.Evaluate(hour);

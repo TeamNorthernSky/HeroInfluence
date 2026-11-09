@@ -27,6 +27,8 @@ namespace JC.Indicators
         private bool geometryDirty = true;
         // JC | 2026-11-04 | 실제 도로 메시로 영역 전체 높이를 고정하고 가림 표면 분류를 재사용합니다.
         private readonly JcTriggerAreaSurfaces surfaces = new JcTriggerAreaSurfaces();
+        // JC | 2026-11-09 | 기존 Owner를 재사용해 내부 메시 보호와 메인 이벤트 느낌표의 선택적 깊이 판정을 관리합니다.
+        private readonly JcTriggerMeshVisibility meshVisibility = new JcTriggerMeshVisibility();
 
         public JcTriggerAreaProfile Profile => profile;
         public JcTriggerAreaSettings Settings => settings;
@@ -49,16 +51,21 @@ namespace JC.Indicators
             if (source.VisualOverride != null && source.VisualOverride != this) return;
             if (!material) material = new Material(borderShader) { name = "탐사 트리거 테두리 (임시)", hideFlags = HideFlags.HideAndDontSave, renderQueue = JcIndicatorRenderOrder.TriggerMain };
             material.SetFloat("_ZWrite", 0);
+            // JC | 2026-11-06 | 탐사 전용 복사본만 일반 투명 패스에서 제외하고 건물 입장 강조 전에 한 번 그립니다.
+            material.SetShaderPassEnabled("UniversalForward", false);
             // JC | 2026-11-04 | 색상 패스에서 장면 깊이와 종류별 마스크를 비교해 계단·건물·인도를 다르게 합성합니다.
             material.SetFloat("_ZTest", (float)CompareFunction.Always);
             if (!outlineMaterial)
             {
                 outlineMaterial = new Material(material) { name = "탐사 트리거 보조선 (임시)", hideFlags = HideFlags.HideAndDontSave, renderQueue = JcIndicatorRenderOrder.TriggerOutline };
+                // JC | 2026-11-06 | 복사본에서도 일반 투명 패스를 명시적으로 끄고 전용 합성만 사용합니다.
+                outlineMaterial.SetShaderPassEnabled("UniversalForward", false);
             }
             if (!fillMaterial)
             {
                 fillMaterial = new Material(borderShader) { name = "탐사 트리거 채움 (임시)", hideFlags = HideFlags.HideAndDontSave };
                 fillMaterial.SetFloat("_ZWrite", 0);
+                fillMaterial.SetShaderPassEnabled("UniversalForward", false);
                 // JC | 2026-11-04 | 탐사 채움도 전용 가림 비교로 인도에만 약하게 투과합니다.
                 fillMaterial.SetFloat("_ZTest", (float)CompareFunction.Always);
                 fillMaterial.renderQueue = JcIndicatorRenderOrder.TriggerFill;
@@ -95,6 +102,7 @@ namespace JC.Indicators
         public void RenderCells(IReadOnlyList<InteractionOverlayCell> cells, GridManager grid)
         {
             surfaces.Refresh(gameObject.scene, grid);
+            meshVisibility.Collect(cells, gameObject.scene);
             foreach (var list in groups.Values) list.Clear();
             foreach (var cell in cells)
             {
@@ -131,27 +139,31 @@ namespace JC.Indicators
                     var identity = enemy ? enemy.GetComponent<EnemyIdentity>() : null;
                     if (identity && (identity.EnemyGroupKey == "BE161" || identity.EnemyGroupKey == "BE261")) view.arnold = enemy;
                     int ownerId = pair.Key.owner is UnityEngine.Object owner ? owner.GetInstanceID() : pair.Key.GetHashCode();
+                    // JC | 2026-11-06 | 동일 영역의 세 선이 경계 픽셀을 서로 지우지 않도록 공통 영역 식별자를 전달합니다.
+                    int regionId = visual.GetInstanceID();
                     view.borders = new[] {
-                        new JcTriggerAreaDepth.Border(visual.innerBorder, depthMaterial, ownerId, 0),
-                        new JcTriggerAreaDepth.Border(visual.outerBorder, depthMaterial, ownerId, 1),
-                        new JcTriggerAreaDepth.Border(visual.innerOutline, depthMaterial, ownerId, 2)
+                        new JcTriggerAreaDepth.Border(visual.innerBorder, depthMaterial, ownerId, 0, regionId),
+                        new JcTriggerAreaDepth.Border(visual.outerBorder, depthMaterial, ownerId, 1, regionId),
+                        new JcTriggerAreaDepth.Border(visual.innerOutline, depthMaterial, ownerId, 2, regionId)
                     };
                     views.Add(pair.Key, view);
                 }
                 // JC | 2026-11-04 | 인도 셀 높이 차이를 제거하고 도로에 접한 모든 셀을 같은 평면에 둡니다.
                 float ground = surfaces.GroundHeight(pair.Value);
-                bool changed = view.ground != ground || geometryDirty || view.region == null || view.region.CellSize != grid.CellSize || view.region.Cells.Count != pair.Value.Count;
+                // JC | 2026-11-09 | 구역2 MainQuest3-1만 인도 높이를 반영합니다. 다른 이벤트와 실제 셀 판정은 유지합니다.
+                bool stepped = pair.Key.owner is MainEventObject main && main.ZoneId == 2 && main.EventKey == "MainQuest3-1";
+                bool changed = view.ground != ground || geometryDirty || view.region == null || view.region.StepHeights != stepped || view.region.CellSize != grid.CellSize || view.region.Cells.Count != pair.Value.Count;
                 if (!changed)
                     foreach (var cell in pair.Value)
-                        if (!view.region.Cells.TryGetValue(cell.Grid - view.anchor, out float y) || y != ground) { changed = true; break; }
+                        if (!view.region.Cells.TryGetValue(cell.Grid - view.anchor, out float y) || y != (stepped ? surfaces.CellHeight(cell.Grid, ground) : ground)) { changed = true; break; }
                 if (changed)
                 {
                     view.ground = ground;
                     view.anchor = pair.Value[0].Grid;
                     view.position = grid.GridToWorldCenter(view.anchor);
                     view.position.y = 0;
-                    view.region = new BattleCellBorderMesh.Region { CellSize = grid.CellSize };
-                    foreach (var cell in pair.Value) view.region.Cells[cell.Grid - view.anchor] = ground;
+                    view.region = new BattleCellBorderMesh.Region { CellSize = grid.CellSize, StepHeights = stepped };
+                    foreach (var cell in pair.Value) view.region.Cells[cell.Grid - view.anchor] = stepped ? surfaces.CellHeight(cell.Grid, ground) : ground;
                     view.region.Trace(); view.visual.SetRegion(view.region);
                 }
                 // JC | 2026-11-05 | 최종 셀로 메시를 갱신한 뒤에만 정지한 아놀드의 윤곽선을 다시 표시합니다.
@@ -215,16 +227,35 @@ namespace JC.Indicators
                 }
             }
         }
+        // JC | 2026-11-06 | 트리거 채움→본선→보조선을 전체 영역 단위로 그려 기존 반투명 합성과 가림 판정을 보존합니다.
+        internal void DrawColors(CommandBuffer command, Camera camera, Plane[] planes, int part)
+        {
+            if (!isActiveAndEnabled || !bound || (camera.scene.IsValid() && camera.scene != gameObject.scene)) return;
+            foreach (var view in views.Values)
+            {
+                var visual = view.visual;
+                var renderer = part == 0 ? visual.interior : part == 1 ? visual.innerBorder : part == 2 ? visual.outerBorder : visual.innerOutline;
+                if (!renderer || !renderer.enabled || renderer.forceRenderingOff || !renderer.gameObject.activeInHierarchy ||
+                    (camera.cullingMask & (1 << renderer.gameObject.layer)) == 0 || !GeometryUtility.TestPlanesAABB(planes, renderer.bounds)) continue;
+                command.DrawRenderer(renderer, renderer.sharedMaterial, 0, 0);
+            }
+        }
         // JC | 2026-11-04 | 별도 버퍼에만 가림 표면을 그려 이동 표시·말풍선의 장면 깊이는 보존합니다.
         internal void DrawOccluders(CommandBuffer command, Camera camera, MaterialPropertyBlock properties)
         {
             if (!bound || !depthMaterial || (camera.scene.IsValid() && camera.scene != gameObject.scene)) return;
             surfaces.Draw(command, camera, depthMaterial, properties);
         }
+        // JC | 2026-11-09 | 별도 깊이 버퍼만 사용하므로 다른 인디케이터의 장면 깊이에는 영향을 주지 않습니다.
+        internal void DrawWorldMeshes(CommandBuffer command, Camera camera)
+        {
+            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.Draw(command, camera);
+        }
         private static Color Tint(Color color, float intensity, float opacity)
         { color *= Mathf.Max(0, intensity); color.a = Mathf.Clamp01(opacity); return color; }
         public void ClearCells()
         {
+            meshVisibility.Clear();
             foreach (var view in views.Values) if (view.visual) Dispose(view.visual.gameObject);
             views.Clear(); groups.Clear();
         }

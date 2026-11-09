@@ -144,6 +144,66 @@ public sealed class CounterattackRulesTests
         Assert.That(canTrigger.Invoke(null, new[] { Hit(heroFront, enemyFront, -1, true) }), Is.False);
     }
 
+    [Test]
+    public void OnlySingleTargetSkills_CountAsSingleTargetAttack()
+    {
+        Type rules = FindType("ASB.Work.Battle.Core.CounterattackRules");
+        MethodInfo isSingle = rules.GetMethod("IsSingleTargetSkill");
+        Assert.That(isSingle, Is.Not.Null);
+
+        Assert.That(isSingle.Invoke(null, new[] { Skill("HS1010", 1010, 0, 1f) }), Is.True, "대상 단일·범위 없음");
+        Assert.That(isSingle.Invoke(null, new[] { Skill("HS1020", 1020, 0, 1f, boundary: new[] { 0 }) }), Is.True, "중심 칸만");
+        Assert.That(isSingle.Invoke(null, new[] { Skill("HS1030", 1030, 0, 1f, boundary: new[] { 3 }) }), Is.False, "관통 패턴");
+        Assert.That(isSingle.Invoke(null, new[] { Skill("HS1040", 1040, 0, 1f, target: 2) }), Is.False, "전체");
+        Assert.That(isSingle.Invoke(null, new[] { Skill("FV20005_2", 200052, 0, 1f, target: 1,
+            boundary: new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }) }), Is.False, "연격(복수)");
+    }
+
+    [Test]
+    public void MultiTargetAttack_QueuesNoCounter_EvenWhenHitsAreMarkedCounterable()
+    {
+        Component hero = Unit("Hero", true, 1, 0);
+        Component enemyA = Unit("EnemyA", false, 2, 0);
+        Component enemyB = Unit("EnemyB", false, 2, 1);
+        object shieldBash = Skill("FV20003_1", 200031, 0, 1f);
+        foreach (Component enemy in new[] { enemyA, enemyB })
+        {
+            enemy.GetType().GetProperty("SelectedSkillData").SetValue(enemy, shieldBash);
+            SetFinalStat(enemy, "CounterRate", 1f);
+        }
+
+        GameObject managerObject = new GameObject("CounterManager");
+        created.Add(managerObject);
+        Component manager = managerObject.AddComponent(FindType("BattleManager"));
+        MethodInfo collect = manager.GetType().GetMethod("CollectCounterAttackRequests", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.That(collect, Is.Not.Null);
+
+        int Requests(object skill, params Component[] targets)
+        {
+            Type resultType = FindType("ASB.Work.Battle.SkillExecution.SkillExecutionResult");
+            object result = resultType.GetMethods().First(m => m.Name == "SuccessResult" && m.GetParameters().Length == 4)
+                .Invoke(null, new object[] { hero, skill, null, null });
+            IList hits = (IList)resultType.GetProperty("DamageContexts").GetValue(result);
+            foreach (Component target in targets)
+            {
+                object hit = Hit(hero, target, (int)skill.GetType().GetField("skillIndex").GetValue(skill));
+                hit.GetType().GetField("CanTriggerCounter").SetValue(hit, true);
+                hits.Add(hit);
+            }
+            return ((IList)collect.Invoke(manager, new[] { result })).Count;
+        }
+
+        Assert.That(Requests(Skill("HS1010", 1010, 0, 1f), enemyA), Is.EqualTo(1), "단일 근접 공격은 반격");
+        Assert.That(Requests(Skill("HS1010", 1010, 0, 1f), enemyA, enemyA), Is.EqualTo(1), "같은 대상 2회 타격도 단일");
+        Assert.That(Requests(Skill("FV20005_2", 200052, 0, 1f, target: 1, boundary: new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }),
+            enemyA, enemyB), Is.EqualTo(0), "연격: 주 대상·추가 대상 모두 반격 없음");
+        Assert.That(Requests(Skill("HS1040", 1040, 0, 1f, target: 2), enemyA, enemyB), Is.EqualTo(0), "전체 공격");
+        Assert.That(Requests(Skill("HS1030", 1030, 0, 1f, boundary: new[] { 3 }), enemyA), Is.EqualTo(0),
+            "관통 스킬은 1명만 맞아도 반격 없음");
+        Assert.That(Requests(Skill("HS1010", 1010, 0, 1f), enemyA, enemyB), Is.EqualTo(0),
+            "단일 스킬이라도 실제로 2명을 맞혔으면 반격 없음");
+    }
+
     private static void AddSkill(Component unit, object skill)
     {
         ((IList)unit.GetType().GetField("availableSkills").GetValue(unit)).Add(skill);
@@ -164,7 +224,8 @@ public sealed class CounterattackRulesTests
         return unit;
     }
 
-    private static object Skill(string key, int index, int range, float value, int effect = 0)
+    private static object Skill(string key, int index, int range, float value, int effect = 0,
+        int target = 0, int[] boundary = null)
     {
         Type type = FindType("SkillData");
         object skill = Activator.CreateInstance(type);
@@ -173,6 +234,9 @@ public sealed class CounterattackRulesTests
         type.GetField("classSkillRange").SetValue(skill, range);
         type.GetField("classSkillEffect").SetValue(skill, effect);
         type.GetField("skillValue").SetValue(skill, value);
+        type.GetField("classSkillTarget").SetValue(skill, target);
+        if (boundary != null)
+            type.GetField("boundary").SetValue(skill, new List<int>(boundary));
         return skill;
     }
 

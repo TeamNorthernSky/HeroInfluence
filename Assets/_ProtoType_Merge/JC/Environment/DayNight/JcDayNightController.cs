@@ -48,6 +48,8 @@ namespace JC.Environment {
   public static float PartyWallReduction(Scene scene) =>
    owner != null && owner.applied && !owner.battle && owner.gameObject.scene == scene ? owner.partyWallReduction : 0f;
   bool transitioning,applied;
+  // JC | 2026-11-05 | 보스 원경은 월드 조명을 그대로 사용하며 야외 전투 전용 보정/보조광은 제외합니다.
+  public bool CityWorldLighting { get; private set; }
   public bool OutdoorBattle => battle && !indoor;
   public static bool OwnsOutdoorLighting(Scene scene) =>
    owner != null && owner.applied && owner.OutdoorBattle && owner.gameObject.scene == scene;
@@ -57,7 +59,7 @@ namespace JC.Environment {
   // JC | 2026-11-04 | 산의 외형 메시를 유지하고 시간대별 그림자 표시만 별도 수명으로 관리합니다.
   JcMountainShadows mountainShadows;
   void PrepareBattleProfile(){
-   if(!OutdoorBattle || BattleDraft != null)return;
+   if(!OutdoorBattle || CityWorldLighting || BattleDraft != null)return;
    BattleSource=Resources.Load<JcOutdoorBattleLightingProfile>(JcOutdoorBattleLightingProfile.ResourceName);
    if(BattleSource==null){Debug.LogError("야외 전투 보정 프로필 누락",this);return;}
    BattleDraft=Instantiate(BattleSource);
@@ -66,7 +68,7 @@ namespace JC.Environment {
   JcBattleLampSettings lamps;
   internal static JcBattleLampSettings LampsFor(Scene scene) => OwnsOutdoorLighting(scene) ? owner.lamps : null;
   void UpdateLampSettings(double hours){
-   if(!Application.isPlaying || !OutdoorBattle)return;
+   if(!Application.isPlaying || !OutdoorBattle || CityWorldLighting)return;
    if(!lamps){
     var go=new GameObject("전투 가로등");
     go.transform.SetParent(transform,false);
@@ -80,6 +82,11 @@ namespace JC.Environment {
   readonly JcDayNightScreenColor screenColor=new JcDayNightScreenColor();
   readonly JcNightMaterialBindings characters=new JcNightMaterialBindings();
   readonly JcSpecialBuildingWindows specialWindows=new JcSpecialBuildingWindows();
+  // JC | 2026-11-06 | 점령 색상이 실제로 바뀐 프레임에 창문 조명도 재연결해 주기적 재탐색 전의 소등을 막습니다.
+  public static void RefreshBuildingWindows(Scene scene){
+   if(Application.isPlaying && owner!=null && owner.isActiveAndEnabled && owner.applied && owner.gameObject.scene==scene)
+    owner.specialWindows.Scan(scene);
+  }
   double nextCharacterScan;
   readonly List<(Light light,float intensity)> extraLights=new List<(Light,float)>();
   public static double CurrentHours => owner!=null && owner.applied ? owner.shownHours : (CurrentProfile!=null?CurrentProfile.HoursForTurn(GameManager.Instance!=null?GameManager.Instance.CurrentDay:1):8.5);
@@ -91,6 +98,14 @@ namespace JC.Environment {
    return snapshot;
   }
   public static JcDayNightProfile CurrentProfile => owner!=null?owner.profile:Resources.Load<JcDayNightProfile>("JC_DayNight_Default");
+  // JC | 2026-11-05 | 저장 턴을 변경하지 않는 원경 전용 시각입니다. 편집 미리보기도 동일 계산을 사용합니다.
+  public static JcDayNightController EnsureCity(Scene scene,double hours,JcDayNightProfile settings){
+   JcDayNightController c=null;
+   foreach(var root in scene.GetRootGameObjects()){c=root.GetComponentInChildren<JcDayNightController>(true);if(c)break;}
+   if(!c){var go=new GameObject("JC_CityDayNight");SceneManager.MoveGameObjectToScene(go,scene);c=go.AddComponent<JcDayNightController>();}
+   c.profile=settings;c.battle=true;c.indoor=false;c.CityWorldLighting=true;c.preview=true;c.previewHour=(float)hours;
+   c.ApplyHour(hours);return c;
+  }
   public static JcDayNightController EnsureBattle(Scene scene,double hours,JcDayNightProfile settings,bool isIndoor){
    if(scene.name!="TmpBattleScene" && scene.name!="TutorialBattleScene")return null;
    foreach(var root in scene.GetRootGameObjects()){
@@ -205,7 +220,7 @@ namespace JC.Environment {
    foreach(var root in gameObject.scene.GetRootGameObjects())foreach(var p in root.GetComponentsInChildren<ReflectionProbe>()){
     probes.Add(new ProbeState{probe=p,mode=p.mode,texture=p.customBakedTexture,intensity=p.intensity});p.mode=ReflectionProbeMode.Custom;p.customBakedTexture=cube;
    }
-   if(battle)foreach(var root in gameObject.scene.GetRootGameObjects())foreach(var light in root.GetComponentsInChildren<Light>())
+   if(battle && !CityWorldLighting)foreach(var root in gameObject.scene.GetRootGameObjects())foreach(var light in root.GetComponentsInChildren<Light>())
     if(light!=sun && !light.GetComponentInParent<JcBattleLampGroup>())extraLights.Add((light,light.intensity));
    applied=true;
   }
@@ -249,7 +264,8 @@ namespace JC.Environment {
    foreach(var state in probes)if(state.probe!=null)state.probe.intensity=state.intensity*look.reflectionMultiplier;
    Shader.SetGlobalVector("_JcDayNight",new Vector4(1,daylight,Settings.nightBankFloor,WaterBrightness));
    Shader.SetGlobalVector("_JcNightReadability",new Vector4(look.characterFill,indoor?1:Mathf.Lerp(.66f,1,daylight)*characterBrightness,look.npcFill,look.enemyFill));
-   screenColor.Apply(gameObject.scene,look);
+   // JC | 2026-11-05 | 원경 시간대 변경이 실내/캐릭터까지 후처리로 착색하지 않게 합니다.
+   if(!CityWorldLighting)screenColor.Apply(gameObject.scene,look);
    if(!battle && Time.realtimeSinceStartupAsDouble>=nextCharacterScan){characters.ScanCharacters(gameObject.scene);nextCharacterScan=Time.realtimeSinceStartupAsDouble+1;}
    float target=Settings.WindowsOn(hours)?1:0;
    if(!windowInitialized || !Application.isPlaying){windowInitialized=true;windowFrom=windowLevel=windowTarget=target;}

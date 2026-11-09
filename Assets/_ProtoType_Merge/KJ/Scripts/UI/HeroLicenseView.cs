@@ -70,7 +70,8 @@ public sealed class HeroLicenseView : MonoBehaviour
             image.raycastTarget = true;
             var tip = image.GetComponent<LicenseHoverTooltip>();
             if (!tip) tip = image.gameObject.AddComponent<LicenseHoverTooltip>();
-            tip.Bind(skill.SkillName + $" Lv.{level}", ClassSkillTooltipText.BuildDesc(skill, level, unitIndex: index), image.sprite,
+            tip.Bind(skill.SkillName + $" Lv.{level}", SkillTooltipNumbers.OmitIPDescription(SkillTooltipNumbers.FormatPercentageDamage(
+                ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: true, unitIndex: index))), image.sprite,
                 hpValue.font, false, SkillTagText.Format(skill));
         }
     }
@@ -116,33 +117,39 @@ public sealed class HeroLicenseView : MonoBehaviour
         var tip = image.GetComponent<CoreSelectionTooltip>();
         if (!tip) tip = image.gameObject.AddComponent<CoreSelectionTooltip>();
         tip.Bind(core, title, core > 0 && core <= coreSprites.Length ? coreSprites[core-1] : null, hpValue.font,
-            UnitIndexField != null ? (int)UnitIndexField.GetValue(owner) : 0);
+            UnitIndexField != null ? (int)UnitIndexField.GetValue(owner) : 0, omitIPDescription: true);
     }
 
     private void BindStatHovers()
     {
-        foreach (var t in GetComponentsInChildren<RectTransform>(true))
+        var tooltips = transform.Find("Panel/Tooltips");
+        if (!tooltips) return;
+        foreach (string stat in new[] { "Atk", "Def", "CritRate", "CounterRate", "DamageReduction", "Speed", "HP", "IP", "EXP" })
         {
-            string title = null, desc = null;
-            switch (t.name)
+            var t = tooltips.Find("Info_" + stat);
+            var image = tooltips.Find("VF_Info_" + (stat == "EXP" ? "EXE" : stat));
+            if (!t || !image) continue;
+            var hoverArea = t.Find("HoverCheckArea");
+            var target = hoverArea ? hoverArea : t;
+            if (hoverArea)
             {
-                case "VF_Info_Atk": title="공격력"; desc="상대 유닛을 공격할 때 주는 피해량입니다."; break;
-                case "VF_Info_Def": title="방어력"; desc="상대의 공격으로 받는 피해를 줄이는 능력치입니다."; break;
-                case "VF_Info_CritRate": title="치명타율"; desc="공격 시 치명타가 발생할 확률입니다."; break;
-                case "VF_Info_CounterRate": title="반격률"; desc="공격을 받았을 때 반격할 확률입니다."; break;
-                case "VF_Info_DamageReduction": title="피해 경감률"; desc="후열에서 공격을 받았을 때 피해를 절반으로 줄일 확률입니다. 반격에는 적용되지 않습니다."; break;
-                case "VF_Info_Speed": title="행동 속도"; desc="전투에서 유닛의 행동 순서에 영향을 줍니다."; break;
-                case "VF_Info_HP": title="HP"; desc="현재 체력 / 최대 체력입니다. 체력이 0이 되면 전투 불능 상태가 됩니다."; break;
-                case "VF_Info_IP": title="IP"; desc="히어로의 영향력입니다. 스킬 사용에 필요한 자원입니다."; break;
-                case "Info_EXP": title="EXP"; desc="현재 경험치 / 다음 레벨까지 필요한 경험치입니다."; break;
+                var valueGraphic = t.GetComponent<Graphic>();
+                if (valueGraphic) valueGraphic.raycastTarget = false;
+                var previous = t.GetComponent<LicenseHoverTooltip>();
+                if (previous) previous.enabled = false;
             }
-            if (title == null) continue;
-            var graphic=t.GetComponent<Graphic>();
-            if (!graphic) { var hit=t.gameObject.AddComponent<Image>();hit.color=Color.clear;graphic=hit; }
+            var graphic=target.GetComponent<Graphic>();
+            if (!graphic)
+            {
+                var hit = target.gameObject.AddComponent<Image>();
+                hit.color = Color.clear;
+                graphic = hit;
+            }
             graphic.raycastTarget=true;
-            var tip=t.GetComponent<LicenseHoverTooltip>();
-            if (!tip) tip=t.gameObject.AddComponent<LicenseHoverTooltip>();
-            tip.Bind(title,desc,null,hpValue.font,true);
+            var tip=target.GetComponent<LicenseHoverTooltip>();
+            if (!tip) tip=target.gameObject.AddComponent<LicenseHoverTooltip>();
+            tip.enabled = true;
+            tip.BindImage(image.gameObject);
         }
     }
     private void OnDisable() { if (SkillTooltip.Instance != null) SkillTooltip.Instance.Hide(); }

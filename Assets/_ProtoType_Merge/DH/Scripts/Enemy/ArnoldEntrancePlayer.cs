@@ -5,6 +5,8 @@ namespace HeroInfluence.Events
     [DisallowMultipleComponent]
     public sealed class ArnoldEntrancePlayer : MonoBehaviour
     {
+        private const string LandingSfxKey = "Explore_Arnold_Entrance";
+
         [SerializeField] private Animator animator;
         [SerializeField] private Transform visualRoot;
         [SerializeField] private AnimationClip fallingPose;
@@ -125,6 +127,7 @@ namespace HeroInfluence.Events
                 if (!landed)
                 {
                     landed = true;
+                    AudioManager.Instance?.PlaySfx(LandingSfxKey);
                     PlayLandingEffect();
                     Camera camera = Camera.main;
                     if (camera != null && camera.gameObject.scene == gameObject.scene)

@@ -42,8 +42,10 @@ public static class CanvasButtonCatalogBuilder
         SceneManager.SetActiveScene(scene);
         try
         {
-            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_SharedAsset/Font/NotoSansKR-Regular SDF.asset");
-            if (font == null) throw new InvalidOperationException("기존 한국어 폰트가 없습니다.");
+            // JC | 2026-11-05 | 카탈로그 최초 생성도 현재 UI와 같은 공용 SOYO Maple Regular를 사용합니다.
+            // 지정 에셋이 없으면 기존처럼 생성을 중단하며, 다른 글꼴로 자동 대체하지 않습니다.
+            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_SharedAsset/Font/SOYO Maple Regular SDF.asset");
+            if (font == null) throw new InvalidOperationException("공용 SOYO Maple Regular SDF 글꼴이 없습니다.");
             var canvasGo = new GameObject("VFX_Canvas_Catalog", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             var canvas = canvasGo.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;

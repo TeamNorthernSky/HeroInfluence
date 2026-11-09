@@ -1091,14 +1091,8 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        if (actor == null || !actor.HasInfluenceForSkill(skillData))
-        {
-            Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
-            onCompleted?.Invoke(false);
-            yield break;
-        }
-
-        if (!TryConsumeSkillInfluence(actor, skillData))
+        // 스킬 사용에 IP 조건·소모는 없습니다.
+        if (actor == null || skillData == null)
         {
             onCompleted?.Invoke(false);
             yield break;
@@ -1231,13 +1225,6 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        if (!actor.HasInfluenceForSkill(classSkillRow))
-        {
-            Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
-            onCompleted?.Invoke(false);
-            yield break;
-        }
-
         SkillExecutionResult result;
         if (SkillExecutionRegistry.TryGetHandler(classSkillRow.skillKey, out ISkillEffectHandler custom))
         {
@@ -1249,7 +1236,7 @@ public class BattleManager : MonoBehaviour
             result = BuildDefaultSkillResult(actor, target, classSkillRow, SkillExecutionOptions.Normal);
         }
 
-        if (result == null || !result.Success || !TryConsumeSkillInfluence(actor, classSkillRow))
+        if (result == null || !result.Success)
         {
             onCompleted?.Invoke(false);
             yield break;
@@ -1310,6 +1297,14 @@ public class BattleManager : MonoBehaviour
             .FirstOrDefault(ctx => ctx?.Caster != null)
             ?.Caster;
         if (originalCaster == null) return requests;
+
+        // 2명 이상을 때리는 공격(연격·저스티스 크래쉬·대쉬 등)은 반격하지 않는다.
+        // 개별 히트의 CanTriggerCounter는 피해 직전 재계산으로 다시 켜질 수 있어 여기서 시전 단위로 막는다.
+        if (!CounterattackRules.IsSingleTargetAttack(result.Skill, result.DamageContexts))
+        {
+            Debug.Log($"[Combat] 반격 제외: 단일 대상 공격이 아님 (skill={result.Skill?.skillKey ?? "null"})");
+            return requests;
+        }
 
         // 투사체 전달 결과는 더 이상 반격 성립에 관여하지 않는다. 연출은 규칙을 취소할 수 없다.
         var candidates = result.DamageContexts
@@ -1521,19 +1516,6 @@ public class BattleManager : MonoBehaviour
             .SuccessResult(actor, skillData)
             .AddDamage(context);
     }
-
-    private static bool TryConsumeSkillInfluence(BattleCharactor actor, SkillData skillData)
-    {
-        if (actor == null || skillData == null)
-        {
-            return false;
-        }
-
-        // 기본 공격은 ExecuteBasicAttack 경로로 분리되어 있어 여기로 들어오지 않습니다.
-        float cost = Mathf.Max(0f, skillData.IPCost);
-        return actor.TryConsumeInfluence(cost);
-    }
-
 
     private static void ApplyBuff(BattleCharactor actor, BattleCharactor target, SkillData skillData)
     {

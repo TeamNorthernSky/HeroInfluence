@@ -8,7 +8,7 @@ namespace JC.BattleTesting
     // JC | 2026-11-05 | 공용 낮밤 적용 이후의 환경을 기준으로 보스 전용 보정만 얹습니다.
     // 실행 중 초안·조명·재질은 이 전투의 수명에 묶고, 원본 프로필/무대/공용 파이프라인을 수정하지 않습니다.
     [DisallowMultipleComponent]
-    public sealed class JcBossEnvironment : MonoBehaviour
+    public sealed partial class JcBossEnvironment : MonoBehaviour
     {
         public JcBossEnvironmentProfile Source { get; private set; }
         public JcBossEnvironmentProfile Draft { get; private set; }
@@ -60,9 +60,10 @@ namespace JC.BattleTesting
                     if (light.type == LightType.Directional)
                         baseLights.Add(new LightState { light = light, color = light.color, intensity = light.intensity, shadow = light.shadowStrength });
             // JC | 2026-11-05 | 생성된 하위 조명을 직접 편집해 프로필과 값이 갈라지지 않도록 읽기 전용으로 표시합니다.
-            var go = new GameObject("추가 라이트") { hideFlags = HideFlags.DontSave | HideFlags.NotEditable };
+            var go = new GameObject("추가 라이트") { hideFlags = HideFlags.DontSave };
             go.transform.SetParent(transform, false); lightRoot = go.transform;
             initialized = true;
+            RegisterLocalLighting();
             ApplyDraft();
         }
 
@@ -70,6 +71,11 @@ namespace JC.BattleTesting
         public void ApplyDraft()
         {
             if (!initialized || !isActiveAndEnabled || Draft == null || Stage == null || SceneManager.GetActiveScene() != gameObject.scene) return;
+            // JC | 2026-11-09 | 저장값 다시 적용 시 공통 주변 음영과 캐릭터 모드도 함께 복원합니다.
+            GetComponentInParent<JcIndoorEnvironment>()?.ApplySharedSettings();
+            // JC | 2026-11-05 | 도시의 밝기는 공통 시간대가 소유합니다. 실내 프로필 변경으로 원경을 덮어쓰지 않습니다.
+            if(!JcBossCityLighting.IsActive(gameObject.scene))
+            {
             foreach (var state in baseLights)
                 if (state.light)
                 {
@@ -88,11 +94,17 @@ namespace JC.BattleTesting
                 for (int coefficient = 0; coefficient < 9; coefficient++) probe[channel, coefficient] *= tint[channel];
             RenderSettings.ambientProbe = probe;
             RenderSettings.reflectionIntensity = baseline.reflection * Mathf.Max(0, Draft.reflectionIntensity);
-            ApplyLights(); ApplyMaterials(); applied = true;
+            }
+            // JC | 2026-11-05 | 창문광과 추가광은 동일한 수광 그룹에 묶고 표면 재생성 뒤에도 분리를 유지합니다.
+            ApplyLights(); ApplyWindows(); ApplyMaterials();
+            if (SurfaceController) SurfaceController.ApplySurfaces();
+            applied = true;
         }
 
         void ApplyLights()
         {
+            // JC | 2026-11-09 | 전용 보조광 제거/비활성 시 이전 빛이 남지 않도록 초기화합니다.
+            Shader.SetGlobalVector("_JcBankFillDirection", Vector4.zero); Shader.SetGlobalVector("_JcBankFillColor", Vector4.zero);
             int count = Draft.lights == null ? 0 : Draft.lights.Count;
             while (localLights.Count > count)
             {
@@ -101,23 +113,23 @@ namespace JC.BattleTesting
             }
             while (localLights.Count < count)
             {
-                var go = new GameObject("추가 조명") { hideFlags = HideFlags.DontSave | HideFlags.NotEditable };
-                go.transform.SetParent(lightRoot, false); localLights.Add(go.AddComponent<Light>());
+                // JC | 2026-11-09 | 조명별 편집도 공통 초안으로 연결하고 원본 Light 인스펙터는 숨깁니다.
+                var go = new GameObject("추가 조명") { hideFlags = HideFlags.DontSave };
+                go.transform.SetParent(lightRoot, false);
+                var light = go.AddComponent<Light>(); light.hideFlags = HideFlags.HideInInspector;
+                localLights.Add(light); go.AddComponent<JcIndoorLightControl>().Bind(this,localLights.Count-1);
             }
             for (int i = 0; i < count; i++)
             {
                 var spec = Draft.lights[i]; var light = localLights[i];
                 light.enabled = spec != null && spec.enabled;
                 if (spec == null) continue;
-                light.name = string.IsNullOrWhiteSpace(spec.label) ? "추가 조명 " + (i + 1) : spec.label;
-                light.transform.SetPositionAndRotation(Stage.TransformPoint(spec.position), Stage.rotation * Quaternion.Euler(spec.rotation));
-                light.type = spec.type == JcBossEnvironmentProfile.LocalLightType.Point ? LightType.Point : LightType.Spot;
-                light.color = spec.color; light.intensity = Mathf.Max(0, spec.intensity);
-                light.range = Mathf.Max(.01f, spec.range); light.spotAngle = Mathf.Clamp(spec.spotAngle, 1, 179);
-                light.innerSpotAngle = light.spotAngle * Mathf.Clamp01(spec.innerSpotRatio);
-                light.shadows = spec.shadows; light.shadowStrength = Mathf.Clamp01(spec.shadowStrength);
-                light.shadowBias = Mathf.Clamp(spec.shadowBias, 0, 2); light.shadowNormalBias = Mathf.Clamp(spec.shadowNormalBias, 0, 3);
-                light.cullingMask = spec.cullingMask;
+                // JC | 2026-11-09 | 기존 Point=0/Spot=1 값을 유지하면서 공통 광원 적용기로 전달합니다.
+                JcIndoorLightSettings.Apply(light, Stage, spec.label, spec.enabled, JcIndoorLightSettings.Resolve(spec.type),
+                    spec.position, spec.rotation, spec.color, spec.intensity, spec.range, spec.spotAngle, spec.innerSpotRatio,
+                    spec.shadows, spec.shadowStrength, spec.shadowBias, spec.shadowNormalBias);
+                ConfigureLocalLight(light, spec.cullingMask);
+                if(spec.playerBackFill) JcIndoorLightSettings.ApplyPlayerFill(light,spec.enabled);
             }
         }
 
@@ -166,14 +178,22 @@ namespace JC.BattleTesting
         {
             if (!initialized) return;
             foreach (var light in localLights) if (light) light.enabled = false;
+            foreach (var light in windowLights) if (light) light.enabled = false;
+            RestoreCityLayers();
             RestoreMaterials();
+            // JC | 2026-11-05 | 도시의 밝기는 공통 시간대가 소유합니다. 실내 프로필 변경으로 원경을 덮어쓰지 않습니다.
+            if(!JcBossCityLighting.IsActive(gameObject.scene))
+            {
             foreach (var state in baseLights)
                 if (state.light) { state.light.color = state.color; state.light.intensity = state.intensity; state.light.shadowStrength = state.shadow; }
-            if (applied && SceneManager.GetActiveScene() == gameObject.scene) baseline.Restore();
+            if (applied && !JcBossCityLighting.IsActive(gameObject.scene) && SceneManager.GetActiveScene() == gameObject.scene) baseline.Restore();
+            }
             applied = false;
+            // JC | 2026-11-05 | 컴포넌트를 끄면 실내 표면의 전용 수광 상태도 해제하여 기존 환경으로 복원합니다.
+            if (SurfaceController) SurfaceController.ApplySurfaces();
         }
         void OnEnable() { if (initialized) ApplyDraft(); }
-        void OnDestroy() { Release(Draft); if (lightRoot) Release(lightRoot.gameObject); }
+        void OnDestroy() { UnregisterLocalLighting(); Release(Draft); if (lightRoot) Release(lightRoot.gameObject); }
         static void Release(Object value)
         {
             if (!value) return;

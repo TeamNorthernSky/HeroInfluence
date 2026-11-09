@@ -10,24 +10,46 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
     private TMP_FontAsset font;
     private bool bubble;
     private RectTransform panel;
+    private GameObject imagePanel;
+    private bool imageOnly;
     private static LicenseHoverTooltip visible;
     public void Bind(string title, string description, Sprite sprite, TMP_FontAsset textFont, bool speechBubble, string badges = "")
     {
         heading = title; body = description; icon = sprite; font = textFont; bubble = speechBubble; tags = badges;
         Hide();
+        imagePanel = null;
+        imageOnly = false;
         if (panel) { Destroy(panel.gameObject); panel = null; }
+    }
+    public void BindImage(GameObject image)
+    {
+        Hide();
+        if (panel) { Destroy(panel.gameObject); panel = null; }
+        imageOnly = true;
+        imagePanel = image;
+        if (!imagePanel) return;
+        foreach (var graphic in imagePanel.GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
+        imagePanel.SetActive(false);
     }
     public void OnPointerEnter(PointerEventData e)
     {
         if (visible && visible != this) visible.Hide();
+        if (imageOnly)
+        {
+            if (!imagePanel) return;
+            visible = this;
+            imagePanel.SetActive(true);
+            return;
+        }
         if (!panel) Build();
         if (!panel) return;
         visible = this; panel.gameObject.SetActive(true); Place();
     }
     public void OnPointerExit(PointerEventData e) => Hide();
     private void OnDisable() => Hide();
-    private void OnDestroy() { if (panel) Destroy(panel.gameObject); }
-    private void Hide() { if (panel) panel.gameObject.SetActive(false); if (visible == this) visible = null; }
+    private void OnDestroy() { Hide(); if (panel) Destroy(panel.gameObject); }
+    private void Hide() { if (imagePanel) imagePanel.SetActive(false); if (panel) panel.gameObject.SetActive(false); if (visible == this) visible = null; }
     private void LateUpdate() { if (panel && panel.gameObject.activeSelf) Place(); }
     private RectTransform Rect(string name, float x, float y, float w, float h)
     {

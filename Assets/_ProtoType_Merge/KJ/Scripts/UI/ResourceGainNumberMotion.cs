@@ -172,11 +172,7 @@ public sealed class ResourceGainNumberMotion
 
     private void Render(float time)
     {
-        var settings = Settings;
-        var colors = settings != null && settings.ipRecoveryColors != null
-            ? settings.ipRecoveryColors : BattleUnitBarVisualSettings.DefaultIpRecoveryColors;
-        Color color = colors.Evaluate(time);
-        color.a *= originalColor.a;
+        Color color = new Color(0f, 0f, 0f, originalColor.a);
         label.color = animateColor ? color : originalColor;
         label.text = format((int)Math.Round(displayed, MidpointRounding.AwayFromZero));
     }

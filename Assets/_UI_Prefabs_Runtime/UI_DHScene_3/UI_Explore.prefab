@@ -1206,6 +1206,7 @@ MonoBehaviour:
   maxTurn: 0
   nextTurnButton: {fileID: 8555402931948021633}
   turnManager: {fileID: 0}
+  pressNextTurnPanel: {fileID: 3674505901048224292}
 --- !u!114 &5863321687896371168
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -200,7 +200,7 @@ public class InfirmaryModalController : MonoBehaviour
                 downedCount++;
                 if (gm.Infirmary.CanRevive(idx)) revivableCount++;
             }
-            else if (unit.CurrentHp < unit.IngameStats.HP && !gm.Infirmary.HealedThisTurn(idx))
+            else if (unit.CurrentHp < unit.IngameStats.HP)
             {
                 // 필요한 비용은 보유 자금과 무관하게 회복 대상 전체의 합계로 표시한다.
                 healableCount++;

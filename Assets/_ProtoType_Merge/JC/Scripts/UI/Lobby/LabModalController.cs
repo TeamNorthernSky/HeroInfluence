@@ -324,7 +324,9 @@ public class LabModalController : MonoBehaviour
 
     /// <summary>선택 영웅의 능력치와 해당 스킬 레벨로 설명 수치를 계산한다.</summary>
     // [JC 260619] 본문은 공유 헬퍼 ClassSkillTooltipText로 이관(HeroInfo 모달과 공용).
-    private string EffectText(DHClassSkillTemplate s, int level) => ClassSkillTooltipText.BuildDesc(s, level, unitIndex: selectedUnitIndex);
+    private string EffectText(DHClassSkillTemplate s, int level) => SkillTooltipNumbers.OmitIPDescription(
+        SkillTooltipNumbers.FormatPercentageDamage(
+            ClassSkillTooltipText.BuildDesc(s, level, percentageValues: true, unitIndex: selectedUnitIndex)));
 
     /// <summary>행 호버 시 해당 스킬의 현재 단계와 다음 단계를 비교한다. 최고 단계/미습득은 단일 정보.</summary>
     public void OnSkillHover(int rowIndex, int stageIndex, bool enter)
@@ -349,7 +351,8 @@ public class LabModalController : MonoBehaviour
             int cur = level, next = level + 1;
             SkillTooltip.Instance.ShowCompare(
                 GetSkillIcon(rowIndex, cur),  $"{SkillName(skill)} {(cur == 1 ? "기본" : "+" + (cur - 1))}",  EffectText(skill, cur),
-                GetSkillIcon(rowIndex, next), $"{SkillName(skill)} +{next - 1}", EffectText(skill, next), rt);
+                GetSkillIcon(rowIndex, next), $"{SkillName(skill)} +{next - 1}", EffectText(skill, next), rt,
+                SkillValueAt(skill.NumericSkillId, cur), SkillValueAt(skill.NumericSkillId, next));
         }
     }
 

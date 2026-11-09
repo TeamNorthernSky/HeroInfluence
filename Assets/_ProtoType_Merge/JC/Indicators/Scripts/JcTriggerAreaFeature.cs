@@ -13,14 +13,20 @@ namespace JC.Indicators
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
-            if (JcTriggerAreaDepth.HasControllers) renderer.EnqueuePass(pass);
+            // JC | 2026-11-06 | 이동 범위만 있는 화면도 같은 순서를 사용하며 UI 오버레이 카메라에는 중복하지 않습니다.
+            var data = renderingData.cameraData;
+            if (data.renderType == CameraRenderType.Overlay ||
+                (data.cameraType != CameraType.Game && data.cameraType != CameraType.SceneView)) return;
+            if (JcTriggerAreaDepth.HasControllers || JcMoveGridMesh.HasInstances) renderer.EnqueuePass(pass);
         }
 
         private sealed class DepthPass : ScriptableRenderPass
         {
+            private readonly Plane[] planes = new Plane[6];
             public DepthPass()
             {
-                renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 2);
+                // JC | 2026-11-06 | 건물 입장 외곽선의 마스크(-2)·합성(-1)보다 바닥 안내를 먼저 그립니다.
+                renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 3);
                 ConfigureInput(ScriptableRenderPassInput.Depth);
             }
 
@@ -46,6 +52,9 @@ namespace JC.Indicators
                     CoreUtils.SetRenderTarget(command, data.renderer.cameraColorTargetHandle,
                         data.renderer.cameraDepthTargetHandle, ClearFlag.None, Color.clear);
                     if (data.renderer.cameraColorTargetHandle.rt == null) command.SetViewport(data.camera.pixelRect);
+                    GeometryUtility.CalculateFrustumPlanes(data.camera, planes);
+                    JcTriggerAreaDepth.DrawColors(command, data.camera, planes);
+                    JcMoveGridMesh.DrawAll(command, data.camera, planes);
                     context.ExecuteCommandBuffer(command);
                 }
                 finally { CommandBufferPool.Release(command); }

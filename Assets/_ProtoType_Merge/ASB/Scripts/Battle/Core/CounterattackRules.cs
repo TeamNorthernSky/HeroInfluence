@@ -1,8 +1,49 @@
+using System.Collections.Generic;
+
 namespace ASB.Work.Battle.Core
 {
     /// <summary>ASB와 JC가 함께 사용하는 반격 후보 규칙.</summary>
     public static class CounterattackRules
     {
+        /// <summary>
+        /// 반격은 한 명만 때리는 공격에만 성립한다.
+        /// 데이터상 대상이 단일(0)이고 범위 패턴이 중심 칸(0)뿐인 스킬이어야 하며,
+        /// 연격(복수)·저스티스 크래쉬(전체)·저스티스 대쉬(관통 패턴)는 실제로 맞은 수와 관계없이 제외한다.
+        /// 스킬 정보가 없으면 실제로 맞은 대상 수로만 판정한다.
+        /// </summary>
+        public static bool IsSingleTargetAttack(SkillData skill, IEnumerable<DamageContext> hits)
+        {
+            if (skill != null && !IsSingleTargetSkill(skill))
+                return false;
+
+            if (hits == null)
+                return true;
+
+            BattleCharactor first = null;
+            foreach (DamageContext hit in hits)
+            {
+                if (hit?.Target == null || hit.IsCounterAttack) continue;
+                if (first == null) first = hit.Target;
+                else if (hit.Target != first) return false;
+            }
+            return true;
+        }
+
+        public static bool IsSingleTargetSkill(SkillData skill)
+        {
+            if (skill == null || skill.classSkillTarget != 0)
+                return false;
+
+            if (skill.boundary != null)
+            {
+                foreach (int cell in skill.boundary)
+                {
+                    if (cell != 0) return false;
+                }
+            }
+            return true;
+        }
+
         /// <summary>아군 x=1, 적군 x=2의 고정 전열에 근거리 공격이 적중한 경우.</summary>
         public static bool IsEligibleHit(DamageContext context)
         {
