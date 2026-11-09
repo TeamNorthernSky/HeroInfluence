@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
                 int income = 0;
                 if (HQ != null && Economy != null)
                 {
-                    income = HQ.GetTurnIncome(HQDepartment.Headquarters);
+                    income = HQ.GetHeadquartersIncomeForDay(currentDay);
                     if (income > 0) Economy.Add(ResourceType.Money, income);
                 }
                 if (Publicity != null) Publicity.OnTurnAdvanced(currentDay);

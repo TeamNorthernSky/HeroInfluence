@@ -3,6 +3,22 @@ using System.Collections.Generic;
 /// <summary>AssociationResourceCatalog와 협회 UI의 비용 API 사이의 읽기 전용 어댑터.</summary>
 public static class AssociationCosts
 {
+    public static bool TryFund(int level, out DHAssociationFundTemplate row)
+    {
+        row = null;
+        var catalog = AssociationResourceCatalog.Instance;
+        if (catalog == null)
+            catalog = UnityEngine.Object.FindFirstObjectByType<AssociationResourceCatalog>(UnityEngine.FindObjectsInactive.Include);
+        if (catalog == null || level < 1) return false;
+        foreach (var candidate in catalog.GetFundTemplates(level))
+        {
+            if (candidate == null || candidate.ResourceType != (int)ResourceType.Money) continue;
+            if (row != null) { row = null; return false; }
+            row = candidate;
+        }
+        return row != null && row.ResourceAmount >= 0 && row.ResourceCycle > 0;
+    }
+
     public static bool TryBuild(HQDepartment department, int targetLevel, out DHAssociationBuildTemplate row)
     {
         row = null;
