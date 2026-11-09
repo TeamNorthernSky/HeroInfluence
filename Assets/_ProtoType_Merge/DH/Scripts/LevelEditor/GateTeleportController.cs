@@ -3,7 +3,10 @@ using UnityEngine;
 
 public class GateTeleportController : MonoBehaviour
 {
+    private const float RegistrySearchInterval = 1f;
     private readonly List<GateRuntimeController> gates = new List<GateRuntimeController>();
+    private PartyRegistry partyRegistry;
+    private float nextRegistrySearchTime;
     private PartyGridMover observedParty;
     private bool teleporting;
     private int suppressUntilFrame;
@@ -23,6 +26,7 @@ public class GateTeleportController : MonoBehaviour
         if (Instance == null)
             Instance = this;
 
+        nextRegistrySearchTime = 0f;
         ResolvePartySubscription();
     }
 
@@ -101,7 +105,21 @@ public class GateTeleportController : MonoBehaviour
 
     private void ResolvePartySubscription()
     {
-        PartyRegistry partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        if (partyRegistry != null && !partyRegistry.gameObject.activeInHierarchy)
+            partyRegistry = null;
+
+        if (partyRegistry == null)
+        {
+            if (Time.unscaledTime < nextRegistrySearchTime)
+            {
+                UnsubscribeParty();
+                return;
+            }
+
+            nextRegistrySearchTime = Time.unscaledTime + RegistrySearchInterval;
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        }
+
         PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
         if (party == observedParty)
             return;
