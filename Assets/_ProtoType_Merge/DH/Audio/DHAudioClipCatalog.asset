@@ -323,7 +323,7 @@ MonoBehaviour:
   - key: Explore_Item
     clip: {fileID: 8300000, guid: 655781b64bfc6464096db9f063e20dcf, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 1
     loop: 0
     allowOverlap: 1
   - key: Explore_Move
