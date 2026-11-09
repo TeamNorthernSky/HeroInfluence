@@ -25,16 +25,8 @@ namespace JC.DebugTools
 
         public static JcZone1WarpView Create(Transform parent, Action cancel, Action<Vector2> click)
         {
-            // JC | 2026-11-05 | 탐사 UI의 SOYO Maple 전환에 맞춰 기존 HUD 글꼴을 공유합니다.
-            // 같은 탐사씬의 숨겨진 UI도 포함해 패널 표시 상태에 의존하지 않으며, 글꼴 누락 시 기존 치트 종료 경로로 알립니다.
-            TMP_FontAsset hudFont = null;
-            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            foreach (var text in FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (text.gameObject.scene == scene && text.font != null &&
-                    text.font.name.StartsWith("SOYO Maple", StringComparison.OrdinalIgnoreCase))
-                { hudFont = text.font; break; }
-            if (hudFont == null)
-                throw new InvalidOperationException("탐사 UI의 SOYO Maple 글꼴을 찾을 수 없습니다. 치트를 종료합니다.");
+            // JC | 2026-11-09 | 일반 HUD와 독립된 개발자 Noto를 사용하고, 누락 시 자동 대체하여 치트가 종료되지 않게 합니다.
+            TMP_FontAsset hudFont = DebugPanelManager.ResolveDeveloperFont();
 
             var go = new GameObject("JC 구간 테스트", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(Image));
             go.transform.SetParent(parent, false);

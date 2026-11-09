@@ -368,7 +368,8 @@ namespace JC.VFX.Validation
         {
             if (panelSkin != null) return;
             panelSkin = Instantiate(GUI.skin);
-            if (interfaceFont != null) panelSkin.font = interfaceFont;
+            // JC | 2026-11-09 | 독립 VFX 검증창도 Noto 우선, 기존 지정 글꼴은 누락 시 대체로 유지합니다.
+            panelSkin.font = DebugPanelManager.ResolveDeveloperSourceFont(interfaceFont);
             var panel = UiTexture(new Color(.025f, .055f, .095f, .9f));
             var button = UiTexture(new Color(.12f, .19f, .27f, .96f));
             var yellow = UiTexture(new Color(1f, .82f, .25f));

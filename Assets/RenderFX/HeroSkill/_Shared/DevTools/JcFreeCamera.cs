@@ -117,6 +117,8 @@ namespace JC.VFX
 
         private void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if (!showHint) return;
             var style = new GUIStyle(GUI.skin.label) { fontSize = 12, richText = true };
             string body = Input.GetMouseButton(1)

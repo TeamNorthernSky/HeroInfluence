@@ -55,6 +55,8 @@ namespace JC.BattleTesting
         }
         void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if(!Application.isPlaying)return;
             var old=GUI.matrix;float scale=Mathf.Max(.65f,Screen.height/1080f);GUI.matrix=Matrix4x4.Scale(Vector3.one*scale);
             GUILayout.BeginArea(new Rect(Screen.width/scale*.5f-225,8,450,100),GUI.skin.box);
