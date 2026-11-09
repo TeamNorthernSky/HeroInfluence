@@ -213,7 +213,8 @@ namespace JC.BattleTesting
                     root.name.StartsWith("BGHouse", StringComparison.Ordinal) || root.name.StartsWith("BGStore", StringComparison.Ordinal) ||
                     root.name == "JC_TutorialConstructionBackdrop"))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
-            JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bankSettings!=null||bossBackground);
+            // JC | 2026-11-05 | 은행은 전용 실내 조명이 환경을 소유합니다. 보스·일반전의 기존 낮밤 경로는 유지합니다.
+            if (!bankSettings) JC.Environment.JcDayNightController.EnsureBattle(scene,lightingHour,lightingProfile,bossBackground);
             JC.EnvironmentDetail.JcBattleRoadMarkings.BindScene(scene);
             if (background != null) background.SetActive(true);
             if (clearTutorialArenaTrees) RemoveArenaTrees(scene);
@@ -221,10 +222,65 @@ namespace JC.BattleTesting
             battleCamera = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Camera>()).FirstOrDefault(c => c.CompareTag("MainCamera"));
             if (battleCamera == null) return;
             bankSettings?.ApplyCamera(battleCamera);
+            // JC | 2026-11-06 | 본게임·BankTestScene의 동일 로딩 경로에서 기존 공용 연출기에 은행 구도만 전달합니다.
+            // 카메라를 별도 Update에서 제어하지 않고 공격 진입·유지·복귀는 기존 연출기가 담당합니다.
+            var bankPresentation = BattlePresentationController.FindInScene(scene);
+            if (bankPresentation) bankPresentation.BankBackground = bankSettings;
             var roots = scene.GetRootGameObjects();
+            // JC | 2026-11-05 | 은행 전용 재질 조절기를 설치합니다. 보스전/일반전의 재질 연결은 유지합니다.
+            if (bankSettings && background)
+            {
+                var bankEnvironment = roots.FirstOrDefault(r => r.name == "JC_Environment");
+                if (!bankEnvironment)
+                {
+                    bankEnvironment = new GameObject("JC_Environment");
+                    SceneManager.MoveGameObjectToScene(bankEnvironment, scene);
+                }
+                // JC | 2026-11-06 | 은행 로딩 경로 한 곳에서 본게임·테스트가 같은 접점 프로필과 배경 좌표계를 사용합니다.
+                JC.Environment.JcContactShadingController contactShading = null;
+                if (bankSettings.contactShadingProfile)
+                {
+                    var controls = new GameObject("JC_ContactShading");
+                    controls.transform.SetParent(bankEnvironment.transform, false);
+                    contactShading = controls.AddComponent<JC.Environment.JcContactShadingController>();
+                    contactShading.Initialize(bankSettings.contactShadingProfile, background.transform);
+                }
+                if (bankSettings.materialProfile)
+                {
+                    var controls = new GameObject("JC_BankBackgroundMaterials");
+                    controls.transform.SetParent(bankEnvironment.transform, false);
+                    controls.AddComponent<JcBankBackgroundMaterials>().Initialize(background, bankSettings.materialProfile, contactShading, bankSettings.toonProfile ? bankSettings.toonProfile.surfaceShader : null);
+                }
+                // JC | 2026-11-05 | sceneLoaded 단계에서 실외 적용기를 중지하여 이후 Start가 실내 값을 덮지 않게 합니다.
+                if (bankSettings.environmentProfile)
+                {
+                    var controls = new GameObject("JC_BankEnvironment");
+                    controls.transform.SetParent(bankEnvironment.transform, false);
+                    controls.AddComponent<JcBankEnvironment>().Initialize(bankSettings.environmentProfile, background.transform);
+                }
+                else Debug.LogError("[JC Bank] 공유 실내 조명 프로필이 연결되지 않았습니다.", bankSettings);
+                // JC | 2026-11-06 | 툰 명암만 별도 조절합니다. 플레이어 후면 보조광은 위의 은행 환경 조명이 소유합니다.
+                if (bankSettings.toonProfile)
+                {
+                    var controls = new GameObject("JC_BankToon");
+                    controls.transform.SetParent(bankEnvironment.transform, false);
+                    controls.AddComponent<JcBankToonController>().Initialize(bankSettings.toonProfile);
+                }
+            }
             var player = roots.FirstOrDefault(r => r.name == "PlayerPlace");
             var enemies = roots.FirstOrDefault(r => r.name == "EnemyPlace");
             center = player != null && enemies != null ? (player.transform.position + enemies.transform.position) * .5f : Vector3.zero;
+            // JC | 2026-11-06 | 은행에서만 진형 전체를 카운터 반대쪽(+X)으로 실제 가로 셀 간격의 절반 이동합니다.
+            // 카메라 기준점은 위의 기존 중앙을 유지합니다. 스폰 전 루트를 옮겨 셀·클릭 영역·유닛 위치가 함께 맞습니다.
+            if (bankSettings && background && player && enemies)
+            {
+                var cells = player.GetComponentsInChildren<ASB.Work.BattleGrid.GridCell>(true);
+                var leftCell = cells.Single(c => c.name == "Grid_0_0");
+                var middleCell = cells.Single(c => c.name == "Grid_0_1");
+                var halfCell = (middleCell.transform.position - leftCell.transform.position) * .5f;
+                player.transform.position += halfCell;
+                enemies.transform.position += halfCell;
+            }
             originalPosition = battleCamera.transform.position; originalRotation = battleCamera.transform.rotation; originalFov = battleCamera.fieldOfView;
             var bossSettings = bossBackground ? JcBossBattleBackground.Load() : null;
             // JC | 2026-11-05 | 유리·표면과 조명 조절기를 같은 환경 루트 아래에서 찾을 수 있게 합니다.
@@ -275,6 +331,8 @@ namespace JC.BattleTesting
             startPosition = battleCamera.transform.position; startRotation = battleCamera.transform.rotation; startFov = battleCamera.fieldOfView;
             if (view == 2) { endPosition = originalPosition; endRotation = originalRotation; endFov = originalFov; }
             else (view == 0 ? profile.viewA : profile.viewB).Resolve(center, out endPosition, out endRotation, out endFov);
+            // JC | 2026-11-06 | 은행 기본 구도만 요청한 수평 이동을 적용합니다. 스킬 카메라를 강제 제어하거나 원근감으로 Y/Z를 재계산하지 않습니다.
+            if (view == 0 && bankSettings) endPosition.x += bankSettings.viewAHorizontalOffset;
             elapsed = 0; moving = true;
         }
         // 배경 외곽의 가로수는 유지하고 첫 튜토리얼의 진형/중앙 통로에 들어온 나무 외형만 제외합니다.

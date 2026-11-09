@@ -57,6 +57,8 @@ public class JcSkillButtonController : MonoBehaviour
     private Button hoveredSkillButton;
     private bool descriptionBattleEnded;
     private BattleCharactor displayedUnit;
+    // JC | 2026-11-06: 같은 IP 구간에서는 설명/스크롤을 유지하고 경계를 넘을 때만 갱신합니다.
+    private int descriptionIpBand = -1;
 
     private Action<bool> onToggle1;
     private Action<bool> onToggle2;
@@ -321,8 +323,11 @@ public class JcSkillButtonController : MonoBehaviour
             return;
         }
 
-        // 원본 RefreshDescription 대응: Lab/Workshop 재조회 대신 실제 시전 SkillData의 강화 계수를 표시합니다.
-        string body = JC.BattleTesting.JcTestDataAssembler.DescribeAppliedSkill(skill, action == PendingActionType.WeaponSkill);
+        // JC | 2026-11-06: 실제 선택/호버 스킬 ID와 행동 유닛 IP로 전투 전용 확정 문구를 표시합니다.
+        // 전투 수치, 장비 주입 및 로비·연구소의 설명 경로는 변경하지 않습니다.
+        descriptionIpBand = ClassSkillTooltipText.GetBattleIpBand(unit.CurrentInfluence);
+        string body = ClassSkillTooltipText.BuildBattleDesc(skill.skillIndex,
+            action == PendingActionType.WeaponSkill, unit.CurrentInfluence);
         SetDescription(skill.skillName, body, skill);
     }
 
@@ -333,6 +338,13 @@ public class JcSkillButtonController : MonoBehaviour
         var actor = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
         // 턴 팝업 중에도 이름/초상화와 같은 유닛의 스킬을 표시합니다. 입력 허용 시점은 바꾸지 않습니다.
         if (displayedUnit != actor) RefreshSkills();
+        // JC | 2026-11-06: 설명을 연 채 IP가 변해도 현재 구간을 표시합니다. 비주얼 연결 유무와 무관하게 갱신합니다.
+        if (actor != null && actor.IsPlayer && !descriptionBattleEnded &&
+            descriptionIpBand != ClassSkillTooltipText.GetBattleIpBand(actor.CurrentInfluence))
+        {
+            descriptionIpBand = ClassSkillTooltipText.GetBattleIpBand(actor.CurrentInfluence);
+            RefreshDescription();
+        }
         if (coreVisual == null && (!HasHeroSlots || !System.Array.Exists(heroSlots, s => s != null && s.visual != null))) return;
         bool ready = actor != null && actor.IsPlayer && !actor.IsDead && !descriptionBattleEnded &&
             !battleFlowManager.IsEndingBattle && !battleFlowManager.IsActionInProgress &&

@@ -1,0 +1,241 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1643420ee9dd85439ef7d41cad56b5a, type: 3}
+  m_Name: JC_BankEnvironment_Default
+  m_EditorClassIdentifier: 
+  ssaoFeature: {fileID: -1878332245247344467, guid: ae0cc4904269f6c45906c992c0d617c2,
+    type: 2}
+  ssaoEnabled: 1
+  ssaoIntensity: 1.58
+  ssaoRadius: 0.9
+  ssaoDirectLightingStrength: 0.272
+  ssaoDownsample: 0
+  ambientColor: {r: 0.65, g: 0.68, b: 0.73, a: 1}
+  ambientIntensity: 0.95
+  reflectionIntensity: 0.89
+  reflectionPosition: {x: 8.215331, y: 5, z: -5.4730535}
+  reflectionSize: {x: 44.23108, y: 26, z: 50.399998}
+  glyphHaloColor: {r: 1, g: 1, b: 1, a: 1}
+  glyphHaloIntensity: 1.23
+  glyphHaloWidth: 0.215
+  lights:
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 1"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -21.892214}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 2"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -8.893712}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 3"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: 2.7365267}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 1 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 2.6646929}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 106
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 2 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 8.506494}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 101
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 3 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -4.589, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 55
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 4 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 6.87, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 89
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 1.258, y: 7.14, z: 11.208817}
+    rotation: {x: 67.258415, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 91
+    range: 70
+    spotAngle: 88
+    innerSpotRatio: 0.712
+    shadows: 0
+    shadowStrength: 0.566
+    shadowBias: 0.05
+    shadowNormalBias: 0.1
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 1"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -6.3}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.97044027, b: 0.8522012, a: 1}
+    intensity: 79
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.515
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 2"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -3.75}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 32.3
+    spotAngle: 120
+    innerSpotRatio: 0.523
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 3"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -1.2}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.499
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 10\uC2DC \uADF8\uB9BC\uC790"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 6, y: 14, z: 6}
+    rotation: {x: 50.19443, y: 288.24808, z: -0.0000026672742}
+    color: {r: 1, g: 0.9686275, b: 0.85098046, a: 1}
+    intensity: 1
+    range: 47.1
+    spotAngle: 135
+    innerSpotRatio: 0.7
+    shadows: 1
+    shadowStrength: 0.716
+    shadowBias: 0
+    shadowNormalBias: 0
+  - playerBackFill: 1
+    label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 0, y: 14, z: 0}
+    rotation: {x: 25, y: -34.45, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 0.6
+    range: 55.6
+    spotAngle: 58
+    innerSpotRatio: 0.406
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2

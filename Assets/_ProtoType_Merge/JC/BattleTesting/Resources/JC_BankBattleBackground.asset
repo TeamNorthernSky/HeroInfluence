@@ -14,6 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   visualPrefab: {fileID: 6650639044813744860, guid: 2ea8ab8a0ad65504d9fc6ec98d78303b,
     type: 3}
+  materialProfile: {fileID: 11400000, guid: 01b0dc78e9bb4c3468b7ab92a422e698, type: 2}
+  environmentProfile: {fileID: 11400000, guid: 9663d395ca4ec524194cbafc0c33754f, type: 2}
+  contactShadingProfile: {fileID: 11400000, guid: 7b2792ea51fb17c4f9f5c08a1400d700,
+    type: 2}
+  toonProfile: {fileID: 11400000, guid: deccd2b0d791cd344b9185ac66ea4fc2, type: 2}
+  viewAHorizontalOffset: 1.47534943
+  skillCameraProfile: {fileID: 11400000, guid: 0167af58bdb2461393c70152b8794466, type: 2}
   zoneId: 1
   battleKeys:
   - BE002

@@ -20,6 +20,8 @@ Shader "JC/Battle/SoftCharacter"
   _KeyDirection("Key Direction",Vector)=(.4,.8,-.3,0)
   _KeyTint("Key Tint",Color)=(1,.98,.94,1)
   _FillTint("Fill Tint",Color)=(.87,.92,1,1)
+  // JC | 2026-11-06 | 재질 소유자가 플레이어 진영·4종 ID를 확인한 경우에만 보조광을 받습니다.
+  [HideInInspector] _JcPlayerBackFillTarget("Player Back Fill Target",Float)=0
  }
  SubShader
  {
@@ -37,12 +39,15 @@ Shader "JC/Battle/SoftCharacter"
    #pragma multi_compile_fog
    #pragma shader_feature_local_fragment _ALPHATEST_ON
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+   // JC | 2026-11-06 | 은행 조절기의 선택적 툰·보조광만 추가합니다. 은행 밖의 전역 기본값 0은 기존 표현입니다.
+   #include "../BattleTesting/JcBankToonCommon.hlsl"
    TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
    TEXTURE2D(_EmissionMap); SAMPLER(sampler_EmissionMap);
    CBUFFER_START(UnityPerMaterial)
    float4 _BaseMap_ST,_EmissionMap_ST,_KeyDirection;
    half4 _BaseColor,_EmissionColor,_KeyTint,_FillTint;
    float _Cutoff,_ShadeFloor,_Wrap,_ShadowStrength,_AlbedoLift,_RimStrength,_Saturation,_MoldingStrength,_MoldingSharpness,_HitFlash;
+   float _JcPlayerBackFillTarget;
    CBUFFER_END
    float4 _JcDayNight, _JcNightReadability;
    struct A{float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;};
@@ -56,9 +61,14 @@ Shader "JC/Battle/SoftCharacter"
     #endif
     float3 n=normalize(i.normalWS);
     float lightAmount=smoothstep(-max(.01,_Wrap),1,dot(n,normalize(_KeyDirection.xyz)));
+    // JC | 2026-11-06 | 기존 명암 방향을 유지하며 단계 수와 혼합 강도만 선택적으로 적용합니다.
+    lightAmount=JcBankCharacterRamp(lightAmount);
     half3 lighting=lerp(_FillTint.rgb*_ShadeFloor,_KeyTint.rgb,lightAmount);
     Light main=GetMainLight(TransformWorldToShadowCoord(i.positionWS));
     lighting*=lerp(1,main.shadowAttenuation,_ShadowStrength);
+    // JC | 2026-11-06 | 보조광은 그림자 감쇠 뒤에 더하여 캐릭터 뒷면만 은은하게 밝힙니다.
+    lighting*=lerp(half3(1,1,1),lerp(_JcBankToonTint.rgb,half3(1,1,1),lightAmount),saturate(_JcBankToon.x*_JcBankToonOptions.y));
+    lighting+=JcBankCharacterFill(n)*saturate(_JcPlayerBackFillTarget);
     half3 color=lerp(albedo.rgb,sqrt(max(albedo.rgb,0)),_AlbedoLift)*lighting;
     half luminance=dot(color,half3(.2126,.7152,.0722));
     color=max(0,lerp(luminance.xxx,color,_Saturation));
