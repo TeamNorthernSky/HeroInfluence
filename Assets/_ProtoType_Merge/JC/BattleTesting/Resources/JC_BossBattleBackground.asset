@@ -20,6 +20,7 @@ MonoBehaviour:
   contactShadingProfile: {fileID: 11400000, guid: 50c5b8a8d3c638742bcc83620465ace1,
     type: 2}
   environmentProfile: {fileID: 11400000, guid: 1c3257bfd296497cb38a1af53b8225ce, type: 2}
+  interiorPipeline: {fileID: 11400000, guid: fc8096095f9dcd04489a47957ed8b0f5, type: 2}
   surfaceProfile: {fileID: 11400000, guid: 2a4334a981404e1ba0255eb40b5fb82d, type: 2}
   citySun: {fileID: 7951856378101774353, guid: 9645966940bcb644dabd04f707a31404, type: 3}
   cityTimeProfile: {fileID: 11400000, guid: 8ff1ab1614516ff46829124c1192f1eb, type: 2}

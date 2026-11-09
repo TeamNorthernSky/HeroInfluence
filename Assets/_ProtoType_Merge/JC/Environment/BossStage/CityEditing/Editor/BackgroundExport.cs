@@ -11,13 +11,15 @@ namespace JC.BackgroundEditing
 {
     public sealed class AssetCopier
     {
+        // JC | 2026-11-09 | 탐사 베이크는 정리 대상이므로 보스 가져오기·내보내기 모두 독립 복사합니다.
+        public static bool IsExploreBake(string path)=>path.StartsWith("Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/",StringComparison.Ordinal);
         readonly string folder;readonly bool includeBoss;readonly Dictionary<UnityEngine.Object,UnityEngine.Object> cache=new Dictionary<UnityEngine.Object,UnityEngine.Object>();int transient;
         public AssetCopier(string folder,bool includeBoss){this.folder=folder;this.includeBoss=includeBoss;BackgroundOps.Folder(folder);}
         public UnityEngine.Object Copy(UnityEngine.Object source)
         {
             if(!source)return null;if(cache.TryGetValue(source,out var hit))return hit;
             var path=AssetDatabase.GetAssetPath(source);bool local=path.StartsWith(BackgroundOps.Local,StringComparison.Ordinal)||path.StartsWith("Assets/_MiscLocal/",StringComparison.Ordinal);
-            if(EditorUtility.IsPersistent(source)&&!local&&!(includeBoss&&path.StartsWith(BackgroundOps.Boss,StringComparison.Ordinal)))return source;
+            if(EditorUtility.IsPersistent(source)&&!local&&!IsExploreBake(path)&&!(includeBoss&&path.StartsWith(BackgroundOps.Boss,StringComparison.Ordinal)))return source;
             if(source is RenderTexture)return null;
             if(!(source is Mesh)&&!(source is Material)&&!(source is Texture2D))throw new InvalidOperationException("내보낼 수 없는 로컬 의존성: "+source.name+" "+path);
             string id;if(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(source,out string guid,out long fileID)&&!string.IsNullOrEmpty(guid))id=guid+"_"+fileID;else id="transient_"+transient++;
@@ -83,7 +85,8 @@ namespace JC.BackgroundEditing
                 AssetDatabase.StartAssetEditing();try{copier.RemapHierarchy(output);}finally{AssetDatabase.StopAssetEditing();}
                 string file=dir+"/BossStage.prefab";PrefabUtility.SaveAsPrefabAsset(output,file);AssetDatabase.SaveAssets();
                 var dependencies=AssetDatabase.GetDependencies(file,true);
-                var invalid=dependencies.Where(p=>p.StartsWith("Assets/_MiscLocal/",StringComparison.Ordinal)||(p.StartsWith("Assets/",StringComparison.Ordinal)&&p.Contains("/Editor/"))||p==Boss+"BossCity_Source.prefab"||p.StartsWith(Boss+"SourceMeshes/",StringComparison.Ordinal)).ToArray();
+                // JC | 2026-11-09 | 탐사 베이크 참조가 남은 배포본은 통과시키지 않아 정리 시 재손실을 방지합니다.
+                var invalid=dependencies.Where(p=>AssetCopier.IsExploreBake(p)||p.StartsWith("Assets/_MiscLocal/",StringComparison.Ordinal)||(p.StartsWith("Assets/",StringComparison.Ordinal)&&p.Contains("/Editor/"))||p==Boss+"BossCity_Source.prefab"||p.StartsWith(Boss+"SourceMeshes/",StringComparison.Ordinal)).ToArray();
                 if(invalid.Length>0)throw new InvalidOperationException("로컬/편집 의존성이 남았습니다: "+string.Join("\n",invalid));
                 // JC | 2026-11-09 | 결과 검증 후 저장 연결만 갱신하며 기존 표면 조절값은 변경하지 않습니다.
                 copier.BindSurfaceProfile(JcBossBattleBackground.Load()?.surfaceProfile);

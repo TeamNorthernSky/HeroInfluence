@@ -177,6 +177,8 @@ namespace JC.BattleTesting
         void OnDisable()
         {
             if (!initialized) return;
+            // JC | 2026-11-09 | 전투 구독과 진행 중 색 변화를 해제해 재진입/다른 씬으로 연출이 남지 않게 합니다.
+            StopBattleLighting();
             foreach (var light in localLights) if (light) light.enabled = false;
             foreach (var light in windowLights) if (light) light.enabled = false;
             RestoreCityLayers();

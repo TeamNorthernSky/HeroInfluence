@@ -78,7 +78,8 @@ namespace JC.BattleTesting
             RenderSettings.sun = Sun;
             // JC | 2026-11-05 | 먼 원경까지 그림자를 계산하되 공용 품질 에셋 자체는 변경하지 않습니다.
             previousPipeline = QualitySettings.renderPipeline;
-            var source = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+            // JC | 2026-11-09 | 다중 창문광·천장광은 보스 전용 Forward+를 쓰고 종료 시 기존 품질로 복원합니다.
+            var source = settings.interiorPipeline ? settings.interiorPipeline : GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             if (source)
             {
                 pipeline = Instantiate(source); pipeline.hideFlags = HideFlags.DontSave;

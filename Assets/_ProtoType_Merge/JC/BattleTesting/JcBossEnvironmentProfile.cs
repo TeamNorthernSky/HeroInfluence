@@ -52,6 +52,13 @@ namespace JC.BattleTesting
         [Header("보스 무대 추가 라이트")]
         [Tooltip("무대 로컬 좌표로 배치합니다. 비어 있으면 추가 조명이 없습니다. 그림자는 현재 URP 품질 설정을 따릅니다.")]
         [InspectorName("추가 라이트 목록")] public List<LocalLight> lights = new List<LocalLight>();
+        // JC | 2026-11-09 | 밝기 증폭이나 고속 반복 없이 이벤트마다 한 번만 옅은 보라색으로 왕복합니다.
+        [Header("전투 조명 · 완만한 색 변화")]
+        [InspectorName("보라색 색 변화 사용")] public bool battlePulseEnabled = true;
+        [InspectorName("변화 색상"), ColorUsage(false)] public Color battlePulseColor = new Color(.65f,.45f,1);
+        [InspectorName("색 혼합량"), Range(0,.3f)] public float battlePulseMix = .22f;
+        [InspectorName("왕복 시간 · 실제 초"), Min(1.2f)] public float battlePulseSeconds = 1.4f;
+        [InspectorName("최소 시작 간격 · 실제 초"), Min(4)] public float battlePulseInterval = 4;
         [Header("보스 무대 전용 셰이딩")]
         [Tooltip("지정한 무대 렌더러 슬롯에만 재질 복제본을 적용합니다. 원본 재질·캐릭터·다른 전투에는 적용하지 않습니다.")]
         [InspectorName("무대 전용 재질 목록")] public List<MaterialSlot> materials = new List<MaterialSlot>();
@@ -61,6 +68,9 @@ namespace JC.BattleTesting
         [Serializable]
         public sealed class LocalLight
         {
+            // JC | 2026-11-09 | 임시 연출 대상 광원만 색 변화/보스 추적에 참여하며 저장된 기본색은 보존합니다.
+            [InspectorName("전투 색 변화 참여")] public bool battlePulse;
+            [InspectorName("보스 몸체 조준"), Tooltip("위치는 유지하고 살아 있는 율리아 몸체를 향해 스폿 방향만 맞춥니다.")] public bool aimAtBoss;
             // JC | 2026-11-09 | 은행과 같은 조명 측 전용 설정이며 기본값은 꺼짐입니다.
             [InspectorName("플레이어 4종 후면 보조광"), Tooltip("일반 표면 대신 플레이어 4종의 뒷면만 비춥니다. 실제 Light 그림자는 만들지 않습니다.")] public bool playerBackFill;
             [Tooltip("하위 라이트 오브젝트 이름입니다.")] [InspectorName("이름")] public string label = "추가 조명";
