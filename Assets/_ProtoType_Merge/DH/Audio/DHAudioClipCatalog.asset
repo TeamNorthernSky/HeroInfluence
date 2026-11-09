@@ -515,6 +515,6 @@ MonoBehaviour:
   - key: Title_Explore
     clip: {fileID: 8300000, guid: 2a34744a587bef140aac18f3953854cd, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 0.3
     loop: 0
     allowOverlap: 1

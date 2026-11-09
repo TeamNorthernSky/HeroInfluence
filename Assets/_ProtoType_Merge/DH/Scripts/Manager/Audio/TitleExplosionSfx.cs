@@ -4,7 +4,7 @@ using UnityEngine;
 public sealed class TitleExplosionSfx : MonoBehaviour
 {
     private const string SfxKey = "Title_Explore";
-    private const float PlaybackSeconds = 3.3f;
+    private const float PlaybackSeconds = 1f;
     private bool played;
     private AudioManager audioManager;
     private string sceneName;
