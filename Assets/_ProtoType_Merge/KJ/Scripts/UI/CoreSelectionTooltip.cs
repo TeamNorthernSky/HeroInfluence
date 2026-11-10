@@ -52,9 +52,8 @@ public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, 
         if (catalog != null) catalog.TryGetWeaponTemplate(core, out data);
         title.text = data != null ? data.WeaponName : label;
         levelText.text = stored > 0 ? $"Lv. {level} / {WorkshopManager.MaxWeaponLevel}" : "미보유 · Lv.1 기준";
-        stats.text = "강화 능력치는 선택 영웅에게 영구 적용";
-        stats.text += level < WorkshopManager.MaxWeaponLevel
-            ? "\n다음 강화 획득: " + Bonus(core, level + 1, level) : "\n최대 레벨";
+        stats.text = "현재: " + Bonus(core, level);
+        stats.text += level < WorkshopManager.MaxWeaponLevel ? "\n다음 레벨: " + Bonus(core, level + 1) : "\n최대 레벨";
         description.text = data != null ? data.WeaponDescription : "코어 정보를 불러오는 중입니다.";
         skillName.text = data != null ? data.WeaponSkillName : "코어 스킬";
         skillDescription.text = data != null ? WeaponTooltipText.BuildWeaponSkillDesc(data, core, level, unitIndex: unitIndex) : "스킬 정보를 불러오는 중입니다.";
@@ -64,17 +63,10 @@ public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, 
         skillPortrait.sprite = Sprites.Load("UI_Sprite/UI_Icon/CoreSkill/UI_icon_coreSkill_" + SkillIcons[core - 1]);
         skillPortrait.enabled = skillPortrait.sprite != null;
     }
-    private static string Bonus(int index, int level, int previousLevel)
+    private static string Bonus(int index, int level)
     {
         var catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null || !catalog.TryGetWeaponBonusAtLevel(index, level, out var s)) return "정보 없음";
-        if (!catalog.TryGetWeaponBonusAtLevel(index, previousLevel, out var previous)) return "정보 없음";
-        s.HP -= previous.HP;
-        s.Atk -= previous.Atk;
-        s.DEF -= previous.DEF;
-        s.CriticalRate -= previous.CriticalRate;
-        s.CounterRate -= previous.CounterRate;
-        s.AvoidRate -= previous.AvoidRate;
         var parts = new List<string>();
         if (s.Atk != 0) parts.Add($"공격력 +{s.Atk:0.##}");
         if (s.HP != 0) parts.Add($"체력 +{s.HP:0.##}");

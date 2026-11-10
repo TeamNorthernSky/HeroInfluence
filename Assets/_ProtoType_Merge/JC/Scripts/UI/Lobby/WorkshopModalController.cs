@@ -319,8 +319,7 @@ public class WorkshopModalController : MonoBehaviour
                     bool canPay = eco != null
                                   && eco.Has(ResourceType.Money, money)
                                   && eco.Has(ResourceType.Crystal, crystal);
-                    enabled = canPay && (owned ? ws.CanEnhanceForUnit(weaponIndex, selectedUnitIndex) : ws.CanCraft(weaponIndex));
-                    if (owned && selectedUnitIndex < 0) cond = "강화 능력치를 받을 영웅을 선택하세요.";
+                    enabled = canPay && (owned ? ws.CanEnhance(weaponIndex) : ws.CanCraft(weaponIndex));
                 }
             }
         }
@@ -421,7 +420,7 @@ public class WorkshopModalController : MonoBehaviour
             : ws.GetCraftCost(wi, out _, out money, out crystal);
         if (!costKnown) return;
 
-        if (!(owned ? ws.CanEnhanceForUnit(wi, selectedUnitIndex) : ws.CanCraft(wi))) return;
+        if (!(owned ? ws.CanEnhance(wi) : ws.CanCraft(wi))) return;
         if (!eco.Has(ResourceType.Money, money) || !eco.Has(ResourceType.Crystal, crystal)) return;
 
         if (money > 0 && !eco.Spend(ResourceType.Money, money)) return;
@@ -431,7 +430,7 @@ public class WorkshopModalController : MonoBehaviour
             return;
         }
 
-        bool ok = owned ? ws.TryEnhance(wi, selectedUnitIndex) : ws.TryCraft(wi);
+        bool ok = owned ? ws.TryEnhance(wi) : ws.TryCraft(wi);
         if (!ok)
         {
             if (money > 0) eco.Add(ResourceType.Money, money);
