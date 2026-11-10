@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class OutpostRegistry : MonoBehaviour
 {
+    public event System.Action Changed;
     private readonly List<Outpost> outposts = new List<Outpost>();
 
     public IReadOnlyList<Outpost> Outposts => outposts;
@@ -18,6 +19,7 @@ public class OutpostRegistry : MonoBehaviour
             return;
 
         outposts.Add(outpost);
+        Changed?.Invoke();
     }
 
     public void Unregister(Outpost outpost)
@@ -25,7 +27,8 @@ public class OutpostRegistry : MonoBehaviour
         if (outpost == null)
             return;
 
-        outposts.Remove(outpost);
+        if (outposts.Remove(outpost))
+            Changed?.Invoke();
     }
 
     [ContextMenu("Rebuild Registry")]
@@ -42,5 +45,6 @@ public class OutpostRegistry : MonoBehaviour
 
             Register(outpost);
         }
+        Changed?.Invoke();
     }
 }

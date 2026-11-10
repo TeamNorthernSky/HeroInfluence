@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class HeroUnionRegistry : MonoBehaviour
 {
+    public event System.Action Changed;
     private readonly List<HeroUnionUnit> heroUnions = new List<HeroUnionUnit>();
 
     public IReadOnlyList<HeroUnionUnit> HeroUnions => heroUnions;
@@ -18,6 +19,7 @@ public class HeroUnionRegistry : MonoBehaviour
             return;
 
         heroUnions.Add(heroUnion);
+        Changed?.Invoke();
     }
 
     public void Unregister(HeroUnionUnit heroUnion)
@@ -25,7 +27,8 @@ public class HeroUnionRegistry : MonoBehaviour
         if (heroUnion == null)
             return;
 
-        heroUnions.Remove(heroUnion);
+        if (heroUnions.Remove(heroUnion))
+            Changed?.Invoke();
     }
 
     [ContextMenu("Refresh Scene HeroUnions")]
@@ -42,6 +45,7 @@ public class HeroUnionRegistry : MonoBehaviour
 
             Register(heroUnion);
         }
+        Changed?.Invoke();
     }
 
     public bool TryGetByZoneId(string zoneId, out HeroUnionUnit heroUnion)

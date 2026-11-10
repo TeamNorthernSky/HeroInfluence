@@ -6,6 +6,7 @@ using UnityEngine.Serialization;
 public class Outpost : MonoBehaviour
 {
     public static event Action<Outpost> OutpostClaimed;
+    public static event Action<Outpost> OutpostStateChanged;
 
     [Header("Data")]
     [FormerlySerializedAs("mineType")]
@@ -107,6 +108,7 @@ public class Outpost : MonoBehaviour
         outpostState = OutpostState.EnemyClaimed;
         ApplyStateMaterial();
         SaveProgressState();
+        OutpostStateChanged?.Invoke(this);
     }
 
     public void ProduceForTurn()
@@ -157,16 +159,22 @@ public class Outpost : MonoBehaviour
     {
         outpostType = OutpostTypeUtility.Normalize(nextOutpostType);
         resourcePerTurn = nextResourcePerTurn;
+        bool changed = outpostState != nextState;
         outpostState = nextState;
         ApplyStateMaterial();
         ApplyCompletionFlagIfPlaying();
+        if (changed)
+            OutpostStateChanged?.Invoke(this);
     }
 
     public void ApplyProgressData(OutpostState nextState)
     {
+        bool changed = outpostState != nextState;
         outpostState = nextState;
         ApplyStateMaterial();
         ApplyCompletionFlagIfPlaying();
+        if (changed)
+            OutpostStateChanged?.Invoke(this);
     }
 
     public void RefreshResolvedEnemyLevel()
@@ -187,6 +195,7 @@ public class Outpost : MonoBehaviour
         outpostState = OutpostState.Claimed;
         ApplyStateMaterial();
         SaveProgressState();
+        OutpostStateChanged?.Invoke(this);
 
         if (notifyClaimed)
             OutpostClaimed?.Invoke(this);

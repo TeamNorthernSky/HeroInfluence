@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class MultiGridOccupant : MonoBehaviour
 {
+    public static event System.Action<MultiGridOccupant> FootprintChanged;
     [Header("References")]
     [SerializeField] private GridManager gridManager;
     private MultiGridOccupantRegistry occupantRegistry;
@@ -174,6 +175,8 @@ public class MultiGridOccupant : MonoBehaviour
 
         foreach (Vector2Int cell in adjacentSet)
             adjacentOuterCells.Add(cell);
+        if (isActiveAndEnabled)
+            FootprintChanged?.Invoke(this);
     }
 
     private bool OccupiesCellInternal(Vector2Int grid)
