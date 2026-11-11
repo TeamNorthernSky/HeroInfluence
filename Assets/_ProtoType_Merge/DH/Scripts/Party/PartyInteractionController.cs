@@ -16,6 +16,7 @@ public class PartyInteractionController
     private readonly Func<Vector2Int> currentGridProvider;
 
     private Coroutine pendingInteractionCoroutine;
+    private ExplorationChatCameraFocus defenderChatFocus;
 
     private bool inputLocked;
     private bool enemyInteractionInProgress;
@@ -264,6 +265,9 @@ public class PartyInteractionController
 
     public void Dispose()
     {
+        ExplorationChatCameraFocus focus = defenderChatFocus;
+        defenderChatFocus = null;
+        if (focus != null) focus.Cancel();
         SceneFadeController.TransitionFailed -= HandleTransitionFailed;
         CancelPendingInteraction();
         IsInputLocked = false;
@@ -382,9 +386,10 @@ public class PartyInteractionController
         CancelPendingInteraction();
         IsInputLocked = true;
         if (!TryShowDefenderCombatChat(
+                villainUnionBase.transform,
                 villainUnionBase.ZoneId,
                 villainUnionBase.DefenderCombatChatId,
-                () => IsInputLocked = false) || !ChatModalController.IsOpen)
+                () => IsInputLocked = false))
         {
             IsInputLocked = false;
             Debug.LogWarning(
@@ -660,9 +665,10 @@ public class PartyInteractionController
         {
             IsInputLocked = true;
             if (!TryShowDefenderCombatChat(
+                    outpost.transform,
                     outpost.ZoneId,
                     outpost.DefenderCombatChatId,
-                    () => IsInputLocked = false) || !ChatModalController.IsOpen)
+                    () => IsInputLocked = false))
             {
                 IsInputLocked = false;
                 Debug.LogWarning(
@@ -694,7 +700,7 @@ public class PartyInteractionController
         IsInputLocked = startedCombat;
     }
 
-    private bool TryShowDefenderCombatChat(string zoneId, int chatId, Action onClosed)
+    private bool TryShowDefenderCombatChat(Transform source, string zoneId, int chatId, Action onClosed)
     {
         if (!TryResolveChatZoneId(zoneId, out int chatZoneId) || chatId <= 0)
             return false;
@@ -703,8 +709,32 @@ public class PartyInteractionController
         if (catalog == null || !catalog.TryGetChatTemplate(chatZoneId, chatId, out DHEventChatTemplate chat) || chat == null)
             return false;
 
-        ChatModalController.Show(chatZoneId, chatId, onClosed);
-        return true;
+        if (chatZoneId != 1 && chatZoneId != 2)
+        {
+            ChatModalController.Show(chatZoneId, chatId, onClosed);
+            return ChatModalController.IsOpen;
+        }
+
+        if (source == null || ownerParty == null || ChatManager.Instance == null || ChatManager.Instance.IsRunning)
+            return false;
+
+        bool finished = false;
+        Action finish = () =>
+        {
+            if (finished) return;
+            finished = true;
+            ExplorationChatCameraFocus focus = defenderChatFocus;
+            defenderChatFocus = null;
+            if (focus != null) focus.Finish();
+            onClosed?.Invoke();
+        };
+        return ExplorationChatCameraFocus.TryBegin(source, ownerParty.transform, () =>
+        {
+            if (ownerParty == null || ChatManager.Instance == null || ChatManager.Instance.IsRunning)
+                return false;
+            ChatModalController.Show(chatZoneId, chatId, finish);
+            return ChatModalController.IsOpen && ChatManager.Instance != null && ChatManager.Instance.IsRunning;
+        }, finish, out defenderChatFocus, focusOnParty: true);
     }
 
     private static bool TryResolveChatZoneId(string zoneId, out int chatZoneId)

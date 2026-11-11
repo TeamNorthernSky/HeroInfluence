@@ -22,6 +22,7 @@ public class MainEventObject : MonoBehaviour
     private bool eventBattleRequestedDuringTrigger;
     private bool waitingForPostBattleChat;
     private Action<MainEventObject> pendingClosedCallback;
+    private ExplorationChatCameraFocus cameraFocus;
 
     public bool WaitingForPostBattleChat => waitingForPostBattleChat;
     public string EventKey => string.IsNullOrWhiteSpace(eventKey) ? name : eventKey.Trim();
@@ -58,6 +59,8 @@ public class MainEventObject : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (cameraFocus != null) cameraFocus.Cancel();
+        cameraFocus = null;
         UnsubscribeEventBattleRequested();
         JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
         DHEventEffectRuntimeManager.Instance?.ClearActiveMainEventSource(EventKey);
@@ -150,21 +153,41 @@ public class MainEventObject : MonoBehaviour
         DHEventEffectRuntimeManager.EnsureInstance().SetActiveMainEventSource(EventKey);
         DHEventBattleRuntimeManager.SetPendingMainEventSource(EventKey);
         JC.BattleTesting.JcArnoldBattlePresentation.SetFixedOrigin(transform, ZoneId, EventKey);
-        ChatModalController.Show(ZoneId, ChatId, HandleChatClosed);
-
-        if (!chatManager.IsRunning)
+        if (!ExplorationChatCameraFocus.TryBegin(transform, party != null ? party.transform : null,
+            OpenChatAfterCameraArrives, CancelCameraChat, out cameraFocus))
         {
-            JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
-            isTriggering = false;
-            eventBattleRequestedDuringTrigger = false;
-            pendingClosedCallback = null;
-            UnsubscribeEventBattleRequested();
-            DHEventEffectRuntimeManager.Instance?.ClearActiveMainEventSource(EventKey);
-            DHEventBattleRuntimeManager.ClearPendingMainEventSource(EventKey);
+            CancelCameraChat();
             return false;
         }
 
         return true;
+    }
+
+    private bool OpenChatAfterCameraArrives()
+    {
+        if (this == null || !isActiveAndEnabled || !isTriggering || IsCompleted() ||
+            ChatManager.Instance == null || ChatManager.Instance.IsRunning)
+            return false;
+
+        ChatModalController.Show(ZoneId, ChatId, HandleChatClosed);
+        return ChatManager.Instance != null && ChatManager.Instance.IsRunning;
+    }
+
+    private void CancelCameraChat()
+    {
+        if (this == null || !isTriggering) return;
+        isTriggering = false;
+        ExplorationChatCameraFocus focus = cameraFocus;
+        cameraFocus = null;
+        if (focus != null) focus.Cancel();
+        JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
+        eventBattleRequestedDuringTrigger = false;
+        UnsubscribeEventBattleRequested();
+        DHEventEffectRuntimeManager.Instance?.ClearActiveMainEventSource(EventKey);
+        DHEventBattleRuntimeManager.ClearPendingMainEventSource(EventKey);
+        Action<MainEventObject> closedCallback = pendingClosedCallback;
+        pendingClosedCallback = null;
+        closedCallback?.Invoke(this);
     }
 
     public void DeactivateByDisableEffect()
@@ -187,6 +210,9 @@ public class MainEventObject : MonoBehaviour
         if (this == null || !Application.isPlaying || !isTriggering)
             return;
 
+        ExplorationChatCameraFocus focus = cameraFocus;
+        cameraFocus = null;
+        if (focus != null) focus.Finish();
         JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
         isTriggering = false;
         UnsubscribeEventBattleRequested();

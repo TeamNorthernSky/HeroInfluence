@@ -9,6 +9,7 @@ public sealed class HeroUnionChatController : MonoBehaviour
     private bool isPlayingChat;
     private string pendingChatKey = string.Empty;
     private ChatManager subscribedChatManager;
+    private ExplorationChatCameraFocus cameraFocus;
     private readonly HashSet<HeroUnionUnit> pendingCaptureChats = new HashSet<HeroUnionUnit>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -31,6 +32,7 @@ public sealed class HeroUnionChatController : MonoBehaviour
 
     private void OnDisable()
     {
+        CancelPendingChatWithoutCompletion();
         pendingCaptureChats.Clear();
         HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionStateChanged;
         SceneFadeController.SceneEntryCompleted -= HandleSceneEntryCompleted;
@@ -147,15 +149,28 @@ public sealed class HeroUnionChatController : MonoBehaviour
         isPlayingChat = true;
         pendingChatKey = chatKey;
         SubscribeToChatManagerEnded(chatManager);
-        ChatModalController.Show(heroUnion.CaptureChatZoneId, chatId, () => HandleChatClosed(chatKey));
-
-        if (!chatManager.IsRunning)
+        PartyRegistry parties = FindFirstObjectByType<PartyRegistry>();
+        Transform party = parties != null && parties.PlayerParty != null ? parties.PlayerParty.transform : null;
+        if (!ExplorationChatCameraFocus.TryBegin(heroUnion.transform, party,
+            () => OpenCaptureChatAfterCameraArrives(heroUnion, chatKey),
+            CancelPendingChatWithoutCompletion, out cameraFocus))
         {
             CancelPendingChatWithoutCompletion();
             return false;
         }
 
         return true;
+    }
+
+    private bool OpenCaptureChatAfterCameraArrives(HeroUnionUnit heroUnion, string chatKey)
+    {
+        if (heroUnion == null || !heroUnion.IsClaimedByHero || !IsExplorationReadyForChat() ||
+            ChatManager.Instance == null || ChatManager.Instance.IsRunning)
+            return false;
+
+        ChatModalController.Show(heroUnion.CaptureChatZoneId, heroUnion.CaptureChatId,
+            () => HandleChatClosed(chatKey));
+        return ChatManager.Instance != null && ChatManager.Instance.IsRunning;
     }
 
     // JC | 2026-11-11 | 기존 탐사 진입·저장 복원 상태를 재사용하여 초기화 도중 대화가 시작되는 것을 막습니다.
@@ -189,6 +204,9 @@ public sealed class HeroUnionChatController : MonoBehaviour
         pendingChatKey = string.Empty;
         isPlayingChat = false;
         UnsubscribeFromChatManagerEnded();
+        ExplorationChatCameraFocus focus = cameraFocus;
+        cameraFocus = null;
+        if (focus != null) focus.Finish();
     }
 
     private void CancelPendingChatWithoutCompletion()
@@ -196,6 +214,9 @@ public sealed class HeroUnionChatController : MonoBehaviour
         pendingChatKey = string.Empty;
         isPlayingChat = false;
         UnsubscribeFromChatManagerEnded();
+        ExplorationChatCameraFocus focus = cameraFocus;
+        cameraFocus = null;
+        if (focus != null) focus.Cancel();
     }
 
     private void SubscribeToChatManagerEnded(ChatManager chatManager)

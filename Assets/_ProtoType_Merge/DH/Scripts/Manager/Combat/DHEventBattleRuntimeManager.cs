@@ -194,7 +194,11 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
     /// <summary>Resume dialogue only: never reapply battle rewards or battle result processing.</summary>
     public static void ResumeCompletedEventChat(GameSaveData.BattleReturnCheckpoint checkpoint)
     {
-        if (checkpoint == null || checkpoint.chatId <= 0) return;
+        if (checkpoint == null || checkpoint.chatId <= 0)
+        {
+            ExplorationChatCameraFocus.RestoreAfterBattle(false);
+            return;
+        }
         var returnScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
         // Loaded event objects have already been hidden by completed-event restoration.
         // Restore only their deferred presentation; do not process the battle a second time.
@@ -214,8 +218,10 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
                 subEvent.CompleteAfterEventBattleVictory(true);
                 subEvent.gameObject.SetActive(true);
             }
+        ExplorationChatCameraFocus cameraFocus = ExplorationChatCameraFocus.RestoreAfterBattle(true);
         ChatModalController.Show(checkpoint.zoneId, checkpoint.chatId, () =>
         {
+            if (cameraFocus != null) cameraFocus.Finish();
             if (!Application.isPlaying || !returnScene.IsValid() || !returnScene.isLoaded)
                 return;
 
@@ -228,6 +234,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
         if (!ChatModalController.IsOpen)
         {
+            if (cameraFocus != null) cameraFocus.Finish();
             FinishDeferredEvents(checkpoint.sourceMainEventKey, checkpoint.sourceSubEventKey, returnScene);
             FinishDeferredEnemy(checkpoint.victoryEnemyPlacementKey);
         }
