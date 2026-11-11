@@ -8,6 +8,8 @@ public sealed class WorldEventCameraFocusController : MonoBehaviour
     private WorldEventObject focusedSource;
     private PartyGridMover focusedParty;
     private QuarterViewCameraFollower cameraFollower;
+    private UnityEngine.SceneManagement.Scene hiddenScene;
+    private bool hasHiddenScene;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void EnsureRuntimeInstance()
@@ -22,6 +24,7 @@ public sealed class WorldEventCameraFocusController : MonoBehaviour
 
     private void OnEnable()
     {
+        UnityEngine.SceneManagement.SceneManager.sceneUnloaded += HandleSceneUnloaded;
         WorldEventObject.EventInteracted += HandleWorldEventInteracted;
 
         DHWorldEventRuntimeManager runtimeManager = DHWorldEventRuntimeManager.EnsureInstance();
@@ -34,6 +37,7 @@ public sealed class WorldEventCameraFocusController : MonoBehaviour
 
     private void OnDisable()
     {
+        UnityEngine.SceneManagement.SceneManager.sceneUnloaded -= HandleSceneUnloaded;
         WorldEventObject.EventInteracted -= HandleWorldEventInteracted;
 
         if (DHWorldEventRuntimeManager.Instance != null)
@@ -59,6 +63,9 @@ public sealed class WorldEventCameraFocusController : MonoBehaviour
         if (pendingSource == null || pendingSource.WorldEventId != request.WorldEventId)
             return;
 
+        hiddenScene = pendingSource.gameObject.scene;
+        hasHiddenScene = true;
+        PartyOcclusionFadeController.SetWorldEventRenderHidden(hiddenScene, true);
         FocusCameraOnNpc(pendingSource);
         focusedSource = pendingSource;
         pendingSource = null;
@@ -86,6 +93,13 @@ public sealed class WorldEventCameraFocusController : MonoBehaviour
 
     private void ReleaseCameraLock(bool recenterOnParty)
     {
+        // Restore normal fading before the camera starts its return/zoom-out movement.
+        if (hasHiddenScene)
+        {
+            PartyOcclusionFadeController.SetWorldEventRenderHidden(hiddenScene, false);
+            hasHiddenScene = false;
+        }
+
         if (cameraFollower == null)
             cameraFollower = ResolveCameraFollower();
 
@@ -102,6 +116,18 @@ public sealed class WorldEventCameraFocusController : MonoBehaviour
         pendingSource = null;
         focusedSource = null;
         focusedParty = null;
+    }
+
+    private void HandleSceneUnloaded(UnityEngine.SceneManagement.Scene scene)
+    {
+        if (!hasHiddenScene || hiddenScene != scene)
+            return;
+
+        hasHiddenScene = false;
+        pendingSource = null;
+        focusedSource = null;
+        focusedParty = null;
+        cameraFollower = null;
     }
 
     private static QuarterViewCameraFollower ResolveCameraFollower()

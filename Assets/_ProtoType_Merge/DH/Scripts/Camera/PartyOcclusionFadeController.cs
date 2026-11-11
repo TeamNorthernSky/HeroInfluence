@@ -5,6 +5,29 @@ public class PartyOcclusionFadeController : MonoBehaviour
 {
     private static readonly HashSet<PartyOcclusionFadeController> ActiveControllers = new HashSet<PartyOcclusionFadeController>();
 
+    public static void SetWorldEventRenderHidden(UnityEngine.SceneManagement.Scene scene, bool hidden)
+    {
+        foreach (PartyOcclusionFadeController controller in ActiveControllers)
+        {
+            if (controller == null || !controller.isActiveAndEnabled || controller.gameObject.scene != scene)
+                continue;
+
+            controller.SetWorldEventRenderHidden(hidden);
+        }
+    }
+
+    public static bool IsWorldEventRendererHidden(Renderer renderer)
+    {
+        if (renderer == null)
+            return false;
+
+        foreach (PartyOcclusionFadeController controller in ActiveControllers)
+            if (controller != null && controller.hiddenRenderers.ContainsKey(renderer))
+                return true;
+
+        return false;
+    }
+
     public static bool TryHasFadedObjects(UnityEngine.SceneManagement.Scene scene, out bool hasFaded)
     {
         bool found = false;
@@ -52,6 +75,60 @@ public class PartyOcclusionFadeController : MonoBehaviour
     private readonly HashSet<PartyOcclusionFadeTarget> currentTargetOccluders = new HashSet<PartyOcclusionFadeTarget>();
     private readonly JcBuildingMeshOcclusion meshOcclusion = new JcBuildingMeshOcclusion();
     private float nextCheckTime;
+    private bool hideForWorldEvent;
+    private readonly HashSet<Component> hiddenSources = new HashSet<Component>();
+    private readonly Dictionary<Renderer, bool> hiddenRenderers = new Dictionary<Renderer, bool>();
+    private readonly List<Renderer> visibilityRenderers = new List<Renderer>();
+
+    private void SetWorldEventRenderHidden(bool hidden)
+    {
+        if (hideForWorldEvent == hidden)
+            return;
+
+        hideForWorldEvent = hidden;
+        if (hidden)
+        {
+            foreach (DecorativeObjectPlacement source in fadedObjects)
+                if (source != null) HideWorldEventRenderers(source);
+            foreach (PartyOcclusionFadeTarget source in fadedTargets)
+                if (source != null) HideWorldEventRenderers(source);
+        }
+        else
+            RestoreWorldEventVisibility();
+
+        RefreshOcclusion();
+        nextCheckTime = Time.unscaledTime + checkInterval;
+    }
+
+    private void HideWorldEventRenderers(Component source)
+    {
+        if (!hideForWorldEvent || !hiddenSources.Add(source))
+            return;
+
+        source.GetComponentsInChildren(true, visibilityRenderers);
+        foreach (Renderer renderer in visibilityRenderers)
+        {
+            if (renderer == null || (!(renderer is MeshRenderer) && !(renderer is SkinnedMeshRenderer)))
+                continue;
+
+            if (!hiddenRenderers.ContainsKey(renderer))
+                hiddenRenderers.Add(renderer, renderer.forceRenderingOff);
+
+            // Keep enabled/bounds intact so the normal occlusion test still sees this building.
+            renderer.forceRenderingOff = true;
+        }
+        visibilityRenderers.Clear();
+    }
+
+    private void RestoreWorldEventVisibility()
+    {
+        foreach (KeyValuePair<Renderer, bool> entry in hiddenRenderers)
+            if (entry.Key != null)
+                entry.Key.forceRenderingOff = entry.Value;
+
+        hiddenRenderers.Clear();
+        hiddenSources.Clear();
+    }
 
     /// <summary>보조 판정 메시 추가·제거 후 캐시만 갱신합니다. 교차 판정과 투명화 규칙은 유지합니다.</summary>
     public void RefreshOcclusionMeshes()
@@ -76,6 +153,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
     private void OnDisable()
     {
+        hideForWorldEvent = false;
         ActiveControllers.Remove(this);
         UnsubscribeRegistry();
         RestoreAll();
@@ -164,6 +242,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
             currentOccluders.Add(decorativeObject);
             decorativeObject.SetOcclusionFadeAlpha(occludedAlpha, transparentOverrideMaterial);
+            HideWorldEventRenderers(decorativeObject);
         }
     }
 
@@ -189,6 +268,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
             currentTargetOccluders.Add(target);
             target.SetOcclusionFadeAlpha(occludedAlpha, transparentOverrideMaterial);
+            HideWorldEventRenderers(target);
         }
     }
 
@@ -216,6 +296,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
     private void RestoreAll()
     {
+        RestoreWorldEventVisibility();
         foreach (DecorativeObjectPlacement decorativeObject in fadedObjects)
         {
             if (decorativeObject == null)

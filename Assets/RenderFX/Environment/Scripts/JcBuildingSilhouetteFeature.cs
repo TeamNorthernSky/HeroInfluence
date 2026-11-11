@@ -357,7 +357,8 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
                     int pass = overrideMaterial.FindPass("SilhouetteMask");
                     if (pass >= 0) foreach (var target in explicitRenderers)
                     {
-                        if (target == null || !target.enabled || !target.gameObject.activeInHierarchy) continue;
+                        if (target == null || !target.enabled || !target.gameObject.activeInHierarchy ||
+                            PartyOcclusionFadeController.IsWorldEventRendererHidden(target)) continue;
                         // 방문 표식(SpriteRenderer) 등은 건물 메시가 아니다.
                         // Unity의 누락된 Component에는 ?. 대신 명시적 존재 검사를 사용한다.
                         Mesh mesh = null;
