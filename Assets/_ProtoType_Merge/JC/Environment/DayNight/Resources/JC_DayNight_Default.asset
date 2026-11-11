@@ -14,11 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skyShader: {fileID: 4800000, guid: ef5625516e71dc34bb9e649c14f50935, type: 3}
   startHour: 8.5
-  continuousSunArc: 1
-  solarNoonElevation: 40
-  mountainShadowHeight: 0.5
-  leftMountainShadowHeight: 0.15
-  solarArcLatitude: 37.5
   hoursPerTurn: 6
   transitionSeconds: 2
   sunriseHour: 6.5
@@ -185,7 +180,7 @@ MonoBehaviour:
     reflectionTint: {r: 0.62, g: 0.78, b: 1, a: 1}
     reflectionMultiplier: 1
     characterFill: 0.228
-    occludedPartyClarity: 90
+    occludedPartyClarity: 55
     partyFillEnabled: 1
     npcFillEnabled: 1
     npcFill: 0.21
@@ -198,3 +193,8 @@ MonoBehaviour:
     screenContrast: 3
     screenExposure: 0.12
     waterMultiplier: 0.58
+  continuousSunArc: 1
+  solarNoonElevation: 40
+  solarArcLatitude: 37.5
+  mountainShadowHeight: 0.5
+  leftMountainShadowHeight: 0.15
