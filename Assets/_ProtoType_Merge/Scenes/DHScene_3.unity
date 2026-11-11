@@ -8673,6 +8673,9 @@ MonoBehaviour:
   visitorIndicatorLocalEulerAngles: {x: 45, y: 0, z: 0}
   visitorIndicatorLocalScale: {x: 0.06, y: 0.06, z: 0.06}
   logWireOnce: 1
+  heroUnionRegistry: {fileID: 1889454946}
+  partyRegistry: {fileID: 1919126566}
+  indicatorAnimation: {fileID: 824261110000000003}
 --- !u!1 &76588658
 GameObject:
   m_ObjectHideFlags: 0
@@ -26139,6 +26142,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 824261110000000002}
   - {fileID: 826611041100000002}
   - {fileID: 824261026000000002}
   - {fileID: 1436007284}
@@ -285987,6 +285991,51 @@ MonoBehaviour:
   materialTemplate: {fileID: 0}
   generatedRootName: Generated Tile Meshes
   markChunksReflectionProbeStatic: 1
+--- !u!1 &824261110000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 824261110000000002}
+  - component: {fileID: 824261110000000003}
+  m_Layer: 0
+  m_Name: JC_AssociationVisitIndicator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &824261110000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 824261110000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 206211936}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &824261110000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 824261110000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c236b375ed649c8b4a4e4b1c7f5ae0d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  profile: {fileID: 11400000, guid: 23bf4bd8339743379fc49c2a0d5f40d5, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

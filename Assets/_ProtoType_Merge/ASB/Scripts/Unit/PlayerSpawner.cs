@@ -276,6 +276,19 @@ public class PlayerSpawner : MonoBehaviour
         return go;
     }
 
+    // JC | 2026-11-10 | 시뮬레이션 진형 확정 후 새 셀 기준으로 소환 관리표를 재등록합니다. 영속 파티 배치는 건드리지 않습니다.
+    public void RefreshSimulationFormation()
+    {
+        if (CombatContext.Instance == null || !CombatContext.Instance.IsSimulation) return;
+        spawnedByGrid.Clear();
+        foreach (var pair in gridCellsByNumber)
+        {
+            if (pair.Value == null) continue;
+            var unit = pair.Value.GetComponentInChildren<BattleCharactor>(true);
+            if (unit != null) spawnedByGrid[pair.Key] = unit.gameObject;
+        }
+    }
+
     private void ClearGrid(int gridNumber)
     {
         if (spawnedByGrid.TryGetValue(gridNumber, out var existing) && existing != null)

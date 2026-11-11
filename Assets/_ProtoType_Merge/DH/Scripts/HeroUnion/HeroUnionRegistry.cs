@@ -4,6 +4,11 @@ using UnityEngine;
 public class HeroUnionRegistry : MonoBehaviour
 {
     public event System.Action Changed;
+    // JC | 2026-11-10 | 기존 Changed 소비자를 유지하며 창문 갱신에 필요한 대상/재구축/등록부 수명 알림만 추가합니다.
+    public event System.Action<HeroUnionUnit> HeroUnionRegistered;
+    public event System.Action<HeroUnionUnit> HeroUnionUnregistered;
+    public event System.Action<HeroUnionRegistry> Rebuilt;
+    public static event System.Action<HeroUnionRegistry> LifecycleChanged;
     private readonly List<HeroUnionUnit> heroUnions = new List<HeroUnionUnit>();
 
     public IReadOnlyList<HeroUnionUnit> HeroUnions => heroUnions;
@@ -13,6 +18,11 @@ public class HeroUnionRegistry : MonoBehaviour
         RefreshSceneHeroUnions();
     }
 
+    // JC | 2026-11-10 | 등록부 지연 생성·교체 때만 구독을 재확인하도록 수명 변화를 알립니다.
+    private void OnEnable() => LifecycleChanged?.Invoke(this);
+    private void OnDisable() => LifecycleChanged?.Invoke(this);
+    private void OnDestroy() => LifecycleChanged?.Invoke(this);
+
     public void Register(HeroUnionUnit heroUnion)
     {
         if (heroUnion == null || heroUnions.Contains(heroUnion))
@@ -20,6 +30,8 @@ public class HeroUnionRegistry : MonoBehaviour
 
         heroUnions.Add(heroUnion);
         Changed?.Invoke();
+        // JC | 2026-11-10 | 기존 알림 뒤에 실제 추가된 협회만 전달합니다.
+        HeroUnionRegistered?.Invoke(heroUnion);
     }
 
     public void Unregister(HeroUnionUnit heroUnion)
@@ -28,7 +40,11 @@ public class HeroUnionRegistry : MonoBehaviour
             return;
 
         if (heroUnions.Remove(heroUnion))
+        {
             Changed?.Invoke();
+            // JC | 2026-11-10 | 비활성화 해제와 파괴를 구분하는 소비자가 대상을 확인할 수 있게 합니다.
+            HeroUnionUnregistered?.Invoke(heroUnion);
+        }
     }
 
     [ContextMenu("Refresh Scene HeroUnions")]
@@ -46,6 +62,8 @@ public class HeroUnionRegistry : MonoBehaviour
             Register(heroUnion);
         }
         Changed?.Invoke();
+        // JC | 2026-11-10 | 결과가 비어 있어도 재구축 완료를 통지하고 기존 Changed 계약은 보존합니다.
+        Rebuilt?.Invoke(this);
     }
 
     public bool TryGetByZoneId(string zoneId, out HeroUnionUnit heroUnion)

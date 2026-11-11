@@ -8,7 +8,8 @@ public static class WorldInputGate
     // 적 턴이 아닌 짧은 틈(씬 전환 직후)에도 탐사 인터랙션이 새는 버그 방지.
     public static bool IsTurnResolving { get; set; }
 
-    public static bool IsBlocked => ModalManager.HasAny || IsTurnResolving || GateCameraFocusController.IsBusy || JC.Environment.JcDayNightController.IsTransitioning
+    // JC | 2026-11-10 | 씬 페이드는 독립 잠금 조건으로 추가하여 기존 모달·턴 잠금의 소유권을 유지합니다.
+    public static bool IsBlocked => SceneFadeController.IsInputBlocked || ModalManager.HasAny || IsTurnResolving || GateCameraFocusController.IsBusy || JC.Environment.JcDayNightController.IsTransitioning
         || !JcPointerInput.CanControl || !JcPointerInput.Inside;
     // 미래 확장: || IsCinematicPlaying || IsExternalPauseActive ...
 }

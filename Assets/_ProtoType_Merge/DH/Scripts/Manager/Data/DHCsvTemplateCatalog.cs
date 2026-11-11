@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -490,6 +490,15 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         EnsureLoaded();
         return new List<DHEnemyGroupTemplate>(enemyGroupLookup.Values);
+    }
+
+    // JC | 2026-11-10 | 시뮬레이션 선택 목록도 원본 카탈로그를 조회합니다. 목록만 복사하며 호출자는 템플릿을 변경하지 않습니다.
+    public List<EnemyData> GetAllEnemyTemplates()
+    {
+        EnsureLoaded();
+        var result = new List<EnemyData>(enemyTemplateLookup.Values);
+        result.Sort((a, b) => string.CompareOrdinal(a.Index, b.Index));
+        return result;
     }
 
     public List<DHPlayerUnitTemplate> GetAllPlayerUnitTemplates()

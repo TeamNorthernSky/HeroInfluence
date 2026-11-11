@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace JC.BattleTesting.Editor
 {
-    // JC | 2026-11-06 | 전투를 실행하지 않고 은행의 실제 배경/프로필과 진형 좌표로 카메라를 저작합니다.
+    // JC | 2026-11-11 | 기존 은행 촬영 기준 무대를 보존하며 저장된 정본1은 모든 전투에서 공유합니다.
     // 임시 편집 씬만 소유하며 원본 씬·카탈로그·재질·조명 프로필은 저장하지 않습니다.
     public sealed class JcBankSkillCameraWindow : EditorWindow
     {
@@ -43,8 +43,8 @@ namespace JC.BattleTesting.Editor
         Vector2 scroll;
         string error;
 
-        [MenuItem("JC/은행/블랙불릿 스킬 카메라 편집")]
-        public static void Open() => GetWindow<JcBankSkillCameraWindow>("은행 스킬 카메라");
+        [MenuItem("JC/전투/블랙불릿 정본1 촬영 툴")]
+        public static void Open() => GetWindow<JcBankSkillCameraWindow>("블랙불릿 정본1");
 
         void OnEnable()
         {
@@ -78,7 +78,7 @@ namespace JC.BattleTesting.Editor
             {
                 if (!editCamera)
                 {
-                    if (GUILayout.Button(Hint("은행 편집 미리보기 열기", "은행 배경과 실제 전투 그리드 위치의 크기 참고용 마커를 별도 임시 씬에 표시합니다. 원본 씬은 보존합니다.")))
+                    if (GUILayout.Button(Hint("정본1 촬영 무대 열기", "은행 배경과 실제 전투 그리드 위치의 크기 참고용 마커를 별도 임시 씬에 표시합니다. 원본 씬은 보존합니다.")))
                     {
                         try { BuildPreview(); error = null; }
                         catch (Exception e) { error = e.Message; ClosePreview(); Debug.LogException(e); }
@@ -95,14 +95,14 @@ namespace JC.BattleTesting.Editor
         void DrawControls()
         {
             using (new EditorGUI.DisabledScope(true))
-                EditorGUILayout.ObjectField(Hint("공유 저장 프로필", "본게임 은행전과 BankTestScene이 함께 읽는 카메라 프로필입니다."), source, typeof(JcBankSkillCameraProfile), false);
+                EditorGUILayout.ObjectField(Hint("공유 저장 프로필", "모든 전투가 정본1 선택 시 공유하는 촬영 프로필입니다. 미리보기는 기존 은행 기준 무대를 사용합니다."), source, typeof(JcBankSkillCameraProfile), false);
             int next = EditorGUILayout.Popup(Hint("편집할 스킬", "선택을 바꾸면 해당 스킬의 저장 구도를 불러옵니다. 저장 전 카메라 조정값은 버려집니다."), slot, Slots);
             if (next != slot) { slot = next; LoadShot(); }
             int nextTarget = EditorGUILayout.Popup(Hint("공격할 타겟 칸", "노란색으로 강조한 적 칸의 구도를 편집합니다. 선택 변경 전에 조정값을 저장하세요."), targetSlot, Targets);
             if (nextTarget != targetSlot) { targetSlot = nextTarget; LoadShot(); }
             var saved = source.GetSlot(slot, targetSlot);
             EditorGUILayout.LabelField("저장 대상", Slots[slot].text + " / " + Targets[targetSlot].text);
-            EditorGUILayout.LabelField("현재 적용 상태", saved.enabled ? "직접 저장 구도 사용" : "기존 자동 연출 사용 · 저장하면 활성화");
+            EditorGUILayout.LabelField("적용 범위", "정본1을 선택한 모든 전투 · 공유 구도");
             if (GUILayout.Button(Hint("기본 카메라 구도 복원", "공통 기본 A뷰와 은행 X 이동량으로 복원합니다. 스킬 저장값은 변경하지 않습니다."))) RestoreBase();
             if (GUILayout.Button(Hint("선택 스킬·타겟 저장 구도 다시 불러오기", "현재 임시 조정을 버리고 선택 스킬·타겟의 저장 위치·회전·시야각으로 돌아갑니다."))) LoadShot();
             DrawCopyControls();
@@ -140,16 +140,11 @@ namespace JC.BattleTesting.Editor
                 editCamera.transform.SetPositionAndRotation(position, Quaternion.Euler(rotation));
                 editCamera.fieldOfView = fov;
             }
-            if (GUILayout.Button(Hint("현재 카메라 → 선택 스킬·타겟에 저장 · 사용", "선택한 스킬과 적 칸의 조합 한 개만 저장하고 활성화합니다. 나머지 23개 구도와 기본뷰·재질·조명은 유지합니다. 다음 공격 시작부터 반영합니다.")))
+            if (GUILayout.Button(Hint("현재 카메라 → 선택 스킬·타겟에 저장", "선택한 스킬과 적 칸의 조합 한 개만 저장합니다. 나머지 23개 구도와 기본뷰·재질·조명은 유지합니다. 다음 공격 시작부터 반영합니다.")))
             {
                 try { SaveShot(); error = null; }
                 catch (Exception e) { error = e.Message; }
             }
-            using (new EditorGUI.DisabledScope(!saved.enabled))
-                if (GUILayout.Button(Hint("선택 스킬·타겟의 저장 구도 사용 중지", "저장 위치는 보존하고 이 스킬·타겟 조합만 기존 자동 카메라로 돌립니다. 즉시 프로필에 저장됩니다.")))
-                {
-                    Undo.RecordObject(source, "은행 스킬 저장 구도 해제"); saved.enabled = false; SaveProfile();
-                }
             guides = EditorGUILayout.Toggle(Hint("HUD 참고 영역 표시", "좌측 약 21%, 우측 약 12%의 HUD 위치 참고 표시입니다. 카메라를 강제로 이동하거나 저장값을 보정하지 않습니다."), guides);
             bool show = EditorGUILayout.Toggle(Hint("전투진형 크기 마커 표시", "본게임 그리드의 모든 배치 가능 칸을 표시합니다. 실제 캐릭터·이펙트·현재 적 편성을 재생하는 기능은 아닙니다."), markers.activeSelf);
             if (show != markers.activeSelf) markers.SetActive(show);
@@ -202,7 +197,7 @@ namespace JC.BattleTesting.Editor
             if (count > 0)
                 EditorGUILayout.HelpBox("원본: " + Slots[copyFromSkill].text + "\n덮어쓸 대상: " + string.Join(", ", Enumerable.Range(0, 4).Where(i => (mask & (1 << i)) != 0).Select(i => (i + 1) + "번 스킬")) + "\n아래 버튼은 대상의 6칸 전체를 즉시 저장합니다. Unity 실행 취소(Ctrl+Z)를 지원합니다.", MessageType.Info);
             using (new EditorGUI.DisabledScope(count == 0))
-                if (GUILayout.Button(Hint("선택한 " + count + "개 스킬의 6칸 덮어쓰기 · 저장", "원본의 6칸을 같은 타겟 칸끼리 복사하고 즉시 저장합니다. 위치·회전·FOV·원근감 배율/기준점·사용 여부가 포함됩니다. 선택하지 않은 스킬과 원본은 보존합니다.")))
+                if (GUILayout.Button(Hint("선택한 " + count + "개 스킬의 6칸 덮어쓰기 · 저장", "원본의 6칸을 같은 타겟 칸끼리 복사하고 즉시 저장합니다. 위치·회전·FOV·원근감 배율/기준점가 포함됩니다. 선택하지 않은 스킬과 원본은 보존합니다.")))
                 {
                     try { CopySkillTargets(copyFromSkill, mask); error = null; }
                     catch (Exception e) { error = e.Message; }
@@ -282,7 +277,7 @@ namespace JC.BattleTesting.Editor
         public void SaveShot()
         {
             // JC | 2026-11-06 | 명시 저장만 원본에 반영하며 선택한 스킬×타겟 조합만 저장하고 다른 23개 구도는 덮어쓰지 않습니다.
-            var draft = CaptureDraft(); draft.enabled = true;
+            var draft = CaptureDraft();
             Undo.RecordObject(source, "은행 블랙불릿 스킬 구도 저장");
             JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(draft), source.GetSlot(slot, targetSlot));
             SaveProfile();
@@ -293,7 +288,10 @@ namespace JC.BattleTesting.Editor
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("에디트 모드에서만 열 수 있습니다.");
             ClosePreview();
-            bank = JcBankBattleBackground.Load(); source = bank ? bank.skillCameraProfile : null;
+            // JC | 2026-11-11 | 촬영 무대만 은행 기준을 유지하고 저장 연결은 전전투 공통 프로필에서 가져옵니다.
+            bank = JcBankBattleBackground.Load();
+            var shared = Resources.Load<JcBlackBulletCameraProfile>("JC_BlackBulletCamera_Default");
+            source = shared ? shared.authoredProfile : null;
             if (!bank || !bank.visualPrefab || !source || !bank.materialProfile || !bank.environmentProfile)
                 throw new InvalidOperationException("은행 배경·카메라·재질·조명 프로필 연결을 확인해 주세요.");
             // JC | 2026-11-06 | 원본 전투씬은 읽기용으로 추가 열어 진형 좌표만 복사합니다.

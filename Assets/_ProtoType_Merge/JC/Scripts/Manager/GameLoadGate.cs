@@ -142,10 +142,12 @@ public class GameLoadGate : MonoBehaviour
             Debug.Log("[GameLoadGate] 이어하기 복원 완료.");
         }
 
-#if !UNITY_EDITOR
-        // Build only: party data is restored/bootstrapped; keep the loading fade closed.
+        // JC | 2026-11-11 | 에디터·빌드 모두 파티 복원 후 같은 시각 준비를 기다려 씬 진입 순서를 검증합니다.
         yield return BattleEffectWarmup.PrepareParty();
-#endif
+
+        // JC | 2026-11-11 | 여러 프레임의 준비 중 진입 세션이 교체되면 이전 작업은 활성 씬과 방문 상태를 바꾸지 않습니다.
+        if (entryOwner != null && entryOwner.ExplorationEntryVersion != entryVersion)
+            yield break;
 
         // HeroUnionHQVisitDetector 즉시 재평가 (이벤트 기반 전환 후)
         var detector = FindFirstObjectByType<HeroUnionHQVisitDetector>();

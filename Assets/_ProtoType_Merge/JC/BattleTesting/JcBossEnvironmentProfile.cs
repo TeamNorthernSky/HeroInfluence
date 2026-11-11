@@ -54,7 +54,9 @@ namespace JC.BattleTesting
         [InspectorName("추가 라이트 목록")] public List<LocalLight> lights = new List<LocalLight>();
         // JC | 2026-11-09 | 밝기 증폭이나 고속 반복 없이 이벤트마다 한 번만 옅은 보라색으로 왕복합니다.
         [Header("전투 조명 · 완만한 색 변화")]
-        [InspectorName("보라색 색 변화 사용")] public bool battlePulseEnabled = true;
+        // JC | 2026-11-10 | 검수 전 행동 조명은 본게임에서 끄고, 공유 프로필의 테스트 설정은 별도로 유지합니다.
+        [InspectorName("본게임 · 행동 조명 효과")] public bool battlePulseEnabled = false;
+        [InspectorName("보스 테스트 · 행동 조명 효과")] public bool battlePulseInBossTestEnabled = true;
         [InspectorName("변화 색상"), ColorUsage(false)] public Color battlePulseColor = new Color(.65f,.45f,1);
         [InspectorName("색 혼합량"), Range(0,.3f)] public float battlePulseMix = .22f;
         [InspectorName("왕복 시간 · 실제 초"), Min(1.2f)] public float battlePulseSeconds = 1.4f;

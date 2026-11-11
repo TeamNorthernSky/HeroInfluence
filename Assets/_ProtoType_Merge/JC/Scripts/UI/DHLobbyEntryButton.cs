@@ -17,11 +17,13 @@ public class DHLobbyEntryButton : MonoBehaviour
         ? GameSceneManager.Instance.LobbyScene
         : "HQLobbyScene";
 
-    [Tooltip("PartyGridMover 캐시 재탐색 주기(초). 파티 생성/소멸 빈도 따라 조정")]
+    // JC | 2026-11-10 | 기존 갱신 간격·직렬화 필드는 유지하고 단일 플레이어 참조만 갱신합니다.
+    [Tooltip("등록부의 단일 플레이어 파티 참조 갱신 주기(초)")]
     [SerializeField] private float moverRefreshInterval = 0.5f;
 
     private Button button;
-    private PartyGridMover[] cachedMovers;
+    private PartyGridMover cachedMover;
+    private PartyRegistry partyRegistry;
     private float nextMoverRefreshTime;
 
     private void Awake()
@@ -59,22 +61,20 @@ public class DHLobbyEntryButton : MonoBehaviour
         HQVisitState state = HQVisitState.Instance;
         if (state == null || !state.HasVisitingParty) return false;
 
-        if (cachedMovers != null)
-        {
-            for (int i = 0; i < cachedMovers.Length; i++)
-            {
-                PartyGridMover mover = cachedMovers[i];
-                if (mover != null && mover.IsMoving)
-                    return false;
-            }
-        }
+        // JC | 2026-11-10 | 기존에 캐시한 파티의 이동 상태를 읽는 조건을 단일 파티에 그대로 적용합니다.
+        if (cachedMover != null && cachedMover.IsMoving) return false;
 
         return true;
     }
 
     private void RefreshMovers()
     {
-        cachedMovers = FindObjectsByType<PartyGridMover>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        // JC | 2026-11-10 | 전체 배열 생성을 없애고 등록 전에는 기존 검색을 단일 대상으로 유지합니다.
+        if (partyRegistry == null || !partyRegistry.gameObject.activeInHierarchy)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        cachedMover = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (cachedMover == null) cachedMover = FindFirstObjectByType<PartyGridMover>();
+        if (cachedMover != null && !cachedMover.gameObject.activeInHierarchy) cachedMover = null;
         nextMoverRefreshTime = Time.unscaledTime + Mathf.Max(0.05f, moverRefreshInterval);
     }
 

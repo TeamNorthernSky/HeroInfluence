@@ -14,6 +14,20 @@ namespace JC.BattleTesting
         float nextLightingLookup;
         double pulseStarted = double.NegativeInfinity, nextPulseAllowed = double.NegativeInfinity;
 
+        // JC | 2026-11-10 | 테스트도 TmpBattleScene으로 이동하므로 씬 이름 대신 기존 보스 테스트 진입 정보를 읽습니다.
+        public bool IsBossLightingTest
+        {
+            get
+            {
+                var context = CombatContext.Instance;
+                return context && context.IsSimulation && context.SimulationPartyId == "JC_BOSS_PREVIEW";
+            }
+        }
+
+        // JC | 2026-11-10 | 행동에 따른 색 변화만 분리합니다. 기본 조명과 보스 강조 스폿의 조준은 유지합니다.
+        public bool BattlePulseEnabled => Draft &&
+            (IsBossLightingTest ? Draft.battlePulseInBossTestEnabled : Draft.battlePulseEnabled);
+
         void LateUpdate()
         {
             if (!Application.isPlaying || !initialized || !Draft || !Stage || SceneManager.GetActiveScene() != gameObject.scene) return;
@@ -91,7 +105,7 @@ namespace JC.BattleTesting
         // JC | 2026-11-09 | 배속과 독립된 실제 시간, 겹침 무시, 최소 4초 간격으로 반복 점멸을 방지합니다.
         void TriggerBattlePulse(double now)
         {
-            if (!isActiveAndEnabled || !Draft || !Draft.battlePulseEnabled || lightingBattleEnded || now < nextPulseAllowed) return;
+            if (!isActiveAndEnabled || !BattlePulseEnabled || lightingBattleEnded || now < nextPulseAllowed) return;
             pulseStarted = now;
             nextPulseAllowed = now + Mathf.Max(4, Draft.battlePulseInterval, Draft.battlePulseSeconds);
         }
@@ -106,7 +120,7 @@ namespace JC.BattleTesting
         void ApplyBattleLighting(double now)
         {
             if (!Draft || Draft.lights == null) return;
-            if (!Draft.battlePulseEnabled) pulseStarted = double.NegativeInfinity;
+            if (!BattlePulseEnabled) pulseStarted = double.NegativeInfinity;
             float mix = BattlePulseEnvelope(now-pulseStarted,Draft.battlePulseSeconds) * Mathf.Clamp(Draft.battlePulseMix,0,.3f);
             var violet = Draft.battlePulseColor;
             violet = new Color(Mathf.Clamp01(violet.r),Mathf.Clamp01(violet.g),Mathf.Clamp01(violet.b),1);
