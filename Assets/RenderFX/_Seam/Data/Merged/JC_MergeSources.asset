@@ -27,4 +27,4 @@ MonoBehaviour:
   mergedRegistry: {fileID: 11400000, guid: cd76adeeba9fadc43a41cdd3f68fcd6e, type: 2}
   sourceFingerprint: 52A5B22C795A
   lastMergedAt: 2026-10-23 10:43:56
-  warnWhenStale: 1
+  warnWhenStale: 0

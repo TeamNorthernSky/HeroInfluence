@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee34dc7de4f748e5a50b179cde2c129c, type: 3}
+  m_Name: JC_AssociationVisitIndicator
+  m_EditorClassIdentifier: 
+  animate: 1
+  growSeconds: 0.5
+  shrinkSeconds: 0.5
+  minimumScale: 0.15
+  maximumScale: 1
+  riseHeightRatio: 0.1
+  tipPivot: {x: 0.463, y: 0.002}
+  floating: 1
+  floatPeriod: 1.6
+  floatHeightRatio: 0.03
+  unscaledTime: 1

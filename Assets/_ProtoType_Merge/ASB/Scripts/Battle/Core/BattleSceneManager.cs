@@ -526,11 +526,10 @@ public class BattleSceneManager : MonoBehaviour
         PresentationTimelineWarmup.Run(battleFlowManager != null && battleFlowManager.BattleManager != null
             ? battleFlowManager.BattleManager.PresentationCatalog : null, allUnits);
 
-#if !UNITY_EDITOR
+        // JC | 2026-11-11 | 기존 JC 시각 준비를 에디터·빌드 공통으로 실행하며 ASB 전투 초기화 순서는 유지합니다.
         IsVisualPreparationPending = true;
         try { yield return BattleEffectWarmup.PrepareBattle(allUnits); }
         finally { IsVisualPreparationPending = false; }
-#endif
 
         // Flow는 먼저 참가자만 초기화하고 멈춰 둔다. TutorialBattleDirector가 첫 턴 이벤트보다
         // 먼저 구독하고 입장 단계를 실행한 다음, 공통 전투 루프를 한 번만 시작한다.

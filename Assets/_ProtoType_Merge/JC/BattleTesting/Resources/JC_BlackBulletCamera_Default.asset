@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8bab770c9f940aca6b86ac6f4e30093, type: 3}
+  m_Name: JC_BlackBulletCamera_Default
+  m_EditorClassIdentifier: 
+  canon: 2
+  authoredProfile: {fileID: 11400000, guid: 0167af58bdb2461393c70152b8794466, type: 2}
+  referenceCamera: {fileID: 11400000, guid: 48e3555d012049dc8481df709abc9958, type: 2}
+  referencePlayerOrigin: {x: 0, y: 0.3, z: -6}
+  transitionSeconds: 0.35
+  perspectiveStrength: 1
+  edgeMarginPixels: 20
+  panFraction: {x: 0.08, y: 0.04}
+  maximumFov: 110
+  uiInsets: {x: 0.02, y: 0.15, z: 0.04, w: 0.06}
+  skill1ImpactRadius: 2
+  skill2ImpactRadius: 2
+  skill3ImpactRadius: 2.5
+  skill4ImpactRadius: 2.5
+  projectileRadius: 0.4
+  targetMotionMargin: 0.35
+  damageDigits: 6
+  rightLayoutHeightRatio: 0.8
+  referenceAngles: {x: 24.191, y: -29}
+  pairCenterX: 0.54
+  pairHorizontalGap: -0.02
+  adaptiveTravel: 8
+  adaptiveAngles: {x: 10, y: 24}
+  nearHeightRatio: 0.9
+  heightDistanceRange: {x: 8, y: 14.58}
+  crossColumnPosition: {x: 8.25, y: -17.86}
+  crossColumnAngles: {x: 26.066, y: -30.6}
+  crossColumnCenter: {x: 3.3, y: -0.01}

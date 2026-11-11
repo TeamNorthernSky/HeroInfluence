@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace JC.BattleTesting.Editor
@@ -18,7 +18,8 @@ namespace JC.BattleTesting.Editor
             draft.Update();
             EditorGUILayout.HelpBox("수정값은 현재 전투에 바로 반영됩니다. 플레이 종료 후에도 유지하려면 프로필에 저장하세요.",MessageType.Info);
             EditorGUILayout.PropertyField(draft.FindProperty("viewA"),new GUIContent("보스전 기본 카메라"),true);
-            EditorGUILayout.PropertyField(draft.FindProperty("aim"),true);
+            // JC | 2026-11-11 | 스킬 설정은 전전투 공통 오브젝트에서만 편집해 중복 제어를 없앱니다.
+            EditorGUILayout.HelpBox("블랙불릿 정본 선택·구도는 JC_BlackBulletCamera에서 조절합니다. 이곳은 보스 기본뷰와 무대 경계 전용입니다. 블랙불릿 공격은 선택한 정본을 우선하여 무대 밖 노출을 허용합니다.", MessageType.Info);
             EditorGUILayout.LabelField("실내 무대 경계", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(draft.FindProperty("rightWallX"));
             EditorGUILayout.PropertyField(draft.FindProperty("rightMargin"));
@@ -39,8 +40,6 @@ namespace JC.BattleTesting.Editor
                 EditorGUILayout.HelpBox("요청한 이동이 무대 경계에 닿았습니다. 카메라는 이동 가능한 마지막 구도에 있습니다.",MessageType.Info);
             using (new EditorGUI.DisabledScope(!settings.CanCaptureBase))
                 if (GUILayout.Button("현재 화면에서 기본 구도 가져오기")) settings.CaptureBase();
-            using (new EditorGUI.DisabledScope(!settings.IsAimShot))
-                if (GUILayout.Button("현재 화면에서 블랙 불릿 공통 구도 가져오기")) settings.CaptureAim();
             if (GUILayout.Button("현재 값을 프로필에 저장"))
             {
                 Undo.RecordObject(settings.Source,"보스전 카메라 프로필 저장");
@@ -59,7 +58,6 @@ namespace JC.BattleTesting.Editor
         {
             to.rightWallX = from.rightWallX; to.rightMargin = from.rightMargin;
             to.viewA = from.viewA.Copy(); to.viewB = from.viewB.Copy();
-            to.aim = JsonUtility.FromJson<JcBossCameraProfile.AimShot>(JsonUtility.ToJson(from.aim));
         }
     }
 }

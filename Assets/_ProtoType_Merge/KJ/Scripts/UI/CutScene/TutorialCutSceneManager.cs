@@ -25,6 +25,8 @@ public class TutorialCutSceneManager : MonoBehaviour
     private int currentIndex = 0;
     private GameObject currentImage = null;
     private bool transitioning;
+    // JC | 2026-11-10 | KJ 컷 진행 입력은 로컬 중복 방지와 공통 페이드 잠금을 함께 따릅니다.
+    private bool IsInputLocked => transitioning || SceneFadeController.IsInputBlocked;
 
     //public string nextScene = "DHScene_3";
     // Start is called before the first frame update
@@ -62,7 +64,7 @@ public class TutorialCutSceneManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (transitioning || Input.GetKeyDown(KeyCode.Escape)) return;
+        if (IsInputLocked || Input.GetKeyDown(KeyCode.Escape)) return;
         if (skipPopup != null && skipPopup.activeSelf) return;
         if (Time.frameCount == popupClosedFrame) return;
         // Button clicks belong to the UI, not to the cutscene's advance input.
@@ -107,7 +109,8 @@ public class TutorialCutSceneManager : MonoBehaviour
             (cutscene.currentCutSceneState != CutScene.Opening && cutscene.currentCutSceneState != CutScene.Ending))
             return false;
 
-        if (!cutscene.transitioning)
+        // JC | 2026-11-10 | 전환 중 Esc로 스킵 창을 다시 여는 경로도 차단합니다.
+        if (!cutscene.IsInputLocked)
         {
             if (cutscene.skipPopup != null && cutscene.skipPopup.activeSelf)
                 cutscene.CloseSkipPopup();
@@ -127,7 +130,8 @@ public class TutorialCutSceneManager : MonoBehaviour
                 (cutscene.currentCutSceneState != CutScene.Opening && cutscene.currentCutSceneState != CutScene.Ending) ||
                 cutscene.skipPopup == null || !cutscene.skipPopup.activeInHierarchy) continue;
 
-            if (!cutscene.transitioning)
+            // JC | 2026-11-10 | 페이드 중 Space/Enter 확정 대상은 제공하지 않습니다.
+            if (!cutscene.IsInputLocked)
                 foreach (var button in cutscene.skipPopup.GetComponentsInChildren<Button>(true))
                     if (button.name == "Accept Button")
                     {
@@ -155,6 +159,8 @@ public class TutorialCutSceneManager : MonoBehaviour
 
     public void ShowSkipPopup()
     {
+        // JC | 2026-11-10 | 버튼 이벤트가 직접 호출해도 전환 잠금을 우회하지 않습니다.
+        if (IsInputLocked) return;
         if (skipPopup == null) return;
         skipPopup.transform.SetAsLastSibling();
         skipPopup.SetActive(true);
@@ -171,6 +177,8 @@ public class TutorialCutSceneManager : MonoBehaviour
 
     public void ConfirmSkip()
     {
+        // JC | 2026-11-10 | 스킵 확정 이후 연속 입력은 새 씬/실패 복구가 끝날 때까지 무시합니다.
+        if (IsInputLocked) return;
         if (skipPopup == null || !skipPopup.activeSelf) return;
         CloseSkipPopup();
 
@@ -201,13 +209,26 @@ public class TutorialCutSceneManager : MonoBehaviour
     
     private void GoTutorialExploreScene()
     {
-        SceneFadeController.LoadSceneWithFadeIfNeeded("TutorialExploreScene");
+        // JC | 2026-11-10 | 튜토리얼 분기도 동일한 요청/실패 복구 경로를 사용합니다.
+        BeginCutSceneTransition("TutorialExploreScene");
     }
     private void GoMainExploreScene()
     {
+        // JC | 2026-11-10 | 인트로 스킵과 마지막 컷 클릭의 중복 전환을 막습니다.
+        if (IsInputLocked) return;
         // 튜토리얼 시설 상태를 넘기지 않고 새 게임 초기화를 거친다.
         SaveSlotRepository.IsContinue = false;
-        SceneFadeController.LoadSceneWithFadeIfNeeded("GameLoadScene");
+        BeginCutSceneTransition("GameLoadScene");
+    }
+
+    // JC | 2026-11-10 | 요청 시 즉시 잠그고, 거절/로드 실패 때 로컬 잠금도 해제해 재시도를 허용합니다.
+    private void BeginCutSceneTransition(string sceneName)
+    {
+        if (IsInputLocked) return;
+        transitioning = true;
+        var request = SceneFadeController.LoadSceneAsyncWithFade(sceneName,
+            onFailed: () => { if (this != null) transitioning = false; });
+        if (request == null) transitioning = false;
     }
 
     void GoPreviousCutScene()
@@ -221,11 +242,11 @@ public class TutorialCutSceneManager : MonoBehaviour
 
     private void AfterEndCutScene()
     {
-        if (transitioning) return;
-        transitioning = true;
+        // JC | 2026-11-10 | 엔딩의 기존 새 게임 초기화는 유지하고 전환 잠금/실패 처리는 공통화합니다.
+        if (IsInputLocked) return;
         Time.timeScale = 1f;
         if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
         else DHGameProgressResetService.ResetDHProgress();
-        SceneFadeController.LoadSceneWithFadeIfNeeded("TitleScene");
+        BeginCutSceneTransition("TitleScene");
     }
 }

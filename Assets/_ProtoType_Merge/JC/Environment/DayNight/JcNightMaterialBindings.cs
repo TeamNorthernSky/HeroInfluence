@@ -16,7 +16,11 @@ namespace JC.Environment
   public static Material Original(Material material)=>material!=null&&originals.TryGetValue(material,out var source)?source:material;
   public void Bind(Renderer renderer,int slot,Texture windowMask,bool humanoid=false,int characterGroup=1){
    if(renderer==null)return;
-   var materials=renderer.sharedMaterials;if(slot>=materials.Length)return;
+   // JC | 2026-11-10 | 기존 외부 호출 계약은 유지하고 여러 슬롯 처리에서는 한 번 읽은 재질 배열을 공유합니다.
+   Bind(renderer,slot,windowMask,renderer.sharedMaterials,humanoid,characterGroup);
+  }
+  internal void Bind(Renderer renderer,int slot,Texture windowMask,Material[] materials,bool humanoid=false,int characterGroup=1){
+   if(renderer==null||slot>=materials.Length)return;
    foreach(var entry in entries)if(entry.renderer==renderer&&entry.slot==slot){
     if(materials[slot]==entry.shown){if(humanoid)entry.shown.SetFloat("_JcHumanoid",characterGroup);return;}
     if(materials[slot]==entry.original){materials[slot]=entry.shown;renderer.sharedMaterials=materials;return;}
@@ -32,13 +36,17 @@ namespace JC.Environment
   public void ScanCharacters(Scene scene){
    // Classify from gameplay owners, not names. UI, buildings and unrelated props are excluded.
    foreach(var root in scene.GetRootGameObjects())foreach(var renderer in root.GetComponentsInChildren<Renderer>(true)){
-    int group=CharacterGroup(renderer);
+    // JC | 2026-11-10 | 기존에 항상 제외되던 렌더러·Canvas부터 걸러 불필요한 게임 소유자 부모 탐색을 생략합니다.
+    if(!(renderer is SkinnedMeshRenderer)&&!(renderer is MeshRenderer))continue;
     // Event encounters are authored as a group: include their chest/weapon meshes,
     // but never sprite markers, particles or Canvas contents.
     if(renderer.GetComponentInParent<Canvas>(true)!=null)continue;
+    int group=CharacterGroup(renderer);
     if(!(renderer is SkinnedMeshRenderer) && !(renderer is MeshRenderer && group==3))continue;
     if(group==0)continue;
-    for(int slot=0;slot<renderer.sharedMaterials.Length;slot++)Bind(renderer,slot,null,true,group);
+    // JC | 2026-11-10 | 현재 스캔 안에서만 배열을 공유하므로 다음 스캔의 외부 재질 교체 감지는 그대로 유지됩니다.
+    var slots=renderer.sharedMaterials;
+    for(int slot=0;slot<slots.Length;slot++)Bind(renderer,slot,null,slots,true,group);
    }
   }
   public static int CharacterGroup(Component renderer){

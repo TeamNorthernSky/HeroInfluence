@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using JC.BattleTesting;
@@ -52,8 +52,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     [InspectorName("원거리 적 공격 시 대상도 함께 표시")]
     [Tooltip("적 원거리 공격에서 시전자와 피격 대상을 함께 담습니다.")]
     public bool frameEnemyRangedTarget = true;
-    // JC | 2026-11-06 | 일반 전투의 블랙불릿 구도는 투영 범위에 맞춰 중심과 화각을 함께 계산합니다.
-    [InspectorName("블랙불릿 공격 시 대상도 함께 표시"), Tooltip("블랙불릿과 피격 대상을 함께 담습니다. 은행에서 직접 저장한 1~4번 스킬은 공유 프로필의 고정 구도를 우선 사용합니다. 저장 구도를 끈 스킬은 신체 범위에 맞춰 조절합니다. 보스 전용 연출은 기존 설정을 사용합니다.")]
+    // JC | 2026-11-11 | 정본 4계열 외의 기존 쌍 구도 경로에만 쓰는 항목입니다. 공통 정본 선택은 전용 조절기에서 합니다.
+    [HideInInspector]
     public bool frameBlackBulletTarget = true;
     [InspectorName("원거리 공격 초점의 피격자 비중"), Range(.5f, .8f)]
     [Tooltip("원거리 적 구도의 피격 대상 비중입니다. 값이 클수록 대상을 향합니다. 블랙불릿의 화면 범위 구도는 이 값 대신 두 인물의 투영 중심을 사용합니다.")]
@@ -109,9 +109,59 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool attackZoomActive;
     public bool IsAttackCameraActive => attackZoomActive;
     public JcBossCamera BossCamera { get; set; }
-    // JC | 2026-11-06 | ASB 공용 연출기 안의 기존 JC 카메라 경로에 은행 전용 설정을 주입합니다.
-    // 은행 로더가 연결한 씬만 사용하며, 일반전·보스·기획팀 Preview에는 연결하지 않습니다.
+    // JC | 2026-11-11 | 은행 기본뷰/환경 식별만 유지합니다. 블랙불릿 저장 구도는 아래 공통 조절기가 소유합니다.
     public JcBankBattleBackground BankBackground { get; set; }
+    // JC | 2026-11-11 | 모든 전투에 같은 정본1/2 선택을 연결합니다. ASB 스킬/Timeline/피해 판정은 그대로 둡니다.
+    [InspectorName("블랙불릿 공통 카메라 조절기"), Tooltip("정본1/2 선택과 조절을 모든 전투가 공유합니다. 코어 공통 연출은 제외합니다.")]
+    public JcBlackBulletCameraControls blackBulletCameraControls;
+    // JC | 2026-11-11 | 선택은 공격 시작에 확정하고 두 정본이 동일한 시간·복귀·표시 보호 경로를 사용합니다.
+    private JcBlackBulletCameraCanon blackBulletCanon;
+    private int blackBulletTargetSlot;
+    private Matrix4x4 blackBulletWorldFromReference = Matrix4x4.identity;
+    private Quaternion blackBulletReferenceRotation = Quaternion.identity;
+    private Vector3 blackBulletCalculationPosition;
+    private bool blackBulletCloseUpActive, blackBulletCloseUpMoving;
+    // JC | 2026-11-10 | 스킬 발동 즉시 현재 자세에서 전환하며 기존 대사·공격 재생과 병행합니다. 준비 이동·대기 시계는 두지 않습니다.
+    private bool blackBulletCloseUpAttackRunning;
+    private int blackBulletCloseUpFamily;
+    private float blackBulletTransitionElapsed;
+    // JC | 2026-11-10 | 공격 중에는 실제 Timeline 시계만 읽습니다. 배속/구간 속도/타격 정지가 이미 반영된 값에 다시 배속을 곱하지 않습니다.
+    private UnityEngine.Playables.PlayableDirector blackBulletTimeline;
+    private bool blackBulletTimelineActive;
+    private double blackBulletTimelineHighWater;
+    private int blackBulletClockFrame = -1;
+    private BattleManager blackBulletClockBattle;
+    // JC | 2026-11-10 | 실제 출발 자세와 최종 구도 계산용 가상 초기 자세를 분리해 중간 이동 없이 직접 연결합니다.
+    private Vector3 blackBulletBasisPosition;
+    private Quaternion blackBulletBasisRotation;
+    private Vector3 blackBulletCloseUpPosition;
+    private Quaternion blackBulletCloseUpRotation;
+    private float blackBulletCloseUpFov;
+    // JC | 2026-11-10 | 보호 영역은 공격 시작에 고정하고 초안 편집 때만 재구성합니다. 잔여 숫자는 턴 진행을 막지 않고 FOV만 보호합니다.
+    private Vector3[] blackBulletBodyPoints;
+    // JC | 2026-11-10 | 배치별 연속 가중치와 스킬 시작에 확정한 목적지를 전환·유지에 재사용합니다.
+    // JC | 2026-11-10 | 중앙 구도는 두 인물의 실제 위치로 풀며, 메뉴 기준 위치와 열별 구도 가중치는 사용하지 않습니다.
+    // JC | 2026-11-10 | 셀 열과 적 진형 방향을 구분하여, 우측 시전자→적 좌측일 때 지정 구도의 가중치를 1로 고정합니다.
+    private float blackBulletGroundHeight, blackBulletColumnBlend;
+    // JC | 2026-11-10 | 보간 양 끝의 셀과 보호 범위를 보존해 중앙열도 같은 두 구도를 사용합니다.
+    private JcBlackBulletCameraFraming.ColumnReference? blackBulletColumnReference;
+    public double BlackBulletSolveMilliseconds { get; private set; }
+    public double BlackBulletCaptureMilliseconds { get; private set; }
+    private Bounds blackBulletPopupBounds, blackBulletTargetBody;
+    private bool blackBulletHasTargetBody;
+    private bool blackBulletHasPopupBounds, blackBulletProtection, blackBulletReturning, blackBulletResidual;
+    private int blackBulletPopupOwner, blackBulletSettingsHash;
+    private float blackBulletResidualFov, blackBulletReferenceFov;
+    private readonly List<Vector3> blackBulletLivePoints = new List<Vector3>();
+    private bool blackBulletConstraintWarning;
+    private Vector3[] blackBulletCloseUpPoints;
+    // JC | 2026-11-10 | 실제 메시를 기준으로 구도를 풀되 고정된 공격 중에는 재사용합니다. 인스펙터/해상도 변경 때만 재계산합니다.
+    private bool blackBulletFrameResolved;
+    private Vector4 blackBulletFrameProjection;
+    private float blackBulletFramePadding;
+    private Vector3 blackBulletFramePosition;
+    private Quaternion blackBulletFrameRotation;
+    private float blackBulletFrameFov;
     private Vector3 attackCameraPosition;
     private Quaternion attackCameraRotation;
     private float attackCameraFov, attackCameraOrthoSize;
@@ -194,6 +244,16 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void LateUpdate()
     {
+        // JC | 2026-11-10 | 복귀 후 남은 숫자도 보존하되 전투 턴/팝업 수명은 늘리지 않습니다.
+        UpdateBlackBulletResidual();
+        // JC | 2026-11-10 | 스킬 발동부터 직접 전환을 기존 대사·공격과 병행합니다. 전환 중에는 쌍 구도 보정과 경쟁하지 않습니다.
+        if (blackBulletCloseUpActive)
+        {
+            // JC | 2026-11-10 | 메뉴/콘솔 정지 중에는 초기 구도 보정까지 멈추고, 재개 후 같은 공격 진행 위치를 이어갑니다.
+            if (Time.timeScale <= 0f) return;
+            TickBlackBulletCloseUp(ReadBlackBulletCloseUpDelta());
+            if (blackBulletCloseUpActive) return;
+        }
         if (!attackZoomActive || !followAttackFocus || previewCamera == null || attackFocusActor == null) return;
         nekoHealProjectiles.RemoveAll(projectile => projectile == null);
         var position = previewCamera.transform.position;
@@ -230,26 +290,14 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     // JC | 2026-11-06 | 블랙불릿만 시작 시 확정한 두 인물의 구도를 복귀까지 보관합니다.
     // 표적 소멸이 시전자 단독 구도로 전환되는 조건이 되지 않게 합니다.
-    // 보스·다른 캐릭터의 구도와 기존 카메라 이동 경로는 변경하지 않습니다.
+    // JC | 2026-11-11 | 코어·다른 캐릭터 경로는 유지하고, 두 정본의 원점 변환에 같은 앵커를 사용합니다.
     private bool blackBulletPairActive;
     private Vector3 blackBulletActorAnchor;
     private Vector3 blackBulletTargetAnchor;
-    // JC | 2026-11-06 | 공격 시작 시 선택한 은행 스킬 구도를 보관하여 표적 소멸·이동에도 연출 도중 변경하지 않습니다.
-    private bool bankSkillShotActive;
-    private Vector3 bankSkillShotPosition;
-    private Quaternion bankSkillShotRotation;
-    private float bankSkillShotFov;
-    private bool UseProjectedPairFraming => blackBulletPairActive || bankSkillShotActive;
+    private bool UseProjectedPairFraming => blackBulletPairActive;
 
     private void ResolveProjectedPair(Vector3 position, out Quaternion rotation, out float fov)
     {
-        // JC | 2026-11-06 | 저장 구도도 기존 진입·유지 계산 경로로 반환하여 도착 후 신체 전용 구도로 되돌아가지 않게 합니다.
-        if (bankSkillShotActive)
-        {
-            rotation = bankSkillShotRotation;
-            fov = bankSkillShotFov;
-            return;
-        }
         // JC | 2026-11-06 | 근접 젬 스킬도 출발점과 표적을 포함한 시작 범위를 사용합니다.
         // 접근할수록 두 신체 사이가 좁아져 과확대되거나, 복귀 동작에 따라 재확대되는 일을 막습니다.
         ResolvePairFraming(blackBulletActorAnchor, blackBulletTargetAnchor,
@@ -299,15 +347,50 @@ public sealed class BattlePresentationController : MonoBehaviour
             }
     }
 
-    private void ApplyCameraPose(Vector3 position, Quaternion rotation, float fov)
+    private void ApplyCameraPose(Vector3 position, Quaternion rotation, float fov, float blackBulletEntryBlend = 1f)
     {
-        if (BossCamera)
+        if (BossCamera && !blackBulletProtection && !blackBulletResidual)
         {
             BossCamera.ApplyPose(position,rotation,fov);
             return;
         }
+        // JC | 2026-11-11 | 두 정본의 전환/복귀/잔여 숫자를 보호합니다. 사용자 결정대로 블랙불릿 구도는 보스 무대 경계보다 우선하며 기본뷰 경계 상태는 보존합니다.
+        if ((blackBulletProtection || blackBulletResidual) && blackBulletCameraControls && blackBulletCameraControls.Draft)
+        {
+            RefreshBlackBulletProtection();
+            if (blackBulletResidual) blackBulletResidualFov = fov;
+            float required = RequiredBlackBulletFov(position, rotation, blackBulletEntryBlend);
+            if (required < 0) { ReportBlackBulletConstraint(); return; }
+            fov = Mathf.Max(fov,required);
+
+        }
         previewCamera.transform.SetPositionAndRotation(position,rotation);
         previewCamera.fieldOfView = fov;
+    }
+
+    // JC | 2026-11-11 | 두 정본의 전환·복귀·잔여 숫자에 같은 가시성 보호식을 사용합니다.
+    private float RequiredBlackBulletFov(Vector3 position, Quaternion rotation, float entryBlend)
+    {
+        float required = 0;
+        var settings = blackBulletCameraControls.Draft;
+        var pixels = new Vector2(previewCamera.pixelWidth,previewCamera.pixelHeight);
+        if (blackBulletProtection && !blackBulletReturning && blackBulletCloseUpPoints != null)
+        {
+            required = JcBlackBulletCameraFraming.RequiredTransitionFov(blackBulletCloseUpPoints,position,rotation,
+                previewCamera.aspect,pixels,settings,blackBulletCloseUpPosition,blackBulletCloseUpRotation,
+                blackBulletCloseUpFov,entryBlend,out bool possible,previewCamera.nearClipPlane);
+            if (!possible) return -1;
+        }
+        blackBulletLivePoints.Clear();
+        DamagePopupEffect.AppendActiveCameraPoints(blackBulletPopupOwner,blackBulletLivePoints,rotation);
+        if (blackBulletLivePoints.Count > 0)
+        {
+            float live = JcBlackBulletCameraFraming.RequiredFov(blackBulletLivePoints.ToArray(),position,rotation,
+                previewCamera.aspect,pixels,settings,out bool possible,previewCamera.nearClipPlane);
+            if (!possible) return -1;
+            required = Mathf.Max(required,live);
+        }
+        return required;
     }
 
     private Vector3 AttackFocusPosition
@@ -527,7 +610,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
     }
 
-    private System.Collections.IEnumerator WaitAfterSkill(BattleCharactor actor, SkillData skill)
+    private System.Collections.IEnumerator WaitAfterSkill(BattleCharactor actor, SkillData skill, bool useBattleTime = false)
     {
         if (skill != null && skill.skillIndex == 200032)
         {
@@ -541,7 +624,17 @@ public sealed class BattlePresentationController : MonoBehaviour
             delay = Mathf.Max(delay, chainLightningEndDelay);
         if (actor != null && !actor.IsPlayer && actor.PresentationIndex == "20003")
             delay = Mathf.Max(delay, shieldCameraReturnDelay);
-        if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
+        // JC | 2026-11-10 | 추가 확대가 적용된 블랙불릿은 정지 중 후딜이 끝나 복귀가 시작되지 않게 전투 시간으로 기다립니다.
+        if (useBattleTime)
+        {
+            float elapsed = 0;
+            while (elapsed < delay)
+            {
+                yield return null;
+                elapsed += BlackBulletBattleDelta;
+            }
+        }
+        else if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
     }
 
     private float RequiredPairFov(Vector3 cameraPosition, Quaternion cameraRotation)
@@ -581,6 +674,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     public void SelectView(int view)
     {
         if (previewCamera == null) return;
+        // JC | 2026-11-10 | 다음 스킬(코어 포함)이 시작되면 이전 BB 숫자 보호의 카메라 소유권을 종료합니다.
+        ReleaseBlackBulletResidual();
         if (BossCamera) BossCamera.EndBasePreview();
         CancelTurnPresentation();
         if (cameraMotion != null) StopCoroutine(cameraMotion);
@@ -666,6 +761,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     {
         if (previewCamera == null || cameraProfile == null || playerPlace == null || enemyPlace == null) return;
         int view = playerTurn ? 0 : 1;
+        // JC | 2026-11-10 | 다음 스킬(코어 포함)이 시작되면 이전 BB 숫자 보호의 카메라 소유권을 종료합니다.
+        ReleaseBlackBulletResidual();
         if (BossCamera) BossCamera.EndBasePreview();
         if (turnCameraView == view) return;
         turnCameraView = view;
@@ -724,6 +821,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     public System.Collections.IEnumerator RunAttackWithZoom(BattleCharactor actor, BattleCharactor target,
         SkillData skill, System.Collections.IEnumerator attack, bool counter = false)
     {
+        // JC | 2026-11-10 | 다음 스킬(코어 포함)이 시작되면 이전 BB 숫자 보호의 카메라 소유권을 종료합니다.
+        ReleaseBlackBulletResidual();
         if (BossCamera) BossCamera.EndBasePreview();
         bool shouldFocusDebuffTarget = skill != null && skill.skillKey == "HCS005" &&
             target != null && !target.IsDead;
@@ -732,12 +831,15 @@ public sealed class BattlePresentationController : MonoBehaviour
             (family == 4010 || family == 4030);
         bool shouldFocusNekoPaw = actor != null && actor.PresentationIndex == "10004" && family == 4020;
         bool shouldFocusNekoBarrage = actor != null && actor.PresentationIndex == "10004" && family == 4040;
-        bool bossAim = BossCamera && actor && (target || enemyPlace) && actor.IsPlayer && actor.PresentationIndex == "10003" &&
-            (family == 3010 || family == 3020 || family == 3030 || family == 3040);
+        // JC | 2026-11-11 | 은행/보스 여부보다 공통 정본 선택을 우선합니다. HCS 코어는 반드시 기존 공통 연출에 남깁니다.
+        bool canonicalSkill = actor && actor.IsPlayer && actor.PresentationIndex == "10003" && target && !target.IsPlayer &&
+            JcBlackBulletCameraProfile.Supports(family) && !(skill.skillKey?.StartsWith("HCS", StringComparison.Ordinal) ?? false) &&
+            blackBulletCameraControls && blackBulletCameraControls.isActiveAndEnabled && blackBulletCameraControls.Draft &&
+            previewCamera && !previewCamera.orthographic;
         bool shouldFocusShieldGuard = actor != null && skill != null && skill.skillIndex == 200032;
         bool shouldFrameRifleBarrage = actor != null && skill != null && skill.skillIndex == 200022;
-        if ((useTurnCamera && !bossAim && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage && !shouldFrameRifleBarrage && !shouldFocusShieldGuard) || (!useAttackZoom && !shouldFocusShieldGuard) || previewCamera == null ||
-            actor == null || (attackZoomAmount <= 0f && !shouldFocusShieldGuard) || attackZoomActive)
+        if ((useTurnCamera && !canonicalSkill && !shouldFocusDebuffTarget && !shouldFocusNekoHeal && !shouldFocusNekoPaw && !shouldFocusNekoBarrage && !shouldFrameRifleBarrage && !shouldFocusShieldGuard) || (!useAttackZoom && !canonicalSkill && !shouldFocusShieldGuard) || previewCamera == null ||
+            actor == null || (attackZoomAmount <= 0f && !canonicalSkill && !shouldFocusShieldGuard) || attackZoomActive)
         {
             yield return ShowSkillSpeech(actor, skill, counter);
             yield return WaitForLuminaCast(actor, skill);
@@ -774,78 +876,499 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (shouldFrameRifleBarrage) frameRangedPair = true;
         // JC | 2026-11-06 | ASB 공용 연출 안의 기존 JC 블랙불릿 구도만 시작 시 확정합니다.
         // 대상 사망·파괴 이후에도 이 상태를 유지하고 RestoreAttackCamera에서 해제합니다.
-        blackBulletPairActive = !BossCamera && frameRangedPair && actor.IsPlayer &&
+        blackBulletPairActive = (!BossCamera || canonicalSkill) && (frameRangedPair || canonicalSkill) && actor.IsPlayer &&
             actor.PresentationIndex == "10003" && target != null && rifleBarrageUnits.Count == 0;
         if (blackBulletPairActive)
         {
             blackBulletActorAnchor = actor.transform.position;
             blackBulletTargetAnchor = target.transform.position;
         }
-        // JC | 2026-11-06 | 기존 JC 후열 전용 구도를 은행 블랙불릿 4개 스킬의 저작 구도로 확장합니다.
-        // ASB 전투 판정은 바꾸지 않고 공격 시작 때 주 대상의 점유 칸으로 4스킬×6타겟 중 하나를 선택합니다.
-        // 기본·강화는 같은 스킬 슬롯이며 대상 이동·사망 이후에도 시작 구도를 유지합니다. 보스·다른 캐릭터는 제외합니다.
-        var bankShot = !BossCamera && BankBackground && BankBackground.skillCameraProfile &&
-            actor.IsPlayer && actor.PresentationIndex == "10003" && skill != null && target && !target.IsPlayer && target.OccupiedCell
-            ? BankBackground.skillCameraProfile.FindEnabled(skill.skillIndex, target.OccupiedCell.Coords) : null;
-        bankSkillShotActive = bankShot != null;
-        if (bankSkillShotActive)
+        // JC | 2026-11-10 | 시작 때 실제 전신/점유 셀 범위를 보존합니다. 대상 사망·근접 이동 뒤에도 확대 중심과 그리드 범위가 흔들리지 않습니다.
+        bool useBlackBulletCloseUp = canonicalSkill;
+        blackBulletCalculationPosition = attackCameraPosition;
+        if (useBlackBulletCloseUp)
         {
-            // 공격 중 저장값이 바뀌어도 현재 연출은 시작 시의 구도를 유지하고 다음 공격부터 반영합니다.
-            // JC | 2026-11-06 | 편집 미리보기와 같은 원근감 계산 결과를 한 번만 확정합니다. 전열 기존 배율 1은 그대로 유지합니다.
-            bankShot.Resolve(out bankSkillShotPosition, out bankSkillShotRotation, out bankSkillShotFov);
+            blackBulletCanon = blackBulletCameraControls.Draft.canon;
+            blackBulletTargetSlot = target.OccupiedCell ? JcBankSkillCameraProfile.TargetIndex(target.OccupiedCell.Coords) : -1;
+            blackBulletCloseUpFamily = family;
+            blackBulletPopupOwner = target.transform.GetInstanceID();
+            blackBulletGroundHeight = actor.OccupiedCell ? actor.OccupiedCell.transform.position.y : actor.transform.position.y;
+            blackBulletColumnBlend = actor.OccupiedCell && target.OccupiedCell ?
+                Mathf.Clamp01(actor.OccupiedCell.Coords.y * .5f) * Mathf.Clamp01(target.OccupiedCell.Coords.y * .5f) : 0;
+            var settings = blackBulletCameraControls.Draft;
+            blackBulletReferenceRotation = playerPlace ? playerPlace.rotation : Quaternion.identity;
+            blackBulletWorldFromReference = playerPlace ? Matrix4x4.TRS(playerPlace.position, playerPlace.rotation, Vector3.one) *
+                Matrix4x4.Translate(-settings.referencePlayerOrigin) : Matrix4x4.identity;
+            // 실내 기본뷰와 스킬 구도는 분리합니다. 정본2 계산에는 일반전의 기준뷰를 같은 진형 원점으로 옮겨 사용합니다.
+            if ((BankBackground || BossCamera) && settings.referenceCamera)
+            {
+                settings.referenceCamera.viewA.Resolve(new Vector3(0, .3f, 0), out var referencePosition, out _, out _);
+                blackBulletCalculationPosition = blackBulletWorldFromReference.MultiplyPoint3x4(referencePosition);
+            }
         }
         attackZoomActive = true;
         try
         {
             float scale = 1f - Mathf.Clamp(attackZoomAmount, 0f, .4f);
-            Vector3 corner = attackCameraPosition + Vector3.down * Mathf.Max(0f, attackZoomDrop);
+            Vector3 corner = blackBulletCalculationPosition + Vector3.down * Mathf.Max(0f, attackZoomDrop);
             Vector3 approach = AttackFocusPosition - corner;
             approach.y = 0f;
             Vector3 zoomPosition = corner + approach.normalized * Mathf.Min(attackZoomApproach, approach.magnitude * .5f);
             attackZoomBaseFov = Mathf.Max(1f, attackCameraFov * scale);
             float zoomFov = attackZoomBaseFov;
             Quaternion zoomRotation = attackCameraRotation;
-            if (bossAim)
+            if (UseProjectedPairFraming)
             {
-                BossCamera.BeginAim(actor.transform, target ? target.transform : enemyPlace);
-                BossCamera.ResolveAim(out zoomPosition,out zoomRotation,out zoomFov);
-                corner = (attackCameraPosition + zoomPosition) * .5f;
-            }
-            // JC | 2026-11-06 | 블랙불릿은 유지 구도와 동일한 투영 계산으로 줌 목적지를 정합니다.
-            else if (UseProjectedPairFraming)
-            {
-                // JC | 2026-11-06 | 직접 저장한 목적지로 연결하며 기존 보간/복귀 코루틴을 재사용합니다.
-                // 중간 제어점도 출발과 도착의 중앙에 두어 반대 방향으로 꺾이거나 과도하게 접근하지 않습니다.
-                if (bankSkillShotActive)
-                {
-                    zoomPosition = bankSkillShotPosition;
-                    corner = (attackCameraPosition + zoomPosition) * .5f;
-                }
                 ResolveProjectedPair(zoomPosition, out zoomRotation, out zoomFov);
             }
             else if (frameRangedPair)
                 zoomFov = Mathf.Max(zoomFov, RequiredPairFov(zoomPosition,
                     Quaternion.LookRotation(AttackFocusPosition - zoomPosition)));
-            // 아래로 내려간 뒤 캐릭터 쪽으로 접근하며, ㄴ자 모서리를 곡선으로 부드럽게 연결합니다.
-            yield return AnimateAttackZoom(zoomPosition, corner, zoomRotation,
-                zoomFov, attackCameraOrthoSize * scale, attackZoomInSeconds, !bossAim);
-            followAttackFocus = !bossAim;
+            // JC | 2026-11-11 | 두 정본 모두 중간 카메라 이동·준비 대기 없이 스킬 시작에서 최종 앵글로 바로 전환합니다.
+            // 이전 초기 앵글은 최종 구도를 유지하는 계산 기준으로만 쓰며 카메라를 그곳으로 이동시키지 않습니다.
+            if (useBlackBulletCloseUp)
+                BeginBlackBulletCloseUp(family, zoomPosition, zoomRotation, zoomFov);
+            else
+            {
+                yield return AnimateAttackZoom(zoomPosition, corner, zoomRotation,
+                    zoomFov, attackCameraOrthoSize * scale, attackZoomInSeconds, true);
+                followAttackFocus = true;
+            }
             yield return ShowSkillSpeech(actor, skill, counter);
             yield return WaitForLuminaCast(actor, skill);
+            if (useBlackBulletCloseUp) blackBulletCloseUpAttackRunning = true;
             yield return attack;
+            // JC | 2026-11-10 | 공격이 끝나면 시간 동기화만 해제하고 기존 공통 후딜·복귀를 유지합니다.
+            EndBlackBulletCloseUpAttack();
             if (shouldFocusNekoBarrage)
                 while (nekoBarrageEffect != null && nekoBarrageEffect.IsPlaying) yield return null;
             if (!focusNekoHeal && !focusShieldGuard) followAttackFocus = false;
-            yield return WaitAfterSkill(actor, skill);
+            yield return WaitAfterSkill(actor, skill, useBlackBulletCloseUp);
+            // JC | 2026-11-10 | 복귀 중 LateUpdate의 추가 확대가 복귀 카메라를 덮어쓰지 않도록 먼저 해제합니다.
+            blackBulletCloseUpActive = false;
+            blackBulletReturning = useBlackBulletCloseUp;
             followAttackFocus = false;
             focusNekoBarrage = false;
             yield return AnimateAttackZoom(attackCameraPosition, corner, attackCameraRotation,
-                attackCameraFov, attackCameraOrthoSize, attackZoomOutSeconds, false);
+                attackCameraFov, attackCameraOrthoSize, attackZoomOutSeconds, false, useBlackBulletCloseUp);
         }
         finally
         {
             RestoreAttackCamera();
         }
+    }
+
+    // JC | 2026-11-10 | 인물 신체와 실제 점유 셀 렌더러를 담고 왕복 운동 여유를 더합니다. 다른 셀/피해 판정은 변경하지 않습니다.
+    private Vector3[] CaptureBlackBulletCloseUpPoints(BattleCharactor actor)
+    {
+        // JC | 2026-11-10 | 실제 신체/그리드 꼭짓점으로 맞춥니다. 빈 AABB 모서리와 임의 전신 박스는 4K에서 과도한 여백을 만들었습니다.
+        // 신체 자세 변화는 중심 기준 8%와 위아래 5cm, 그리드 상하 운동은 별도로 여유를 확보합니다.
+        var points = new List<Vector3>();
+        var center = blackBulletActorAnchor + Vector3.up * 1.1f;
+        void AddBodyPoint(Vector3 point)
+        {
+            point = center + (point - center) * 1.08f;
+            points.Add(point + Vector3.up * .05f);
+            points.Add(point - Vector3.up * .05f);
+        }
+        foreach (var renderer in actor.GetComponentsInChildren<Renderer>())
+        {
+            if (!renderer.enabled) continue;
+            if (renderer is SkinnedMeshRenderer skin)
+            {
+                var mesh = new Mesh();
+                // JC | 2026-11-10 | 계층 스케일 보정을 포함해 베이크한 로컬 정점을 월드로 변환합니다. 임시 메시만 해제합니다.
+                skin.BakeMesh(mesh, true);
+                foreach (var vertex in mesh.vertices) AddBodyPoint(skin.transform.TransformPoint(vertex));
+                if (Application.isPlaying) Destroy(mesh); else DestroyImmediate(mesh);
+            }
+            else if (renderer is MeshRenderer && renderer.TryGetComponent<MeshFilter>(out var filter) && filter.sharedMesh)
+            {
+                // JC | 2026-11-10 | 읽기 불가 총 메시를 매 공격마다 읽던 오류를 제거합니다. 해당 메시의 로컬 bounds는 읽기 가능하며 외형 전체를 포함합니다.
+                if (filter.sharedMesh.isReadable)
+                    foreach (var vertex in filter.sharedMesh.vertices) AddBodyPoint(filter.transform.TransformPoint(vertex));
+                else
+                    for (int i = 0; i < 8; i++) AddBodyPoint(filter.transform.TransformPoint(JcBlackBulletCameraFraming.Corner(filter.sharedMesh.bounds, i)));
+            }
+        }
+        // JC | 2026-11-10 | 신체의 1만여 보호점을 보수적 외피로 줄여 진입·확대·복귀 모든 프레임의 부하를 낮춥니다.
+        points = new List<Vector3>(JcCameraProtectionHull.Enclose(points));
+        // JC | 2026-11-10 | 활성 테두리는 약 9천 정점이므로 신체와 별도의 외피로 축약해 구도 탐색의 순간 지연을 방지합니다.
+        var gridPoints = new List<Vector3>();
+        if (actor.OccupiedCell)
+        {
+            var visuals = FindSceneComponent<BattleCellVisualSettings>();
+            // JC | 2026-11-10 | 셀 하위에 캐릭터도 있으므로 무기를 그리드로 중복 계산하지 않습니다.
+            var filters = actor.OccupiedCell.GetComponentsInChildren<MeshFilter>(true);
+            MeshFilter ground = null;
+            foreach (var filter in filters)
+                if (filter.sharedMesh && !filter.GetComponentInParent<BattleCharactor>(true) && !filter.GetComponentInParent<BattleCellBorderVisual>(true))
+                { ground = filter; break; }
+            // JC | 2026-11-10 | 초기 이동을 기다리지 않으므로 아직 생성 전인 현재 턴 그리드도 실제 프로필 메시로 예약합니다.
+            // 시각 오브젝트와 동일하게 원본 Plane의 스케일을 복사하지 않고 부모 공간의 위치/회전만 사용합니다.
+            if (ground && visuals && visuals.profile)
+            {
+                var config = visuals.profile.settings;
+                var shape = config.For(BattleCellVisualState.CurrentTurn).shape;
+                var size = new Vector2(Mathf.Max(.1f, shape.size.x - 2 * Mathf.Max(0, shape.padding)),
+                    Mathf.Max(.1f, shape.size.y - 2 * Mathf.Max(0, shape.padding)));
+                var mesh = new Mesh();
+                try
+                {
+                    BattleCellBorderMesh.Build(mesh, size, shape.cornerRadius, .001f, shape.depth, shape.curveSegments, false);
+                    var parentMatrix = ground.transform.parent ? ground.transform.parent.localToWorldMatrix : Matrix4x4.identity;
+                    var matrix = parentMatrix * Matrix4x4.TRS(ground.transform.localPosition, ground.transform.localRotation, Vector3.one);
+                    var axis = parentMatrix.MultiplyVector(Vector3.up);
+                    float height = Mathf.Max(0, shape.floatHeight);
+                    float amplitude = Mathf.Min(Mathf.Max(0, config.bobAmplitude), height);
+                    foreach (var vertex in mesh.vertices)
+                    {
+                        var point = matrix.MultiplyPoint3x4(vertex);
+                        gridPoints.Add(point + axis * (height - amplitude - .02f));
+                        gridPoints.Add(point + axis * (height + amplitude + .02f));
+                    }
+                }
+                finally { if (Application.isPlaying) Destroy(mesh); else DestroyImmediate(mesh); }
+            }
+            foreach (var filter in filters)
+            {
+                if (!filter.sharedMesh || filter.GetComponentInParent<BattleCharactor>(true)) continue;
+                // JC | 2026-11-10 | 진형 변경 직후에는 다음 Update에서 테두리가 켜질 수 있어 비활성 테두리도 예약합니다.
+                // 숨긴 원본 Plane은 계속 제외하며, inactive 부모를 명시 조회해 이를 바닥 메시로 오인하지 않습니다.
+                var gridRenderer = filter.GetComponent<Renderer>();
+                var border = filter.GetComponentInParent<BattleCellBorderVisual>(true);
+                if (!gridRenderer || (!border && (!gridRenderer.enabled || !filter.gameObject.activeInHierarchy))) continue;
+                var lower = Vector3.zero;
+                var upper = Vector3.zero;
+                if (border && ground && visuals && visuals.profile)
+                {
+                    // 실제 왕복 범위(높이 ± 높이로 제한된 진폭)를 기준으로 합니다. 현재 파형에 진폭을 중복 가산하지 않습니다.
+                    var config = visuals.profile.settings;
+                    float height = Mathf.Max(0, config.For(border.presentationState).shape.floatHeight);
+                    float amplitude = Mathf.Min(Mathf.Max(0, config.bobAmplitude), height);
+                    var origin = ground.transform.position - border.transform.position;
+                    var axis = border.transform.parent ? border.transform.parent.TransformVector(Vector3.up) : Vector3.up;
+                    lower = origin + axis * (height - amplitude - .02f);
+                    upper = origin + axis * (height + amplitude + .02f);
+                }
+                foreach (var vertex in filter.sharedMesh.vertices)
+                {
+                    var point = filter.transform.TransformPoint(vertex);
+                    gridPoints.Add(point + lower);
+                    gridPoints.Add(point + upper);
+                }
+            }
+        }
+        points.AddRange(JcCameraProtectionHull.Enclose(gridPoints));
+        // JC | 2026-11-10 | 타깃 전신을 시작 자세로 보존합니다. 피격 여유 변경은 아래 조립 단계에서 즉시 반영합니다.
+        blackBulletHasTargetBody = false;
+        if (attackFocusTarget)
+            foreach (var renderer in attackFocusTarget.GetComponentsInChildren<Renderer>())
+            {
+                if (!renderer.enabled || !(renderer is SkinnedMeshRenderer || renderer is MeshRenderer)) continue;
+                if (!blackBulletHasTargetBody) { blackBulletTargetBody = renderer.bounds; blackBulletHasTargetBody = true; }
+                else blackBulletTargetBody.Encapsulate(renderer.bounds);
+            }
+        return points.ToArray();
+    }
+
+    // JC | 2026-11-10 | 스킬별 효과 범위와 숫자 프리팹의 실제 설정을 카메라 전용 초안에 결합합니다. 피해 판정/효과 자산은 수정하지 않습니다.
+    private void RefreshBlackBulletProtection()
+    {
+        if (!blackBulletCameraControls || !blackBulletCameraControls.Draft || blackBulletBodyPoints == null) return;
+        var settings = blackBulletCameraControls.Draft;
+        int hash = JsonUtility.ToJson(settings).GetHashCode();
+        if (hash == blackBulletSettingsHash && blackBulletCloseUpPoints != null) return;
+        blackBulletSettingsHash = hash; blackBulletFrameResolved = false;
+        var points = new List<Vector3>(blackBulletBodyPoints);
+        // JC | 2026-11-10 | 시전자 보호점은 고정하고 적 신체·탄착·숫자만 유지할 끝 셀로 옮겨 계산합니다. 게임 오브젝트는 건드리지 않습니다.
+        var retained = blackBulletColumnReference.HasValue ? new List<Vector3>(blackBulletBodyPoints) : null;
+        var targetOffset = blackBulletColumnReference.HasValue ? blackBulletColumnReference.Value.target - blackBulletTargetAnchor - Vector3.up * attackFocusHeight : Vector3.zero;
+        void Add(Bounds bounds, bool atTarget = false)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                var point = JcBlackBulletCameraFraming.Corner(bounds, i);
+                points.Add(point); retained?.Add(point + (atTarget ? targetOffset : Vector3.zero));
+            }
+        }
+        if (blackBulletHasTargetBody) { var bounds = blackBulletTargetBody; bounds.Expand(2 * Mathf.Max(0, settings.targetMotionMargin)); Add(bounds, true); }
+        var hit = blackBulletTargetAnchor + Vector3.up * attackFocusHeight;
+        Add(new Bounds(hit, Vector3.one * (2 * settings.ImpactRadius(blackBulletCloseUpFamily))), true);
+        var socket = attackFocusActor ? attackFocusActor.GetComponent<UnitVisualProfile>() : null;
+        var muzzle = socket && socket.AttackEffectSocket ? socket.AttackEffectSocket.position : blackBulletActorAnchor + Vector3.up * attackFocusHeight;
+        // 직선 투사체 구간은 볼록이므로 두 끝의 여유 영역을 포함하면 중간 경로도 포함됩니다.
+        float diameter = 2 * Mathf.Max(0, settings.projectileRadius);
+        Add(new Bounds(muzzle, Vector3.one * diameter)); Add(new Bounds(hit, Vector3.one * diameter), true);
+        var popup = FindSceneComponent<BattleVisualDirector>();
+        if (popup && attackFocusTarget)
+            blackBulletHasPopupBounds = popup.TryGetDamageCameraEnvelope(attackFocusTarget.transform, settings.damageDigits, settings.targetMotionMargin, blackBulletBasisRotation, out blackBulletPopupBounds);
+        if (blackBulletHasPopupBounds)
+        {
+            for (int i = 0; i < 8; i++) points.Add(JcBlackBulletCameraFraming.Corner(blackBulletPopupBounds, i));
+            if (retained != null && popup.TryGetDamageCameraEnvelope(attackFocusTarget.transform, settings.damageDigits,
+                settings.targetMotionMargin, blackBulletColumnReference.Value.rotation, out var retainedPopup))
+                for (int i = 0; i < 8; i++) retained.Add(JcBlackBulletCameraFraming.Corner(retainedPopup, i) + targetOffset);
+        }
+        if (retained != null)
+        {
+            var endpoint = blackBulletColumnReference.Value; endpoint.points = retained.ToArray(); blackBulletColumnReference = endpoint;
+        }
+        blackBulletCloseUpPoints = points.ToArray();
+    }
+
+    // JC | 2026-11-10 | 적 자체 우측열0/좌측열2를 같은 행에서 찾고, 우측열의 기존 카메라 계산 입력을 고정합니다.
+    private void CaptureBlackBulletColumnReference()
+    {
+        blackBulletColumnReference = null;
+        if (blackBulletColumnBlend <= 0 || !attackFocusTarget || !attackFocusTarget.OccupiedCell) return;
+        ASB.Work.BattleGrid.GridCell right = null, left = null;
+        int row = attackFocusTarget.OccupiedCell.Coords.x;
+        foreach (var root in gameObject.scene.GetRootGameObjects())
+            foreach (var cell in root.GetComponentsInChildren<ASB.Work.BattleGrid.GridCell>(true))
+                if (cell.Coords.x == row)
+                {
+                    if (cell.Coords.y == 0) right = cell;
+                    if (cell.Coords.y == 2) left = cell;
+                }
+        // JC | 2026-11-10 | 열이 정의되지 않은 임시 프리뷰에서는 끝점 보간을 적용하지 않습니다. 실제 전투는 양 끝 셀을 갖습니다.
+        if (!right || !left) { blackBulletColumnBlend = 0; return; }
+        var targetOffset = blackBulletTargetAnchor - attackFocusTarget.OccupiedCell.transform.position;
+        var endpoint = new JcBlackBulletCameraFraming.ColumnReference {
+            target = right.transform.position + targetOffset + Vector3.up * attackFocusHeight,
+            oppositeTarget = left.transform.position + targetOffset + Vector3.up * attackFocusHeight
+        };
+        var corner = blackBulletCalculationPosition + Vector3.down * Mathf.Max(0, attackZoomDrop);
+        var approach = Vector3.Lerp(blackBulletActorAnchor, endpoint.target - Vector3.up * attackFocusHeight, rangedTargetFocusWeight) - corner;
+        approach.y = 0;
+        endpoint.position = corner + approach.normalized * Mathf.Min(attackZoomApproach, approach.magnitude * .5f);
+        ResolvePairFraming(blackBulletActorAnchor, endpoint.target - Vector3.up * attackFocusHeight,
+            endpoint.position, previewCamera.aspect, out endpoint.rotation, out endpoint.fov);
+        blackBulletColumnReference = endpoint;
+    }
+
+    private void ReportBlackBulletConstraint()
+    {
+        if (blackBulletCameraControls) blackBulletCameraControls.SetPhase("표시 영역과 구도 제한 충돌 · FOV/예약 영역 확인");
+        if (blackBulletConstraintWarning) return;
+        blackBulletConstraintWarning = true;
+        Debug.LogWarning("[JC 블랙불릿 카메라] 설정된 이동/FOV 범위에서 표시 영역을 담을 수 없습니다. 마지막 카메라 자세를 유지합니다.", this);
+    }
+
+    private void UpdateBlackBulletResidual()
+    {
+        if (!blackBulletResidual || !previewCamera || attackZoomActive || Time.timeScale <= 0) return;
+        blackBulletLivePoints.Clear();
+        DamagePopupEffect.AppendActiveCameraPoints(blackBulletPopupOwner, blackBulletLivePoints);
+        if (blackBulletLivePoints.Count > 0)
+        {
+            ApplyCameraPose(previewCamera.transform.position, previewCamera.transform.rotation, blackBulletResidualFov);
+            return;
+        }
+        previewCamera.fieldOfView = Mathf.Lerp(previewCamera.fieldOfView, blackBulletResidualFov, 1 - Mathf.Exp(-15 * Time.deltaTime));
+        if (Mathf.Abs(previewCamera.fieldOfView - blackBulletResidualFov) < .01f) ReleaseBlackBulletResidual();
+    }
+
+    private void ReleaseBlackBulletResidual()
+    {
+        if (blackBulletResidual && previewCamera) previewCamera.fieldOfView = blackBulletResidualFov;
+        blackBulletResidual = false;
+    }
+
+    // JC | 2026-11-10 | 첫 yield 이전에 목적지를 확정하고 현재 전투 카메라에서 직접 전환합니다. 별도 준비 시계는 없습니다.
+    private void BeginBlackBulletCloseUp(int family, Vector3 basisPosition, Quaternion basisRotation, float basisFov)
+    {
+        blackBulletBasisPosition = basisPosition;
+        blackBulletBasisRotation = basisRotation;
+        blackBulletReferenceFov = basisFov;
+        blackBulletCloseUpPosition = previewCamera.transform.position;
+        blackBulletCloseUpRotation = previewCamera.transform.rotation;
+        blackBulletCloseUpFov = previewCamera.fieldOfView;
+        blackBulletCloseUpFamily = family;
+        if (blackBulletCanon == JcBlackBulletCameraCanon.Adaptive) CaptureBlackBulletColumnReference();
+        else blackBulletColumnReference = null;
+        var captureWatch = System.Diagnostics.Stopwatch.StartNew();
+        blackBulletBodyPoints = CaptureBlackBulletCloseUpPoints(attackFocusActor);
+        BlackBulletCaptureMilliseconds = captureWatch.Elapsed.TotalMilliseconds;
+        blackBulletProtection = true;
+        blackBulletReturning = blackBulletConstraintWarning = false;
+        blackBulletSettingsHash = 0;
+        blackBulletFrameResolved = false;
+        RefreshBlackBulletProtection();
+        blackBulletCloseUpActive = blackBulletCloseUpMoving = true;
+        blackBulletCloseUpAttackRunning = false;
+        followAttackFocus = false;
+        blackBulletTransitionElapsed = 0;
+        blackBulletClockBattle = FindSceneComponent<BattleManager>();
+        blackBulletTimeline = null;
+        blackBulletTimelineActive = false;
+        blackBulletTimelineHighWater = 0;
+        blackBulletClockFrame = Time.frameCount;
+        // JC | 2026-11-10 | 메뉴 옆 고정 픽셀 목표를 제거합니다. UI 회피는 기존 화면 예약 영역 제약으로 유지합니다.
+        ResolveBlackBulletCloseUpFrame();
+        if (!blackBulletConstraintWarning) blackBulletCameraControls.SetPhase("정본 " + (int)blackBulletCanon + " · 공격 앵글 전환 · " + family);
+        // JC | 2026-11-10 | 전환 시간 0은 첫 프레임에서 즉시 도착하며 양수이면 현재 자세에서 연속적으로 출발합니다.
+        if (blackBulletCameraControls.Draft.transitionSeconds <= 0) TickBlackBulletCloseUp(0);
+    }
+
+    private void EndBlackBulletCloseUpAttack()
+    {
+        blackBulletCloseUpAttackRunning = false;
+    }
+
+    // JC | 2026-11-11 | 기존 ASB 재생기의 시작/종료 알림입니다. 두 정본의 현재 공격만 관찰하며 Director를 제어하지 않습니다.
+    public void BeginSkillCameraTimeline(BattleCharactor actor, UnityEngine.Playables.PlayableDirector director, double startTime)
+    {
+        if (actor != attackFocusActor || !blackBulletCloseUpAttackRunning ||
+            !blackBulletCloseUpActive) return;
+        blackBulletTimeline = director;
+        blackBulletTimelineActive = true;
+        blackBulletTimelineHighWater = startTime;
+        blackBulletClockFrame = -1;
+    }
+
+    public void EndSkillCameraTimeline(BattleCharactor actor, UnityEngine.Playables.PlayableDirector director)
+    {
+        if (!blackBulletTimelineActive || actor != attackFocusActor || director != blackBulletTimeline) return;
+        // Stop()이 재생 시간을 초기화하기 전에 마지막 증가량을 소비합니다. 종료 알림에서 새 확대를 시작하지는 않습니다.
+        float delta = ReadBlackBulletCloseUpDelta();
+        if (Time.timeScale > 0f) AdvanceBlackBulletCloseUp(delta);
+        blackBulletTimelineActive = false;
+        blackBulletTimeline = null;
+    }
+
+    private float BlackBulletBattleSpeed => blackBulletClockBattle ? Mathf.Max(0f, blackBulletClockBattle.CurrentBattleSpeed) : 0f;
+    private float BlackBulletBattleDelta => Mathf.Max(0f, Time.deltaTime) * BlackBulletBattleSpeed;
+
+    private float ReadBlackBulletCloseUpDelta()
+    {
+        // JC | 2026-11-10 | Timeline 종료와 LateUpdate가 같은 프레임에 호출되어 시간을 이중 적립하지 않게 합니다.
+        if (blackBulletClockFrame == Time.frameCount) return 0;
+        blackBulletClockFrame = Time.frameCount;
+        return SampleBlackBulletCloseUpDelta(Time.deltaTime, BlackBulletBattleSpeed, Time.timeScale > 0f);
+    }
+
+    private float SampleBlackBulletCloseUpDelta(float scaledDelta, float battleSpeed, bool running)
+    {
+        if (blackBulletTimelineActive)
+        {
+            double time = blackBulletTimeline ? blackBulletTimeline.time : blackBulletTimelineHighWater;
+            float delta = (float)System.Math.Max(0d, time - blackBulletTimelineHighWater);
+            // JC | 2026-11-10 | Hold의 시간 되감기/재평가 구간을 다시 세지 않습니다. 새 구간은 시작 알림에서 기준점을 재설정합니다.
+            blackBulletTimelineHighWater = System.Math.Max(blackBulletTimelineHighWater, time);
+            return running && battleSpeed > 0f ? delta : 0f;
+        }
+        // 대사·Timeline 전후의 이동/대기는 전투 시계를 사용합니다. 공격 안의 Animator 타격 정지도 함께 반영합니다.
+        float hitStop = blackBulletCloseUpAttackRunning && attackFocusActor && attackFocusActor.Anim != null
+            ? Mathf.Max(0f, attackFocusActor.Anim.HitStopSpeedMultiplier) : 1f;
+        return running ? Mathf.Max(0f, scaledDelta) * Mathf.Max(0f, battleSpeed) * hitStop : 0f;
+    }
+
+    private void TickBlackBulletCloseUp(float delta) => AdvanceBlackBulletCloseUp(delta);
+
+    private void AdvanceBlackBulletCloseUp(float delta)
+    {
+        // JC | 2026-11-10 | 진행 시간을 인자로 받아 플레이 없이 순서/경계도 검증합니다. 실제 호출은 기존 LateUpdate 한 곳입니다.
+        if (!CanContinueBlackBulletCloseUp())
+        {
+            blackBulletCloseUpActive = blackBulletCloseUpMoving = false;
+            return;
+        }
+        // JC | 2026-11-10 | 스킬 발동부터 전환 시간만 적립합니다. 준비 동작/대기 또는 공격 시작을 기다리는 조건을 두지 않습니다.
+        if (blackBulletCloseUpMoving) blackBulletTransitionElapsed += Mathf.Max(0, delta);
+        if (!blackBulletCloseUpActive) return;
+        float duration = Mathf.Max(0, blackBulletCameraControls.Draft.transitionSeconds);
+        float t = !blackBulletCloseUpMoving || duration <= 0 ? 1 : Mathf.Clamp01(blackBulletTransitionElapsed / duration);
+        ApplyBlackBulletCloseUp(t * t * (3f - 2f * t));
+        blackBulletCloseUpMoving = t < 1;
+        if (!blackBulletCloseUpMoving && !blackBulletConstraintWarning) blackBulletCameraControls.SetPhase("정본 유지 · 기존 공격/복귀 진행");
+    }
+
+    private bool CanContinueBlackBulletCloseUp() => attackZoomActive && previewCamera && attackFocusActor &&
+        !attackFocusActor.IsDead && blackBulletCameraControls && blackBulletCameraControls.isActiveAndEnabled &&
+        blackBulletCameraControls.Draft;
+
+    private void ApplyBlackBulletCloseUp(float blend)
+    {
+        // JC | 2026-11-10 | 배치별 목적지로 보간하되 출발 자세를 고정해 편집 시 이동/FOV 누적을 막습니다.
+        if (!ResolveBlackBulletCloseUpFrame()) return;
+        ApplyCameraPose(Vector3.Lerp(blackBulletCloseUpPosition, blackBulletFramePosition, blend), Quaternion.Slerp(blackBulletCloseUpRotation, blackBulletFrameRotation, blend),
+            // JC | 2026-11-10 | 회전도 변화하므로 매 프레임 ApplyCameraPose에서 실제 경로의 가시 제약을 다시 확인합니다.
+            Mathf.Atan(Mathf.Lerp(Mathf.Tan(blackBulletCloseUpFov * Mathf.Deg2Rad * .5f), Mathf.Tan(blackBulletFrameFov * Mathf.Deg2Rad * .5f), blend)) * 2 * Mathf.Rad2Deg,
+            // JC | 2026-11-10 | 위치·회전과 같은 진행률로 예약 여백을 확보합니다. 복귀 등 기존 호출은 기본값 1로 종전 보호를 유지합니다.
+            blend);
+    }
+
+    // JC | 2026-11-11 | 원근감 Inspector의 명시적인 편집만 현재 진행률에서 재적용합니다. 일시정지 시계/Timeline/전환 진행량은 바꾸지 않습니다.
+    public void RefreshBlackBulletCameraPreview()
+    {
+        if (!blackBulletCloseUpActive || !CanContinueBlackBulletCloseUp()) return;
+        blackBulletFrameResolved = false;
+        float duration = Mathf.Max(0, blackBulletCameraControls.Draft.transitionSeconds);
+        float t = !blackBulletCloseUpMoving || duration <= 0 ? 1 : Mathf.Clamp01(blackBulletTransitionElapsed / duration);
+        ApplyBlackBulletCloseUp(t * t * (3f - 2f * t));
+    }
+
+    // JC | 2026-11-10 | 실제 카메라 쓰기와 목적지 계산을 분리하여 스킬 시작 시 선계산 및 프로필 실시간 갱신을 함께 지원합니다.
+    private bool ResolveBlackBulletCloseUpFrame()
+    {
+        var projection = new Vector4(previewCamera.pixelWidth, previewCamera.pixelHeight, previewCamera.aspect, previewCamera.nearClipPlane);
+        RefreshBlackBulletProtection();
+        float padding = blackBulletCameraControls.Draft.edgeMarginPixels;
+        if (!blackBulletFrameResolved || blackBulletFrameProjection != projection || blackBulletFramePadding != padding)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var settings = blackBulletCameraControls.Draft;
+            var inverse = blackBulletWorldFromReference.inverse;
+            var inverseRotation = Quaternion.Inverse(blackBulletReferenceRotation);
+            Vector3[] ToReference(Vector3[] points)
+            {
+                var result = new Vector3[points.Length];
+                for (int i = 0; i < points.Length; i++) result[i] = inverse.MultiplyPoint3x4(points[i]);
+                return result;
+            }
+            bool resolved;
+            if (blackBulletCanon == JcBlackBulletCameraCanon.Authored)
+            {
+                var source = blackBulletCameraControls.AuthoredDraft;
+                var slot = source ? source.FindShot(blackBulletCloseUpFamily, blackBulletTargetSlot) : null;
+                resolved = slot != null;
+                if (resolved)
+                {
+                    slot.Resolve(out var p, out var q, out blackBulletFrameFov);
+                    // 정본1 촬영값은 그대로 두고 은행 반 칸 이동을 제거한 후 현재 진형 원점으로 옮깁니다.
+                    p += settings.referencePlayerOrigin - source.referencePlayerOrigin;
+                    blackBulletFramePosition = blackBulletWorldFromReference.MultiplyPoint3x4(p);
+                    blackBulletFrameRotation = blackBulletReferenceRotation * q;
+                    float required = JcBlackBulletCameraFraming.RequiredFov(blackBulletCloseUpPoints, blackBulletFramePosition,
+                        blackBulletFrameRotation, previewCamera.aspect, new Vector2(previewCamera.pixelWidth, previewCamera.pixelHeight),
+                        settings, out resolved, previewCamera.nearClipPlane);
+                    blackBulletFrameFov = Mathf.Max(blackBulletFrameFov, required);
+                }
+            }
+            else
+            {
+                var endpoint = blackBulletColumnReference;
+                if (endpoint.HasValue)
+                {
+                    var e = endpoint.Value; e.target = inverse.MultiplyPoint3x4(e.target); e.oppositeTarget = inverse.MultiplyPoint3x4(e.oppositeTarget);
+                    e.position = inverse.MultiplyPoint3x4(e.position); e.rotation = inverseRotation * e.rotation; e.points = ToReference(e.points); endpoint = e;
+                }
+                resolved = JcBlackBulletCameraFraming.TryResolve(inverse.MultiplyPoint3x4(blackBulletActorAnchor + Vector3.up * attackFocusHeight),
+                    inverse.MultiplyPoint3x4(blackBulletTargetAnchor + Vector3.up * attackFocusHeight), ToReference(blackBulletCloseUpPoints),
+                    inverse.MultiplyPoint3x4(blackBulletBasisPosition), inverseRotation * blackBulletBasisRotation, blackBulletReferenceFov, previewCamera.aspect,
+                    previewCamera.nearClipPlane, new Vector2(previewCamera.pixelWidth, previewCamera.pixelHeight), settings,
+                    out var position, out var rotation, out blackBulletFrameFov,
+                    inverse.MultiplyPoint3x4(new Vector3(blackBulletActorAnchor.x, blackBulletGroundHeight, blackBulletActorAnchor.z)).y,
+                    blackBulletColumnBlend, endpoint);
+                blackBulletFramePosition = blackBulletWorldFromReference.MultiplyPoint3x4(position);
+                blackBulletFrameRotation = blackBulletReferenceRotation * rotation;
+            }
+            BlackBulletSolveMilliseconds = watch.Elapsed.TotalMilliseconds;
+            if (!resolved) { ReportBlackBulletConstraint(); return false; }
+            blackBulletFrameProjection = projection; blackBulletFramePadding = padding; blackBulletFrameResolved = true;
+        }
+        return true;
     }
 
     private System.Collections.IEnumerator ShowSkillSpeech(BattleCharactor actor, SkillData skill, bool counter)
@@ -856,7 +1379,7 @@ public sealed class BattlePresentationController : MonoBehaviour
     }
 
     private System.Collections.IEnumerator AnimateAttackZoom(Vector3 position, Vector3 corner, Quaternion rotation,
-        float fov, float orthoSize, float duration, bool focusActor)
+        float fov, float orthoSize, float duration, bool focusActor, bool useBattleTime = false)
     {
         Vector3 startPosition = previewCamera.transform.position;
         Quaternion startRotation = previewCamera.transform.rotation;
@@ -865,7 +1388,8 @@ public sealed class BattlePresentationController : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < duration && previewCamera != null)
         {
-            elapsed += Time.unscaledDeltaTime;
+            // JC | 2026-11-10 | 블랙불릿 추가 확대의 복귀도 같은 전투 시간으로 처리합니다. 기존 곡선과 나머지 캐릭터의 경로는 보존합니다.
+            elapsed += useBattleTime ? BlackBulletBattleDelta : Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             t = 1f - (1f - t) * (1f - t);
             Vector3 cameraPosition = (1f - t) * (1f - t) * startPosition +
@@ -894,19 +1418,38 @@ public sealed class BattlePresentationController : MonoBehaviour
     private void RestoreAttackCamera()
     {
         if (!attackZoomActive) return;
+        // JC | 2026-11-10 | 복귀 후 숫자의 표시 수명만 FOV 보호에 남깁니다. 원래 카메라 위치·회전과 턴 종료 시각은 그대로 복구합니다.
+        blackBulletLivePoints.Clear();
+        if (blackBulletProtection) DamagePopupEffect.AppendActiveCameraPoints(blackBulletPopupOwner, blackBulletLivePoints);
+        blackBulletResidual = blackBulletLivePoints.Count > 0;
+        blackBulletProtection = false;
+        blackBulletResidualFov = attackCameraFov;
         if (previewCamera != null)
         {
             ApplyCameraPose(attackCameraPosition, attackCameraRotation, attackCameraFov);
             previewCamera.orthographicSize = attackCameraOrthoSize;
         }
         attackZoomActive = false;
+        // JC | 2026-11-10 | 정상 복귀·비활성화·중단 시 추가 확대와 임시 범위도 기존 finally 정리에 포함합니다.
+        blackBulletCloseUpActive = blackBulletCloseUpMoving = false;
+        blackBulletCloseUpAttackRunning = false;
+        blackBulletTransitionElapsed = 0;
+        blackBulletCloseUpFamily = 0;
+        // JC | 2026-11-10 | 다음 스킬/코어 연출에 이전 셀의 보간 기준이 남지 않도록 해제합니다.
+        blackBulletColumnReference = null;
+        blackBulletColumnBlend = 0;
+        blackBulletTimeline = null;
+        blackBulletTimelineActive = false;
+        blackBulletTimelineHighWater = 0;
+        blackBulletClockFrame = -1;
+        blackBulletClockBattle = null;
+        blackBulletCloseUpPoints = null; blackBulletBodyPoints = null; blackBulletHasPopupBounds = false;
+        blackBulletReturning = false; blackBulletReferenceFov = 0; blackBulletHasTargetBody = false;
+        blackBulletFrameResolved = false;
+        if (blackBulletCameraControls) blackBulletCameraControls.SetPhase("대기 · 블랙불릿 공통 카메라");
         // JC | 2026-11-06 | 정상 복귀·중단 모두 같은 정리 경로에서 블랙불릿 구도를 해제합니다.
         blackBulletPairActive = false;
-        // JC | 2026-11-06 | 정상 종료·중단 모두 저장 구도 상태를 정리하여 다음 스킬에 남지 않게 합니다.
-        bankSkillShotActive = false;
-        bankSkillShotPosition = default;
-        bankSkillShotRotation = Quaternion.identity;
-        bankSkillShotFov = 0f;
+        blackBulletTargetSlot = -1;
         blackBulletActorAnchor = default;
         blackBulletTargetAnchor = default;
         if (BossCamera) BossCamera.EndAttack();
@@ -1000,6 +1543,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightStarted -= HandleProjectileStarted;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightFinished -= HandleProjectileFinished;
         RestoreAttackCamera();
+        ReleaseBlackBulletResidual();
         CancelTurnPresentation();
         if (flow != null) flow.OnTurnStarted -= HandleTurnStarted;
         if (turnBanner != null) turnBanner.TurnBannerShown -= HandleTurnBannerShown;

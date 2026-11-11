@@ -114,7 +114,8 @@ public class InputHandler : MonoBehaviour
         // 자동전투 중에는 타겟팅을 무장하지 않는다. 무장해두면 턴 도중 자동전투를 끄는 순간
         // 이미 준비된 선택 상태가 되살아나 같은 턴에 두 번 행동할 수 있다.
         if (IsAutoBattleActive) return;
-        BeginPendingAction(PendingActionType.ClassSkill);
+        // JC | 2026-11-10 | 턴 초기화는 플레이어 입력과 구분하여 씬 진입 중에도 기존 자동 선택을 유지합니다.
+        BeginPendingActionCore(PendingActionType.ClassSkill, 0);
     }
 
     public void ResolveAutoBattleAction(BattleCharactor actor, BattleCharactor target)
@@ -134,6 +135,12 @@ public class InputHandler : MonoBehaviour
 
     private void Update()
     {
+        // JC | 2026-11-10 | ASB 전투 진행은 유지하되 페이드 중 수동 입력과 이전 클릭 확정 대기를 버립니다.
+        if (SceneFadeController.IsInputBlocked)
+        {
+            ClearPress();
+            return;
+        }
         if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return;
         if (IsAutoBattleActive) return;
         // 적 AI의 공격 대상 표시를 플레이어의 유휴 입력 정리가 지우지 않도록 합니다.
@@ -221,6 +228,8 @@ public class InputHandler : MonoBehaviour
 
     private void ReleasePress(BattleCharactor actor)
     {
+        // JC | 2026-11-10 | 같은 프레임에 전환이 시작됐어도 눌렀다 떼는 공격 확정을 차단합니다.
+        if (SceneFadeController.IsInputBlocked) { ClearPress(); return; }
         if (!isPressArmed)
         {
             return;
@@ -350,6 +359,14 @@ public class InputHandler : MonoBehaviour
     }
 
     public void BeginPendingAction(PendingActionType actionType, int skillId = 0)
+    {
+        // JC | 2026-11-10 | UI가 직접 요청하는 스킬 선택은 전환 중 차단하며 전투 로직 자체는 변경하지 않습니다.
+        if (SceneFadeController.IsInputBlocked) return;
+        BeginPendingActionCore(actionType, skillId);
+    }
+
+    // JC | 2026-11-10 | 수동 입력과 턴 시작 초기화가 공유하던 기존 선택 구현을 그대로 유지합니다.
+    private void BeginPendingActionCore(PendingActionType actionType, int skillId)
     {
         if (!JC.Tutorial.JcTutorialBattleGuide.AllowsSkill(gameObject.scene, actionType, skillId)) return;
         if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return;

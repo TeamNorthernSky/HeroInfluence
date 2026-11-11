@@ -210,7 +210,8 @@ public sealed class TutorialOutpostObject : MonoBehaviour
             renderer.sharedMaterial = material;
             changed = true;
         }
-        if (changed) JC.Environment.JcDayNightController.RefreshBuildingWindows(gameObject.scene);
+        // JC | 2026-11-10 | 점령 재질이 바뀐 이 거점만 즉시 갱신합니다. 입장·점령 판정과 다른 건물은 건드리지 않습니다.
+        if (changed) JC.Environment.JcDayNightController.RefreshBuildingWindows(this);
     }
 
     private void ApplyOverlayColor()
