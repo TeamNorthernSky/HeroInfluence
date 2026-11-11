@@ -118,7 +118,24 @@ namespace JC.BattleTesting
                 ipText.margin = Vector4.zero;
             }
             var rank = Rect("ActorInfoPanel/StatsArea/Rank");
-            if (rank != null)
+            var rankBadge = Rect("ActorInfoPanel/StatsArea/RankBadge");
+            // JC | 2026-11-11 | 첫 추천 시안처럼 이름 오른쪽에48px 배지만 표시하고 기존 랭크 문구는 숨깁니다.
+            // 이름의 오른쪽 여백만 확보하며 초상화·HP·IP·스킬 위치와 크기는 유지합니다.
+            if (rankBadge != null)
+            {
+                if (rank != null) rank.gameObject.SetActive(false);
+                var actorName = Rect("ActorInfoPanel/StatsArea/ActorName");
+                actorName.sizeDelta = new Vector2(-60, 36);
+                rankBadge.anchorMin = rankBadge.anchorMax = rankBadge.pivot = Vector2.one;
+                // 첫 시안의1080p 기준 배지 사각형(336,26)-(384,74)에 맞춥니다.
+                rankBadge.anchoredPosition = new Vector2(0, 4);
+                rankBadge.sizeDelta = new Vector2(48, 48);
+                var badgeImage = rankBadge.GetComponent<Image>();
+                badgeImage.type = Image.Type.Simple;
+                badgeImage.preserveAspect = true;
+                badgeImage.raycastTarget = false;
+            }
+            else if (rank != null)
             {
                 rank.anchorMin = rank.anchorMax = new Vector2(1, 1); rank.pivot = new Vector2(1, 1);
                 // Keep the lower edge fixed while growing upward by 15%.

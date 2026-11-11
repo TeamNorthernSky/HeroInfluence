@@ -114,6 +114,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     // JC | 2026-11-11 | 모든 전투에 같은 정본1/2 선택을 연결합니다. ASB 스킬/Timeline/피해 판정은 그대로 둡니다.
     [InspectorName("블랙불릿 공통 카메라 조절기"), Tooltip("정본1/2 선택과 조절을 모든 전투가 공유합니다. 코어 공통 연출은 제외합니다.")]
     public JcBlackBulletCameraControls blackBulletCameraControls;
+    // JC | 2026-11-11 | 후방 흐림은 별도 담당자에게 시작/복귀/시간 알림만 전달합니다. 카메라 구도와 공격 판정은 유지합니다.
+    public JC.BattleUI.JcSkillRearBlurController skillRearBlur;
     // JC | 2026-11-11 | 선택은 공격 시작에 확정하고 두 정본이 동일한 시간·복귀·표시 보호 경로를 사용합니다.
     private JcBlackBulletCameraCanon blackBulletCanon;
     private int blackBulletTargetSlot;
@@ -907,6 +909,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             }
         }
         attackZoomActive = true;
+        skillRearBlur?.BeginAttack(actor, target, skill);
         try
         {
             float scale = 1f - Mathf.Clamp(attackZoomAmount, 0f, .4f);
@@ -949,6 +952,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             blackBulletReturning = useBlackBulletCloseUp;
             followAttackFocus = false;
             focusNekoBarrage = false;
+            skillRearBlur?.BeginReturn();
             yield return AnimateAttackZoom(attackCameraPosition, corner, attackCameraRotation,
                 attackCameraFov, attackCameraOrthoSize, attackZoomOutSeconds, false, useBlackBulletCloseUp);
         }
@@ -1219,6 +1223,7 @@ public sealed class BattlePresentationController : MonoBehaviour
     // JC | 2026-11-11 | 기존 ASB 재생기의 시작/종료 알림입니다. 두 정본의 현재 공격만 관찰하며 Director를 제어하지 않습니다.
     public void BeginSkillCameraTimeline(BattleCharactor actor, UnityEngine.Playables.PlayableDirector director, double startTime)
     {
+        skillRearBlur?.BeginTimeline(actor, director, startTime);
         if (actor != attackFocusActor || !blackBulletCloseUpAttackRunning ||
             !blackBulletCloseUpActive) return;
         blackBulletTimeline = director;
@@ -1229,6 +1234,7 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     public void EndSkillCameraTimeline(BattleCharactor actor, UnityEngine.Playables.PlayableDirector director)
     {
+        skillRearBlur?.EndTimeline(actor, director);
         if (!blackBulletTimelineActive || actor != attackFocusActor || director != blackBulletTimeline) return;
         // Stop()이 재생 시간을 초기화하기 전에 마지막 증가량을 소비합니다. 종료 알림에서 새 확대를 시작하지는 않습니다.
         float delta = ReadBlackBulletCloseUpDelta();
@@ -1417,6 +1423,7 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void RestoreAttackCamera()
     {
+        skillRearBlur?.Cancel();
         if (!attackZoomActive) return;
         // JC | 2026-11-10 | 복귀 후 숫자의 표시 수명만 FOV 보호에 남깁니다. 원래 카메라 위치·회전과 턴 종료 시각은 그대로 복구합니다.
         blackBulletLivePoints.Clear();

@@ -12,6 +12,9 @@ public class HeroInfoPanel : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
     [Tooltip("현재 행동 유닛의 레벨에서 계산한 랭크를 표시합니다.")]
     [SerializeField] private TMP_Text rankText;
+    // JC | 2026-11-11 | 전투 HUD는 탐사 배지를 재사용합니다. 미연결된 기존 프리뷰 UI는 원래 텍스트 표시를 유지합니다.
+    [SerializeField, Tooltip("이름 오른쪽에 표시할 탐사 공용 랭크 배지입니다. 연결 시 기존 Rank Text 문구는 표시하지 않습니다.")]
+    private HeroRankBadge rankBadge;
     [Tooltip("현재 HP와 최대 HP를 표시합니다.")]
     [SerializeField] private TMP_Text hpText;
     [Tooltip("현재 IP를 표시합니다. Show Max Ip를 켜면 최대 IP도 표시합니다.")]
@@ -104,7 +107,9 @@ public class HeroInfoPanel : MonoBehaviour
         if (currentUnit == null)
         {
             if (nameText != null) nameText.text = "-";
-            if (rankText != null) rankText.text = "-";
+            // JC | 2026-11-11 | 행동 유닛이 없으면 이전 유닛의 배지가 남지 않도록 숨깁니다.
+            if (rankText != null) rankText.text = rankBadge != null ? string.Empty : "-";
+            if (rankBadge != null) rankBadge.SetRank(null);
             if (hpText != null) hpText.text = inlineHp ? "HP  -" : "-";
             if (ipText != null) ipText.text = "-";
             if (portraitImage != null)
@@ -120,7 +125,7 @@ public class HeroInfoPanel : MonoBehaviour
         if (nameText != null)
             nameText.text = currentUnit.DisplayName; // [JC 260621] 클래스명 아닌 히어로명
 
-        if (rankText != null)
+        if (rankText != null || rankBadge != null)
         {
             // 현재 성장표의 F~SSS 등급을 사용한다.
             int rankLevel = currentUnit.SourceData != null ? currentUnit.SourceData.Level : currentUnit.Level;
@@ -128,7 +133,9 @@ public class HeroInfoPanel : MonoBehaviour
                 // JC | 2026-11-04 | 튜토리얼 영웅은 해당 성장표의 레벨별 등급을 사용해 탐사와 전투 배지를 일치시킵니다.
                 ? UnitRankLookup.GetTutorialRank(rankLevel, TutorialCatalog.Instance)
                 : UnitRankLookup.GetRank(rankLevel);
-            rankText.text = $"랭크: {rank}";
+            // JC | 2026-11-11 | 일반·튜토리얼의 기존 등급 판정은 유지하고 결과만 이름 옆 배지에 전달하며 랭크 문구는 비웁니다.
+            if (rankText != null) rankText.text = rankBadge != null ? string.Empty : $"랭크: {rank}";
+            if (rankBadge != null) rankBadge.SetRank(rank);
         }
 
         UpdateHpText(currentUnit.CurrentHp, currentUnit.MaxHp);

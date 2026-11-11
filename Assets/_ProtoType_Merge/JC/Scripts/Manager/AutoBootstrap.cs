@@ -12,9 +12,9 @@ public static class AutoBootstrap
     private static void CompleteStartup()
     {
         EnsureAudioManager();
-        // Scene callbacks may not have created the fade service yet (e.g. additive editor entry).
-        // Reuse its normal initializer before checking readiness; do not start a transition here.
-        SceneFadeController.EnsureInstance();
+        // JC | 2026-11-11 | 에디터에서 탐사씬을 직접 실행하면 최초 로드 알림을 놓칠 수 있습니다.
+        // 서비스 생성뿐 아니라 현재 씬의 준비 확인·진입 완료 알림까지 연결해 첫 채팅을 보장합니다.
+        SceneFadeController.EnsureInstance().PrepareInitialSceneEntry();
         string missing = GetMissingServices();
         if (missing.Length != 0)
             Debug.LogError("[AutoBootstrap] 필수 서비스 준비 실패: " + missing);
