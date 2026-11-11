@@ -213,10 +213,13 @@ public class SceneFadeController : MonoBehaviour
             fade.loadingLeadInShown = true;
             yield return fade.HoldLoadingMotion(LoadingLeadInDuration);
         }
+        // 선행 연출이 끝난 뒤 실제 리소스 준비와 씬 로드 중에는 현재 프레임을 유지한다.
+        fade.loadingLabel.SetMotionPaused(true);
     }
 
     private IEnumerator HoldLoadingMotion(float duration)
     {
+        loadingLabel.SetMotionPaused(false);
         loadingLabel.gameObject.SetActive(true);
         loadingLabel.RestartMotion();
         float elapsed = 0f;
@@ -535,6 +538,7 @@ public class SceneFadeController : MonoBehaviour
             overlay.raycastTarget = true;
             if (waitForReady)
             {
+                loadingLabel.SetMotionPaused(true);
                 yield return WaitForSceneReady();
                 if (!loadingLeadOutShown)
                 {

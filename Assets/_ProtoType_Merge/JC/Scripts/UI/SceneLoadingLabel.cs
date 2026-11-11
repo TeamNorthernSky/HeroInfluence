@@ -13,6 +13,7 @@ public sealed class SceneLoadingLabel : MonoBehaviour
     private float waveTime;
     private Material glowMaterial;
     private SceneLoadingEmblem emblem;
+    private bool motionPaused;
     public void Initialize(Transform parent)
     {
         transform.SetParent(parent, false);
@@ -60,8 +61,14 @@ public sealed class SceneLoadingLabel : MonoBehaviour
     }
     public void BeginPresentation()
     {
+        SetMotionPaused(false);
         if (emblem != null) emblem.BeginPresentation();
         RestartMotion();
+    }
+    public void SetMotionPaused(bool paused)
+    {
+        motionPaused = paused;
+        if (emblem != null) emblem.SetMotionPaused(paused);
     }
     public void RestartMotion()
     {
@@ -75,7 +82,7 @@ public sealed class SceneLoadingLabel : MonoBehaviour
     }
     private void Update()
     {
-        if (letters == null) return;
+        if (letters == null || motionPaused) return;
         // 로딩 중 게임 시간이 멈춰 있어도 동일한 속도로 재생한다.
         float cycleDuration = (letters.Length - 1) * LetterDelay + WaveDuration + WavePause;
         waveTime = Mathf.Repeat(waveTime + Mathf.Min(Time.unscaledDeltaTime, .05f), cycleDuration);

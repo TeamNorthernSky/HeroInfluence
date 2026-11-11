@@ -5,6 +5,7 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
 {
     private const float EntranceDuration = .6f;
     private const float Diameter = 196f;
+    private const float SafeRadius = 82f;
     private const float SheetSize = 1280f;
     private static readonly System.Random SelectionRandom = new System.Random();
     private static readonly Rect[] IconRegions =
@@ -22,6 +23,10 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
     private Texture2D atlas;
     private int selectedIcon;
     private float motionTime;
+    private bool motionPaused;
+    private float contentRadius;
+
+    public void SetMotionPaused(bool paused) => motionPaused = paused;
 
     public void Initialize(Transform parent)
     {
@@ -43,7 +48,7 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
         ringMaterial = CreateMaterial(shader, 2);
         flameMaterial = CreateMaterial(shader, 3);
 
-        var mask = CreateImage("Circle clip", root, Vector2.one * Diameter, maskMaterial);
+        var mask = CreateImage("Circle clip", root, Vector2.one * ((SafeRadius + 4f) * 2f), maskMaterial);
         mask.gameObject.AddComponent<UnityEngine.UI.Mask>().showMaskGraphic = false;
         var motion = new GameObject("Icon motion", typeof(RectTransform));
         motion.transform.SetParent(mask.transform, false);
@@ -79,6 +84,11 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
         // Match the two upward-facing barrel openings on the crossed-pistol silhouette.
         flashes[0].rectTransform.anchoredPosition = new Vector2(-size.x * .43f, size.y * .36f);
         flashes[1].rectTransform.anchoredPosition = new Vector2(size.x * .43f, size.y * .36f);
+        // Reserve space for the entire image, including rotated corners and the largest muzzle flame.
+        contentRadius = size.magnitude * .5f;
+        if (selectedIcon == 1)
+            contentRadius = Mathf.Max(contentRadius, flashes[0].rectTransform.anchoredPosition.magnitude +
+                flashes[0].rectTransform.sizeDelta.magnitude * .5f * 1.25f);
         RestartMotion();
     }
 
@@ -90,6 +100,7 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
 
     private void Update()
     {
+        if (motionPaused) return;
         // A long scene-load frame must not skip the visible entrance or motion.
         motionTime += Mathf.Min(Time.unscaledDeltaTime, .05f);
         ApplyMotion(motionTime);
@@ -101,7 +112,7 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
         float enter = Mathf.Clamp01(time / EntranceDuration);
         float entranceY = Mathf.Lerp(-210f, 0f, 1f - Mathf.Pow(1f - enter, 3f));
         float active = Mathf.Max(0f, time - EntranceDuration);
-        float scale = selectedIcon == 0 ? .9f : 1f;
+        float scale = selectedIcon == 0 ? .72f : 1f;
         float x = 0f, y = 0f, rotation = 0f;
         for (int i = 0; i < flashes.Length; i++) flashes[i].gameObject.SetActive(false);
         if (enter >= 1f)
@@ -111,13 +122,21 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
                 case 0: // 왼쪽으로 당긴 뒤 오른쪽으로 빠르게 찌르고 중앙으로 회수한다.
                     float punch = Mathf.Repeat(active, 1.5f);
                     if (punch < .42f)
-                        x = Mathf.Lerp(0f, -26f, Mathf.SmoothStep(0f, 1f, punch / .42f));
+                    {
+                        float pull = Mathf.SmoothStep(0f, 1f, punch / .42f);
+                        x = Mathf.Lerp(0f, -24f, pull);
+                        scale = Mathf.Lerp(.72f, .46f, pull);
+                    }
                     else if (punch < .56f)
-                        x = Mathf.Lerp(-26f, 26f, 1f - Mathf.Pow(1f - (punch - .42f) / .14f, 3f));
+                    {
+                        float strike = 1f - Mathf.Pow(1f - (punch - .42f) / .14f, 3f);
+                        x = Mathf.Lerp(-24f, 14f, strike);
+                        scale = Mathf.Lerp(.46f, .72f, strike);
+                    }
                     else if (punch < .66f)
-                        x = 26f;
+                        x = 14f;
                     else if (punch < .96f)
-                        x = Mathf.Lerp(26f, 0f, Mathf.SmoothStep(0f, 1f, (punch - .66f) / .3f));
+                        x = Mathf.Lerp(14f, 0f, Mathf.SmoothStep(0f, 1f, (punch - .66f) / .3f));
                     break;
                 case 1: // Alternating shots with a brief flame and opposite recoil.
                     int shot = Mathf.FloorToInt(active / .48f);
@@ -143,6 +162,10 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
                     break;
             }
         }
+        // Keep all motion inside the ring rather than relying on clipping at the rim.
+        // Entrance still rises through the circular mask, without replaying after the real load.
+        if (contentRadius > 0f)
+            scale = Mathf.Min(scale, Mathf.Max(0f, SafeRadius - new Vector2(x, y).magnitude) / contentRadius);
         iconMotion.anchoredPosition = new Vector2(x, entranceY + y);
         iconMotion.localScale = Vector3.one * scale;
         iconMotion.localRotation = Quaternion.Euler(0f, 0f, rotation);
