@@ -44,6 +44,12 @@ public class SceneFadeController : MonoBehaviour
     private void Update()
     {
         if (loadingLabel != null) loadingLabel.gameObject.SetActive(showingLoading && overlay != null && overlay.color.a > .98f);
+        // The final input-protection frame has ended. Notify once instead of making chat poll.
+        if (!inputBlocked && inputReleasedFrame >= 0 && Time.frameCount != inputReleasedFrame)
+        {
+            inputReleasedFrame = -1;
+            TryNotifySceneEntryCompleted();
+        }
     }
     private void BeforeCanvasRender()
     {
@@ -62,6 +68,21 @@ public class SceneFadeController : MonoBehaviour
     private SceneLoadRequest loadRequest;
     private GameObject selectionBeforeLoad;
     public static event Action<Scene> TransitionFailed;
+    public static event Action<Scene> SceneEntryCompleted;
+    private Scene pendingCompletedEntry;
+    private Scene completedEntry;
+
+    public bool IsSceneEntryCompleted(Scene scene)
+    {
+        return scene.IsValid() && scene.isLoaded && scene == SceneManager.GetActiveScene() &&
+            scene == completedEntry && !IsTransitioning;
+    }
+
+    private void ResetSceneEntryCompletion()
+    {
+        pendingCompletedEntry = default;
+        completedEntry = default;
+    }
 
     // Unity AsyncOperation은 실제 로드 시작 전에 만들 수 없습니다. 대기 호출부에는
     // 준비 구간까지 포함하는 핸들을 반환하며, 씬 활성화 완료 시 기존처럼 대기가 끝납니다.
@@ -74,7 +95,11 @@ public class SceneFadeController : MonoBehaviour
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetTransitionCallbacks() => TransitionFailed = null;
+    private static void ResetTransitionCallbacks()
+    {
+        TransitionFailed = null;
+        SceneEntryCompleted = null;
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void RegisterSceneFade()
@@ -128,6 +153,7 @@ public class SceneFadeController : MonoBehaviour
             return null;
         }
         ++transitionVersion;
+        ResetSceneEntryCompletion();
         if (entryRoutine != null) { StopCoroutine(entryRoutine); entryRoutine = null; }
         if (activeRoutine != null) { StopCoroutine(activeRoutine); activeRoutine = null; }
         EnsureOverlay();
@@ -156,6 +182,7 @@ public class SceneFadeController : MonoBehaviour
     public static IEnumerator PresentLoadingScreen(float duration = 0f)
     {
         var fade = EnsureInstance();
+        fade.ResetSceneEntryCompletion();
         fade.EnsureOverlay();
         // JC | 2026-11-10 | 첫 yield 이전부터 잠그며 GameLoadScene 경유 중에도 해제하지 않습니다.
         fade.SetLoading(true);
@@ -203,6 +230,7 @@ public class SceneFadeController : MonoBehaviour
     // JC | 2026-11-10 | 기존 실패 통지와 화면 복구를 재사용하며 실패 상태의 준비 완료를 기다리지 않습니다.
     private void RecoverFailedTransition(Scene sourceScene, Action onFailed)
     {
+        ResetSceneEntryCompletion();
         int failedVersion = transitionVersion;
         if (entryRoutine != null) { StopCoroutine(entryRoutine); entryRoutine = null; }
         if (activeRoutine != null) { StopCoroutine(activeRoutine); activeRoutine = null; }
@@ -256,6 +284,7 @@ public class SceneFadeController : MonoBehaviour
         Canvas.willRenderCanvases += BeforeCanvasRender;
         SceneManager.sceneLoaded += OnSceneLoaded;
         SceneManager.activeSceneChanged += OnActiveSceneChanged;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
     }
     private void OnDisable()
     {
@@ -263,11 +292,14 @@ public class SceneFadeController : MonoBehaviour
         if (suppressCursor) SetLoading(false);
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+        ResetSceneEntryCompletion();
     }
     private void OnDestroy() { if (Instance == this) Instance = null; }
 
     private void OnActiveSceneChanged(Scene previous, Scene current)
     {
+        ResetSceneEntryCompletion();
         if (waitingForActivationHandle == 0 || current.handle != waitingForActivationHandle) return;
         waitingForActivationHandle = 0;
         transitioning = false;
@@ -309,6 +341,7 @@ public class SceneFadeController : MonoBehaviour
 
     public Coroutine FadeOut(float duration, Action onComplete = null)
     {
+        ResetSceneEntryCompletion();
         EnsureOverlay();
         SetLoading(true);
         return StartFade(overlay.color.a, 1f, duration, true, onComplete);
@@ -316,10 +349,17 @@ public class SceneFadeController : MonoBehaviour
 
     public Coroutine FadeIn(float duration, Action onComplete = null, float holdDuration = 0f)
     {
+        ResetSceneEntryCompletion();
+        Scene scene = SceneManager.GetActiveScene();
+        int version = transitionVersion;
         // 엔딩처럼 씬이 자체 진입 연출을 요청하면 자동 진입 페이드를 대체한다.
         if (entryRoutine != null) { StopCoroutine(entryRoutine); entryRoutine = null; }
         EnsureOverlay();
-        return StartFade(1f, 0f, duration, true, onComplete, holdDuration);
+        return StartFade(1f, 0f, duration, true, () =>
+        {
+            onComplete?.Invoke();
+            if (version == transitionVersion) CompleteSceneEntry(scene);
+        }, holdDuration);
     }
 
     public void FadeToScene(string sceneName, float fadeOutDuration, float fadeInDuration)
@@ -372,6 +412,7 @@ public class SceneFadeController : MonoBehaviour
 
     private void PlaySceneEntry(Scene scene, float duration)
     {
+        ResetSceneEntryCompletion();
         if (entryRoutine != null) StopCoroutine(entryRoutine);
         entryRoutine = StartCoroutine(FadeInAfterStart(scene, duration));
     }
@@ -389,6 +430,37 @@ public class SceneFadeController : MonoBehaviour
         else
             yield return StartFade(1f, 0f, duration, true, null);
         entryRoutine = null;
+        CompleteSceneEntry(scene);
+    }
+
+    private void CompleteSceneEntry(Scene scene)
+    {
+        // Keep completion pending during the release frame; Update publishes after input unlocks.
+        if (!scene.IsValid() || !scene.isLoaded || scene != SceneManager.GetActiveScene() ||
+            inputBlocked || transitioning || activeRoutine != null || entryRoutine != null)
+            return;
+
+        pendingCompletedEntry = scene;
+        TryNotifySceneEntryCompleted();
+    }
+
+    private void OnSceneUnloaded(Scene scene) => TryNotifySceneEntryCompleted();
+
+    private void TryNotifySceneEntryCompleted()
+    {
+        Scene scene = pendingCompletedEntry;
+        if (!scene.IsValid() || !scene.isLoaded || scene != SceneManager.GetActiveScene() || IsTransitioning)
+            return;
+
+        string gateScene = GameSceneManager.Instance != null ? GameSceneManager.Instance.GameLoadScene : "GameLoadScene";
+        if (SceneManager.GetSceneByName(gateScene).IsValid() || DHGameStateRestoreService.IsRestoring ||
+            (GameManager.Instance != null && GameManager.Instance.IsExplorationEntryPending))
+            return;
+
+        // Consume before notifying so another unload cannot publish the same completion twice.
+        pendingCompletedEntry = default;
+        completedEntry = scene;
+        SceneEntryCompleted?.Invoke(scene);
     }
 
     private IEnumerator WaitForSceneReady()

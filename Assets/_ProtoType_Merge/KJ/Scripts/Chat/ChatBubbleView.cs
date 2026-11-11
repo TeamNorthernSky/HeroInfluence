@@ -13,6 +13,7 @@ using UnityEngine.UI;
 [ExecuteAlways]
 public class ChatBubbleView : MonoBehaviour
 {
+    public float textwidth = 200f;
     private const int TypePlayer = 1;    // 플레이어 — 우측
     private const int TypeNarration = 2; // 상황 설명 — 가운데
 
@@ -99,6 +100,11 @@ public class ChatBubbleView : MonoBehaviour
         if (messageText == null || messageText.transform.parent == null) return;
         var box = messageText.transform.parent.GetComponent<LayoutElement>();
         var layout = messageText.transform.parent.GetComponent<VerticalLayoutGroup>();
+        if (box != null && layout != null && speakerType == TypeNarration && narrationSprite != null)
+        {
+            UpdateNarrationHeight(box);
+            return;
+        }
         if (box == null || layout == null || !layout.enabled) return;
         float width = box.preferredWidth - layout.padding.horizontal;
         if (width <= 0f) return;
@@ -156,7 +162,7 @@ public class ChatBubbleView : MonoBehaviour
         LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
     }
 
-    // 나레이션은 텍스트 길이와 무관한 원본 비율의 카드. 상단 장식 아래에 본문을 고정한다.
+    // 나레이션은 글자 크기를 유지하고 상단 장식 아래의 본문 길이에 맞춰 높이를 늘린다.
     private void ApplyNarrationLayout(LayoutElement box, VerticalLayoutGroup layout)
     {
         const float width = 900f;
@@ -164,24 +170,38 @@ public class ChatBubbleView : MonoBehaviour
         box.layoutPriority = 2;
         box.minWidth = box.preferredWidth = width;
         box.minHeight = box.preferredHeight = height;
-        layout.enabled = false; // TMP preferredHeight가 고정 본문 영역을 늘리지 않도록 분리
+        box.flexibleHeight = 0f;
+        layout.enabled = false; // 장식 아래 본문 영역과 카드 높이는 직접 계산한다.
 
         bubbleImage.sprite = narrationSprite;
-        bubbleImage.type = Image.Type.Simple;
-        bubbleImage.preserveAspect = true;
+        bubbleImage.type = Image.Type.Sliced;
+        bubbleImage.preserveAspect = false;
         bubbleImage.rectTransform.localScale = Vector3.one;
 
         RectTransform textRect = messageText.rectTransform;
-        textRect.anchorMin = new Vector2(0.04f, 0.10f);
-        textRect.anchorMax = new Vector2(0.96f, 0.64f);
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(width * .04f, height * .10f);
+        textRect.offsetMax = new Vector2(-width * .04f, -height * .36f);
         messageText.alignment = TextAlignmentOptions.Center;
         messageText.enableWordWrapping = true;
         messageText.fontSizeMax = normalFontSize;
-        messageText.fontSizeMin = 1f;
-        messageText.enableAutoSizing = true;
-        messageText.overflowMode = TextOverflowModes.Truncate;
+        messageText.fontSizeMin = normalFontSize;
+        messageText.enableAutoSizing = false;
+        messageText.fontSize = normalFontSize;
+        messageText.overflowMode = TextOverflowModes.Overflow;
+        UpdateNarrationHeight(box);
+        LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
+    }
+
+    private void UpdateNarrationHeight(LayoutElement box)
+    {
+        const float width = 900f;
+        float baseHeight = width * narrationSprite.rect.height / narrationSprite.rect.width;
+        float bodyHeight = messageText.GetPreferredValues(width * .92f, Mathf.Infinity).y;
+        float height = Mathf.Max(baseHeight, Mathf.Ceil(bodyHeight + baseHeight * .46f));
+        if (Mathf.Approximately(box.preferredHeight, height) && Mathf.Approximately(box.minHeight, height)) return;
+        box.minHeight = box.preferredHeight = height;
         LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
     }
 
@@ -206,13 +226,8 @@ public class ChatBubbleView : MonoBehaviour
         if (nameText != null)
         {
             nameText.text = charName ?? string.Empty;
-            string compactName = nameText.text.Replace(" ", "").Replace("\n", "").Replace("\r", "");
-            if (compactName == "겁많은빌런")
-                nameText.text = "<nobr>겁 많은</nobr>\n<nobr>빌런</nobr>";
-            else if (compactName == "수다스러운빌런")
-                nameText.text = "<nobr>수다스러운</nobr>\n<nobr>빌런</nobr>";
-            else if (nameText.GetPreferredValues(nameText.text).x > 150f && nameText.text.Contains(" "))
-                nameText.text = nameText.text.Replace(" ", "\n");
+            if (nameText.GetPreferredValues(nameText.text).x > textwidth && nameText.text.Contains(" 빌런")) // " 빌런"이라는 이름을 가지고 있으면
+                nameText.text = nameText.text.Replace(" 빌런", "\n빌런");
             nameText.gameObject.SetActive(!isNarration); // 나레이션은 화자가 없다 (레이아웃에서 제외)
         }
         if (messageText != null)

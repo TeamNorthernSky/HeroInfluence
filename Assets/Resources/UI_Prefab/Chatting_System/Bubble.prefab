@@ -92,6 +92,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca721153adcf1f8459644a2b4bf1e41c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  textwidth: 200
   rowLayout: {fileID: 546746767760783916}
   nameText: {fileID: 1957907045575630732}
   messageText: {fileID: 1013990506630523192}
@@ -379,7 +380,7 @@ MonoBehaviour:
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
-  m_lineSpacing: -40
+  m_lineSpacing: -10
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
@@ -606,7 +607,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 10, z: 0, w: 10}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -713,9 +714,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
   m_MinWidth: -1
-  m_MinHeight: 87.85
+  m_MinHeight: 95.85
   m_PreferredWidth: 500
-  m_PreferredHeight: 87.85
+  m_PreferredHeight: 95.85
   m_FlexibleWidth: 0
   m_FlexibleHeight: 0
   m_LayoutPriority: 3

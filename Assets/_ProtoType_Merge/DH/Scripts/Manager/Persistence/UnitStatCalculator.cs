@@ -38,11 +38,26 @@ public static class UnitStatCalculator
         StatBlock eventBonusStats,
         IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTable)
     {
-        StatBlock adjustedBaseStats = CalculateLevelAdjustedBaseStats(templateBaseStats, levelupStats, level);
-        // 코어 능력치는 강화 시 선택 영웅의 영구 보너스로 지급한다.
-        // 장착 정보는 스킬/외형용으로 유지하며 능력치를 중복 합산하지 않는다.
-        StatBlock result = adjustedBaseStats + eventBonusStats;
-        result.Influence += CalculateLevelInfluenceBonus(level, unitGrowthTable);
+        StatBlock unitStats = CalculateUnitStats(templateBaseStats, levelupStats, level,
+            eventBonusStats, unitGrowthTable);
+        return ApplyCoreBonus(unitStats, weaponStats);
+    }
+
+    /// <summary>코어를 제외한 유닛 자체의 능력치: 기본값 + 성장 + 이벤트 보상.</summary>
+    public static StatBlock CalculateUnitStats(
+        StatBlock templateBaseStats, StatBlock levelupStats, int level,
+        StatBlock eventBonusStats, IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTable)
+    {
+        StatBlock unitStats = CalculateLevelAdjustedBaseStats(templateBaseStats, levelupStats, level)
+            + eventBonusStats;
+        unitStats.Influence += CalculateLevelInfluenceBonus(level, unitGrowthTable);
+        return unitStats;
+    }
+
+    /// <summary>장착 코어 종류와 레벨에서 조회한 추가 능력치 구조체를 합산한다. 미장착은 default.</summary>
+    public static StatBlock ApplyCoreBonus(StatBlock unitStats, EquipmentStatBlock coreBonusStats)
+    {
+        StatBlock result = unitStats + coreBonusStats.ToStatBlock();
         result.ClampToMinimumOne();
         return result;
     }

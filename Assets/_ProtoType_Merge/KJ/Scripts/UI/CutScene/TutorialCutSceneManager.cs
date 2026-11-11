@@ -70,10 +70,12 @@ public class TutorialCutSceneManager : MonoBehaviour
         // Button clicks belong to the UI, not to the cutscene's advance input.
         if (Input.GetMouseButtonDown(0) && IsPointerOverButton()) return;
 
+#if UNITY_EDITOR
         if(Input.GetKeyDown(KeyCode.LeftArrow))
         {
             GoPreviousCutScene();
         }
+#endif
 
         if(Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.RightArrow))
         {

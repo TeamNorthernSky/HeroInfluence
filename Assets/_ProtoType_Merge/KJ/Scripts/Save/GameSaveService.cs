@@ -21,6 +21,7 @@ public static class GameSaveService
     /// <summary>Capture the committed battle outcome, not the earlier turn-start state.</summary>
     public static bool SaveBattleReturnToSlot(int slotIndex, GameSaveData.BattleReturnCheckpoint checkpoint)
     {
+        if (TutorialSessionPolicy.BlocksSaving) return false;
         if (slotIndex < 0 || DHGameStateRestoreService.IsRestoring) return false;
         var store = DHTurnStartSnapshotStore.EnsureInstance();
         var section = BattleReturnSnapshotSection.Ensure(store);
@@ -31,6 +32,11 @@ public static class GameSaveService
 
     private static bool SaveToSlot(int slotIndex, GameSaveData.BattleReturnCheckpoint checkpoint)
     {
+        if (TutorialSessionPolicy.BlocksSaving)
+        {
+            Debug.Log("[GameSaveService] 튜토리얼에서는 저장하지 않습니다.");
+            return false;
+        }
         if (slotIndex < 0)
         {
             Debug.LogWarning("[GameSaveService] CurrentSlot 미설정 — 슬롯 0으로 폴백 저장합니다.");

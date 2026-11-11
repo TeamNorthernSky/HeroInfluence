@@ -16,7 +16,8 @@ MonoBehaviour:
   - scenePath: Assets/_ProtoType_Merge/Scenes/DHScene_3.unity
     current: {fileID: 11400000, guid: 8d8e52f4a942c954f8ab758073934801, type: 2}
     previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/DHScene_3_ae203e30cb584ca5afed1f33d781de82/Bake.asset
-    buildInputWarning: 
+    buildInputWarning: "\uBCA0\uC774\uD06C \uC785\uB825 \uC5D0\uC14B \uBCC0\uACBD:
+      Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Editor/JcBankDepthImporter.cs"
   - scenePath: Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity
     current: {fileID: 11400000, guid: 497e399966ea428f93e57bf585c6e943, type: 2}
     previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/TutorialExploreScene_f9f4ad8530ee4ff7aac1ad61da81bfd4/Bake.asset
