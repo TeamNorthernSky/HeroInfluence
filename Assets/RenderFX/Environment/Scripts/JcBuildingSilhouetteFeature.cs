@@ -209,6 +209,8 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
         private Vector4 pixelSize;
         // JC | 2026-11-04 | 원본 깊이는 보존하고 외곽용 모양만 별도로 합성합니다.
         private RTHandle rawMask, exteriorMask, envelopeA, envelopeB;
+        // JC | 2026-11-10 | 렌더 시점에 지원 포맷을 한 번 확인하며, 미지원 장치도 같은 비트 표현을 RGBA8의 R에 저장합니다.
+        private GraphicsFormat envelopeFormat;
         private bool exteriorReady;
         public RTHandle Mask => exteriorReady ? exteriorMask : rawMask;
         public Renderer[] explicitRenderers;
@@ -330,7 +332,12 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
             if (exteriorOnly)
             {
                 RenderingUtils.ReAllocateIfNeeded(ref exteriorMask, desc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: maskName + "Exterior");
-                desc.graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm;
+                if (envelopeFormat == GraphicsFormat.None)
+                    envelopeFormat = SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Render)
+                        && SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Blend)
+                        && SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Sample)
+                        ? GraphicsFormat.R8_UNorm : GraphicsFormat.R8G8B8A8_UNorm;
+                desc.graphicsFormat = envelopeFormat;
                 RenderingUtils.ReAllocateIfNeeded(ref envelopeA, desc, FilterMode.Point, TextureWrapMode.Clamp, name: maskName + "ScanA");
                 RenderingUtils.ReAllocateIfNeeded(ref envelopeB, desc, FilterMode.Point, TextureWrapMode.Clamp, name: maskName + "ScanB");
             }

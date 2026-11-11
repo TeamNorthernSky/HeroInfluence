@@ -39,6 +39,13 @@ namespace JC.Tutorial
         private Vector2 originalSize, originalPosition, originalAnchorMin, originalAnchorMax;
         private TMP_Text body;
         private string originalBody;
+        // JC | 2026-11-09 | 결과·레거시 안내도 기존 Director의 전투 키로 구분하여 TUT_02의 간격을 보존합니다.
+        private void ApplyBattleSentenceSpacing(TMP_Text text, bool firstBattle)
+        {
+            if (firstBattle) JcTutorialGuideView.BindSentenceSpacing(text, true, adjustment: 1.3f, useCurrentLine: true);
+            else JcTutorialGuideView.BindWordWrapping(text);
+        }
+        private bool IsFirstTutorialBattle => SceneComponent<TutorialBattleDirector>()?.BattleKey == "TUT_01";
         private JcTutorialSpotlight dim;
         public int ResultOpenedFrame { get; private set; } = -1;
         public int VisibleStep { get; private set; } = -1;
@@ -144,11 +151,6 @@ namespace JC.Tutorial
                 }
             if (view == null) return;
             CacheLayout();
-            if (view.heading != null && active >= 0 && stepTexts[active] != null)
-            {
-                var text = stepTexts[active].GetComponent<TMP_Text>();
-                if (text != null) { view.heading.enableAutoSizing = false; view.heading.fontSize = text.fontSize; view.heading.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, text.fontSize * 1.5f); }
-            }
             foreach (var background in layoutPanel.GetComponentsInChildren<JcTutorialGraphic>(true)) background.SetOpaqueFill(active == 2);
             if (active != 2)
             {
@@ -165,6 +167,13 @@ namespace JC.Tutorial
                     layoutPanel.sizeDelta = originalSize; layoutPanel.anchoredPosition = originalPosition;
                 }
                 view.SetContent(active >= 0 && headings != null && active < headings.Length ? JcTutorialText.Get("battle.heading." + active, headings[active]) : JcTutorialText.Get("battleguide.001", "전투 안내"), "");
+                // JC | 2026-11-09 | 기존 단계별 안내도 탐사와 같은 제목·본문 배치와 줄간격을 사용합니다.
+                if (active >= 0)
+                {
+                    var activeBody = stepTexts[active].GetComponent<TMP_Text>();
+                    ApplyBattleSentenceSpacing(activeBody, IsFirstTutorialBattle);
+                    view.FitMessageLayout(activeBody, originalSize.y, 86);
+                }
                 view.SetPanelSuppressed(instruction && !noticeOpen);
                 view.SetVisible(active >= 0 && (!instruction || noticeOpen), instruction ? null : focus);
                 return;
@@ -198,6 +207,9 @@ namespace JC.Tutorial
                 }
                 focus = resultAccept;
             }
+            // JC | 2026-11-09 | 두 전투의 결과/스킬 안내까지 동일한 양식을 적용하고 긴 본문은 패널 높이를 늘립니다.
+            ApplyBattleSentenceSpacing(body, IsFirstTutorialBattle);
+            view.FitMessageLayout(body, resultPanelSize.y, 86);
             view.SetPanelSuppressed(!noticeOpen);
             view.SetVisible(true, !noticeOpen && !releasePending ? focus : null);
         }

@@ -247,9 +247,24 @@ namespace JC.Indicators
             surfaces.Draw(command, camera, depthMaterial, properties);
         }
         // JC | 2026-11-09 | 별도 깊이 버퍼만 사용하므로 다른 인디케이터의 장면 깊이에는 영향을 주지 않습니다.
-        internal void DrawWorldMeshes(CommandBuffer command, Camera camera)
+        // JC | 2026-11-10 | 카메라별 한 번만 준비하고 부적합한 씬/바인딩에서는 이전 목록을 비웁니다.
+        internal void PrepareWorldMeshes(Camera camera, bool needsMarkerDepth)
         {
-            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.Draw(command, camera);
+            meshVisibility.ClearPrepared();
+            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.PrepareDraw(camera, needsMarkerDepth);
+        }
+        // JC | 2026-11-10 | 모든 컨트롤러의 후보를 현재 카메라/씬 기준으로 합산하여 다른 이벤트의 가림도 보존합니다.
+        internal bool HasMarkerCandidate(Camera camera) =>
+            bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene) && meshVisibility.HasMarkerCandidate(camera);
+        internal void ClearPreparedWorldMeshes() => meshVisibility.ClearPrepared();
+        internal void DrawWorldMeshes(CommandBuffer command, Camera camera, string passName)
+        {
+            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.Draw(command, camera, passName);
+        }
+        // JC | 2026-11-09 | 느낌표의 실제 노출 영역만 호버 합성 보호 대상으로 전달합니다.
+        internal void DrawMarkerCoverage(CommandBuffer command, Camera camera)
+        {
+            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.DrawMarkerCoverage(command, camera);
         }
         private static Color Tint(Color color, float intensity, float opacity)
         { color *= Mathf.Max(0, intensity); color.a = Mathf.Clamp01(opacity); return color; }

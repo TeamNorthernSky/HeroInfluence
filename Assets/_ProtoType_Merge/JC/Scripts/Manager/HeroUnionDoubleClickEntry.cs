@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -14,6 +13,8 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
     [SerializeField] private float rayDistance = 1000f;
 
     private float lastClickTime = -1f;
+    // JC | 2026-11-10 | 단일 파티 등록부만 보관하고 실제 플레이어 참조는 호버 검사마다 읽습니다.
+    private PartyRegistry partyRegistry;
 
     private void Awake()
     {
@@ -83,7 +84,7 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
         }
     }
 
-    private static bool HasPlayerPartyAtInteractionCell(HeroUnionUnit heroUnion)
+    private bool HasPlayerPartyAtInteractionCell(HeroUnionUnit heroUnion)
     {
         if (heroUnion == null)
             return false;
@@ -96,24 +97,17 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
             return false;
 
         Vector2Int partyGrid = party.GetCurrentGrid();
-        IReadOnlyList<Vector2Int> interactionCells = heroUnion.GetInteractionCells();
-        if (interactionCells == null)
-            return false;
-
-        for (int i = 0; i < interactionCells.Count; i++)
-        {
-            if (interactionCells[i] == partyGrid)
-                return true;
-        }
-
-        return false;
+        // JC | 2026-11-10 | 기존 DH 정문 판정을 직접 호출하여 호버 중 인접 칸 목록 생성만 없앱니다. 파티 선택·복귀 대기 조건은 유지합니다.
+        return heroUnion.IsInteractionCell(partyGrid);
     }
 
-    private static PartyGridMover ResolvePlayerParty()
+    private PartyGridMover ResolvePlayerParty()
     {
-        PartyRegistry registry = Object.FindFirstObjectByType<PartyRegistry>();
-        if (registry != null && registry.PlayerParty != null)
-            return registry.PlayerParty;
+        // JC | 2026-11-10 | 정상 등록 후 전체 검색을 반복하지 않습니다. 등록 전의 기존 단일 mover 검색 경로는 유지합니다.
+        if (partyRegistry == null || !partyRegistry.gameObject.activeInHierarchy)
+            partyRegistry = Object.FindFirstObjectByType<PartyRegistry>();
+        if (partyRegistry != null && partyRegistry.PlayerParty != null)
+            return partyRegistry.PlayerParty;
 
         return Object.FindFirstObjectByType<PartyGridMover>();
     }

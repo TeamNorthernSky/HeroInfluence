@@ -555,6 +555,14 @@ public class BattleVisualDirector : MonoBehaviour
 
     public static event Action<BattleVisualDirector, BattleHitResult> HealPresented;
 
+    // JC | 2026-11-10 | 카메라는 장면에 없는 팝업 인스턴스를 검색하지 않고 실제 생성기에 연결된 동일 프리팹을 조회합니다.
+    // 표시·피해 계산은 실행하지 않는 읽기 전용 연결이며 기존 팝업 참조를 그대로 사용합니다.
+    public bool TryGetDamageCameraEnvelope(Transform target, int digits, float margin, Quaternion rotation, out Bounds bounds)
+    {
+        bounds = default;
+        return _popupPresenter && _popupPresenter.TryGetCameraEnvelope(target, digits, margin, out bounds, rotation);
+    }
+
     public void ShowDamagePopup(BattleHitResult result)
     {
         if (result == null || result.Target == null)

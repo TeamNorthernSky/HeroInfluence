@@ -19,9 +19,19 @@ public class SceneFadeController : MonoBehaviour
 
     private SceneLoadingLabel loadingLabel;
     private bool suppressCursor, cursorWasVisible, showingLoading;
+    // JC | 2026-11-10 | 입력 잠금은 로드 코루틴과 분리하여 중간 로딩씬·복원 대기에도 유지합니다.
+    private bool inputBlocked;
+    private int inputReleasedFrame = -1;
+    // JC | 2026-11-10 | 실패 콜백에서 새 전환을 요청한 경우 이전 복구가 새 잠금을 풀지 않게 구분합니다.
+    private int transitionVersion;
+    public static bool IsInputBlocked => Instance != null &&
+        (Instance.inputBlocked || Time.frameCount == Instance.inputReleasedFrame);
     public static bool HideCursorDuringTransition => Instance != null && Instance.suppressCursor;
     private void SetLoading(bool value)
     {
+        // JC | 2026-11-10 | 페이드인 완료 프레임의 클릭까지 버리고 다음 프레임부터 새 입력을 받습니다.
+        if (inputBlocked && !value) inputReleasedFrame = Time.frameCount;
+        inputBlocked = value;
         if (value && !suppressCursor) cursorWasVisible = Cursor.visible || FakeMouseCursor.HasActivePresenter;
         suppressCursor = value;
         showingLoading = value;
@@ -104,16 +114,25 @@ public class SceneFadeController : MonoBehaviour
     private SceneLoadRequest BeginSceneLoad(string sceneName, LoadSceneMode mode, float outDuration, float inDuration,
         Func<bool> prepare = null, Action onFailed = null)
     {
-        if (!CanLoad(sceneName)) return null;
         // 준비 콜백이 다른 요청의 컨텍스트를 덮어쓰지 않도록 중복 요청은 모두 거절합니다.
         if (transitioning)
         {
             Debug.LogWarning($"Scene transition already in progress: {loadingSceneName} → request ignored: {sceneName}");
             return null;
         }
+        // JC | 2026-11-10 | 잘못된 목적지 때문에 선행 FadeOut/로딩 화면의 잠금이 남지 않게 복구합니다.
+        // 진행 중인 정상 로드의 중복 요청은 위에서 거절하므로 그 잠금을 해제하지 않습니다.
+        if (!CanLoad(sceneName))
+        {
+            RecoverFailedTransition(SceneManager.GetActiveScene(), onFailed);
+            return null;
+        }
+        ++transitionVersion;
         if (entryRoutine != null) { StopCoroutine(entryRoutine); entryRoutine = null; }
         if (activeRoutine != null) { StopCoroutine(activeRoutine); activeRoutine = null; }
         EnsureOverlay();
+        // JC | 2026-11-10 | 요청을 수락한 즉시 잠가 같은 프레임의 후속 입력도 차단합니다.
+        SetLoading(true);
         AudioManager.Instance?.PrepareSceneBgmTransition(sceneName);
         var request = new SceneLoadRequest();
         loadRequest = request;
@@ -138,6 +157,8 @@ public class SceneFadeController : MonoBehaviour
     {
         var fade = EnsureInstance();
         fade.EnsureOverlay();
+        // JC | 2026-11-10 | 첫 yield 이전부터 잠그며 GameLoadScene 경유 중에도 해제하지 않습니다.
+        fade.SetLoading(true);
         if (fade.entryRoutine != null) { fade.StopCoroutine(fade.entryRoutine); fade.entryRoutine = null; }
         if (duration > 0f && fade.overlay.color.a < .999f) yield return fade.FadeOut(duration);
         else
@@ -174,24 +195,36 @@ public class SceneFadeController : MonoBehaviour
         {
             Debug.LogException(failure);
             request.Failed = true;
-            loadingOperation = null;
-            loadRequest = null;
-            pendingFadeInOnSceneLoad = false;
-            waitingForActivationHandle = 0;
-            transitioning = false;
-            try { onFailed?.Invoke(); }
-            catch (Exception exception) { Debug.LogException(exception); }
-            try { TransitionFailed?.Invoke(sourceScene); }
-            catch (Exception exception) { Debug.LogException(exception); }
-            // 실패한 준비 상태를 WaitForSceneReady로 기다리면 영구 암전될 수 있습니다.
-            activeRoutine = StartCoroutine(FadeRoutine(1f, 0f, .2f, true, () =>
-            {
-                var events = UnityEngine.EventSystems.EventSystem.current;
-                if (events != null && selectionBeforeLoad != null && selectionBeforeLoad.activeInHierarchy)
-                    events.SetSelectedGameObject(selectionBeforeLoad);
-                selectionBeforeLoad = null;
-            }, waitForReady: false));
+            // JC | 2026-11-10 | 준비 실패와 로드 예외를 같은 복구 경로로 보내 잠금 해제를 보장합니다.
+            RecoverFailedTransition(sourceScene, onFailed);
         }
+    }
+
+    // JC | 2026-11-10 | 기존 실패 통지와 화면 복구를 재사용하며 실패 상태의 준비 완료를 기다리지 않습니다.
+    private void RecoverFailedTransition(Scene sourceScene, Action onFailed)
+    {
+        int failedVersion = transitionVersion;
+        if (entryRoutine != null) { StopCoroutine(entryRoutine); entryRoutine = null; }
+        if (activeRoutine != null) { StopCoroutine(activeRoutine); activeRoutine = null; }
+        loadingOperation = null;
+        loadRequest = null;
+        pendingFadeInOnSceneLoad = false;
+        waitingForActivationHandle = 0;
+        transitioning = false;
+        try { onFailed?.Invoke(); }
+        catch (Exception exception) { Debug.LogException(exception); }
+        if (transitionVersion != failedVersion) return;
+        try { TransitionFailed?.Invoke(sourceScene); }
+        catch (Exception exception) { Debug.LogException(exception); }
+        if (transitionVersion != failedVersion || !inputBlocked) return;
+        // 실패한 준비 상태를 WaitForSceneReady로 기다리면 영구 암전될 수 있습니다.
+        activeRoutine = StartCoroutine(FadeRoutine(overlay.color.a, 0f, .2f, true, () =>
+        {
+            var events = UnityEngine.EventSystems.EventSystem.current;
+            if (events != null && selectionBeforeLoad != null && selectionBeforeLoad.activeInHierarchy)
+                events.SetSelectedGameObject(selectionBeforeLoad);
+            selectionBeforeLoad = null;
+        }, waitForReady: false));
     }
 
     private static bool CanLoad(string sceneName)
@@ -204,7 +237,8 @@ public class SceneFadeController : MonoBehaviour
 
     /// <summary>[KJ 261002] 페이드아웃 완료 후 씬 활성화를 기다리는 중인지. GameSceneManager 중복 페이드 방지용.</summary>
     public bool IsSceneLoadPending => transitioning || pendingFadeInOnSceneLoad;
-    public bool IsTransitioning => transitioning || activeRoutine != null || entryRoutine != null;
+    // JC | 2026-11-10 | 기존 메뉴의 전환 검사에도 암전 유지 구간과 해제 프레임을 포함합니다.
+    public bool IsTransitioning => IsInputBlocked || transitioning || activeRoutine != null || entryRoutine != null;
 
     private void Awake()
     {
@@ -327,6 +361,8 @@ public class SceneFadeController : MonoBehaviour
         {
             if (activeRoutine != null) { StopCoroutine(activeRoutine); activeRoutine = null; }
             EnsureOverlay();
+            // JC | 2026-11-10 | 로딩씬을 직접 시작한 경우도 후속 Additive 로드 완료까지 입력을 막습니다.
+            SetLoading(true);
             overlay.color = Color.black;
             overlay.raycastTarget = true;
             return;
@@ -370,19 +406,16 @@ public class SceneFadeController : MonoBehaviour
                 if (party.gameObject.scene == scene && party.isActiveAndEnabled && !party.SceneEntryReady) ready = false;
             foreach (var guide in FindObjectsByType<TutorialExploreUIController>(FindObjectsSortMode.None))
                 if (guide.gameObject.scene == scene && guide.isActiveAndEnabled && !guide.SceneEntryReady) ready = false;
-#if !UNITY_EDITOR
+            // JC | 2026-11-11 | 에디터에서도 같은 준비 완료 조건을 기다려 전투 시작 전 로딩 해제를 막습니다.
             if (BattleEffectWarmup.IsPreparing) ready = false;
             foreach (var battle in FindObjectsByType<BattleSceneManager>(FindObjectsSortMode.None))
                 if (battle.gameObject.scene == scene && battle.IsVisualPreparationPending) ready = false;
-#endif
             stableFrames = ready ? stableFrames + 1 : 0;
             yield return null;
         }
-#if !UNITY_EDITOR
-        // Tutorial entry bypasses GameLoadGate; prepare its joined heroes under the same fade.
+        // JC | 2026-11-11 | GameLoadGate를 거치지 않는 튜토리얼도 두 실행 환경에서 같은 로딩 중 준비를 수행합니다.
         if (SceneManager.GetActiveScene().name == "TutorialExploreScene")
             yield return BattleEffectWarmup.PrepareParty();
-#endif
         Canvas.ForceUpdateCanvases();
         yield return null;
     }

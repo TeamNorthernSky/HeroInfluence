@@ -570,7 +570,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resourceMax: 999999
-  initialMoney: 1000
+  initialMoney: 2000
   initialChip: 10
   initialCrystal: 10
   initialSupply: 20

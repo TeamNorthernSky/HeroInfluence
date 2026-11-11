@@ -14,6 +14,56 @@ namespace JC.Tutorial
         private JcTutorialHintIcon iconGraphic;
         private CanvasGroup hintGroup;
         private float hintStarted;
+        // JC | 2026-11-09 | 오클릭 교정은 기존 수렴 Graphic 두 개를 안내 Canvas로 잠시 옮겨 재사용합니다.
+        // 종료 시 원래 계층/Rect를 복구하므로 이동력 강조와 씬 참조는 바뀌지 않습니다.
+        private RectTransform redirectedSkill;
+        private float redirectStarted;
+        private GlowPlacement[] redirectedPlacements;
+        private sealed class GlowPlacement
+        {
+            public RectTransform rect;
+            public Transform parent;
+            public int sibling;
+            public Vector2 min, max, pivot, size;
+            public Vector3 position, scale;
+            public Quaternion rotation;
+            public GlowPlacement(RectTransform value)
+            {
+                rect=value; parent=value.parent; sibling=value.GetSiblingIndex(); min=value.anchorMin; max=value.anchorMax;
+                pivot=value.pivot; size=value.sizeDelta; position=value.localPosition; scale=value.localScale; rotation=value.localRotation;
+            }
+            public void Restore()
+            {
+                if(rect==null)return;
+                rect.gameObject.SetActive(false); rect.SetParent(parent,false); rect.SetSiblingIndex(sibling);
+                rect.anchorMin=min; rect.anchorMax=max; rect.pivot=pivot; rect.sizeDelta=size;
+                rect.localPosition=position; rect.localScale=scale; rect.localRotation=rotation;
+            }
+        }
+        public void RestartSkillRedirect(RectTransform target)
+        {
+            if(target==null || convergingOutlines==null)return;
+            SetActionHint(ActionHint.ClickSkill,target);
+            if(hintRoot==null)return;
+            if(redirectedPlacements==null)
+            {
+                redirectedPlacements=new GlowPlacement[convergingOutlines.Length];
+                for(int i=0;i<convergingOutlines.Length;i++)
+                    if(convergingOutlines[i]!=null)redirectedPlacements[i]=new GlowPlacement(convergingOutlines[i].rectTransform);
+                foreach(var placement in redirectedPlacements)if(placement!=null)
+                {
+                    var rect=placement.rect; rect.SetParent(hintRoot,false);
+                    rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(.5f,.5f); rect.localScale=Vector3.one; rect.localRotation=Quaternion.identity;
+                }
+            }
+            redirectedSkill=target; redirectStarted=Time.unscaledTime;
+        }
+        private void StopSkillRedirect()
+        {
+            redirectedSkill=null;
+            if(redirectedPlacements!=null)foreach(var placement in redirectedPlacements)placement?.Restore();
+            redirectedPlacements=null;
+        }
         // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
         private Image badgeOutline;
         private Sprite badgeCircle, badgeBox;
@@ -63,6 +113,8 @@ namespace JC.Tutorial
 
         public void SetActionHint(ActionHint value, RectTransform target = null)
         {
+            // JC | 2026-11-09 | 다른 안내/대상으로 넘어가면 교정 글로우를 남기지 않습니다. 같은 대상 재클릭은 시작 시각만 갱신합니다.
+            if(value!=ActionHint.ClickSkill || target!=hintTarget)StopSkillRedirect();
             if (actionHint != value) hintStarted = Time.unscaledTime;
             actionHint = value; hintTarget = target;
             if (value == ActionHint.None) { if (hintRoot != null) hintRoot.gameObject.SetActive(false); return; }
@@ -161,6 +213,9 @@ namespace JC.Tutorial
                     hintFrame.GetComponent<JcTutorialGraphic>().color=new Color(accent.r,accent.g,accent.b,pulse);
                     Vector2 from=new Vector2(target.xMax+4,target.center.y), end=new Vector2(pos.x-hintCard.rect.width*.5f,pos.y);
                     HintLine(0,from,end,pulse);
+                    // JC | 2026-11-09 | 이동력 강조와 동일 함수/설정으로 2초 수렴·1초 휴식을 반복합니다.
+                    if(redirectedSkill==hintTarget)
+                        RenderConvergingOutlines(hintRoot,target.min-Vector2.one*focusPadding,target.max+Vector2.one*focusPadding,time-redirectStarted,time);
                 } else HintLine(0,new Vector2(pos.x+hintCard.rect.width*.5f,pos.y),new Vector2(target.xMin-6,target.center.y),pulse);
             }
             hintCard.localPosition=pos;

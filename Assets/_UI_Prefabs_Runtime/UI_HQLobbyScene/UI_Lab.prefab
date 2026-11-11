@@ -1055,7 +1055,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 22.05
+  m_fontSize: 25.7
   m_fontSizeBase: 26
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1954,7 +1954,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u2014"
+  m_text: 100
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
@@ -4212,7 +4212,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 100, y: -812}
+  m_AnchoredPosition: {x: 100, y: -820.9}
   m_SizeDelta: {x: 416, y: 44}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &2547425378501158181
@@ -4243,16 +4243,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: "(\uC784\uC2DC \uD14D\uC2A4\uD2B8)"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 906f059e3fc046e4c935dd167432a190, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 31e7f3a0ffddd6e4b88602daf7dcf426, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 53dd59ef54e18694497db82ee254f327, type: 2}
+  m_sharedMaterial: {fileID: -4000274576345021352, guid: 53dd59ef54e18694497db82ee254f327,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4282137800
   m_fontColor: {r: 0.78431374, g: 0.23529412, b: 0.23529412, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -6361,7 +6362,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 735, y: -592}
+  m_AnchoredPosition: {x: 735, y: -593}
   m_SizeDelta: {x: 142, y: 46}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &8389502247547003865
@@ -6494,7 +6495,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 22.05
+  m_fontSize: 25.7
   m_fontSizeBase: 26
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -6668,12 +6669,12 @@ RectTransform:
   - {fileID: 6388254679000144449}
   - {fileID: 7998660434321963730}
   - {fileID: 5122352719781030602}
-  - {fileID: 472201416443476866}
   - {fileID: 3592964117042054764}
   - {fileID: 5495619689471140684}
   - {fileID: 994019870082428565}
   - {fileID: 9007476590894779622}
   - {fileID: 8457234775545088954}
+  - {fileID: 472201416443476866}
   m_Father: {fileID: 1665665118023905001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -8296,8 +8297,8 @@ MonoBehaviour:
   buildDesc: "\uD788\uC5B4\uB85C\uC758 \uC2A4\uD0AC\uC744 \uAC15\uD654\uD560 \uC218
     \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uD64D\uBCF4\uBD80 Lv.1"
-  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \uC2A4\uD0AC \uAC15\uD654\uB97C
-    \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
+  upgradeDesc: "\uC2A4\uD0AC\uC744 \uB354 \uB192\uC740 \uB4F1\uAE09\uC73C\uB85C \n\uAC15\uD654\uD560
+    \uC218 \uC788\uC2B5\uB2C8\uB2E4.\r"
   lockedHoverComponents:
   - {fileID: 6269612402502262687}
   - {fileID: 518633310359733397}
@@ -8488,7 +8489,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 430, y: -592}
+  m_AnchoredPosition: {x: 430, y: -593}
   m_SizeDelta: {x: 142, y: 46}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &8957081775294972526
@@ -11658,7 +11659,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 22.05
+  m_fontSize: 25.7
   m_fontSizeBase: 26
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -11792,7 +11793,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 22.05
+  m_fontSize: 25.7
   m_fontSizeBase: 26
   m_fontWeight: 400
   m_enableAutoSizing: 1

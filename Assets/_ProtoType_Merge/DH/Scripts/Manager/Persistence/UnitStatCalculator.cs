@@ -39,7 +39,9 @@ public static class UnitStatCalculator
         IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTable)
     {
         StatBlock adjustedBaseStats = CalculateLevelAdjustedBaseStats(templateBaseStats, levelupStats, level);
-        StatBlock result = adjustedBaseStats + weaponStats.ToStatBlock() + eventBonusStats;
+        // 코어 능력치는 강화 시 선택 영웅의 영구 보너스로 지급한다.
+        // 장착 정보는 스킬/외형용으로 유지하며 능력치를 중복 합산하지 않는다.
+        StatBlock result = adjustedBaseStats + eventBonusStats;
         result.Influence += CalculateLevelInfluenceBonus(level, unitGrowthTable);
         result.ClampToMinimumOne();
         return result;

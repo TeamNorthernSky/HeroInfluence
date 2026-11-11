@@ -12,154 +12,131 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11fda3221ddd41d5b7ffe11a332cc645, type: 3}
   m_Name: JC_BankSkillCamera_Default
   m_EditorClassIdentifier: 
+  referencePlayerOrigin: {x: 1.65, y: 0.3, z: -6}
   skill1:
     targets:
-    - enabled: 1
-      position: {x: 11.046222, y: 10.568071, z: -17.518002}
+    - position: {x: 11.046222, y: 10.568071, z: -17.518002}
       rotation: {x: 26.00006, y: 324.50357, z: 0}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 10.329712, y: 10.405924, z: -18.044062}
+    - position: {x: 10.329712, y: 10.405924, z: -18.044062}
       rotation: {x: 26.000061, y: 330.63525, z: 0}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.789796, y: 10.876543, z: -19.486557}
+    - position: {x: 9.789796, y: 10.876543, z: -19.486557}
       rotation: {x: 26.000063, y: 337.7612, z: 0.00000047495533}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 10.48741, y: 9.638641, z: -17.207254}
+    - position: {x: 10.48741, y: 9.638641, z: -17.207254}
       rotation: {x: 23.000002, y: 328.3402, z: 0}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.939606, y: 9.318042, z: -17.161848}
+    - position: {x: 9.939606, y: 9.318042, z: -17.161848}
       rotation: {x: 23.000004, y: 330.85028, z: 0.00000046375297}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.475569, y: 9.131209, z: -17.34729}
+    - position: {x: 9.475569, y: 9.131209, z: -17.34729}
       rotation: {x: 23.000004, y: 333.6095, z: -0.00000046375297}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
   skill2:
     targets:
-    - enabled: 1
-      position: {x: 11.046222, y: 10.568071, z: -17.518002}
+    - position: {x: 11.046222, y: 10.568071, z: -17.518002}
       rotation: {x: 26.00006, y: 324.50357, z: 0}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 10.329712, y: 10.405924, z: -18.044062}
+    - position: {x: 10.329712, y: 10.405924, z: -18.044062}
       rotation: {x: 26.000061, y: 330.63525, z: 0}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.789796, y: 10.876543, z: -19.486557}
+    - position: {x: 9.789796, y: 10.876543, z: -19.486557}
       rotation: {x: 26.000063, y: 337.7612, z: 0.00000047495533}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 10.48741, y: 9.638641, z: -17.207254}
+    - position: {x: 10.48741, y: 9.638641, z: -17.207254}
       rotation: {x: 23.000002, y: 328.3402, z: 0}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.939606, y: 9.318042, z: -17.161848}
+    - position: {x: 9.939606, y: 9.318042, z: -17.161848}
       rotation: {x: 23.000004, y: 330.85028, z: 0.00000046375297}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.475569, y: 9.131209, z: -17.34729}
+    - position: {x: 9.475569, y: 9.131209, z: -17.34729}
       rotation: {x: 23.000004, y: 333.6095, z: -0.00000046375297}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
   skill3:
     targets:
-    - enabled: 1
-      position: {x: 11.046222, y: 10.568071, z: -17.518002}
+    - position: {x: 11.046222, y: 10.568071, z: -17.518002}
       rotation: {x: 26.00006, y: 324.50357, z: 0}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 10.329712, y: 10.405924, z: -18.044062}
+    - position: {x: 10.329712, y: 10.405924, z: -18.044062}
       rotation: {x: 26.000061, y: 330.63525, z: 0}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.789796, y: 10.876543, z: -19.486557}
+    - position: {x: 9.789796, y: 10.876543, z: -19.486557}
       rotation: {x: 26.000063, y: 337.7612, z: 0.00000047495533}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 10.48741, y: 9.638641, z: -17.207254}
+    - position: {x: 10.48741, y: 9.638641, z: -17.207254}
       rotation: {x: 23.000002, y: 328.3402, z: 0}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.939606, y: 9.318042, z: -17.161848}
+    - position: {x: 9.939606, y: 9.318042, z: -17.161848}
       rotation: {x: 23.000004, y: 330.85028, z: 0.00000046375297}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.475569, y: 9.131209, z: -17.34729}
+    - position: {x: 9.475569, y: 9.131209, z: -17.34729}
       rotation: {x: 23.000004, y: 333.6095, z: -0.00000046375297}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
   skill4:
     targets:
-    - enabled: 1
-      position: {x: 11.046222, y: 10.568071, z: -17.518002}
+    - position: {x: 11.046222, y: 10.568071, z: -17.518002}
       rotation: {x: 26.00006, y: 324.50357, z: 0}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 10.329712, y: 10.405924, z: -18.044062}
+    - position: {x: 10.329712, y: 10.405924, z: -18.044062}
       rotation: {x: 26.000061, y: 330.63525, z: 0}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.789796, y: 10.876543, z: -19.486557}
+    - position: {x: 9.789796, y: 10.876543, z: -19.486557}
       rotation: {x: 26.000063, y: 337.7612, z: 0.00000047495533}
       fieldOfView: 39.520233
       perspectiveStrength: 0.9
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 10.48741, y: 9.638641, z: -17.207254}
+    - position: {x: 10.48741, y: 9.638641, z: -17.207254}
       rotation: {x: 23.000002, y: 328.3402, z: 0}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.939606, y: 9.318042, z: -17.161848}
+    - position: {x: 9.939606, y: 9.318042, z: -17.161848}
       rotation: {x: 23.000004, y: 330.85028, z: 0.00000046375297}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8
       perspectiveCenter: {x: 0, y: 0.3, z: 0}
-    - enabled: 1
-      position: {x: 9.475569, y: 9.131209, z: -17.34729}
+    - position: {x: 9.475569, y: 9.131209, z: -17.34729}
       rotation: {x: 23.000004, y: 333.6095, z: -0.00000046375297}
       fieldOfView: 37.32418
       perspectiveStrength: 0.8

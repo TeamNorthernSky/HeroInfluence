@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: JC_BankToon_Default
   m_EditorClassIdentifier: 
   surfaceShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
-  toonEnabled: 1
+  toonEnabled: 0
   background: 1
   characters: 1
   strength: 1

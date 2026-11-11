@@ -50,7 +50,6 @@ public class InteractionCellOverlayController : MonoBehaviour
     [SerializeField] private Color mainEventInteractionColor = new Color(0.2f, 0.9f, 1f, 0.32f);
     [SerializeField, Range(1f, 1.2f)] private float cellScale = 1f;
     [SerializeField] private float yOffset = 0.035f;
-    [SerializeField, Min(0.02f)] private float refreshInterval = 0.15f;
 
     private readonly Dictionary<Vector2Int, OverlayInstance> activeOverlays = new Dictionary<Vector2Int, OverlayInstance>();
     private readonly Stack<OverlayInstance> overlayPool = new Stack<OverlayInstance>();
@@ -142,7 +141,6 @@ public class InteractionCellOverlayController : MonoBehaviour
         }
     }
 
-    private float nextRefreshTime;
     private Mesh generatedMesh;
     private Material generatedMaterial;
     private bool refreshRequested;
@@ -157,23 +155,76 @@ public class InteractionCellOverlayController : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
+        SubscribeChanges();
+        LevelLoader.RuntimeLevelLoaded += HandleLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded += HandleLayoutLoaded;
+        MultiGridOccupant.FootprintChanged += HandleFootprintChanged;
+        Outpost.OutpostStateChanged += HandleOutpostChanged;
+        HeroUnionUnit.HeroUnionStateChanged += HandleHeroUnionChanged;
+        RequestRefresh();
+    }
+
+    private void Start()
+    {
+        RefreshBindings();
+    }
+
+    private void SubscribeChanges()
+    {
         SubscribeRegistry();
         SubscribeSceneEnemies();
-        Outpost.OutpostClaimed -= HandleOutpostChanged;
-        Outpost.OutpostClaimed += HandleOutpostChanged;
-        HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionChanged;
-        HeroUnionUnit.HeroUnionStateChanged += HandleHeroUnionChanged;
         SubscribeMainEventRegistry();
+        if (gridManager != null) gridManager.OverlayCellsChanged += RequestRefresh;
+        if (outpostRegistry != null) outpostRegistry.Changed += RequestRefresh;
+        if (heroUnionRegistry != null) heroUnionRegistry.Changed += RequestRefresh;
+        if (villainUnionBaseRegistry != null) villainUnionBaseRegistry.Changed += RequestRefresh;
+    }
+
+    private void UnsubscribeChanges()
+    {
+        UnsubscribeRegistry();
+        UnsubscribeEnemies();
+        UnsubscribeMainEventRegistry();
+        if (gridManager != null) gridManager.OverlayCellsChanged -= RequestRefresh;
+        if (outpostRegistry != null) outpostRegistry.Changed -= RequestRefresh;
+        if (heroUnionRegistry != null) heroUnionRegistry.Changed -= RequestRefresh;
+        if (villainUnionBaseRegistry != null) villainUnionBaseRegistry.Changed -= RequestRefresh;
+    }
+
+    private void RefreshBindings()
+    {
+        UnsubscribeChanges();
+        ResolveReferences();
+        SubscribeChanges();
         RequestRefresh();
+    }
+
+    private void HandleLevelLoaded(LevelLoader loader)
+    {
+        if (loader.gameObject.scene == gameObject.scene)
+            RefreshBindings();
+    }
+
+    private void HandleLayoutLoaded(LevelZoneLayoutLoader loader)
+    {
+        if (loader.gameObject.scene == gameObject.scene)
+            RefreshBindings();
+    }
+
+    private void HandleFootprintChanged(MultiGridOccupant occupant)
+    {
+        if (occupant.gameObject.scene == gameObject.scene)
+            RequestRefresh();
     }
 
     private void OnDisable()
     {
-        UnsubscribeRegistry();
-        UnsubscribeEnemies();
-        Outpost.OutpostClaimed -= HandleOutpostChanged;
+        LevelLoader.RuntimeLevelLoaded -= HandleLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleLayoutLoaded;
+        MultiGridOccupant.FootprintChanged -= HandleFootprintChanged;
+        Outpost.OutpostStateChanged -= HandleOutpostChanged;
         HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionChanged;
-        UnsubscribeMainEventRegistry();
+        UnsubscribeChanges();
         ClearActiveOverlays();
     }
 
@@ -188,11 +239,10 @@ public class InteractionCellOverlayController : MonoBehaviour
 
     private void Update()
     {
-        if (!refreshRequested && Time.time < nextRefreshTime)
+        if (!refreshRequested)
             return;
 
         refreshRequested = false;
-        nextRefreshTime = Time.time + refreshInterval;
         RefreshOverlays();
     }
 
@@ -237,7 +287,6 @@ public class InteractionCellOverlayController : MonoBehaviour
             return;
         }
 
-        SubscribeSceneEnemies();
         BuildDesiredZones();
         HideRemovedZones();
         ShowDesiredZones();
@@ -859,9 +908,9 @@ public class InteractionCellOverlayController : MonoBehaviour
     private void OnValidate()
     {
         cellScale = Mathf.Clamp(cellScale, 1f, 1.2f);
-        refreshInterval = Mathf.Max(0.02f, refreshInterval);
         if (overlappedZoneColor.a < 0.35f)
             overlappedZoneColor.a = 0.55f;
+        RequestRefresh();
     }
 
     private sealed class OverlayInstance

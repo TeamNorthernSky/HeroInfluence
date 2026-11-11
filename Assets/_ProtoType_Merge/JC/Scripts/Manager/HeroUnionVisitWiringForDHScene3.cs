@@ -3,7 +3,7 @@ using UnityEngine;
 
 // [JC 신설 260514] DHScene_3 전용 HeroUnion wiring 후처리.
 // LevelLoader.SpawnHeroUnion 후 HeroUnion GO에 HeroUnionHQVisitDetector + HeroUnionDoubleClickEntry 동적 부착 +
-// VisitorIndicator 자식 GameObject 생성·연결. 인스펙터 슬롯은 본 컴포넌트에 미리 채워서 Reflection으로 주입.
+// JC | 2026-11-10 | VisitorIndicator 자식 생성 후 명시적 ConfigureIndicator로 표시·연출 참조를 연결합니다.
 // 다른 씬(DHScene/DHScene_2)에는 본 컴포넌트를 두지 않으므로 격리됨.
 [DisallowMultipleComponent]
 public class HeroUnionVisitWiringForDHScene3 : MonoBehaviour
@@ -30,9 +30,28 @@ public class HeroUnionVisitWiringForDHScene3 : MonoBehaviour
 
     private readonly HashSet<HeroUnionUnit> wiredHeroUnions = new HashSet<HeroUnionUnit>();
 
+    // JC | 2026-11-10 | 메인 탐사씬은 기존 DH 등록부를 직접 연결하여 매 프레임 전체 씬 검색을 없앱니다.
+    // 제작 씬에는 이 연결을 추가하지 않아 기존 정적 표시·연결 경로를 유지합니다.
+    [SerializeField] private HeroUnionRegistry heroUnionRegistry;
+    [SerializeField] private PartyRegistry partyRegistry;
+    [SerializeField] private JcAssociationIndicatorController indicatorAnimation;
+
     private void LateUpdate()
     {
         RemoveDestroyedReferences();
+
+        if (heroUnionRegistry != null)
+        {
+            var registered = heroUnionRegistry.HeroUnions;
+            for (int i = 0; i < registered.Count; i++)
+            {
+                var heroUnion = registered[i];
+                if (heroUnion == null || wiredHeroUnions.Contains(heroUnion)) continue;
+                Wire(heroUnion.gameObject);
+                wiredHeroUnions.Add(heroUnion);
+            }
+            return;
+        }
 
         HeroUnionUnit[] heroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
         for (int i = 0; i < heroUnions.Length; i++)
@@ -72,7 +91,15 @@ public class HeroUnionVisitWiringForDHScene3 : MonoBehaviour
         if (detector == null)
             detector = heroUnionGO.AddComponent<HeroUnionHQVisitDetector>();
 
-        SetPrivateField(detector, "visitorIndicator", indicator);
+        // JC | 2026-11-10 | 협회에만 연출기를 연결합니다. 거점이 재사용하는 스프라이트/배치 Getter는 바꾸지 않습니다.
+        JcAssociationIndicatorMotion motion = null;
+        if (indicatorAnimation != null)
+        {
+            motion = indicator.GetComponent<JcAssociationIndicatorMotion>();
+            if (motion == null) motion = indicator.AddComponent<JcAssociationIndicatorMotion>();
+            motion.Initialize(sr, indicatorAnimation);
+        }
+        detector.ConfigureIndicator(indicator, motion, partyRegistry);
 
         // 즉시 재평가 (현재 mover 위치 기반 인디케이터 갱신)
         detector.ReevaluateNow();
@@ -108,12 +135,4 @@ public class HeroUnionVisitWiringForDHScene3 : MonoBehaviour
             wiredHeroUnions.Remove(destroyed[i]);
     }
 
-    private static void SetPrivateField(object target, string fieldName, object value)
-    {
-        if (target == null) return;
-        var fi = target.GetType().GetField(
-            fieldName,
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-        if (fi != null) fi.SetValue(target, value);
-    }
 }

@@ -233,6 +233,8 @@ namespace JC.VFX.Seam
 
         private void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if (!showOverlay) return;
             if (textStyle == null) textStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, normal = { textColor = Color.white } };
             GUI.Box(new Rect(10, 10, 460, 238), GUIContent.none);

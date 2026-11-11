@@ -20,7 +20,6 @@ MonoBehaviour:
     type: 2}
   toonProfile: {fileID: 11400000, guid: deccd2b0d791cd344b9185ac66ea4fc2, type: 2}
   viewAHorizontalOffset: 1.47534943
-  skillCameraProfile: {fileID: 11400000, guid: 0167af58bdb2461393c70152b8794466, type: 2}
   zoneId: 1
   battleKeys:
   - BE002

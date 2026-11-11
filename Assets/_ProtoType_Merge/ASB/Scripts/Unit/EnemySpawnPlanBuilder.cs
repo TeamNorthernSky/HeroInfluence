@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -51,30 +51,33 @@ public static class EnemySpawnPlanBuilder
             DHEnemyGroupMember member = group.Members[i];
             string templateKey = member.EnemyUnitIndex.ToString();
 
-            if (!catalog.TryGetEnemyTemplate(templateKey, out EnemyData csvTemplate) || csvTemplate == null)
-            {
-                error = $"Enemy template not found. groupKey='{groupKey}', unit='{templateKey}'";
-                return false;
-            }
-
-            // 영속 경로(EnemyUnitState.InitializeFromTemplate)와 동일한 소스/계산식으로 맞춘다:
-            //   ingame = CalculateLevelAdjustedBaseStats(적유닛템플릿.BaseStats, 적유닛템플릿.LevelupStats, level)
-            // 적유닛템플릿이 없을 때만 CSV EnemyData로 폴백(영속 경로도 템플릿을 요구하므로 예외 경로).
-            catalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate unitTemplate);
-            StatBlock baseStatsForLevel = unitTemplate != null ? unitTemplate.BaseStats : csvTemplate.baseStats;
-            StatBlock levelupStats = unitTemplate != null ? unitTemplate.LevelupStats : csvTemplate.levelupStats;
-            StatBlock ingameStats =
-                UnitStatCalculator.CalculateLevelAdjustedBaseStats(baseStatsForLevel, levelupStats, safeLevel);
-
-            // 공유 템플릿 변형 금지 — 복제본에 레벨 스탯을 반영한다.
-            EnemyData spawnData = CloneForSpawn(csvTemplate);
-            spawnData.baseStats = ingameStats;
-            spawnData.levelupStats = default; // 전투 진입 시 레벨 스케일 off이므로 추가 성장 없음.
-
-            entries.Add(new EnemySpawnEntry(spawnData, member.CombatSlot, spawnData.Index, null));
+            // JC | 2026-11-10 | 그룹 생성과 시뮬레이션 단일 추가가 동일한 레벨/복제 규칙을 사용합니다.
+            if (!TryBuildUnitEntry(templateKey, safeLevel, member.CombatSlot, out var entry, out error)) return false;
+            entries.Add(entry);
         }
 
         plan = new EnemySpawnPlan(entries, null);
+        return true;
+    }
+
+    // JC | 2026-11-10 | 빈 적 칸 추가용 단일 생성 입력. 기존 그룹 빌더의 계산을 공용화하며 공유 원본은 수정하지 않습니다.
+    public static bool TryBuildUnitEntry(string templateKey, int enemyLevel, int combatSlot, out EnemySpawnEntry entry, out string error)
+    {
+        entry = null;
+        error = string.Empty;
+        var catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog == null || !catalog.TryGetEnemyTemplate(templateKey, out EnemyData csvTemplate) || csvTemplate == null)
+        {
+            error = $"Enemy template not found. unit='{templateKey}'";
+            return false;
+        }
+        catalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate unitTemplate);
+        StatBlock baseStatsForLevel = unitTemplate != null ? unitTemplate.BaseStats : csvTemplate.baseStats;
+        StatBlock levelupStats = unitTemplate != null ? unitTemplate.LevelupStats : csvTemplate.levelupStats;
+        EnemyData spawnData = CloneForSpawn(csvTemplate);
+        spawnData.baseStats = UnitStatCalculator.CalculateLevelAdjustedBaseStats(baseStatsForLevel, levelupStats, Mathf.Max(1, enemyLevel));
+        spawnData.levelupStats = default;
+        entry = new EnemySpawnEntry(spawnData, combatSlot, spawnData.Index, null);
         return true;
     }
 

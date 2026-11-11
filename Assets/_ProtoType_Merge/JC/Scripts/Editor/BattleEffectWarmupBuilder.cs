@@ -9,15 +9,81 @@ using UnityEngine.VFX;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
-/// <summary>Build-only derived data. Existing catalogs, registry keys and original prefabs stay authoritative.</summary>
+/// <summary>JC | 2026-11-11 | 원본 카탈로그를 기준으로 Play·빌드에 동일한 시각 준비 데이터를 생성합니다.</summary>
+[InitializeOnLoad]
 public sealed class BattleEffectWarmupBuilder : IPreprocessBuildWithReport, IPostprocessBuildWithReport
 {
     public const string GeneratedRoot = "Assets/_ProtoType_Merge/JC/GeneratedVfxWarmup";
     private const string Output = GeneratedRoot + "/Resources";
     public int callbackOrder => 100;
 
+    // JC | 2026-11-11 | Play 전에도 빌드와 같은 데이터를 확보하고, 원본이 동일한 경우에만 파생 에셋을 재사용합니다.
+    // 셰이더 컴파일 메뉴와 독립적으로 실행하여 버튼 사용 여부가 게임 진입 순서를 바꾸지 않게 합니다.
+    static BattleEffectWarmupBuilder()
+    {
+        EditorApplication.playModeStateChanged += OnPlayModeChanged;
+    }
+
+    private static void OnPlayModeChanged(PlayModeStateChange state)
+    {
+        if (state == PlayModeStateChange.ExitingEditMode)
+        {
+            try { EnsureCurrent(); }
+            catch (Exception exception)
+            {
+                // JC | 2026-11-11 | 준비 실패를 생략하고 실행하지 않도록 Play 진입만 취소하고 원인 로그를 남깁니다.
+                EditorApplication.isPlaying = false;
+                Debug.LogException(exception);
+            }
+        }
+    }
+
     public void OnPreprocessBuild(BuildReport report) => Generate();
     public void OnPostprocessBuild(BuildReport report) => Cleanup();
+
+    // JC | 2026-11-11 | 매 Play마다 수백 프리팹을 재생성하지 않도록 원본 의존성·대상 플랫폼·생성 코드로 유효성을 확인합니다.
+    // 저장하지 않은 원본이 있으면 캐시를 재사용하지 않으며, 원본을 임의 저장하지도 않습니다.
+    public static void EnsureCurrent()
+    {
+        string fingerprint = SourceFingerprint();
+        var data = AssetDatabase.LoadAssetAtPath<BattleEffectWarmupData>(Output + "/BattleEffectWarmupData.asset");
+        if (!string.IsNullOrEmpty(fingerprint) && data != null && data.SourceFingerprint == fingerprint &&
+            data.Catalogs != null && data.Catalogs.Length > 0 && data.Catalogs.All(c => c != null) &&
+            data.Registries != null && data.Registries.Length > 0 && data.Registries.All(r => r != null) &&
+            data.CommonEffects != null && data.Recipes != null && data.Recipes.Length > 0 &&
+            data.Recipes.All(IsRecipeAvailable)) return;
+        Generate();
+    }
+
+    // JC | 2026-11-11 | 파일을 삭제해도 로드된 Unity 참조가 남을 수 있어 실제 생성 파일의 존재까지 확인합니다.
+    private static bool IsRecipeAvailable(BattleEffectWarmupData.Recipe recipe)
+    {
+        if (recipe == null || recipe.Source == null || recipe.Visual == null || recipe.Dependencies == null) return false;
+        string path = AssetDatabase.GetAssetPath(recipe.Visual);
+        return path.StartsWith(Output + "/", StringComparison.Ordinal) && System.IO.File.Exists(path);
+    }
+
+    private static string[] CommonEffectPaths() => AssetDatabase.FindAssets("t:Prefab")
+        .Select(AssetDatabase.GUIDToAssetPath).Where(p => p.Contains("/Resources/BattleEffects/")).ToArray();
+
+    private static string SourceFingerprint()
+    {
+        var roots = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path)
+            .Concat(CommonEffectPaths())
+            .Append("Assets/_ProtoType_Merge/JC/Scripts/Editor/BattleEffectWarmupBuilder.cs")
+            .Distinct().OrderBy(p => p, StringComparer.Ordinal).ToArray();
+        foreach (string path in AssetDatabase.GetDependencies(roots, true))
+        {
+            var asset = AssetDatabase.LoadMainAssetAtPath(path);
+            // JC | 2026-11-11 | 셰이더/스크립트의 내부 컴파일 dirty는 원본 편집이 아니므로 디스크 의존성 해시로 판정합니다.
+            // 템플릿에 복사하는 프리팹·재질·설정의 미저장 편집만 캐시 재사용을 막습니다.
+            if ((asset is GameObject || asset is Material || asset is ScriptableObject) && EditorUtility.IsDirty(asset)) return null;
+            if (asset is GameObject prefab && prefab.GetComponentsInChildren<Component>(true)
+                .Any(component => component != null && EditorUtility.IsDirty(component))) return null;
+        }
+        return Hash128.Compute(EditorUserBuildSettings.activeBuildTarget + "\n" + string.Join("\n",
+            roots.Select(p => p + ":" + AssetDatabase.GetAssetDependencyHash(p)))).ToString();
+    }
 
     public static void Cleanup()
     {
@@ -51,9 +117,7 @@ public sealed class BattleEffectWarmupBuilder : IPreprocessBuildWithReport, IPos
                 foreach (string path in AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(catalog), true))
                     AddPrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path), sources);
 
-            var common = AssetDatabase.FindAssets("t:Prefab")
-                .Select(AssetDatabase.GUIDToAssetPath)
-                .Where(p => p.Contains("/Resources/BattleEffects/"))
+            var common = CommonEffectPaths()
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>).Where(p => p != null).ToArray();
             foreach (var prefab in common) sources.Add(prefab);
             // Includes runtime-spawned children such as Nekoming's separate impact explosion.
@@ -104,8 +168,11 @@ public sealed class BattleEffectWarmupBuilder : IPreprocessBuildWithReport, IPos
                 finally { UnityEngine.Object.DestroyImmediate(visual); }
             }
             data.Recipes = recipes.ToArray();
+            // JC | 2026-11-11 | 모든 템플릿 생성에 성공한 데이터만 다음 Play의 재사용 후보로 남깁니다.
+            data.SourceFingerprint = SourceFingerprint();
             AssetDatabase.CreateAsset(data, Output + "/BattleEffectWarmupData.asset");
-            AssetDatabase.SaveAssets();
+            // JC | 2026-11-11 | 자동 준비가 사용자의 다른 미저장 에셋까지 저장하지 않도록 생성 데이터만 저장합니다.
+            AssetDatabase.SaveAssetIfDirty(data);
             Debug.Log($"[VFX Warmup] Generated {recipes.Count} rendering recipes from build-scene catalogs.");
         }
         catch

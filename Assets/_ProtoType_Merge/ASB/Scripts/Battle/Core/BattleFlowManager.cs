@@ -881,12 +881,23 @@ public class BattleFlowManager : MonoBehaviour
     /// UI용 예측 턴 순서 반환.
     /// 현재 유닛 → 남은 큐 → 이미 행동한 유닛(다음 라운드 예측, RefreshQueue와 동일 정렬)
     /// </summary>
-    public List<BattleCharactor> GetPredictedTurnOrder()
+    public List<BattleCharactor> GetPredictedTurnOrder(int minimumCount = 5)
     {
         var result = new List<BattleCharactor>();
 
         if (CurrentUnit != null && !CurrentUnit.IsDead)
             result.Add(CurrentUnit);
+
+        // JC | 2026-11-10 | 단일 반복 대상의 실제 턴 필터를 예측 UI에도 적용합니다. 현재 턴은 완료하고 이후 슬롯만 반복합니다.
+        if (CombatContext.Instance != null && CombatContext.Instance.IsSimulation && SimulationTurnFilter != null)
+        {
+            var eligible = participants.Where(u => u != null && !u.IsDead && SimulationTurnFilter(u)).ToList();
+            if (eligible.Count == 1)
+            {
+                while (result.Count < Mathf.Max(1, minimumCount)) result.Add(eligible[0]);
+                return result;
+            }
+        }
 
         result.AddRange(turnQueue.Where(u => u != null && !u.IsDead));
 

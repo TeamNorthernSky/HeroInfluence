@@ -54,6 +54,8 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
 
     public void OnDrag(PointerEventData eventData)
     {
+        // JC | 2026-11-10 | 이미 시작한 드래그도 전환 도중 즉시 취소합니다.
+        if (!CanHandleDrag(eventData)) { isDragging = false; return; }
         if (!isDragging)
             return;
 
@@ -67,7 +69,8 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
 
     private bool CanHandleClick(PointerEventData eventData)
     {
-        return enableClickNavigation
+        // JC | 2026-11-10 | 카메라 참조가 아직 없는 초기화 구간도 전환 입력을 받지 않습니다.
+        return !SceneFadeController.IsInputBlocked && enableClickNavigation
             && eventData != null
             && eventData.button == PointerEventData.InputButton.Left
             && (cameraFollower == null || !cameraFollower.IsManualNavigationLocked);
@@ -75,7 +78,8 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
 
     private bool CanHandleDrag(PointerEventData eventData)
     {
-        return enableDragNavigation
+        // JC | 2026-11-10 | 클릭과 드래그 시작/지속에 동일한 전환 잠금을 적용합니다.
+        return !SceneFadeController.IsInputBlocked && enableDragNavigation
             && eventData != null
             && eventData.button == PointerEventData.InputButton.Left
             && (cameraFollower == null || !cameraFollower.IsManualNavigationLocked);
@@ -110,6 +114,12 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
 
         Vector3 worldPosition = MinimapToWorldPosition(normalizedX, normalizedY, viewOrigin, gridSize);
         cameraFollower.FocusWorldPosition(worldPosition);
+    }
+
+    // JC | 2026-11-10 | 마우스를 멈춰 OnDrag가 호출되지 않아도 이전 드래그를 재개하지 않게 버립니다.
+    private void Update()
+    {
+        if (SceneFadeController.IsInputBlocked) isDragging = false;
     }
 
     private Vector3 MinimapToWorldPosition(float normalizedX, float normalizedY, Vector2Int viewOrigin, Vector2Int gridSize)

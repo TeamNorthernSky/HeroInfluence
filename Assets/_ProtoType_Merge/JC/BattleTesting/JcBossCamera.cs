@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿﻿using UnityEngine;
 
 namespace JC.BattleTesting
 {
@@ -8,7 +8,6 @@ namespace JC.BattleTesting
         public JcBossCameraProfile Draft { get; private set; }
         Camera lens;
         Vector3 center;
-        Transform actor, target;
         BattlePresentationController presentation;
         bool refreshBase;
         JcBossStageBounds stageBounds;
@@ -20,7 +19,6 @@ namespace JC.BattleTesting
         public bool BoundaryChangePending { get; private set; }
         float acceptedRight;
 
-        public bool IsAimShot => actor && target;
         public bool CanCaptureBase => presentation == null || !presentation.IsAttackCameraActive;
 
         public void Initialize(JcBossCameraProfile source, Camera camera, Vector3 framingCenter, Transform stage)
@@ -44,18 +42,10 @@ namespace JC.BattleTesting
         public void ApplyDraft()
         {
 
-            if (!IsAimShot && !CanCaptureBase) { refreshBase = true; return; }
-            if (IsAimShot)
-            {
-                refreshBase = true;
-                ResolveAim(out var pos,out var rot,out var fov);
-                ApplyPose(pos,rot,fov);
-            }
-            else
-            {
-                Draft.viewA.Resolve(center,out var pos,out var rot,out var fov);
-                ApplyPose(pos,rot,fov);
-            }
+            // JC | 2026-11-11 | 스킬 구도는 공통 정본 조절기가 담당합니다. 여기서는 보스 기본뷰만 편집합니다.
+            if (!CanCaptureBase) { refreshBase = true; return; }
+            Draft.viewA.Resolve(center,out var pos,out var rot,out var fov);
+            ApplyPose(pos,rot,fov);
         }
 
         public bool IsBasePreview { get; private set; }
@@ -67,7 +57,7 @@ namespace JC.BattleTesting
 
         public void PreviewEditorDraft()
         {
-            if (!CanCaptureBase || IsAimShot) { ApplyDraft(); return; }
+            if (!CanCaptureBase) { ApplyDraft(); return; }
             Draft.viewA.Resolve(center,out var position,out var rotation,out var fov);
             IsBasePreview = true;
             lens.transform.SetPositionAndRotation(position,rotation);
@@ -116,33 +106,11 @@ namespace JC.BattleTesting
             lens.fieldOfView = acceptedFov;
         }
 
-        public void BeginAim(Transform caster, Transform victim)
-        {
-            actor = caster; target = victim;
-        }
-
-        public void ResolveAim(out Vector3 pos,out Quaternion rot,out float fov)
-        {
-            Draft.aim.Resolve(center,actor.position,target.position,lens.aspect,out pos,out rot,out fov);
-            // Choose the attack endpoint before the transition starts. The writer never substitutes another shot.
-            rot = stageBounds.PlanRotation(accepted,acceptedFov,new Pose(pos,rot),fov,lens.aspect,lens.nearClipPlane,acceptedRight);
-        }
-
         public void EndAttack()
         {
-            actor = null; target = null;
             if (refreshBase) { refreshBase = false; ApplyDraft(); }
         }
-
         public void CaptureBase() => Draft.viewA.Capture(lens,center);
-
-        public void CaptureAim()
-        {
-            if (!IsAimShot) return;
-            Draft.aim.pose.Capture(lens,center);
-            Draft.aim.actorAnchor = lens.WorldToViewportPoint(actor.position);
-            Draft.aim.targetAnchor = lens.WorldToViewportPoint(target.position+Vector3.up*Draft.aim.targetHeight);
-        }
 
         void OnDestroy() { if (Draft) Destroy(Draft); }
     }

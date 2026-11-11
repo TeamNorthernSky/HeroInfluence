@@ -29,6 +29,16 @@ namespace JC.BattleTesting.Editor
                     EditorGUILayout.PropertyField(serialized.FindProperty(field), true);
             if (serialized.ApplyModifiedProperties()) controller.ApplyDraft();
 
+            // JC | 2026-11-09 | 도시 월드 조명 잠금과 독립된 보스 색 변화 설정도 같은 초안/저장 경로를 씁니다.
+            serialized.Update();
+            // JC | 2026-11-10 | 본게임/테스트 토글을 독립 저장하고 현재 전투에 적용되는 설정을 표시합니다.
+            EditorGUILayout.HelpBox(controller.IsBossLightingTest
+                ? "현재: 보스 테스트 설정 적용. 본게임 토글과 독립적으로 동작합니다."
+                : "현재: 본게임 설정 적용. 행동 조명 효과를 꺼도 기본 조명은 유지됩니다.", MessageType.Info);
+            foreach (string field in new[] { "battlePulseEnabled", "battlePulseInBossTestEnabled", "battlePulseColor", "battlePulseMix", "battlePulseSeconds", "battlePulseInterval" })
+                EditorGUILayout.PropertyField(serialized.FindProperty(field));
+            if (serialized.ApplyModifiedProperties()) controller.ApplyDraft();
+
             // JC | 2026-11-05 | 씬 참조는 프로필에 저장하지 않고 무대 상대 경로로 바꿔 양쪽 진입 경로에서 재사용합니다.
             var renderer = (Renderer)EditorGUILayout.ObjectField("셰이딩 대상 추가", null, typeof(Renderer), true);
             if (renderer)

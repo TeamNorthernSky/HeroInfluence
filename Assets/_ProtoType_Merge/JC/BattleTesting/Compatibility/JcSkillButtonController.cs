@@ -238,7 +238,8 @@ public class JcSkillButtonController : MonoBehaviour
                     // '+' 변형은 별도 스킬 ID이며 협회 강화 단계와 혼용하지 않습니다.
                     slot.icon.sprite = shown != null ? Sprites.Icon.ClassSkill(shown.skillIndex, 1) : null;
                     slot.icon.enabled = slot.icon.sprite != null;
-                    JC.BattleTesting.JcBattleHudLayout.FitMaskedArt(slot.icon);
+                    // JC | 2026-11-09 | 전투·보스 테스트의 스킬 교체도 본게임과 같은 전체 맞춤을 사용합니다.
+                    JC.BattleTesting.JcBattleHudLayout.FitSkillIcon(slot.icon);
                 }
                 if (slot.lockedFace != null) slot.lockedFace.SetActive(locked);
                 if (slot.lockedOverlay != null) slot.lockedOverlay.SetActive(locked);

@@ -336,6 +336,8 @@ namespace JC.BattleTesting
         }
         void OnGUI()
         {
+            // JC | 2026-11-09 | 개발자 안내만 Noto로 표시하고 종료 시 기존 GUI 글꼴을 복원합니다.
+            using var developerFontScope = new DebugPanelManager.DeveloperGuiFontScope(GUI.skin);
             if (!entered) return;
             // 빌드 씬에서는 디버그 창이 활성화된 동안에만 카메라 전환 버튼을 그린다.
             if (gameObject.scene.buildIndex >= 0 && !DebugPanelManager.IsDebugPanelActive) return;

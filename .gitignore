@@ -201,3 +201,7 @@ Assets/_ProtoType_Merge/CLAUDE.md.meta
 # Bundle Shader Pack은 안내 txt뿐 — 실제 셰이더 팩 4종을 임포트해 공유할 때는 이 규칙 제거
 /Assets/Matthew Guz/
 /Assets/Matthew Guz.meta
+
+# JC | 2026-11-11 | Play·빌드 준비 시 원본 카탈로그에서 자동 생성하는 로컬 시각 템플릿입니다.
+/Assets/_ProtoType_Merge/JC/GeneratedVfxWarmup/
+/Assets/_ProtoType_Merge/JC/GeneratedVfxWarmup.meta

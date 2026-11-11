@@ -16,6 +16,9 @@ namespace JC.BattleTesting
         // JC | 2026-11-05 | 테스트와 실제 BE490이 같은 전용 환경 보정을 사용하며 일반 전투 프로필과 분리합니다.
         [Tooltip("기존 환경 위에 적용할 보스전 전용 조명·음영·무대 재질 설정입니다.")]
         public JcBossEnvironmentProfile environmentProfile;
+        // JC | 2026-11-09 | 창문광과 임시 천장광을 동시에 처리하는 보스 전용 Forward+ 설정입니다.
+        [Tooltip("보스전 동안만 복제해 사용하는 렌더링 설정입니다. 은행·탐사·일반전의 설정은 바꾸지 않습니다.")]
+        public UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset interiorPipeline;
         // JC | 2026-11-05 | 실내 표면·바닥 줄눈도 테스트/실제 BE490에서 같은 프로필을 사용합니다.
         [Tooltip("보스 무대의 석재·바닥·가구 표면 보정입니다. 원본 재질은 유지합니다.")]
         public JcBossSurfaceProfile surfaceProfile;

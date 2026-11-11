@@ -62,6 +62,12 @@ public sealed class HeroUnionChatController : MonoBehaviour
 
         for (int frame = 0; frame < InitialChatRetryFrames; frame++)
         {
+            // JC | 2026-11-11 | 에디터·빌드 공통 이펙트 준비 중에는 탐사씬이 로드돼도 로딩씬이 활성 상태입니다.
+            // 진입·복원·페이드 완료를 기다리되, 로딩 시간을 대화 데이터 재시도 180프레임에서 소모하지 않습니다.
+            while (IsExplorationEntryPending() ||
+                   (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning))
+                yield return null;
+
             if (TryPlayAnyInitialClaimedChat())
                 break;
 
@@ -113,6 +119,11 @@ public sealed class HeroUnionChatController : MonoBehaviour
         if (!Application.isPlaying || isPlayingChat || heroUnion == null)
             return false;
 
+        // JC | 2026-11-11 | 상태 변경 이벤트로 직접 호출돼도 로딩씬 소속 대화창이 생성되지 않도록 차단합니다.
+        // 초기 점령 대화는 위 코루틴이 준비 완료 후 재시도하며, 협회가 속한 활성씬에 대화창을 생성합니다.
+        if (IsExplorationEntryPending() || heroUnion.gameObject.scene != SceneManager.GetActiveScene())
+            return false;
+
         ZoneEntryGuidanceController.ApplyStoredGuidanceIfNeeded()?.TryCompleteFromClaimedHeroUnion(heroUnion);
 
         int chatId = heroUnion.CaptureChatId;
@@ -149,6 +160,13 @@ public sealed class HeroUnionChatController : MonoBehaviour
         }
 
         return true;
+    }
+
+    // JC | 2026-11-11 | 기존 탐사 진입·저장 복원 상태를 재사용하여 초기화 도중 대화가 시작되는 것을 막습니다.
+    private static bool IsExplorationEntryPending()
+    {
+        return DHGameStateRestoreService.IsRestoring ||
+            (GameManager.Instance != null && GameManager.Instance.IsExplorationEntryPending);
     }
 
     private void HandleChatClosed(string chatKey)

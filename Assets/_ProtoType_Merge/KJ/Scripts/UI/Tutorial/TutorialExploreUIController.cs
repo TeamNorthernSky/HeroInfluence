@@ -143,17 +143,19 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         entryStage = EntryStage.Introduction;
         entryOpenedFrame = Time.frameCount;
         entryAwaitingRelease = true;
-        ShowEntryMessage(JcTutorialText.Get("publicity.intro", publicityIntroMessage), null);
+        // JC | 2026-11-09 | 탐사 홍보 도입의 문장 경계는 축소된 전용 간격을 사용하며 일반 줄간격과 중복 합산하지 않습니다.
+        ShowEntryMessage(JcTutorialText.Get("publicity.intro", publicityIntroMessage), null, true);
     }
 
-    private void ShowEntryMessage(string message, RectTransform target)
+    private void ShowEntryMessage(string message, RectTransform target, bool sentenceSpacing = false)
     {
         var guide = publicityEntryGuide;
         guide.explanationShield.SetActive(true);
         if (guide.continueButton != null) guide.continueButton.gameObject.SetActive(false);
         guide.view.blockPanelRaycasts = false;
         guide.view.centeredPointerTarget = target;
-        guide.view.SetContent(JcTutorialText.Get("exploreuicontroller.002", "탐사 · 홍보"), message);
+        // JC | 2026-11-09 | 홍보 도입 설명은 문장 경계만 50%, 나머지 탐사 버튼 안내는 30% 확대합니다(중복 배율 없음).
+        guide.view.SetContent(JcTutorialText.Get("exploreuicontroller.002", "탐사 · 홍보"), message, sentenceSpacing, sentenceSpacing ? 1.5f : 1.3f);
         // 도입용 디밍과 대상 승격은 기존 경로를 유지하고 큰 분절 화살표만 제외한다.
         guide.view.SetVisible(true, target, JC.Tutorial.JcTutorialGuideView.FocusPresentation.BorderOnly);
     }

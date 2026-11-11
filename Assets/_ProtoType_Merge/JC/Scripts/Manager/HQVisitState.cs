@@ -61,7 +61,8 @@ public class HQVisitState : MonoBehaviour
     {
         if (string.IsNullOrEmpty(sourceKey)) return;
 
-        HashSet<string> next = new HashSet<string>();
+        // JC | 2026-11-10 | 변경 없는 방문 검사에서는 임시 집합을 재사용합니다. 호출별 대여로 중첩 갱신과 예외 시 반환도 보장합니다.
+        using var nextLease = UnityEngine.Pool.HashSetPool<string>.Get(out var next);
         if (partyIds != null)
         {
             foreach (var id in partyIds)
@@ -75,7 +76,8 @@ public class HQVisitState : MonoBehaviour
         else
         {
             if (sourceToParties.TryGetValue(sourceKey, out var cur) && cur.SetEquals(next)) return; // 변화 없음
-            sourceToParties[sourceKey] = next;
+            // JC | 2026-11-10 | 실제 변경 때만 독립 저장본을 만듭니다. DH 저장·KJ UI에 노출한 집합은 풀에 반환하거나 덮어쓰지 않습니다.
+            sourceToParties[sourceKey] = new HashSet<string>(next);
         }
 
         RebuildUnion();
@@ -100,8 +102,8 @@ public class HQVisitState : MonoBehaviour
     {
         bool changed = false;
 
-        // 변경 여부 판정을 위해 기존 합집합과 비교.
-        HashSet<string> rebuilt = new HashSet<string>();
+        // JC | 2026-11-10 | 비교용 합집합만 대여합니다. 공개 unionCache의 수명과 실제 합집합 변경 시에만 발생하는 알림은 유지합니다.
+        using var rebuiltLease = UnityEngine.Pool.HashSetPool<string>.Get(out var rebuilt);
         foreach (var kv in sourceToParties)
             foreach (var id in kv.Value)
                 rebuilt.Add(id);

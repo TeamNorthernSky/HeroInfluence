@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using ASB.Work.BattleGrid;
@@ -352,6 +352,9 @@ public class EnemySpawner : MonoBehaviour
     /// BattleCharactor/인질이 이미 있으면 스폰하지 않고 false를 반환한다.
     /// 데이터·스킬은 entry(<see cref="EnemySpawnPlanBuilder.TryBuildEventUnitEntry"/>)로 받고, 초기화는 계획 스폰과 같다.
     /// </summary>
+    // JC | 2026-11-10 | 시뮬레이션 확인 전에 기존 프리팹 해석 경로로 배치 가능 자산을 검사합니다. 생성/점유 변경은 없습니다.
+    public bool CanResolveEntry(EnemySpawnEntry entry) => entry != null && entry.Data != null && ResolvePlanPrefab(entry) != null;
+
     public bool TrySpawnUnitIfEmpty(EnemySpawnEntry entry, int gridNumber, out GameObject spawned)
     {
         spawned = null;
@@ -882,9 +885,28 @@ public class EnemySpawner : MonoBehaviour
         battle.OnDied += (bc) => ScheduleCorpseRemoval(bc, g);
     }
 
+    // JC | 2026-11-10 | 시뮬레이션 진형 이동 후 소환·부활 검사도 새 칸의 인스턴스를 조회하게 합니다.
+    public void RefreshSimulationFormation()
+    {
+        if (CombatContext.Instance == null || !CombatContext.Instance.IsSimulation) return;
+        spawnedByGrid.Clear();
+        foreach (var pair in gridCellsByNumber)
+        {
+            if (pair.Value == null) continue;
+            var unit = pair.Value.GetComponentInChildren<BattleCharactor>(true);
+            if (unit != null) spawnedByGrid[pair.Key] = unit.gameObject;
+        }
+    }
+
     public void ScheduleCorpseRemoval(BattleCharactor bc, int gridNumber)
     {
         if (bc == null || bc.IsPlayer) return;   // 플레이어 방어(정상적으론 적만 구독)
+        // JC | 2026-11-10 | 시뮬레이션에서 재배치한 적은 생성 당시 콜백에 캡처된 칸 대신 갱신된 관리표의 칸을 제거합니다.
+        if (CombatContext.Instance != null && CombatContext.Instance.IsSimulation)
+        {
+            foreach (var pair in spawnedByGrid)
+                if (pair.Value == bc.gameObject) { gridNumber = pair.Key; break; }
+        }
         // 율리아 시체는 보스 사망 연출이 유지·퇴장 시점을 직접 관리한다.
         if (bc.TryGetComponent(out YuliaStasisVfx yuliaDeath) && yuliaDeath.isActiveAndEnabled)
         {

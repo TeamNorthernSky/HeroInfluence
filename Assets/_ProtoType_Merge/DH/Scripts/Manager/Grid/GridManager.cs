@@ -13,6 +13,7 @@ public enum EnemyEncounterZoneState
 
 public class GridManager : MonoBehaviour
 {
+    public event System.Action OverlayCellsChanged;
     private static readonly Vector2Int[] directions8 =
     {
         new Vector2Int(0, 1),
@@ -182,12 +183,18 @@ public class GridManager : MonoBehaviour
 
     public void ClearCellSurfaceOffsets()
     {
+        if (cellSurfaceYOffsetByGrid.Count == 0)
+            return;
         cellSurfaceYOffsetByGrid.Clear();
+        OverlayCellsChanged?.Invoke();
     }
 
     public void RegisterCellSurfaceOffset(Vector2Int grid, float yOffset)
     {
+        if (cellSurfaceYOffsetByGrid.TryGetValue(grid, out float current) && current == yOffset)
+            return;
         cellSurfaceYOffsetByGrid[grid] = yOffset;
+        OverlayCellsChanged?.Invoke();
     }
 
     public bool HasCellSurfaceOffset(Vector2Int grid)
@@ -273,12 +280,16 @@ public class GridManager : MonoBehaviour
 
     public void ClearLevelObstacleCells()
     {
+        if (levelObstacleCells.Count == 0)
+            return;
         levelObstacleCells.Clear();
+        OverlayCellsChanged?.Invoke();
     }
 
     public void RegisterLevelObstacleCell(Vector2Int grid)
     {
-        levelObstacleCells.Add(grid);
+        if (levelObstacleCells.Add(grid))
+            OverlayCellsChanged?.Invoke();
     }
 
     public void RegisterLevelObstacleCells(IEnumerable<Vector2Int> grids)
@@ -286,23 +297,31 @@ public class GridManager : MonoBehaviour
         if (grids == null)
             return;
 
+        bool changed = false;
         foreach (Vector2Int grid in grids)
-            levelObstacleCells.Add(grid);
+            changed |= levelObstacleCells.Add(grid);
+        if (changed)
+            OverlayCellsChanged?.Invoke();
     }
 
     public void ClearGateBlockerCells()
     {
+        if (gateBlockerCells.Count == 0)
+            return;
         gateBlockerCells.Clear();
+        OverlayCellsChanged?.Invoke();
     }
 
     public void RegisterGateBlockerCell(Vector2Int grid)
     {
-        gateBlockerCells.Add(grid);
+        if (gateBlockerCells.Add(grid))
+            OverlayCellsChanged?.Invoke();
     }
 
     public void UnregisterGateBlockerCell(Vector2Int grid)
     {
-        gateBlockerCells.Remove(grid);
+        if (gateBlockerCells.Remove(grid))
+            OverlayCellsChanged?.Invoke();
     }
 
     public void RegisterGateBlockerCells(IEnumerable<Vector2Int> grids)
@@ -310,8 +329,11 @@ public class GridManager : MonoBehaviour
         if (grids == null)
             return;
 
+        bool changed = false;
         foreach (Vector2Int grid in grids)
-            gateBlockerCells.Add(grid);
+            changed |= gateBlockerCells.Add(grid);
+        if (changed)
+            OverlayCellsChanged?.Invoke();
     }
 
     public void UnregisterGateBlockerCells(IEnumerable<Vector2Int> grids)
@@ -319,8 +341,11 @@ public class GridManager : MonoBehaviour
         if (grids == null)
             return;
 
+        bool changed = false;
         foreach (Vector2Int grid in grids)
-            gateBlockerCells.Remove(grid);
+            changed |= gateBlockerCells.Remove(grid);
+        if (changed)
+            OverlayCellsChanged?.Invoke();
     }
 
     public bool HasItem(Vector2Int grid)

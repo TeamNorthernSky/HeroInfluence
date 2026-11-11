@@ -53,7 +53,13 @@ public sealed class PopupEnterSubmitter : MonoBehaviour
 
     private void Update()
     {
-        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) return;
+        // JC | 2026-11-10 | KJ 팝업 확정뿐 아니라 Unity 기본 Submit/키보드 탐색도 페이드 중 차단합니다.
+        // 기존 프레임 단위 복구를 사용하므로 다른 UI의 원래 navigation 설정은 유지됩니다.
+        if (SceneFadeController.IsInputBlocked)
+        {
+            if (EventSystem.current != null) SuppressNativeSubmitForCurrentFrame(EventSystem.current);
+            return;
+        }
         if (!IsPlainEnterPressed()) return;
 
         EventSystem eventSystem = EventSystem.current;

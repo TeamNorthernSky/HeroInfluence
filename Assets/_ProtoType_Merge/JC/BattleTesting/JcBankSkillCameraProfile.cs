@@ -1,19 +1,19 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace JC.BattleTesting
 {
-    // JC | 2026-11-06 | 은행 블랙불릿의 4개 스킬을 직접 저작한 월드 구도로 재생합니다.
+    // JC | 2026-11-11 | 기존 GUID와 24개 촬영값을 유지하며 정본1을 모든 전투의 진형 기준으로 변환합니다.
     // 스킬 자체의 원근감 배율만 적용하며 기본뷰의 원근감·X 오프셋은 다시 적용하지 않습니다.
-    [CreateAssetMenu(menuName = "JC/전투/은행 블랙불릿 스킬 카메라")]
+    [CreateAssetMenu(menuName = "JC/전투/블랙불릿 정본1 저장 구도")]
     public sealed class JcBankSkillCameraProfile : ScriptableObject
     {
+        // JC | 2026-11-11 | 촬영 당시 은행의 반 칸 이동을 포함한 PlayerPlace 위치입니다. 촬영값 자체는 변환하거나 덮어쓰지 않습니다.
+        [HideInInspector] public Vector3 referencePlayerOrigin = new Vector3(1.65f, .3f, -6);
         [Serializable]
         public sealed class Shot
         {
-            [Tooltip("켜면 이 스킬의 기본·강화형으로 해당 적 칸을 공격할 때 저장 구도를 사용합니다. 끄면 해당 조합만 기존 자동 연출을 사용합니다.")]
-            public bool enabled;
-            [Tooltip("원근감 배율 1의 기준 월드 위치입니다. 배율을 낮추면 시선 축 뒤로 이동합니다. 은행 본게임과 BankTestScene이 공유합니다.")]
+            [Tooltip("원근감 배율 1의 기준 월드 위치입니다. 배율을 낮추면 시선 축 뒤로 이동합니다. 모든 전투가 같은 저장값을 공유합니다.")]
             public Vector3 position;
             [Tooltip("카메라 월드 회전(X/Y/Z, 도)입니다. 자동 표적 추적으로 덮어쓰지 않습니다.")]
             public Vector3 rotation;
@@ -76,13 +76,12 @@ namespace JC.BattleTesting
         public static int TargetIndex(Vector2Int cell) => cell.x >= 2 && cell.x <= 3 && cell.y >= 0 && cell.y <= 2
             ? (cell.x - 2) * 3 + cell.y : -1;
 
-        // JC | 2026-11-06 | 카탈로그를 새로 만들지 않고 기존 스킬 계열 판정을 그대로 사용합니다.
-        public Shot FindEnabled(int skillIndex, Vector2Int targetCell)
+        // JC | 2026-11-11 | 강화형도 같은 4개 계열의 촬영값을 사용하고 공격 시작 때 확정한 칸을 유지합니다.
+        public Shot FindShot(int skillIndex, int targetSlot)
         {
             int family = HeroSkillRules.FamilyId(skillIndex);
             int slot = family switch { 3010 => 0, 3020 => 1, 3030 => 2, 3040 => 3, _ => -1 };
-            var shot = GetSlot(slot, TargetIndex(targetCell));
-            return shot != null && shot.enabled ? shot : null;
+            return GetSlot(slot, targetSlot);
         }
     }
 }

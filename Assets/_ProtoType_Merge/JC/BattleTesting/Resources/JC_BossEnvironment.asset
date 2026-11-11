@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterLighting: 0
   ssaoFeature: {fileID: 0}
-  ssaoEnabled: 0
-  ssaoIntensity: 0.8
-  ssaoRadius: 0.65
-  ssaoDirectLightingStrength: 0.35
+  ssaoEnabled: 1
+  ssaoIntensity: 0.86
+  ssaoRadius: 0.9
+  ssaoDirectLightingStrength: 0.407
   ssaoDownsample: 0
   isolateInterior: 1
   windows:
@@ -32,7 +32,7 @@ MonoBehaviour:
     range: 48
     softness: 0.025
     shadows: 2
-    shadowStrength: 1
+    shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 2"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay2"
@@ -44,7 +44,7 @@ MonoBehaviour:
     range: 48
     softness: 0.025
     shadows: 2
-    shadowStrength: 1
+    shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 3"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay3"
@@ -56,7 +56,7 @@ MonoBehaviour:
     range: 48
     softness: 0.025
     shadows: 2
-    shadowStrength: 1
+    shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 4"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay4"
@@ -68,7 +68,7 @@ MonoBehaviour:
     range: 48
     softness: 0.025
     shadows: 2
-    shadowStrength: 1
+    shadowStrength: 0.054
   - label: "\uB4A4\uD3B8 \uCC3D 5"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay5"
@@ -80,7 +80,7 @@ MonoBehaviour:
     range: 48
     softness: 0.025
     shadows: 2
-    shadowStrength: 1
+    shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 6"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay6"
@@ -92,7 +92,7 @@ MonoBehaviour:
     range: 48
     softness: 0.025
     shadows: 2
-    shadowStrength: 1
+    shadowStrength: 0.153
   directionalIntensity: 1
   directionalTint: {r: 1, g: 1, b: 1, a: 1}
   shadowStrength: 1
@@ -100,16 +100,18 @@ MonoBehaviour:
   ambientTint: {r: 1, g: 1, b: 1, a: 1}
   reflectionIntensity: 1
   lights:
-  - playerBackFill: 1
+  - battlePulse: 0
+    aimAtBoss: 0
+    playerBackFill: 1
     label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
-    enabled: 0
-    type: 1
+    enabled: 1
+    type: 0
     position: {x: 0, y: 6, z: 0}
     rotation: {x: 25, y: -34.45, z: 0}
     color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 0.6
+    intensity: 0.8
     range: 10
-    spotAngle: 60
+    spotAngle: 94
     innerSpotRatio: 0.6
     shadows: 0
     shadowStrength: 1
@@ -118,4 +120,150 @@ MonoBehaviour:
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
+  - battlePulse: 1
+    aimAtBoss: 0
+    playerBackFill: 0
+    label: "\uC784\uC2DC \uCC9C\uC7A5 1"
+    enabled: 1
+    type: 1
+    position: {x: -6, y: 18.75, z: -29}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 0.96, g: 0.975, b: 1, a: 1}
+    intensity: 33
+    range: 19
+    spotAngle: 140
+    innerSpotRatio: 0.65
+    shadows: 0
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 1
+    aimAtBoss: 0
+    playerBackFill: 0
+    label: "\uC784\uC2DC \uCC9C\uC7A5 2"
+    enabled: 1
+    type: 1
+    position: {x: 10, y: 18.75, z: -29}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 0.96, g: 0.975, b: 1, a: 1}
+    intensity: 33
+    range: 19
+    spotAngle: 140
+    innerSpotRatio: 0.65
+    shadows: 0
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 1
+    aimAtBoss: 0
+    playerBackFill: 0
+    label: "\uC784\uC2DC \uCC9C\uC7A5 3"
+    enabled: 1
+    type: 1
+    position: {x: -6, y: 18.75, z: -15}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 0.96, g: 0.975, b: 1, a: 1}
+    intensity: 33
+    range: 19
+    spotAngle: 140
+    innerSpotRatio: 0.65
+    shadows: 0
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 1
+    aimAtBoss: 0
+    playerBackFill: 0
+    label: "\uC784\uC2DC \uCC9C\uC7A5 4"
+    enabled: 1
+    type: 1
+    position: {x: 10, y: 18.75, z: -15}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 0.96, g: 0.975, b: 1, a: 1}
+    intensity: 33
+    range: 19
+    spotAngle: 140
+    innerSpotRatio: 0.65
+    shadows: 0
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 1
+    aimAtBoss: 0
+    playerBackFill: 0
+    label: "\uC784\uC2DC \uCC9C\uC7A5 5"
+    enabled: 1
+    type: 1
+    position: {x: -6, y: 18.75, z: -1}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 0.96, g: 0.975, b: 1, a: 1}
+    intensity: 33
+    range: 19
+    spotAngle: 140
+    innerSpotRatio: 0.65
+    shadows: 0
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 1
+    aimAtBoss: 0
+    playerBackFill: 0
+    label: "\uC784\uC2DC \uCC9C\uC7A5 6"
+    enabled: 1
+    type: 1
+    position: {x: 10, y: 18.75, z: -1}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 0.96, g: 0.975, b: 1, a: 1}
+    intensity: 33
+    range: 19
+    spotAngle: 140
+    innerSpotRatio: 0.65
+    shadows: 0
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 1
+    aimAtBoss: 1
+    playerBackFill: 0
+    label: "\uC784\uC2DC \uBCF4\uC2A4 \uAC15\uC870 \uC2A4\uD3FF"
+    enabled: 1
+    type: 1
+    position: {x: 7, y: 16.75, z: -11}
+    rotation: {x: 45.14691, y: 338.9625, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 70
+    range: 19
+    spotAngle: 92
+    innerSpotRatio: 0
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.05
+    shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  battlePulseEnabled: 0
+  battlePulseInBossTestEnabled: 1
+  battlePulseColor: {r: 0.65, g: 0.45, b: 1, a: 1}
+  battlePulseMix: 0.22
+  battlePulseSeconds: 1.4
+  battlePulseInterval: 4
   materials: []

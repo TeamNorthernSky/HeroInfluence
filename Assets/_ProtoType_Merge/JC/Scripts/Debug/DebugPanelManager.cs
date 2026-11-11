@@ -1,7 +1,82 @@
 using UnityEngine;
+using TMPro;
 
 public class DebugPanelManager : MonoBehaviour
 {
+    // JC | 2026-11-09 | 개발자 UI는 게임 HUD와 독립된 Noto 참조를 사용합니다. Resources 프리팹의 직접 참조로 빌드 포함도 보장합니다.
+    [Tooltip("개발자 도구 기본 글꼴(NotoSansKR). 누락되면 사용 가능한 글꼴을 자동 선택합니다.")]
+    [SerializeField] private TMP_FontAsset developerFont;
+    [Tooltip("개발자용 OnGUI 표시의 NotoSansKR 원본 글꼴입니다. 누락되면 사용 가능한 글꼴을 자동 선택합니다.")]
+    [SerializeField] private Font developerSourceFont;
+    private static DebugPanelManager fontConfiguration;
+    private static Font builtInFont;
+
+    private static DebugPanelManager FontConfiguration
+    {
+        get
+        {
+            if (fontConfiguration == null)
+            {
+                var prefab = Resources.Load<GameObject>("DebugPanelManager");
+                if (prefab != null) fontConfiguration = prefab.GetComponent<DebugPanelManager>();
+            }
+            return fontConfiguration;
+        }
+    }
+
+    // JC | 2026-11-09 | Noto 부재 시 자동 대체는 사용자 승인 사항입니다. 씬의 UI 이름/폰트 이름 일치를 필수 조건으로 삼지 않습니다.
+    public static TMP_FontAsset ResolveDeveloperFont(TMP_FontAsset existing = null)
+    {
+        var configuration = FontConfiguration;
+        if (UsableFont(configuration != null ? configuration.developerFont : null)) return configuration.developerFont;
+        var loaded = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
+        var selected = SelectAvailableFont(loaded, existing, TMP_Settings.defaultFontAsset);
+        if (selected != null) return selected;
+        // JC | 2026-11-09 | 아직 로드된 TMP 글꼴이 없으면 빌드에 포함된 Resources 글꼴까지 검색합니다.
+        // LegacyRuntime 원본은 TMP 변환에 실패하므로 변환에 의존하지 않고 기존 TMP 에셋을 직접 사용합니다.
+        return SelectAvailableFont(Resources.LoadAll<TMP_FontAsset>(string.Empty), null, null);
+    }
+
+    private static bool UsableFont(TMP_FontAsset candidate) => candidate != null && candidate.material != null && candidate.atlasTexture != null;
+
+    private static TMP_FontAsset SelectAvailableFont(TMP_FontAsset[] loaded, TMP_FontAsset existing, TMP_FontAsset defaultFont)
+    {
+        foreach (var candidate in loaded)
+            if (UsableFont(candidate) && candidate.name.IndexOf("NotoSans", System.StringComparison.OrdinalIgnoreCase) >= 0) return candidate;
+        if (UsableFont(existing)) return existing;
+        if (UsableFont(defaultFont)) return defaultFont;
+        foreach (var candidate in loaded) if (UsableFont(candidate)) return candidate;
+        return null;
+    }
+
+    // JC | 2026-11-09 | IMGUI도 같은 Noto 원본을 우선합니다. 폰트가 없을 때에는 기존 표시/로드된 폰트/내장 폰트 순으로 연결합니다.
+    public static Font ResolveDeveloperSourceFont(Font existing = null)
+    {
+        var configuration = FontConfiguration;
+        if (configuration != null && configuration.developerSourceFont != null) return configuration.developerSourceFont;
+        var loaded = Resources.FindObjectsOfTypeAll<Font>();
+        foreach (var candidate in loaded)
+            if (candidate != null && candidate.name.IndexOf("NotoSans", System.StringComparison.OrdinalIgnoreCase) >= 0) return candidate;
+        if (existing != null) return existing;
+        foreach (var candidate in loaded) if (candidate != null) return candidate;
+        if (builtInFont == null) builtInFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        return builtInFont;
+    }
+
+    // JC | 2026-11-09 | OnGUI 한 번의 표시 범위에서만 글꼴을 바꾸고 반드시 복원하여 일반 UI에 전파하지 않습니다.
+    public readonly struct DeveloperGuiFontScope : System.IDisposable
+    {
+        private readonly GUISkin skin;
+        private readonly Font previous;
+        public DeveloperGuiFontScope(GUISkin target)
+        {
+            skin = target;
+            previous = skin.font;
+            skin.font = ResolveDeveloperSourceFont(previous);
+        }
+        public void Dispose() { if (skin != null) skin.font = previous; }
+    }
+
     public static DebugPanelManager Instance { get; private set; }
 
     // 백쿼트 활성화와 닫기 시퀀스가 사용하는 실제 디버그 창 상태를 공유한다.

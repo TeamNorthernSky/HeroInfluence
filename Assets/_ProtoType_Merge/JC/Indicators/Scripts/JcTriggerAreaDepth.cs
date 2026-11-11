@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Experimental.Rendering;
 
 namespace JC.Indicators
 {
@@ -10,7 +11,8 @@ namespace JC.Indicators
     {
         // JC | 2026-11-04 | 테두리 자체 깊이와 지형 종류별 깊이를 분리해 장면 깊이를 오염시키지 않습니다.
         // JC | 2026-11-09 | R=월드 메시 깊이, G=이벤트 내부 메시 보호 깊이를 별도 보관합니다.
-        private sealed class Buffer { internal Camera camera; internal RenderTexture texture, occluders, owners, meshes; }
+        // JC | 2026-11-09 | 최근접 메시 소속과 그 소속을 제외한 깊이를 분리해, 자기 메시 뒤의 건물도 가림에 반영합니다.
+        private sealed class Buffer { internal Camera camera; internal RenderTexture texture, occluders, owners, meshes, meshOwners, otherMeshes, markerCoverage; }
         // JC | 2026-11-05 | 깊이가 같은 윤곽선은 DH 우선순위, 소유자, 부위, 렌더러 순으로 한 번만 선택합니다.
         internal sealed class Border
         {
@@ -30,6 +32,8 @@ namespace JC.Indicators
         private static readonly List<JcTriggerAreaIndicator> controllers = new List<JcTriggerAreaIndicator>();
         private static readonly Dictionary<int, Buffer> buffers = new Dictionary<int, Buffer>();
         private static readonly List<int> staleCameras = new List<int>();
+        // JC | 2026-11-10 | 깊이 제출에서만 화면 밖 테두리를 제외하며 표시 순서 지정은 전체 목록을 유지합니다.
+        private static readonly Plane[] borderFrustum = new Plane[6];
         private static MaterialPropertyBlock properties;
         private static readonly int textureId = Shader.PropertyToID("_JcTriggerBorderDepth");
         private static readonly int activeId = Shader.PropertyToID("_JcTriggerDepthActive");
@@ -49,7 +53,7 @@ namespace JC.Indicators
             if (controllers.Count != 0) return;
             RenderPipelineManager.beginCameraRendering -= PrepareBorders;
             Shader.SetGlobalFloat(activeId, 0);
-            foreach (var buffer in buffers.Values) { Release(buffer.texture); Release(buffer.occluders); Release(buffer.owners); Release(buffer.meshes); }
+            foreach (var buffer in buffers.Values) { Release(buffer.texture); Release(buffer.occluders); Release(buffer.owners); Release(buffer.meshes); ReleaseMarkerBuffers(buffer); }
             buffers.Clear();
         }
         // JC | 2026-11-05 | URP가 렌더러 속성을 수집하기 전에 표시 순서만 전달합니다.
@@ -92,7 +96,7 @@ namespace JC.Indicators
             if (controllers.Count == 0) { Unregister(null); return; }
             staleCameras.Clear();
             foreach (var pair in buffers) if (!pair.Value.camera) staleCameras.Add(pair.Key);
-            foreach (int stale in staleCameras) { Release(buffers[stale].texture); Release(buffers[stale].occluders); Release(buffers[stale].owners); Release(buffers[stale].meshes); buffers.Remove(stale); }
+            foreach (int stale in staleCameras) { Release(buffers[stale].texture); Release(buffers[stale].occluders); Release(buffers[stale].owners); Release(buffers[stale].meshes); ReleaseMarkerBuffers(buffers[stale]); buffers.Remove(stale); }
             if (properties == null) properties = new MaterialPropertyBlock();
             width = Mathf.Max(1, width); height = Mathf.Max(1, height);
             int id = camera.GetInstanceID();
@@ -103,6 +107,7 @@ namespace JC.Indicators
                 Release(buffer.occluders);
                 Release(buffer.owners);
                 Release(buffer.meshes);
+                ReleaseMarkerBuffers(buffer);
                 var format = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGFloat) ? RenderTextureFormat.RGFloat : RenderTextureFormat.ARGBFloat;
                 buffer.texture = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear) {
                     name = "JC Trigger Private Depth", hideFlags = HideFlags.HideAndDontSave,
@@ -125,11 +130,26 @@ namespace JC.Indicators
                     filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, antiAliasing = 1
                 };
                 buffer.meshes.Create();
+                // JC | 2026-11-09 | 소속/외부 깊이는 한 채널만 필요하므로 지원되는 장치에서는 메모리를 절반으로 줄입니다.
+                var singleFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RFloat) ? RenderTextureFormat.RFloat : format;
+                buffer.meshOwners = CreateMarkerBuffer("JC Event Mesh Owners", width, height, singleFormat);
+                buffer.otherMeshes = CreateMarkerBuffer("JC Other Owner Depth", width, height, singleFormat);
+                // JC | 2026-11-10 | 소비자는 R만 읽습니다. 기존 8비트 정밀도·출력 알파 합성을 유지하고 중복 GBA 저장만 생략합니다.
+                bool markerR8 = SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Render)
+                    && SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Blend)
+                    && SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Sample);
+                buffer.markerCoverage = CreateMarkerBuffer("JC Visible Event Marker", width, height,
+                    markerR8 ? RenderTextureFormat.R8 : RenderTextureFormat.ARGB32);
             }
             try
             {
                 borders.Clear();
                 foreach (var controller in controllers) if (controller) controller.CollectBorders(borders, camera);
+                GeometryUtility.CalculateFrustumPlanes(camera, borderFrustum);
+                // JC | 2026-11-10 | 컨트롤러 전체를 확인합니다. 마커가 없어도 보호 G와 모든 버퍼 초기화는 유지합니다.
+                bool needsMarkerDepth = false;
+                foreach (var controller in controllers)
+                    if (controller && controller.HasMarkerCandidate(camera)) { needsMarkerDepth = true; break; }
                 command.SetGlobalFloat(activeId, 0);
                 command.SetGlobalMatrix("_JcTriggerDepthVP", projection * view);
                 command.SetGlobalMatrix("_JcTriggerDepthView", view);
@@ -148,14 +168,46 @@ namespace JC.Indicators
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
                 foreach (var controller in controllers) if (controller) controller.DrawOccluders(command, camera, properties);
                 command.SetGlobalTexture("_JcTriggerOccluderDepth", buffer.occluders);
+                // JC | 2026-11-10 | 세 메시 패스 직전에 최신 속성을 한 번 읽습니다. 패스 순서와 RT 의존성은 유지합니다.
+                foreach (var controller in controllers) if (controller) controller.PrepareWorldMeshes(camera, needsMarkerDepth);
                 command.SetRenderTarget(buffer.meshes);
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
-                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera);
+                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshDepth");
                 command.SetGlobalTexture("_JcTriggerMeshDepth", buffer.meshes);
+                // JC | 2026-11-09 | 이벤트마다 깊이 RT를 만들지 않고 최근접 소유자와 그 밖의 두 층으로 판정합니다.
+                // 자기 이벤트가 앞에 있어도 그 뒤/아이콘 앞의 다른 건물을 놓치지 않습니다.
+                command.SetRenderTarget(buffer.meshOwners);
+                command.ClearRenderTarget(false, true, new Color(float.MaxValue, float.MaxValue, 0, 0));
+                if (needsMarkerDepth) foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshOwner");
+                command.SetGlobalTexture("_JcTriggerMeshOwners", buffer.meshOwners);
+                command.SetRenderTarget(buffer.otherMeshes);
+                command.ClearRenderTarget(false, true, new Color(65504, 65504, 0, 0));
+                if (needsMarkerDepth) foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "OtherOwnerDepth");
+                command.SetGlobalTexture("_JcTriggerOtherMeshDepth", buffer.otherMeshes);
                 command.SetGlobalFloat(activeId, 1);
+                command.SetRenderTarget(buffer.markerCoverage);
+                command.ClearRenderTarget(false, true, Color.clear);
+                if (needsMarkerDepth) foreach (var controller in controllers) if (controller) controller.DrawMarkerCoverage(command, camera);
+                command.SetGlobalTexture("_JcEventMarkerCoverage", buffer.markerCoverage);
             }
-            finally { borders.Clear(); }
+            finally
+            {
+                borders.Clear();
+                // JC | 2026-11-10 | 예외가 나도 준비 목록의 수명을 이번 카메라 처리 안으로 제한합니다.
+                foreach (var controller in controllers) if (controller) controller.ClearPreparedWorldMeshes();
+            }
         }
+        // JC | 2026-11-09 | 카메라/해상도 변경과 해제 시 소유권 및 느낌표 마스크의 수명을 함께 정리합니다.
+        private static RenderTexture CreateMarkerBuffer(string name, int width, int height, RenderTextureFormat format)
+        {
+            var texture = new RenderTexture(width, height, 0, format, RenderTextureReadWrite.Linear) {
+                name = name, hideFlags = HideFlags.HideAndDontSave, filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp, antiAliasing = 1
+            };
+            texture.Create(); return texture;
+        }
+        private static void ReleaseMarkerBuffers(Buffer buffer)
+        { Release(buffer.meshOwners); Release(buffer.otherMeshes); Release(buffer.markerCoverage); }
         private static int CompareBorders(Border a, Border b)
         {
             int result = b.priority.CompareTo(a.priority);
@@ -170,6 +222,8 @@ namespace JC.Indicators
         {
             foreach (var border in borders)
             {
+                // JC | 2026-11-10 | 정점 변형 없는 깊이 패스이므로 전체 메시 bounds가 화면 밖일 때만 생략합니다.
+                if (!GeometryUtility.TestPlanesAABB(borderFrustum, border.renderer.bounds)) continue;
                 int pass = border.material.FindPass(passName);
                 var mesh = border.renderer.GetComponent<MeshFilter>().sharedMesh;
                 if (pass < 0 || !mesh) continue;

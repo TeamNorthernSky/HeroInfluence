@@ -20,6 +20,8 @@ public class OutpostDoubleClickEntry : MonoBehaviour
 
     private Outpost outpost;
     private float lastClickTime = -1f;
+    // JC | 2026-11-10 | 호버 중 반복 검색 대신 기존 등록부의 현재 단일 파티를 읽습니다.
+    private PartyRegistry partyRegistry;
 
     private void Awake()
     {
@@ -75,7 +77,7 @@ public class OutpostDoubleClickEntry : MonoBehaviour
         else SceneFadeController.LoadSceneWithFadeIfNeeded("HQLobbyScene");
     }
 
-    private static bool HasPlayerPartyAtInteractionCell(Outpost targetOutpost)
+    private bool HasPlayerPartyAtInteractionCell(Outpost targetOutpost)
     {
         if (targetOutpost == null)
             return false;
@@ -92,24 +94,17 @@ public class OutpostDoubleClickEntry : MonoBehaviour
             return false;
 
         Vector2Int partyGrid = party.GetCurrentGrid();
-        IReadOnlyList<Vector2Int> interactionCells = targetOutpost.GetAdjacentInteractionCells(gridManager);
-        if (interactionCells == null)
-            return false;
-
-        for (int i = 0; i < interactionCells.Count; i++)
-        {
-            if (interactionCells[i] == partyGrid)
-                return true;
-        }
-
-        return false;
+        // JC | 2026-11-10 | DH의 같은 정문 판정을 직접 사용해 호버 중 인접 칸 목록 생성을 없앱니다.
+        return targetOutpost.IsInteractionCell(partyGrid, gridManager);
     }
 
-    private static PartyGridMover ResolvePlayerParty()
+    private PartyGridMover ResolvePlayerParty()
     {
-        PartyRegistry registry = Object.FindFirstObjectByType<PartyRegistry>();
-        if (registry != null && registry.PlayerParty != null)
-            return registry.PlayerParty;
+        // JC | 2026-11-10 | 등록부 소멸·비활성화 때만 재확보하며 기존 초기화 중 mover 검색은 유지합니다.
+        if (partyRegistry == null || !partyRegistry.gameObject.activeInHierarchy)
+            partyRegistry = Object.FindFirstObjectByType<PartyRegistry>();
+        if (partyRegistry != null && partyRegistry.PlayerParty != null)
+            return partyRegistry.PlayerParty;
 
         return Object.FindFirstObjectByType<PartyGridMover>();
     }
@@ -203,6 +198,8 @@ public class OutpostVisitIndicator : MonoBehaviour
     private Outpost outpost;
     private GameObject indicator;
     private float nextEvalTime;
+    // JC | 2026-11-10 | 0.25초 평가 주기는 그대로 두고 전체 파티 배열 대신 등록부의 단일 파티를 사용합니다.
+    private PartyRegistry partyRegistry;
 
     private void Awake()
     {
@@ -271,26 +268,19 @@ public class OutpostVisitIndicator : MonoBehaviour
         GridManager grid = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
         if (grid == null) return visitBuffer;
 
-        IReadOnlyList<Vector2Int> cells = outpost.GetAdjacentInteractionCells(grid);
-        if (cells == null || cells.Count == 0) return visitBuffer;
+        // JC | 2026-11-10 | 단일 플레이어 사양에 맞춰 등록된 현재 파티만 판정합니다. 등록 전에는 기존 검색 대상을 한 개만 조회합니다.
+        if (partyRegistry == null || !partyRegistry.gameObject.activeInHierarchy)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        PartyGridMover mover = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (mover == null) mover = FindFirstObjectByType<PartyGridMover>();
+        if (mover == null || !mover.gameObject.activeInHierarchy) return visitBuffer;
+        if (DefeatedPartyReturnController.IsPartyWaiting(mover)) return visitBuffer;
+        // JC | 2026-11-10 | 인접 칸 목록 생성 없이 같은 DH 정문 판정으로 방문 여부를 결정합니다.
+        if (!outpost.IsInteractionCell(mover.GetCurrentGrid(), grid)) return visitBuffer;
 
-        var movers = FindObjectsByType<PartyGridMover>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < movers.Length; i++)
-        {
-            PartyGridMover mover = movers[i];
-            if (mover == null || !mover.gameObject.activeInHierarchy) continue;
-            if (DefeatedPartyReturnController.IsPartyWaiting(mover)) continue;
-
-            Vector2Int g = mover.GetCurrentGrid();
-            bool atCell = false;
-            for (int c = 0; c < cells.Count; c++)
-                if (cells[c] == g) { atCell = true; break; }
-            if (!atCell) continue;
-
-            PartyIdentity identity = mover.GetComponent<PartyIdentity>();
-            string partyId = identity != null ? identity.PartyId : mover.gameObject.name;
-            if (!string.IsNullOrWhiteSpace(partyId)) visitBuffer.Add(partyId);
-        }
+        PartyIdentity identity = mover.GetComponent<PartyIdentity>();
+        string partyId = identity != null ? identity.PartyId : mover.gameObject.name;
+        if (!string.IsNullOrWhiteSpace(partyId)) visitBuffer.Add(partyId);
         return visitBuffer;
     }
 

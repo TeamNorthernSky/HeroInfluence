@@ -273,9 +273,9 @@ public class ExchangeModalController : MonoBehaviour
             else if (unit <= 0) msg = "교환 비용 정보가 없습니다.";
             else if (selectedTargetRow >= 0 && TryGetTarget(selectedTargetRow, out ResourceType messageTarget))
                 msg = $"{GetKoreanName(src)}{(src == ResourceType.Chip || src == ResourceType.Crystal ? "을" : "를")} " +
-                    $"{GetKoreanName(messageTarget)}{(messageTarget == ResourceType.Crystal ? "으로" : "로")} 선택하시겠습니까?";
+                    $"{GetKoreanName(messageTarget)}{(messageTarget == ResourceType.Crystal ? "으로" : "로")} \n선택하시겠습니까?";
             else if (!affordable) msg = $"선택한 교환에 필요한 {amountPaid:N0} {GetKoreanName(src)}이(가) 부족합니다.";
-            else if (selectedTargetRow < 0) msg = "교환 받을 자원을 선택하세요.";
+            else if (selectedTargetRow < 0) msg = "교환 받을 자원을 \n선택하세요.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
         }

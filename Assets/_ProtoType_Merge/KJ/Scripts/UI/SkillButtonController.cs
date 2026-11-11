@@ -139,6 +139,12 @@ public class SkillButtonController : MonoBehaviour
     private void Select(PendingActionType action, int skillId = 0, bool selected = true)
     {
         if (!IsPlayerTurn) return;
+        // JC | 2026-11-09 | 첫 턴 안내 중 젬파워 클릭은 선택을 취소하기 전에 올바른 스킬 강조로 돌립니다. 다른 전투 입력은 유지합니다.
+        if (action == PendingActionType.WeaponSkill && JC.Tutorial.JcTutorialBattleGuide.RedirectGemPowerClick(gameObject.scene))
+        {
+            SyncSelection();
+            return;
+        }
         // JC | 2026-11-04 | 버튼 선택 해제와 내부 선택 교체를 구분해 취소음과 선택음이 겹치지 않게 합니다.
         if (!selected)
         {
@@ -170,6 +176,13 @@ public class SkillButtonController : MonoBehaviour
         var button = pointer.pointerClick != null ? pointer.pointerClick.GetComponent<Button>() : null;
         // 활성 버튼은 기존 ToggleButton 경로에서 선택합니다. 같은 클릭을 중복 처리하지 않습니다.
         if (button == null || button.IsInteractable()) return;
+        // JC | 2026-11-09 | 기존 EventTrigger로 비활성 젬파워의 클릭도 감지하며 다른 잠금 스킬의 동작은 보존합니다.
+        if (toggle2 != null && button.gameObject == toggle2.gameObject &&
+            JC.Tutorial.JcTutorialBattleGuide.RedirectGemPowerClick(gameObject.scene))
+        {
+            SyncSelection();
+            return;
+        }
         inputHandler?.TryCancelSkillSelection();
         SyncSelection();
     }
@@ -225,7 +238,8 @@ public class SkillButtonController : MonoBehaviour
                     // '+' 변형은 별도 스킬 ID이며 협회 강화 단계와 혼용하지 않습니다.
                     slot.icon.sprite = shown != null ? Sprites.Icon.ClassSkill(shown.skillIndex, 1) : null;
                     slot.icon.enabled = slot.icon.sprite != null;
-                    JC.BattleTesting.JcBattleHudLayout.FitMaskedArt(slot.icon);
+                    // JC | 2026-11-09 | 일반·튜토리얼의 스킬 교체 때도 원본 전체와 프레임 안쪽 여백을 유지합니다.
+                    JC.BattleTesting.JcBattleHudLayout.FitSkillIcon(slot.icon);
                 }
                 if (slot.lockedFace != null) slot.lockedFace.SetActive(locked);
                 if (slot.lockedOverlay != null) slot.lockedOverlay.SetActive(locked);

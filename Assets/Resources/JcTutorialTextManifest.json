@@ -2,7 +2,7 @@
   "entries": [
     {
       "id": "explore.cameraScrollExplanation",
-      "text": "화면 밖에도 이동할 수 있는 목표가 있습니다.\nW A S D 키 또는 화면 가장자리로 지도를 움직일 수 있습니다.\n확인 후 오른쪽의 빛나는 목표를 화면 중앙으로 가져오세요."
+      "text": "화면 밖에도 이동할 수 있는 목표가 있습니다.\n<color=#00FF38>W A S D</color> 키 또는 화면 가장자리로 마우스 커서를\n움직여 카메라를 이동할 수 있습니다.\n확인 후 오른쪽의 빛나는 목표를 화면 중앙으로 가져오세요."
     },
     {
       "id": "explore.cameraScrollPractice",
@@ -449,6 +449,14 @@
       "text": "전투 · 행동 안내"
     },
     {
+      "id": "battleguide.core.001",
+      "text": "코어 스킬 사용하기"
+    },
+    {
+      "id": "battleguide.core.002",
+      "text": "코어 스킬은 공용으로 사용할 수 있는 전투 보조 스킬로 협회에서 강화하고 제작할 수 있습니다."
+    },
+    {
       "id": "battle.heading.1",
       "text": "전투 · 지원 안내"
     },
@@ -626,7 +634,7 @@
     },
     {
       "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.Text.TMP",
-      "text": "홍보 1회에는 자금 100이 필요하며,\n영웅의 IP가 1 증가합니다.\n이번 실습에서는 저스티스를\n총 40회 홍보합니다.\n자금 4,000이 필요합니다.",
+      "text": "홍보 1회에는\n자금 100이 필요하며,\n영웅의 IP가 1 증가합니다.\n이번 실습에서는 저스티스를\n총 40회 홍보합니다.\n자금 4,000이 필요합니다.",
       "scene": "TutorialExploreScene",
       "path": "TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/Text (TMP)"
     },
@@ -686,7 +694,7 @@
     },
     {
       "id": "scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.Text.TMP",
-      "text": "남은 홍보 가능 횟수만큼 홍보가 가능합니다.\n남은 홍보 횟수는 모든 캐릭터가 공유합니다.\n이번에는 모두 저스티스에 사용해 보겠습니다.",
+      "text": "남은 홍보 가능 횟수만큼\n홍보가 가능합니다.\n남은 홍보 횟수는\n모든 캐릭터가 공유합니다.\n이번에는 모두 저스티스에게\n사용해 보겠습니다.",
       "scene": "TutorialExploreScene",
       "path": "TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/Text (TMP)"
     },

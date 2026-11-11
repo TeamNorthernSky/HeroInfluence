@@ -22,17 +22,5 @@ MonoBehaviour:
     rotation: {x: 30.150019, y: 218.19978, z: 0}
     fieldOfView: 60.000004
     perspectiveStrength: 0.5
-  aim:
-    pose:
-      position: {x: 7.81, y: 9.51, z: -19.04083}
-      rotation: {x: 23.8, y: -24, z: 0}
-      fieldOfView: 35
-      perspectiveStrength: 1
-    actorAnchor: {x: 0.54, y: 0.15}
-    actorTolerance: {x: 0.03, y: 0.03}
-    targetAnchor: {x: 0.555, y: 0.68}
-    targetTolerance: {x: 0.125, y: 0.07}
-    targetHeight: 1.1
-    maxFov: 38
   rightWallX: 19
   rightMargin: 3

@@ -939,6 +939,8 @@ public sealed partial class SkillPresentationDirector
         Quaternion originRotation = movementOriginRotation ?? actor.transform.rotation;
 
         PlayableDirector director = EnsureTimelineDirector(actor);
+        // JC | 2026-11-10 | 일반전 블랙불릿 카메라에 실제 Timeline 시계의 수명만 알립니다. 재생 속도/타격/이동 판정은 바꾸지 않습니다.
+        var skillCameraClock = BattlePresentationController.FindInScene(actor.gameObject.scene);
         PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
         BindTimelineToActor(director, timeline, actor);
 
@@ -1131,6 +1133,7 @@ public sealed partial class SkillPresentationDirector
             // Play()가 정지 상태의 Director 시간을 초기화할 수 있으므로 그래프를 먼저 연 뒤
             // 구간 시작점으로 이동한다. 범위 밖 Retroactive Marker는 receiver가 차단한다.
             director.time = playbackRange.Start;
+            if (skillCameraClock) skillCameraClock.BeginSkillCameraTimeline(actor, director, playbackRange.Start);
             director.Evaluate();
             waveFootPlant?.ApplyPose();
             // Animator 레일의 AttackPrepare 시작 훅과 같은 시점: 부활 대기가 있으면 재생 시작에서 확정한다(멱등).
@@ -1192,6 +1195,7 @@ public sealed partial class SkillPresentationDirector
         {
             if (actor != null) actor.PresentationInterruptRequested -= OnInterrupt;
             director.stopped -= OnStopped;
+            // JC | 2026-11-11 | 메인의 종료 자세 보정과 Polish의 카메라 관찰 종료를 모두 유지한 뒤 그래프를 정리합니다.
             if (isUmtWave && returnActorToIdle && actor != null &&
                 !actor.IsDead && interrupt == PresentationInterruptReason.None)
             {
@@ -1201,6 +1205,8 @@ public sealed partial class SkillPresentationDirector
                 waveFootPlant?.ApplyPose();
                 waveFootPlant?.CaptureReturnPose();
             }
+            // JC | 2026-11-10 | Stop이 시간을 지우기 전에 카메라 관찰을 끝냅니다. 취소/사망도 같은 finally 경로입니다.
+            if (skillCameraClock) skillCameraClock.EndSkillCameraTimeline(actor, director);
             director.Stop();               // 그래프 정리
             waveFootPlant?.ApplyPose();
             if (!completedNormally || !returnActorToIdle || actor == null || actor.IsDead ||
@@ -1517,6 +1523,8 @@ public sealed partial class SkillPresentationDirector
         BindTimelineToActor(director, timeline, actor);
 
         var presentationTargets = new List<BattleCharactor>();
+        // JC | 2026-11-10 | 다중 타깃 Timeline도 단일 타깃과 같은 관찰 연결을 사용하여 블랙불릿 4스킬의 시계를 통일합니다.
+        var skillCameraClock = BattlePresentationController.FindInScene(actor.gameObject.scene);
         for (int i = 0; i < pairCount; i++)
         {
             BattleCharactor candidate = contexts[i]?.Target;
@@ -1695,6 +1703,7 @@ public sealed partial class SkillPresentationDirector
             director.time = 0d;
             director.Evaluate();
             director.Play();
+            if (skillCameraClock) skillCameraClock.BeginSkillCameraTimeline(actor, director, director.time);
             if (_battle.HasPendingRevive) _battle.TriggerPendingRevive();
             List<PresentationHoldMarker> holdMarks = CollectHoldMarks(timeline);
             var holdDone = new bool[holdMarks.Count];
@@ -1764,6 +1773,8 @@ public sealed partial class SkillPresentationDirector
         {
             if (actor != null) actor.PresentationInterruptRequested -= OnInterrupt;
             director.stopped -= OnStopped;
+            // JC | 2026-11-10 | 다중 타깃 종료/취소도 Stop 이전에 마지막 재생 증가량을 전달합니다.
+            if (skillCameraClock) skillCameraClock.EndSkillCameraTimeline(actor, director);
             director.Stop();
             director.playableAsset = null;
             if (movingAttackSpan != null && actor != null && !actor.IsDead &&

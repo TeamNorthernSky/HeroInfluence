@@ -92,8 +92,11 @@ battleguide.guided.010,전투,74,영웅 소개,본문,"루미나는 원거리 �
 battleguide.guided.011,전투,75,영웅 소개,제목,네코밍 사용하기, / 정렬 안내: 각 영웅의 첫 행동 턴에 표시합니다. 영웅 간 표시 순서는 전투 행동 순서에 따라 달라집니다.
 battleguide.guided.012,전투,76,영웅 소개,본문,"네코밍은 아군의 체력을 회복하는 지원형 히어로입니다.
 ‘아픈 거 다 날아가라’로 체력이 줄어든 아군 한 명을 회복할 수 있습니다.", / 정렬 안내: 각 영웅의 첫 행동 턴에 표시합니다. 영웅 간 표시 순서는 전투 행동 순서에 따라 달라집니다.
-,전투,78,코어 소개,제목,코어 스킬 사용하기,
-,전투,78,코어 소개,본문,코어 스킬은 공용으로 사용할 수 있는 전투 보조 스킬로 협회에서 강화하고 제작할 수 있습니다.,
+battleguide.core.001,전투,78,코어 소개,제목,코어 스킬 사용하기,JC | 2026-11-09 | 첫 전투 4인 소개 완료 뒤 돌아오는 블랙불릿 턴의 임시 설명. 확인 후 기존 전투로 복귀하며 코어 사용 실습은 하지 않습니다.
+battleguide.core.002,전투,78,코어 소개,본문,코어 스킬은 공용으로 사용할 수 있는 전투 보조 스킬로 협회에서 강화하고 제작할 수 있습니다.,JC | 2026-11-09 | 첫 전투 4인 소개 완료 뒤 돌아오는 블랙불릿 턴의 임시 설명. 확인 후 기존 전투로 복귀하며 코어 사용 실습은 하지 않습니다.
+battle.heading.1,전투,77,전투 소개·행동·결과 안내,제목,전투 · 지원 안내, / JC | 2026-11-09 | 코어 신규 안내와 별개인 기존 참조를 보존합니다.
+scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Text.Text.Step2,전투,78,네코밍 회복 안내,본문,"네코밍의 차례입니다.
+안내를 확인한 뒤 아군을 회복할 수 있습니다.",위치: BattleSceneCanvas/TutorialUITest/Text/Text (Step2) / 정렬 안내: 기존 고정 본문입니다. 영웅별 안내 중에는 동적 본문을 표시하며 전투 결과는 반복 사용합니다. / JC | 2026-11-09 | 코어 신규 안내와 별개인 기존 참조를 보존합니다.
 scene.TutorialBattleScene.BattleSceneCanvas.TutorialUITest.Button.step2.Text.TMP,전투,79,전투 소개·행동·결과 안내,버튼,확인,위치: BattleSceneCanvas/TutorialUITest/Button/step2/Text (TMP) / 정렬 안내: 기존 단계 버튼이며 안내에서 재사용합니다.
 scene.TutorialBattleScene.BattleSceneCanvas.RunConfirmationPopup.Text.TMP,전투,80,도주 확인·튜토리얼 도주 제한,본문,"전투에서 도주하시겠습니까?
 <size=10> </size>
@@ -130,10 +133,12 @@ scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_02.Tutori
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_02.TutorialGuideBackground.TutorialPreviewLabel,홍보,101,홍보 실습 2단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_02/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 2단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_03.TutorialGuideBackground.Text.TMP,홍보,102,홍보 실습 3단계,본문,"영웅 목록에서
 저스티스를 클릭하세요.",위치: TutorialExploreUI/TutorialSteps/Explanation_03/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 3단계
-scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.Text.TMP,홍보,103,홍보 실습 4단계,본문,"홍보 1회마다 자금이 필요하며,
+scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.Text.TMP,홍보,103,홍보 실습 4단계,본문,"홍보 1회에는
+자금 100이 필요하며,
 영웅의 IP가 1 증가합니다.
 이번 실습에서는 저스티스를
-총 40회 홍보합니다.",위치: TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 4단계
+총 40회 홍보합니다.
+자금 4,000이 필요합니다.",위치: TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 4단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.TutorialContinueHint,홍보,104,홍보 실습 4단계,힌트,아무 곳이나 클릭하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 4단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.TutorialPreviewLabel,홍보,105,홍보 실습 4단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 4단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_05.TutorialGuideBackground.Text.TMP,홍보,106,홍보 실습 5단계,본문,"슬라이더 또는 + / − 버튼으로
@@ -147,8 +152,12 @@ scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.Tutori
 횟수와 자금이 소모됩니다.",위치: TutorialExploreUI/TutorialSteps/Explanation_06/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 6단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.TutorialGuideBackground.TutorialContinueHint,홍보,111,홍보 실습 6단계,힌트,아무 곳이나 클릭하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_06/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 6단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.TutorialGuideBackground.TutorialPreviewLabel,홍보,112,홍보 실습 6단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_06/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 6단계
-scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.Text.TMP,홍보,113,홍보 실습 7단계,본문,"홍보 횟수는 모든 캐릭터가 공유합니다.
-다시 저스티스에 사용해 보겠습니다.",위치: TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 7단계
+scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.Text.TMP,홍보,113,홍보 실습 7단계,본문,"남은 홍보 가능 횟수만큼
+홍보가 가능합니다.
+남은 홍보 횟수는
+모든 캐릭터가 공유합니다.
+이번에는 모두 저스티스에게
+사용해 보겠습니다.",위치: TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 7단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.TutorialContinueHint,홍보,114,홍보 실습 7단계,힌트,아무 곳이나 클릭하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 7단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.TutorialPreviewLabel,홍보,115,홍보 실습 7단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 7단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_08.TutorialGuideBackground.Text.TMP,홍보,116,홍보 실습 8단계,본문,"MAX 버튼을 누른 후, 진행 버튼을 눌러 남은 홍보 가능 횟수를 모두 사용 해 보세요.",위치: TutorialExploreUI/TutorialSteps/Explanation_08/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 8단계
@@ -158,7 +167,8 @@ scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_09.Tutori
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_09.TutorialGuideBackground.TutorialContinueHint,홍보,120,홍보 실습 9단계,힌트,안내한 조작을 완료하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_09/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 9단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_09.TutorialGuideBackground.TutorialPreviewLabel,홍보,121,홍보 실습 9단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_09/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 9단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_10.TutorialGuideBackground.Text.TMP,홍보,122,홍보 실습 10단계,본문,"홍보는 4턴 마다 갱신되며,
-사용하지 않은 홍보는 다음 갱신에 이월됩니다.",위치: TutorialExploreUI/TutorialSteps/Explanation_10/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 10단계
+사용하지 않은 홍보는 다음 갱신에
+이월됩니다.",위치: TutorialExploreUI/TutorialSteps/Explanation_10/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 10단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_10.TutorialGuideBackground.TutorialContinueHint,홍보,123,홍보 실습 10단계,힌트,아무 곳이나 클릭하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_10/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 10단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_10.TutorialGuideBackground.TutorialPreviewLabel,홍보,124,홍보 실습 10단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_10/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 10단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_11.TutorialGuideBackground.Text.TMP,홍보,125,홍보 실습 11단계,본문,"홍보를 완료했습니다!
@@ -170,8 +180,9 @@ publicity.max-ip,홍보,129,첫 전투 후 홍보 실습,본문,이미 최대 I.
 publicity.insufficient-resource,홍보,130,첫 전투 후 홍보 실습,본문,자원이 부족합니다., / 정렬 안내: 홍보 실습 도중 조건에 따라 표시되는 상태 안내입니다.
 exploreguide.032,점령,131,홍보 이후 화면 이동·점령전 진입,목표,W A S D 키로 화면을 이동하는 방법을 확인하세요,
 exploreguide.033,점령,132,홍보 이후 화면 이동·점령전 진입,제목,화면 이동,
-explore.cameraScrollExplanation,점령,133,홍보 이후 카메라 이동 안내,본문,"화면 밖에 이동할 수 있는 목표가 있습니다.
-W A S D 키 또는 화면 가장자리로 지도를 움직일 수 있습니다.
+explore.cameraScrollExplanation,점령,133,홍보 이후 카메라 이동 안내,본문,"화면 밖에도 이동할 수 있는 목표가 있습니다.
+<color=#00FF38>W A S D</color> 키 또는 화면 가장자리로 마우스 커서를
+움직여 카메라를 이동할 수 있습니다.
 확인 후 오른쪽의 빛나는 목표를 화면 중앙으로 가져오세요.",
 exploreguide.034,점령,134,홍보 이후 화면 이동·점령전 진입,목표,D키로 화면을 이동하여 목표를 화면 중앙에 맞추세요,
 exploreguide.035,점령,135,홍보 이후 화면 이동·점령전 진입,제목,화면 이동 연습,

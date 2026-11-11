@@ -82,10 +82,91 @@ namespace JC.Environment {
   readonly JcDayNightScreenColor screenColor=new JcDayNightScreenColor();
   readonly JcNightMaterialBindings characters=new JcNightMaterialBindings();
   readonly JcSpecialBuildingWindows specialWindows=new JcSpecialBuildingWindows();
+  // JC | 2026-11-10 | 최초/레벨 교체만 전체 발견하고 평상시에는 DH가 알려준 건물만 수집합니다. 재질 재확인은 매 프레임 유지합니다.
+  bool windowScanRequested=true;
+  bool windowRegistryRefreshRequested=true;
+  int windowRefreshFrame=-1;
+  readonly HashSet<Transform> pendingWindowRoots=new HashSet<Transform>();
+  readonly List<OutpostRegistry> windowOutposts=new List<OutpostRegistry>();
+  readonly List<HeroUnionRegistry> windowUnions=new List<HeroUnionRegistry>();
+  readonly List<DecorativeObjectRegistry> windowDecorations=new List<DecorativeObjectRegistry>();
   // JC | 2026-11-06 | 점령 색상이 실제로 바뀐 프레임에 창문 조명도 재연결해 주기적 재탐색 전의 소등을 막습니다.
   public static void RefreshBuildingWindows(Scene scene){
    if(Application.isPlaying && owner!=null && owner.isActiveAndEnabled && owner.applied && owner.gameObject.scene==scene)
-    owner.specialWindows.Scan(scene);
+    owner.UpdateBuildingWindows(true);
+  }
+  // JC | 2026-11-10 | 기존 씬 전체 갱신 API는 보존하고 튜토리얼 점령/향후 건물 외형 교체에는 대상 지정 API를 제공합니다.
+  public static void RefreshBuildingWindows(Component root){
+   if(owner!=null)owner.RefreshWindowRoot(root);
+  }
+  void RequestWindowScan(){windowScanRequested=true;windowRegistryRefreshRequested=true;}
+  void WindowLevelLoaded(LevelLoader loader){if(loader!=null&&loader.gameObject.scene==gameObject.scene)RequestWindowScan();}
+  void WindowLayoutLoaded(LevelZoneLayoutLoader loader){if(loader!=null&&loader.gameObject.scene==gameObject.scene)RequestWindowScan();}
+  void WindowOutpostChanged(Outpost target){RefreshWindowRoot(target);}
+  void WindowUnionChanged(HeroUnionUnit target){RefreshWindowRoot(target);}
+  void RefreshWindowRoot(Component target){if(Application.isPlaying&&applied&&isActiveAndEnabled&&target!=null&&target.gameObject.scene==gameObject.scene)specialWindows.RefreshRoot(target);}
+  // JC | 2026-11-10 | 생성 도중의 반복 등록은 같은 Transform으로 합치고 초기화가 끝난 갱신 시점에 한 번 처리합니다.
+  void QueueWindowRoot(Component target){if(isActiveAndEnabled&&target!=null&&target.gameObject.scene==gameObject.scene)pendingWindowRoots.Add(target.transform);}
+  void WindowOutpostRegistered(Outpost target){QueueWindowRoot(target);}
+  void WindowUnionRegistered(HeroUnionUnit target){QueueWindowRoot(target);}
+  void WindowDecorationRegistered(DecorativeObjectPlacement target){QueueWindowRoot(target);}
+  // JC | 2026-11-10 | 등록 해제는 비활성화일 수 있어 후보를 삭제하지 않습니다. 파괴된 필터는 RefreshKnown이 제거합니다.
+  void WindowOutpostsRebuilt(OutpostRegistry registry){foreach(var target in registry.Outposts)QueueWindowRoot(target);}
+  void WindowUnionsRebuilt(HeroUnionRegistry registry){foreach(var target in registry.HeroUnions)QueueWindowRoot(target);}
+  void WindowDecorationsRebuilt(DecorativeObjectRegistry registry){foreach(var target in registry.DecorativeObjects)QueueWindowRoot(target);}
+  void WindowRegistryChanged(Component registry){if(registry!=null&&registry.gameObject.scene==gameObject.scene)windowRegistryRefreshRequested=true;}
+  void WindowOutpostRegistryChanged(OutpostRegistry registry){WindowRegistryChanged(registry);}
+  void WindowUnionRegistryChanged(HeroUnionRegistry registry){WindowRegistryChanged(registry);}
+  void WindowDecorationRegistryChanged(DecorativeObjectRegistry registry){WindowRegistryChanged(registry);}
+  void SubscribeWindowEvents(){
+   LevelLoader.RuntimeLevelLoaded+=WindowLevelLoaded;LevelZoneLayoutLoader.RuntimeLayoutLoaded+=WindowLayoutLoaded;
+   Outpost.OutpostStateChanged+=WindowOutpostChanged;HeroUnionUnit.HeroUnionStateChanged+=WindowUnionChanged;
+   // JC | 2026-11-10 | 등록부 생성/교체 알림으로 늦은 구독을 해결하므로 주기적 등록부 검색도 제거합니다.
+   OutpostRegistry.LifecycleChanged+=WindowOutpostRegistryChanged;
+   HeroUnionRegistry.LifecycleChanged+=WindowUnionRegistryChanged;
+   DecorativeObjectRegistry.LifecycleChanged+=WindowDecorationRegistryChanged;
+   RequestWindowScan();
+  }
+  void UnsubscribeWindowEvents(){
+   LevelLoader.RuntimeLevelLoaded-=WindowLevelLoaded;LevelZoneLayoutLoader.RuntimeLayoutLoaded-=WindowLayoutLoaded;
+   Outpost.OutpostStateChanged-=WindowOutpostChanged;HeroUnionUnit.HeroUnionStateChanged-=WindowUnionChanged;
+   OutpostRegistry.LifecycleChanged-=WindowOutpostRegistryChanged;
+   HeroUnionRegistry.LifecycleChanged-=WindowUnionRegistryChanged;
+   DecorativeObjectRegistry.LifecycleChanged-=WindowDecorationRegistryChanged;
+   UnbindWindowRegistries();pendingWindowRoots.Clear();
+  }
+  // JC | 2026-11-10 | 복수 등록부/재생성에서도 이전 인스턴스의 구독이 남지 않도록 같은 목록으로 해제합니다.
+  void UnbindWindowRegistries(){
+   foreach(var registry in windowOutposts)if(registry!=null){registry.OutpostRegistered-=WindowOutpostRegistered;registry.OutpostUnregistered-=WindowOutpostRegistered;registry.Rebuilt-=WindowOutpostsRebuilt;}
+   foreach(var registry in windowUnions)if(registry!=null){registry.HeroUnionRegistered-=WindowUnionRegistered;registry.HeroUnionUnregistered-=WindowUnionRegistered;registry.Rebuilt-=WindowUnionsRebuilt;}
+   foreach(var registry in windowDecorations)if(registry!=null){registry.DecorativeObjectRegistered-=WindowDecorationRegistered;registry.DecorativeObjectUnregistered-=WindowDecorationRegistered;registry.Rebuilt-=WindowDecorationsRebuilt;}
+   windowOutposts.Clear();windowUnions.Clear();windowDecorations.Clear();
+  }
+  void BindWindowRegistries(){
+   // JC | 2026-11-10 | 최초/레벨 교체/등록부 수명 변화 때만 같은 씬의 등록부를 연결합니다. 비활성 대상의 기존 발견 정책도 유지합니다.
+   windowRegistryRefreshRequested=false;UnbindWindowRegistries();
+   using var rootLease=UnityEngine.Pool.ListPool<GameObject>.Get(out var roots);gameObject.scene.GetRootGameObjects(roots);
+   using var outpostLease=UnityEngine.Pool.ListPool<OutpostRegistry>.Get(out var outposts);
+   using var unionLease=UnityEngine.Pool.ListPool<HeroUnionRegistry>.Get(out var unions);
+   using var decorationLease=UnityEngine.Pool.ListPool<DecorativeObjectRegistry>.Get(out var decorations);
+   foreach(var root in roots){
+    root.GetComponentsInChildren(true,outposts);foreach(var registry in outposts){windowOutposts.Add(registry);registry.OutpostRegistered+=WindowOutpostRegistered;registry.OutpostUnregistered+=WindowOutpostRegistered;registry.Rebuilt+=WindowOutpostsRebuilt;WindowOutpostsRebuilt(registry);}
+    root.GetComponentsInChildren(true,unions);foreach(var registry in unions){windowUnions.Add(registry);registry.HeroUnionRegistered+=WindowUnionRegistered;registry.HeroUnionUnregistered+=WindowUnionRegistered;registry.Rebuilt+=WindowUnionsRebuilt;WindowUnionsRebuilt(registry);}
+    root.GetComponentsInChildren(true,decorations);foreach(var registry in decorations){windowDecorations.Add(registry);registry.DecorativeObjectRegistered+=WindowDecorationRegistered;registry.DecorativeObjectUnregistered+=WindowDecorationRegistered;registry.Rebuilt+=WindowDecorationsRebuilt;WindowDecorationsRebuilt(registry);}
+   }
+  }
+  void RefreshPendingWindowRoots(){
+   // JC | 2026-11-10 | 순회 중 추가 알림은 다음 갱신으로 남깁니다. 자식 추가/메시 교체 시에도 대상 지정 갱신으로 재수집할 수 있습니다.
+   using var lease=UnityEngine.Pool.ListPool<Transform>.Get(out var roots);roots.AddRange(pendingWindowRoots);pendingWindowRoots.Clear();
+   foreach(var root in roots)if(root!=null&&root.gameObject.scene==gameObject.scene)specialWindows.RefreshRoot(root);
+  }
+  void UpdateBuildingWindows(bool force=false){
+   if(!Application.isPlaying||!applied)return;
+   if(windowRegistryRefreshRequested)BindWindowRegistries();
+   // JC | 2026-11-10 | 1초 타이머를 없애고 명시된 전체 변경만 발견합니다. 단일 건물 변경은 전체 재탐색을 예약하지 않습니다.
+   if(force||windowScanRequested){windowScanRequested=false;pendingWindowRoots.Clear();specialWindows.Scan(gameObject.scene);windowRefreshFrame=Time.frameCount;return;}
+   if(pendingWindowRoots.Count>0)RefreshPendingWindowRoots();
+   if(windowRefreshFrame!=Time.frameCount){specialWindows.RefreshKnown();windowRefreshFrame=Time.frameCount;}
   }
   double nextCharacterScan;
   readonly List<(Light light,float intensity)> extraLights=new List<(Light,float)>();
@@ -132,6 +213,10 @@ namespace JC.Environment {
   readonly List<ProbeState> probes=new List<ProbeState>();
   sealed class UILock {public CanvasGroup group;public UIInputBlocker blocker;public bool added,interactable,blocks;public float alpha;}
   readonly List<UILock> locks=new List<UILock>();
+  // JC | 2026-11-10 | 복원 순서용 목록은 유지하고 잠금 중복 여부만 직접 조회합니다. 그룹이 파괴되면 같은 GO도 다시 잠급니다.
+  readonly Dictionary<GameObject,CanvasGroup> lockedGroups=new Dictionary<GameObject,CanvasGroup>();
+  // JC | 2026-11-10 | 단일 파티의 소유 등록부만 보관하고 PlayerParty는 매 검사 때 읽어 교체를 반영합니다.
+  PartyRegistry partyRegistry;
   GameObject selection;
   public static JcDayNightController Ensure(Scene scene) {
    if(scene.path!=ScenePath && scene.name!="TutorialExploreScene")return null;
@@ -144,6 +229,7 @@ namespace JC.Environment {
    return go.AddComponent<JcDayNightController>();
   }
   void OnEnable(){if(profile==null)profile=Resources.Load<JcDayNightProfile>("JC_DayNight_Default");SceneManager.activeSceneChanged+=SceneChanged;EnsureSegmentObjects();
+   if(Application.isPlaying)SubscribeWindowEvents(); // JC | 2026-11-10 | 편집 프리뷰에서는 런타임 생성 알림을 구독하지 않습니다.
    if(gameObject.scene.path==ScenePath||gameObject.scene.name=="TutorialExploreScene")mountainShadows=GetComponent<JcMountainShadows>()??gameObject.AddComponent<JcMountainShadows>();
   }
   public void EnsureSegmentObjects(){
@@ -154,29 +240,40 @@ namespace JC.Environment {
    }
   }
   void SceneChanged(Scene oldScene,Scene newScene){if(newScene!=gameObject.scene)Cancel();}
-  void OnDisable(){SceneManager.activeSceneChanged-=SceneChanged;Cancel();if(mountainShadows!=null)mountainShadows.Restore();}
+  void OnDisable(){SceneManager.activeSceneChanged-=SceneChanged;UnsubscribeWindowEvents();Cancel();if(mountainShadows!=null)mountainShadows.Restore();}
   void OnDestroy(){Cancel();DestroyObject(BattleDraft);}
   public static void CancelForScene(Scene scene){if(owner!=null && owner.gameObject.scene==scene)owner.Cancel();}
   void LateUpdate(){
    if(Settings==null || SceneManager.GetActiveScene()!=gameObject.scene)return;
    if(!Application.isPlaying){if(preview)ApplyHour(previewHour);else if(applied)Restore();return;}
-   if(battle){if(!applied||appliedProfile!=Settings||appliedRevision!=Settings.revision)ApplyHour(shownHours);UpdateWindowFade();return;}
+   if(battle){if(!applied||appliedProfile!=Settings||appliedRevision!=Settings.revision)ApplyHour(shownHours);if(windowScanRequested||windowRegistryRefreshRequested||pendingWindowRoots.Count>0)UpdateBuildingWindows();UpdateWindowFade();return;}
    if(!transitioning && !DHGameStateRestoreService.IsRestoring){
-    var tm=FindFirstObjectByType<TurnManager>();
     var tutorial = gameObject.scene.name == "TutorialExploreScene" ? FindFirstObjectByType<TutorialTurnManager>() : null;
-    int turn=tutorial!=null?tutorial.CurrentTurn:GameManager.Instance!=null?GameManager.Instance.CurrentDay:tm!=null?tm.GetDay():1;
+     // JC | 2026-11-10 | 기존 턴 공급자 우선순위를 유지하며 실제로 사용할 때만 일반 턴 관리자를 검색합니다.
+     int turn;
+     if(tutorial!=null)turn=tutorial.CurrentTurn;
+     else if(GameManager.Instance!=null)turn=GameManager.Instance.CurrentDay;
+     else {var tm=FindFirstObjectByType<TurnManager>();turn=tm!=null?tm.GetDay():1;}
     if(!applied||shownTurn!=turn||appliedProfile!=Settings||appliedRevision!=Settings.revision){shownTurn=turn;ApplyHour(Settings.HoursForTurn(turn));}
    }
    if(transitioning)LockUI();
    UpdateWindowFade();
-   if(Time.realtimeSinceStartupAsDouble>=nextCharacterScan){characters.ScanCharacters(gameObject.scene);specialWindows.Scan(gameObject.scene);nextCharacterScan=Time.realtimeSinceStartupAsDouble+1;}
+   // JC | 2026-11-10 | 캐릭터의 기존 1초 주기는 유지하고 창문만 변경 알림/후보 재확인으로 관리합니다.
+   if(Time.realtimeSinceStartupAsDouble>=nextCharacterScan){characters.ScanCharacters(gameObject.scene);nextCharacterScan=Time.realtimeSinceStartupAsDouble+1;}
+   UpdateBuildingWindows();
   }
   bool Busy()=>PlayerInteractionBusy() || ModalManager.HasAny || ChatModalController.IsOpen ||
    (ChatManager.Instance!=null && ChatManager.Instance.IsRunning) ||
    (DHWorldEventRuntimeManager.Instance!=null && DHWorldEventRuntimeManager.Instance.IsRunning) ||
    // 턴 진행 중 예약된 조건 검사는 다음 플레이어 턴에 실행합니다. 예약 자체를 기다리면 교착됩니다.
    (SceneFadeController.Instance!=null && SceneFadeController.Instance.IsTransitioning);
-  bool PlayerInteractionBusy(){var registry=FindFirstObjectByType<PartyRegistry>();var party=registry!=null?registry.PlayerParty:null;var runtime=party!=null?party.GetComponent<PartyRuntime>():null;return party!=null && (party.IsMoving || (runtime!=null && runtime.IsInputLocked));}
+  // JC | 2026-11-10 | 전환 대기 중 반복 전체 검색을 피하고 등록부 소멸·비활성화 시에만 재확보합니다.
+  bool PlayerInteractionBusy(){
+   if(partyRegistry==null||!partyRegistry.gameObject.activeInHierarchy)partyRegistry=FindFirstObjectByType<PartyRegistry>();
+   var party=partyRegistry!=null?partyRegistry.PlayerParty:null;
+   var runtime=party!=null?party.GetComponent<PartyRuntime>():null;
+   return party!=null && (party.IsMoving || (runtime!=null && runtime.IsInputLocked));
+  }
   public IEnumerator Transition(int fromTurn,int toTurn){
    if(Settings==null || !isActiveAndEnabled || transitioning)yield break;
    // 기존 모달/대화가 끝나기 전에는 ESC를 막지 않습니다.
@@ -227,7 +324,8 @@ namespace JC.Environment {
   public void ApplyHour(double hours){
    if(Settings==null||SceneManager.GetActiveScene()!=gameObject.scene)return;
    if(mountainShadows!=null)mountainShadows.ApplyNow();
-   Capture();if(Application.isPlaying)specialWindows.Scan(gameObject.scene);shownHours=hours;appliedProfile=Settings;appliedRevision=Settings.revision;var k=Settings.Evaluate(hours);daylight=k.daylight;
+   // JC | 2026-11-10 | 시각 보간마다 씬 전체를 다시 찾지 않고 발견 주기 또는 등록된 창문 갱신만 수행합니다.
+   Capture();UpdateBuildingWindows();shownHours=hours;appliedProfile=Settings;appliedRevision=Settings.revision;var k=Settings.Evaluate(hours);daylight=k.daylight;
    var look=Settings.SampleSegment(hours);var baseline=Settings.SampleSegment(hours,true);
    PrepareBattleProfile();
    UpdateLampSettings(hours);
@@ -290,14 +388,18 @@ namespace JC.Environment {
    }cube.Apply(false);RenderSettings.reflectionIntensity=oldReflectionIntensity;
   }
   void LockUI(){
+   // JC | 2026-11-10 | 매 프레임 새 UI도 수집하되 Canvas 하위 Selectable의 임시 배열은 재사용 목록으로 바꿉니다.
+   using var selectableLease=UnityEngine.Pool.ListPool<Selectable>.Get(out var selectables);
    foreach(var canvas in UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None)){
     if(!canvas.isRootCanvas||canvas.renderMode==RenderMode.WorldSpace)continue;
     LockGroup(canvas.gameObject,Settings.disabledUIAlpha);
-    foreach(var selectable in canvas.GetComponentsInChildren<Selectable>(true))LockGroup(selectable.gameObject,1);
+    canvas.GetComponentsInChildren(true,selectables);
+    foreach(var selectable in selectables)LockGroup(selectable.gameObject,1);
    }
   }
   void LockGroup(GameObject go,float dim){
-   if(locks.Exists(x=>x.group!=null && x.group.gameObject==go))return;
+   // JC | 2026-11-10 | 선형 검색과 캡처 람다를 없애되 기존 CanvasGroup이 살아 있을 때만 중복 잠금을 생략합니다.
+   if(lockedGroups.TryGetValue(go,out var locked)&&locked!=null)return;
    // 이동 UI와 공유하는 그룹은 원래 제어자에 연출 잠금을 합산합니다.
    // 연출 도중 변경된 기본 잠금 상태를 종료 시 그대로 반영합니다.
    var g=go.GetComponent<CanvasGroup>();bool added=g==null;if(added)g=go.AddComponent<CanvasGroup>();
@@ -305,6 +407,7 @@ namespace JC.Environment {
    if(!added)foreach(var candidate in UnityEngine.Object.FindObjectsByType<UIInputBlocker>(FindObjectsInactive.Include,FindObjectsSortMode.None))
     if(candidate.Controls(g)){blocker=candidate;break;}
    locks.Add(new UILock{group=g,blocker=blocker,added=added,alpha=g.alpha,interactable=g.interactable,blocks=g.blocksRaycasts});
+   lockedGroups[go]=g; // JC | 2026-11-10 | 복원 목록과 중복 조회를 동일한 잠금 수명으로 관리합니다.
    if(blocker!=null)blocker.SetAdditionalLock(this,true);
    else {g.interactable=false;g.blocksRaycasts=true;}
    g.alpha*=dim;
@@ -317,6 +420,7 @@ namespace JC.Environment {
     else {if(state.blocker==null){state.group.interactable=state.interactable;state.group.blocksRaycasts=state.blocks;}state.group.alpha=state.alpha;}
    }
    locks.Clear();
+   lockedGroups.Clear(); // JC | 2026-11-10 | 종료·취소 후 다음 전환에서 모든 대상을 다시 잠글 수 있게 합니다.
    if(EventSystem.current!=null && EventSystem.current.currentSelectedGameObject==null && selection!=null && selection.activeInHierarchy){var s=selection.GetComponent<Selectable>();if(s!=null && s.IsInteractable())EventSystem.current.SetSelectedGameObject(selection);}
    selection=null;
   }
@@ -331,6 +435,7 @@ namespace JC.Environment {
    foreach(var p in probes)if(p.probe!=null){p.probe.mode=p.mode;p.probe.customBakedTexture=p.texture;p.probe.intensity=p.intensity;}probes.Clear();
    screenColor.Dispose();specialWindows.Dispose();characters.Dispose();foreach(var entry in extraLights)if(entry.light!=null)entry.light.intensity=entry.intensity;extraLights.Clear();
    windowInitialized=false;
+   windowScanRequested=true;windowRegistryRefreshRequested=true;pendingWindowRoots.Clear();windowRefreshFrame=-1; // JC | 2026-11-10 | 취소 후 재진입에서 최초 발견·등록부 연결을 다시 수행합니다.
    DestroyObject(skybox);DestroyObject(cube);skybox=null;cube=null;applied=false;shownTurn=-1;
    if(owner==this){Shader.SetGlobalVector("_JcDayNight",Vector4.zero);Shader.SetGlobalVector("_JcWindowLight",Vector4.zero);Shader.SetGlobalVector("_JcNightReadability",Vector4.zero);owner=null;}
   }

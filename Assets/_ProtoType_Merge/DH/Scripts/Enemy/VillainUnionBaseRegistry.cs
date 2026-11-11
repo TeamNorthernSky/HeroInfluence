@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class VillainUnionBaseRegistry : MonoBehaviour
 {
+    public event System.Action Changed;
     private readonly List<VillainUnionBase> villainUnionBases = new List<VillainUnionBase>();
 
     public IReadOnlyList<VillainUnionBase> VillainUnionBases => villainUnionBases;
@@ -18,6 +19,7 @@ public class VillainUnionBaseRegistry : MonoBehaviour
             return;
 
         villainUnionBases.Add(villainUnionBase);
+        Changed?.Invoke();
     }
 
     public void Unregister(VillainUnionBase villainUnionBase)
@@ -25,7 +27,8 @@ public class VillainUnionBaseRegistry : MonoBehaviour
         if (villainUnionBase == null)
             return;
 
-        villainUnionBases.Remove(villainUnionBase);
+        if (villainUnionBases.Remove(villainUnionBase))
+            Changed?.Invoke();
     }
 
     [ContextMenu("Refresh Scene Bases")]
@@ -42,6 +45,7 @@ public class VillainUnionBaseRegistry : MonoBehaviour
 
             Register(villainUnionBase);
         }
+        Changed?.Invoke();
     }
 
     public VillainUnionBase GetClosestBase(Vector2Int grid)
