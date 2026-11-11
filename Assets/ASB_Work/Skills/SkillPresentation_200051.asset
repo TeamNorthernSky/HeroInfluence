@@ -40,6 +40,13 @@ MonoBehaviour:
     DurationSeconds: 0.08
     CharacterSpeed: 0.05
     EffectSpeed: 0.25
+  OverrideHitCameraPunch: 0
+  HitCameraPunch:
+    Enabled: 1
+    ZoomAmount: 0.05
+    ZoomInSeconds: 0.04
+    HoldSeconds: 0.04
+    ZoomOutSeconds: 0.15
   ProjectileVisual:
     Prefab: {fileID: 1258701090467093537, guid: 027abf3da80074f43a8bfae32722c091,
       type: 3}
@@ -83,10 +90,11 @@ MonoBehaviour:
     Enabled: 1
     UseUnitMovement: 1
     ForceApproach: 0
+    ForceRotate: 1
     ApproachEffectId: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
-    SfxKey:
+    SfxKey: 
   AttackPrepare:
     Enabled: 1
     AnimationStateName: 
@@ -102,7 +110,7 @@ MonoBehaviour:
       Cues:
       - CueName: arnold_wave_charge
         EffectIds: bf810100
-        SoundIds:
+        SoundIds: 
         Operation: 0
         InstanceKey: arnold_wave
         Anchor: 1
@@ -114,7 +122,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
-    SfxKey:
+    SfxKey: 
   Post:
     Enabled: 1
     AnimationStateName: 

@@ -2528,7 +2528,9 @@ public sealed partial class SkillPresentationDirector
             && hasTarget
             && !isFriendlyProjectile
             && BattleManager.IsMeleeSkillRange(actor, skill);
-        shouldRotate = hasTarget && !shouldMove && ((movement != null && movement.RotateOnly) || isFriendlyProjectile);
+        // 근접형 유닛의 원거리 스킬(UMT 파동탄 등)은 연출이 회전을 강제할 때만 대상 쪽으로 돈다.
+        bool forceRotate = presentation?.Move != null && presentation.Move.Enabled && presentation.Move.ForceRotate;
+        shouldRotate = hasTarget && !shouldMove && ((movement != null && movement.RotateOnly) || isFriendlyProjectile || forceRotate);
     }
 
     public void EnqueueSkillApproach(

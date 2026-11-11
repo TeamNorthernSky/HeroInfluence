@@ -815,6 +815,9 @@ public class MovePhase : PhaseBase
     [Tooltip("켜면 유닛 이동 프로필의 RotateOnly(원거리)와 무관하게 대상에게 접근한다. 근접 사거리 스킬에만 적용된다.")]
     public bool ForceApproach;
 
+    [Tooltip("켜면 유닛 이동 프로필이 근접형(RotateOnly 꺼짐)이어도, 접근하지 않는 스킬은 재생 전에 대상 쪽으로 돌았다가 끝나면 원래 방향으로 돌아온다.")]
+    public bool ForceRotate;
+
     [Tooltip("MovingAttack의 진입 위치까지 접근하는 동안 유지할 EffectRegistry ID. 0이면 사용하지 않는다.")]
     public int ApproachEffectId;
 
