@@ -96,6 +96,21 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!114 &9000000000000001008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5410839819111192195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58b3ecc718fbbfb44b4fcde86c00b728, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetLight: {fileID: 5627065128740062180}
+  onHour: 18.5
+  offHour: 6.5
 --- !u!114 &8671068540104668797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,7 +336,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: bca0bb4df51ec7a4f88b6b33141c7c3b,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.321
+      value: 0.43
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bca0bb4df51ec7a4f88b6b33141c7c3b,
         type: 3}
@@ -331,7 +346,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: bca0bb4df51ec7a4f88b6b33141c7c3b,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.854
+      value: -0.476
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bca0bb4df51ec7a4f88b6b33141c7c3b,
         type: 3}
@@ -415,18 +430,3 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &9000000000000001008
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5410839819111192195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58b3ecc718fbbfb44b4fcde86c00b728, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  targetLight: {fileID: 5627065128740062180}
-  onHour: 18.5
-  offHour: 6.5
