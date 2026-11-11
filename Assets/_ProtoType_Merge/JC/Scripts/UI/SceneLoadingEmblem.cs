@@ -101,17 +101,23 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
         float enter = Mathf.Clamp01(time / EntranceDuration);
         float entranceY = Mathf.Lerp(-210f, 0f, 1f - Mathf.Pow(1f - enter, 3f));
         float active = Mathf.Max(0f, time - EntranceDuration);
-        float scale = 1f, y = 0f, rotation = 0f;
+        float scale = selectedIcon == 0 ? .9f : 1f;
+        float x = 0f, y = 0f, rotation = 0f;
         for (int i = 0; i < flashes.Length; i++) flashes[i].gameObject.SetActive(false);
         if (enter >= 1f)
         {
             switch (selectedIcon)
             {
-                case 0: // Pull back, punch toward the viewer, then settle.
-                    float punch = Mathf.Repeat(active, 1.65f);
-                    if (punch < .55f) scale = Mathf.Lerp(1f, .72f, Mathf.SmoothStep(0f, 1f, punch / .55f));
-                    else if (punch < .73f) scale = Mathf.Lerp(.72f, 1.2f, Mathf.SmoothStep(0f, 1f, (punch - .55f) / .18f));
-                    else if (punch < 1f) scale = Mathf.Lerp(1.2f, 1f, Mathf.SmoothStep(0f, 1f, (punch - .73f) / .27f));
+                case 0: // 왼쪽으로 당긴 뒤 오른쪽으로 빠르게 찌르고 중앙으로 회수한다.
+                    float punch = Mathf.Repeat(active, 1.5f);
+                    if (punch < .42f)
+                        x = Mathf.Lerp(0f, -26f, Mathf.SmoothStep(0f, 1f, punch / .42f));
+                    else if (punch < .56f)
+                        x = Mathf.Lerp(-26f, 26f, 1f - Mathf.Pow(1f - (punch - .42f) / .14f, 3f));
+                    else if (punch < .66f)
+                        x = 26f;
+                    else if (punch < .96f)
+                        x = Mathf.Lerp(26f, 0f, Mathf.SmoothStep(0f, 1f, (punch - .66f) / .3f));
                     break;
                 case 1: // Alternating shots with a brief flame and opposite recoil.
                     int shot = Mathf.FloorToInt(active / .48f);
@@ -137,7 +143,7 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
                     break;
             }
         }
-        iconMotion.anchoredPosition = new Vector2(0f, entranceY + y);
+        iconMotion.anchoredPosition = new Vector2(x, entranceY + y);
         iconMotion.localScale = Vector3.one * scale;
         iconMotion.localRotation = Quaternion.Euler(0f, 0f, rotation);
     }
