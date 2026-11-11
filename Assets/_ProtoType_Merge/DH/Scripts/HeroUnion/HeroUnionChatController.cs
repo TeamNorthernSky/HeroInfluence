@@ -1,18 +1,15 @@
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public sealed class HeroUnionChatController : MonoBehaviour
 {
     private const string RuntimeObjectName = "[DH_HeroUnionChatController]";
-    // Scene transitions can create HeroUnions before ChatManager/DataStorage is ready; retry briefly instead of dropping the first-zone chat.
-    private const int InitialChatDelayFrames = 5;
-    private const int InitialChatRetryFrames = 180;
 
     private bool isPlayingChat;
     private string pendingChatKey = string.Empty;
     private ChatManager subscribedChatManager;
-    private Coroutine initialClaimedChatCoroutine;
+    private readonly HashSet<HeroUnionUnit> pendingCaptureChats = new HashSet<HeroUnionUnit>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -28,56 +25,53 @@ public sealed class HeroUnionChatController : MonoBehaviour
     private void OnEnable()
     {
         HeroUnionUnit.HeroUnionStateChanged += HandleHeroUnionStateChanged;
-        SceneManager.sceneLoaded += HandleSceneLoaded;
-        QueueInitialClaimedChatCheck();
+        SceneFadeController.SceneEntryCompleted += HandleSceneEntryCompleted;
+        TryPlayPendingOrInitialChat();
     }
 
     private void OnDisable()
     {
+        pendingCaptureChats.Clear();
         HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionStateChanged;
-        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        SceneFadeController.SceneEntryCompleted -= HandleSceneEntryCompleted;
         UnsubscribeFromChatManagerEnded();
     }
 
-    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    private void HandleSceneEntryCompleted(Scene scene)
     {
-        QueueInitialClaimedChatCheck();
+        if (scene == SceneManager.GetActiveScene())
+            TryPlayPendingOrInitialChat();
     }
 
-    private void QueueInitialClaimedChatCheck()
+    private void TryPlayPendingOrInitialChat()
     {
-        if (!Application.isPlaying || !isActiveAndEnabled)
+        if (!Application.isPlaying || !isActiveAndEnabled || !IsExplorationReadyForChat())
             return;
 
-        if (initialClaimedChatCoroutine != null)
-            StopCoroutine(initialClaimedChatCoroutine);
-
-        initialClaimedChatCoroutine = StartCoroutine(PlayInitialClaimedChatsNextFrame());
-    }
-
-    private IEnumerator PlayInitialClaimedChatsNextFrame()
-    {
-        for (int i = 0; i < InitialChatDelayFrames; i++)
-            yield return null;
-
-        for (int frame = 0; frame < InitialChatRetryFrames; frame++)
+        var pending = new List<HeroUnionUnit>(pendingCaptureChats);
+        pendingCaptureChats.Clear();
+        foreach (HeroUnionUnit heroUnion in pending)
         {
-            // JC | 2026-11-11 | 에디터·빌드 공통 이펙트 준비 중에는 탐사씬이 로드돼도 로딩씬이 활성 상태입니다.
-            // 진입·복원·페이드 완료를 기다리되, 로딩 시간을 대화 데이터 재시도 180프레임에서 소모하지 않습니다.
-            while (IsExplorationEntryPending() ||
-                   (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning))
-                yield return null;
-
-            if (TryPlayAnyInitialClaimedChat())
-                break;
-
-            if (isPlayingChat)
-                break;
-
-            yield return null;
+            if (heroUnion != null && heroUnion.isActiveAndEnabled && heroUnion.IsClaimedByHero &&
+                TryPlayCaptureChat(heroUnion))
+                return;
         }
 
-        initialClaimedChatCoroutine = null;
+        TryPlayAnyInitialClaimedChat();
+    }
+
+    private static bool IsExplorationReadyForChat()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        string explorationScene = GameSceneManager.Instance != null
+            ? GameSceneManager.Instance.ExplorationScene : "DHScene";
+        string loadingScene = GameSceneManager.Instance != null
+            ? GameSceneManager.Instance.GameLoadScene : "GameLoadScene";
+        return activeScene.IsValid() && activeScene.isLoaded &&
+            activeScene.name == explorationScene &&
+            !SceneManager.GetSceneByName(loadingScene).IsValid() &&
+            !IsExplorationEntryPending() &&
+            SceneFadeController.Instance != null && SceneFadeController.Instance.IsSceneEntryCompleted(activeScene);
     }
 
     private bool TryPlayAnyInitialClaimedChat()
@@ -111,17 +105,19 @@ public sealed class HeroUnionChatController : MonoBehaviour
         if (heroUnion == null || !heroUnion.IsClaimedByHero)
             return;
 
+        if (!IsExplorationReadyForChat())
+        {
+            pendingCaptureChats.Add(heroUnion);
+            return;
+        }
+
         TryPlayCaptureChat(heroUnion);
     }
 
     private bool TryPlayCaptureChat(HeroUnionUnit heroUnion)
     {
-        if (!Application.isPlaying || isPlayingChat || heroUnion == null)
-            return false;
-
-        // JC | 2026-11-11 | 상태 변경 이벤트로 직접 호출돼도 로딩씬 소속 대화창이 생성되지 않도록 차단합니다.
-        // 초기 점령 대화는 위 코루틴이 준비 완료 후 재시도하며, 협회가 속한 활성씬에 대화창을 생성합니다.
-        if (IsExplorationEntryPending() || heroUnion.gameObject.scene != SceneManager.GetActiveScene())
+        if (!Application.isPlaying || isPlayingChat || heroUnion == null ||
+            !IsExplorationReadyForChat() || heroUnion.gameObject.scene != SceneManager.GetActiveScene())
             return false;
 
         ZoneEntryGuidanceController.ApplyStoredGuidanceIfNeeded()?.TryCompleteFromClaimedHeroUnion(heroUnion);
