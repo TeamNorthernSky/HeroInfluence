@@ -1,10 +1,18 @@
 ﻿using TMPro;
 using UnityEngine;
 
-/// <summary>검정 로딩 화면에 고정된 글자와 푸른 글로우를 표시한다.</summary>
+/// <summary>검정 로딩 화면에 글자별 파도 연출과 푸른 글로우를 표시한다.</summary>
 public sealed class SceneLoadingLabel : MonoBehaviour
 {
+    private const float WaveHeight = 12f;
+    private const float LetterDelay = .09f;
+    private const float WaveDuration = .48f;
+    private const float WavePause = .32f;
+    private RectTransform[] letters;
+    private Vector2[] restPositions;
+    private float waveTime;
     private Material glowMaterial;
+    private SceneLoadingEmblem emblem;
     public void Initialize(Transform parent)
     {
         transform.SetParent(parent, false);
@@ -13,7 +21,8 @@ public sealed class SceneLoadingLabel : MonoBehaviour
         root.sizeDelta = new Vector2(420, 100);
         const string text = "Loading...";
         var widths = new float[text.Length];
-        var letters = new RectTransform[text.Length];
+        letters = new RectTransform[text.Length];
+        restPositions = new Vector2[text.Length];
         for (int i = 0; i < text.Length; i++)
         {
             var host = new GameObject("Letter " + i, typeof(RectTransform));
@@ -42,7 +51,50 @@ public sealed class SceneLoadingLabel : MonoBehaviour
         for (int i = 0; i < letters.Length; i++)
         {
             letters[i].anchoredPosition = new Vector2(x + widths[i] * .5f, 0);
+            restPositions[i] = letters[i].anchoredPosition;
             x += widths[i];
+        }
+        var emblemObject = new GameObject("Loading hero emblem", typeof(RectTransform), typeof(SceneLoadingEmblem));
+        emblem = emblemObject.GetComponent<SceneLoadingEmblem>();
+        emblem.Initialize(root);
+    }
+    public void BeginPresentation()
+    {
+        if (emblem != null) emblem.BeginPresentation();
+        RestartMotion();
+    }
+    public void RestartMotion()
+    {
+        waveTime = 0f;
+        ApplyWave(0f);
+        // 전후 대기나 재활성화 때는 텍스트만 재시작한다. 아이콘은 첫 등장 이후 계속 유지한다.
+    }
+    private void OnEnable()
+    {
+        RestartMotion();
+    }
+    private void Update()
+    {
+        if (letters == null) return;
+        // 로딩 중 게임 시간이 멈춰 있어도 동일한 속도로 재생한다.
+        float cycleDuration = (letters.Length - 1) * LetterDelay + WaveDuration + WavePause;
+        waveTime = Mathf.Repeat(waveTime + Mathf.Min(Time.unscaledDeltaTime, .05f), cycleDuration);
+        ApplyWave(waveTime);
+    }
+    private void OnDisable()
+    {
+        ApplyWave(0f);
+    }
+    private void ApplyWave(float time)
+    {
+        if (letters == null) return;
+        for (int i = 0; i < letters.Length; i++)
+        {
+            float progress = (time - i * LetterDelay) / WaveDuration;
+            float height = progress > 0f && progress < 1f
+                ? Mathf.Sin(progress * Mathf.PI) * WaveHeight : 0f;
+            // 흰 글자와 글로우가 같은 부모를 따라 함께 움직인다.
+            letters[i].anchoredPosition = restPositions[i] + Vector2.up * height;
         }
     }
     private static TMP_Text CreateGlyph(RectTransform parent, char value, Color color)

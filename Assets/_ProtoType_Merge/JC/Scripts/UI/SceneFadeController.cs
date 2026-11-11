@@ -18,6 +18,9 @@ public class SceneFadeController : MonoBehaviour
     public static SceneFadeController Instance { get; private set; }
 
     private SceneLoadingLabel loadingLabel;
+    private const float LoadingLeadInDuration = 2.5f;
+    private const float LoadingLeadOutDuration = 2.5f;
+    private bool loadingLeadInShown, loadingLeadOutShown;
     private bool suppressCursor, cursorWasVisible, showingLoading;
     // JC | 2026-11-10 | 입력 잠금은 로드 코루틴과 분리하여 중간 로딩씬·복원 대기에도 유지합니다.
     private bool inputBlocked;
@@ -29,6 +32,11 @@ public class SceneFadeController : MonoBehaviour
     public static bool HideCursorDuringTransition => Instance != null && Instance.suppressCursor;
     private void SetLoading(bool value)
     {
+        if (value && !inputBlocked)
+        {
+            loadingLeadInShown = loadingLeadOutShown = false;
+            if (loadingLabel != null) loadingLabel.BeginPresentation();
+        }
         // JC | 2026-11-10 | 페이드인 완료 프레임의 클릭까지 버리고 다음 프레임부터 새 입력을 받습니다.
         if (inputBlocked && !value) inputReleasedFrame = Time.frameCount;
         inputBlocked = value;
@@ -199,6 +207,25 @@ public class SceneFadeController : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         yield return null;
         yield return null;
+        // Boot and GameLoadGate may present the same loading session again; hold only once.
+        if (!fade.loadingLeadInShown)
+        {
+            fade.loadingLeadInShown = true;
+            yield return fade.HoldLoadingMotion(LoadingLeadInDuration);
+        }
+    }
+
+    private IEnumerator HoldLoadingMotion(float duration)
+    {
+        loadingLabel.gameObject.SetActive(true);
+        loadingLabel.RestartMotion();
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            yield return null;
+            // Count visible animation time instead of letting a blocked frame consume the hold.
+            elapsed += Mathf.Min(Time.unscaledDeltaTime, .05f);
+        }
     }
 
     private IEnumerator LoadAfterPresentation(SceneLoadRequest request, Scene sourceScene, string sceneName,
@@ -506,7 +533,16 @@ public class SceneFadeController : MonoBehaviour
             SetLoading(true);
             overlay.color = Color.black;
             overlay.raycastTarget = true;
-            if (waitForReady) yield return WaitForSceneReady();
+            if (waitForReady)
+            {
+                yield return WaitForSceneReady();
+                if (!loadingLeadOutShown)
+                {
+                    loadingLeadOutShown = true;
+                    yield return HoldLoadingMotion(Mathf.Max(LoadingLeadOutDuration, holdDuration));
+                    holdDuration = 0f;
+                }
+            }
         }
         overlay.color = new Color(0f, 0f, 0f, from);
         AudioManager.Instance?.UpdateSceneBgmFade(1f - from);
