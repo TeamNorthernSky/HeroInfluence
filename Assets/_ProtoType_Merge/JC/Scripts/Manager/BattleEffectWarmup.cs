@@ -6,13 +6,15 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.VFX;
 
-/// <summary>JC | 2026-11-11 | 에디터·빌드 공통 시각 준비입니다. 게임 로직 없이 실행 세션 동안 준비 결과를 재사용합니다.</summary>
+/// <summary>JC | 2026-11-11 | 빌드·명시적 에디터 검증의 시각 준비입니다. 게임 로직 없이 실행 세션 동안 결과를 재사용합니다.</summary>
 public sealed class BattleEffectWarmup : MonoBehaviour
 {
     public static bool IsPreparing { get; private set; }
 
     public static IEnumerator PrepareParty()
     {
+        // JC | 2026-11-11 | 일반 Play에서는 데이터 로드·스킬 수집·렌더링 전에 종료하며 호출자의 진입 완료 대기는 유지합니다.
+        if (!JcPlayModePolicy.UsePlayerPreparation) yield break;
         var skills = new HashSet<int>();
         var repository = PersistentUnitRepository.Instance;
         var catalog = DHCsvTemplateCatalog.Instance;
@@ -36,6 +38,8 @@ public sealed class BattleEffectWarmup : MonoBehaviour
 
     public static IEnumerator PrepareBattle(IReadOnlyList<BattleCharactor> units)
     {
+        // JC | 2026-11-11 | 전투 직접 테스트도 같은 정책을 사용합니다. 빌드에서는 항상 기존 예열 경로를 실행합니다.
+        if (!JcPlayModePolicy.UsePlayerPreparation) yield break;
         var skills = new HashSet<int>();
         foreach (var unit in units)
         {

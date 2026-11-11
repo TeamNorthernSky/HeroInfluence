@@ -17,8 +17,7 @@ public sealed class BattleEffectWarmupBuilder : IPreprocessBuildWithReport, IPos
     private const string Output = GeneratedRoot + "/Resources";
     public int callbackOrder => 100;
 
-    // JC | 2026-11-11 | Play 전에도 빌드와 같은 데이터를 확보하고, 원본이 동일한 경우에만 파생 에셋을 재사용합니다.
-    // 셰이더 컴파일 메뉴와 독립적으로 실행하여 버튼 사용 여부가 게임 진입 순서를 바꾸지 않게 합니다.
+    // JC | 2026-11-11 | 명시적 검증 Play에서만 준비 데이터를 검사합니다. 일반 테스트는 자산 검색조차 실행하지 않습니다.
     static BattleEffectWarmupBuilder()
     {
         EditorApplication.playModeStateChanged += OnPlayModeChanged;
@@ -26,7 +25,7 @@ public sealed class BattleEffectWarmupBuilder : IPreprocessBuildWithReport, IPos
 
     private static void OnPlayModeChanged(PlayModeStateChange state)
     {
-        if (state == PlayModeStateChange.ExitingEditMode)
+        if (state == PlayModeStateChange.ExitingEditMode && JcPlayModePolicy.UsePlayerPreparation)
         {
             try { EnsureCurrent(); }
             catch (Exception exception)
@@ -38,6 +37,25 @@ public sealed class BattleEffectWarmupBuilder : IPreprocessBuildWithReport, IPos
         }
     }
 
+    // JC | 2026-11-11 | 무거운 배포 준비 검증은 사용자가 명시적으로 선택하며 실행 도중 정책이 바뀌지 않게 합니다.
+    private const string ValidationMenu = "Tools/JC/플레이 검증/빌드와 같은 이펙트 준비";
+
+    [MenuItem(ValidationMenu)]
+    private static void ToggleValidation()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+        JcPlayModePolicy.EditorValidationEnabled = !JcPlayModePolicy.EditorValidationEnabled;
+        Menu.SetChecked(ValidationMenu, JcPlayModePolicy.EditorValidationEnabled);
+    }
+
+    [MenuItem(ValidationMenu, true)]
+    private static bool ValidateMenu()
+    {
+        Menu.SetChecked(ValidationMenu, JcPlayModePolicy.EditorValidationEnabled);
+        return !EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling;
+    }
+
+    // JC | 2026-11-11 | 에디터 테스트 설정과 관계없이 실제 빌드는 항상 기존 데이터 생성·정리를 수행합니다.
     public void OnPreprocessBuild(BuildReport report) => Generate();
     public void OnPostprocessBuild(BuildReport report) => Cleanup();
 

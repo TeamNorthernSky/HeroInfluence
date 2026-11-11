@@ -124,6 +124,21 @@ public class SceneFadeController : MonoBehaviour
         return root.AddComponent<SceneFadeController>();
     }
 
+    // JC | 2026-11-11 | 최초 씬은 에디터의 특수 로드 모드나 서비스 생성 순서 때문에 sceneLoaded 처리가 누락될 수 있습니다.
+    // AfterSceneLoad에서 활성 씬에 기존 준비·페이드·완료 경로를 연결하며, 씬 재로드나 완료 조건 생략은 하지 않습니다.
+    internal void PrepareInitialSceneEntry()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        // JC | 2026-11-11 | 이미 시작됐거나 끝난 진입은 그대로 유지해 중복 페이드·채팅 알림을 방지합니다.
+        if (!scene.IsValid() || !scene.isLoaded || IsTransitioning ||
+            pendingCompletedEntry == scene || completedEntry == scene)
+            return;
+
+        // JC | 2026-11-11 | 이미 열린 최초 활성 씬의 진입 처리만 재사용합니다.
+        // GameLoadScene은 기존 분기에서 입력을 잠근 채 후속 탐사씬의 준비 완료를 기다립니다.
+        OnSceneLoaded(scene, LoadSceneMode.Single);
+    }
+
     private static void EnsureSceneFade(Scene scene, LoadSceneMode mode)
     {
         if (mode == LoadSceneMode.Single && Instance == null)
@@ -213,13 +228,10 @@ public class SceneFadeController : MonoBehaviour
             fade.loadingLeadInShown = true;
             yield return fade.HoldLoadingMotion(LoadingLeadInDuration);
         }
-        // 선행 연출이 끝난 뒤 실제 리소스 준비와 씬 로드 중에는 현재 프레임을 유지한다.
-        fade.loadingLabel.SetMotionPaused(true);
     }
 
     private IEnumerator HoldLoadingMotion(float duration)
     {
-        loadingLabel.SetMotionPaused(false);
         loadingLabel.gameObject.SetActive(true);
         loadingLabel.RestartMotion();
         float elapsed = 0f;
@@ -538,7 +550,6 @@ public class SceneFadeController : MonoBehaviour
             overlay.raycastTarget = true;
             if (waitForReady)
             {
-                loadingLabel.SetMotionPaused(true);
                 yield return WaitForSceneReady();
                 if (!loadingLeadOutShown)
                 {
