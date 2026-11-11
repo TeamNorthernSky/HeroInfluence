@@ -11,6 +11,9 @@ public static class EnemyEventEncounterService
         if (party == null || enemy == null)
             return false;
 
+        if (ChatManager.Instance == null || ChatManager.Instance.IsRunning)
+            return false;
+
         EnemyEventEncounterBinding binding = enemy.GetComponent<EnemyEventEncounterBinding>();
         if (binding == null || !binding.HasEventEncounter)
             return false;
@@ -23,25 +26,37 @@ public static class EnemyEventEncounterService
             return false;
         }
 
-        DHEnemyEventEncounterRuntimeManager.EnsureInstance().BeginPendingEncounter(binding);
-        ChatModalController.Show(
-            binding.EncounterChatZoneId,
-            binding.EncounterChatId,
+        ExplorationChatCameraFocus focus = null;
+        bool completed = false;
+        bool pendingEncounterStarted = false;
+        Action<bool> finish = combatStarted =>
+        {
+            if (completed) return;
+            completed = true;
+            ExplorationChatCameraFocus ownedFocus = focus;
+            focus = null;
+            if (ownedFocus != null) ownedFocus.Finish();
+            if (pendingEncounterStarted)
+                DHEnemyEventEncounterRuntimeManager.Instance?.ClearPendingEncounterIfUnused();
+            onClosed?.Invoke(combatStarted);
+        };
+
+        return ExplorationChatCameraFocus.TryBegin(enemy.transform, party.transform,
             () =>
             {
-                bool combatStarted = CombatContext.Instance != null &&
-                    CombatContext.Instance.HasEventBattle &&
-                    CombatContext.Instance.Result == CombatResult.None;
-                DHEnemyEventEncounterRuntimeManager.Instance?.ClearPendingEncounterIfUnused();
-                onClosed?.Invoke(combatStarted);
-            });
+                if (party == null || enemy == null || binding == null || !binding.HasEventEncounter ||
+                    ChatManager.Instance == null || ChatManager.Instance.IsRunning)
+                    return false;
 
-        if (!ChatModalController.IsOpen)
-        {
-            DHEnemyEventEncounterRuntimeManager.Instance?.ClearPendingEncounterIfUnused();
-            return false;
-        }
-
-        return true;
+                DHEnemyEventEncounterRuntimeManager.EnsureInstance().BeginPendingEncounter(binding);
+                pendingEncounterStarted = true;
+                ChatModalController.Show(binding.EncounterChatZoneId, binding.EncounterChatId, () =>
+                {
+                    bool combatStarted = CombatContext.Instance != null &&
+                        CombatContext.Instance.HasEventBattle && CombatContext.Instance.Result == CombatResult.None;
+                    finish(combatStarted);
+                });
+                return ChatModalController.IsOpen && ChatManager.Instance != null && ChatManager.Instance.IsRunning;
+            }, () => finish(false), out focus);
     }
 }

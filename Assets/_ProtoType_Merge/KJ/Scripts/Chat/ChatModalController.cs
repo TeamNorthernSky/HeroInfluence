@@ -40,6 +40,21 @@ public class ChatModalController : MonoBehaviour
 
     // 대사가 끝난 뒤 보상 브리핑을 보고 있는 시간도 포함한다.
     public static bool IsOpen => current != null && current.gameObject.activeInHierarchy;
+    private Action presentationClosed;
+
+    public static bool TryDeferUntilClosed(Action callback)
+    {
+        if (!IsOpen || callback == null) return false;
+        current.presentationClosed += callback;
+        return true;
+    }
+
+    private void NotifyPresentationClosed()
+    {
+        Action callbacks = presentationClosed;
+        presentationClosed = null;
+        callbacks?.Invoke();
+    }
 
     private ChatManager manager;
     private Action onClosed;
@@ -776,7 +791,8 @@ public class ChatModalController : MonoBehaviour
         onClosed = null;
         if (current == this) current = null;
         Destroy(gameObject);
-        callback?.Invoke();
+        try { NotifyPresentationClosed(); }
+        finally { callback?.Invoke(); }
     }
 
     private void UnsubscribeFromManager()
@@ -798,5 +814,6 @@ public class ChatModalController : MonoBehaviour
     {
         UnsubscribeFromManager();
         if (current == this) current = null;
+        NotifyPresentationClosed();
     }
 }

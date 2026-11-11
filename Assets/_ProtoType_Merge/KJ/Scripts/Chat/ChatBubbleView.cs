@@ -228,6 +228,9 @@ public class ChatBubbleView : MonoBehaviour
             nameText.text = charName ?? string.Empty;
             if (nameText.GetPreferredValues(nameText.text).x > textwidth && nameText.text.Contains(" 빌런")) // " 빌런"이라는 이름을 가지고 있으면
                 nameText.text = nameText.text.Replace(" 빌런", "\n빌런");
+
+            if (nameText.GetPreferredValues(nameText.text).x > textwidth && nameText.text.Contains(" 인질")) // " 인질"이라는 이름을 가지고 있으면
+                nameText.text = nameText.text.Replace(" 인질", "\n인질");
             nameText.gameObject.SetActive(!isNarration); // 나레이션은 화자가 없다 (레이아웃에서 제외)
         }
         if (messageText != null)

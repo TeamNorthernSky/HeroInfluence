@@ -28,18 +28,37 @@ public class OutpostPanelUI : MonoBehaviour
         int chatZoneId = outpost.PostClaimChatZoneId;
         UnityEngine.SceneManagement.Scene scene = outpost.gameObject.scene;
 
-        ExplorationModalEvents.RaiseOutpostNotice(new OutpostNoticeRequest {
-            title       = $"{name} 해방",
-            description = $"빌런에게서 {name} 탈환"/*"\n 4턴 마다 {resourceName} {amount} 지급"*/,
-            amount         = amount,
-            buildingSprite = entry.BuildingSprite,
-            resourceSprite = entry.ResourceSprite,
-            onClosed = chatId > 0 ? (Action)(() =>
+        // The claim flag can be dispatched inside the reward chat. Keep its camera
+        // until the notice and post-claim chat have both closed.
+        Action releaseCamera = ExplorationChatCameraFocus.HoldForFollowupPresentation();
+        Action showNotice = () =>
+        {
+            if (this == null || !isActiveAndEnabled || !Application.isPlaying ||
+                !scene.IsValid() || !scene.isLoaded || DHGameEndState.IsEnding)
             {
-                if (Application.isPlaying && scene.IsValid() && scene.isLoaded && !DHGameEndState.IsEnding)
-                    ChatModalController.Show(chatZoneId, chatId);
-            }) : null,
-        });
+                releaseCamera();
+                return;
+            }
+
+            ExplorationModalEvents.RaiseOutpostNotice(new OutpostNoticeRequest {
+                title       = $"{name} 해방",
+                description = $"빌런에게서 {name} 탈환"/*"\n 4턴 마다 {resourceName} {amount} 지급"*/,
+                amount         = amount,
+                buildingSprite = entry.BuildingSprite,
+                resourceSprite = entry.ResourceSprite,
+                onClosed = () =>
+                {
+                    if (chatId > 0 && Application.isPlaying && scene.IsValid() &&
+                        scene.isLoaded && !DHGameEndState.IsEnding)
+                    {
+                        ChatModalController.Show(chatZoneId, chatId, releaseCamera);
+                        if (!ChatModalController.IsOpen) releaseCamera();
+                    }
+                    else releaseCamera();
+                },
+            });
+        };
+        if (!ChatModalController.TryDeferUntilClosed(showNotice)) showNotice();
     }
 
     // ── 표시명/프리셋 해석 (기존 로직 보존) ─────────────────────────────

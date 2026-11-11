@@ -87,6 +87,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private Vector3 preEventZoomOffset;
     private Vector3 preEventEulerAngles;
     private bool eventFocusMoving;
+    private System.Action eventFocusArrived;
     private bool returnToFollowAfterMove;
     private float eventFocusElapsed;
     private Vector3 eventFocusStart, eventFocusEnd;
@@ -101,6 +102,47 @@ public class QuarterViewCameraFollower : MonoBehaviour
     public bool IsEventFocusMoving => eventFocusMoving;
     public bool IsTemporaryFocusActive => temporaryFocusActive;
     public event System.Action<bool> EventZoomChanged;
+
+    public readonly struct EventFocusSnapshot
+    {
+        internal readonly Vector3 Offset, Angles, OriginalOffset, OriginalAngles, FocusPosition, CameraPosition;
+        internal readonly Quaternion CameraRotation;
+        internal readonly bool ZoomApplied;
+
+        internal EventFocusSnapshot(Vector3 offset, Vector3 angles, Vector3 originalOffset, Vector3 originalAngles,
+            Vector3 focusPosition, Vector3 cameraPosition, Quaternion cameraRotation, bool zoomApplied)
+        {
+            Offset = offset; Angles = angles; OriginalOffset = originalOffset; OriginalAngles = originalAngles;
+            FocusPosition = focusPosition; CameraPosition = cameraPosition; CameraRotation = cameraRotation;
+            ZoomApplied = zoomApplied;
+        }
+    }
+
+    public EventFocusSnapshot CaptureEventFocus()
+    {
+        return new EventFocusSnapshot(positionOffset, fixedEulerAngles,
+            eventZoomApplied ? preEventZoomOffset : positionOffset,
+            eventZoomApplied ? preEventEulerAngles : fixedEulerAngles,
+            externalFocusWorldPosition, transform.position, transform.rotation, eventZoomApplied);
+    }
+
+    public void RestoreEventFocus(EventFocusSnapshot snapshot)
+    {
+        RestoreEventZoom();
+        preEventZoomOffset = snapshot.OriginalOffset;
+        preEventEulerAngles = snapshot.OriginalAngles;
+        positionOffset = snapshot.Offset;
+        fixedEulerAngles = snapshot.Angles;
+        externalFocusWorldPosition = snapshot.FocusPosition;
+        externalFocusTarget = null;
+        externalFocusLocked = true;
+        eventFocusMoving = false;
+        eventZoomApplied = snapshot.ZoomApplied;
+        followVelocity = Vector3.zero;
+        SetExternalInputLocked(true);
+        transform.SetPositionAndRotation(snapshot.CameraPosition, snapshot.CameraRotation);
+        if (eventZoomApplied) EventZoomChanged?.Invoke(true);
+    }
     // JC | 2026-11-10 | DH 수동 탐색만 전환 잠금에 연결하고 자동 추적·초기 카메라 배치는 유지합니다.
     public bool IsManualNavigationLocked => SceneFadeController.IsInputBlocked || externalInputLocked || IsFollowTargetPartyMoving();
 
@@ -263,32 +305,44 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public void LockExternalFocusWorldPosition(Vector3 worldPosition)
     {
+        LockExternalFocusWorldPosition(worldPosition, true, null);
+    }
+
+    public void LockExternalFocusWorldPosition(Vector3 worldPosition, bool applyEventZoom, System.Action onArrived)
+    {
         RestoreEventZoom();
         externalFocusTarget = null;
         externalFocusWorldPosition = new Vector3(worldPosition.x, 0f, worldPosition.z);
         externalFocusLocked = true;
         SetExternalInputLocked(true);
         followVelocity = Vector3.zero;
-        BeginEventFocusMove(false);
+        eventFocusArrived = onArrived;
+        BeginEventFocusMove(false, applyEventZoom);
     }
 
     public void ReturnToFollowTargetSmooth()
     {
+        ReturnToFollowTargetSmooth(null);
+    }
+
+    public void ReturnToFollowTargetSmooth(System.Action onArrived)
+    {
         RestoreEventZoom();
-        if (followTarget == null) { UnlockExternalFocus(); return; }
+        if (followTarget == null) { UnlockExternalFocus(); onArrived?.Invoke(); return; }
         RecenterOnFollowTarget();
         externalFocusTarget = null;
         externalFocusWorldPosition = FlattenFocusPosition(followTarget.position);
         externalFocusLocked = true;
         SetExternalInputLocked(true);
+        eventFocusArrived = onArrived;
         BeginEventFocusMove(true);
     }
 
-    private void BeginEventFocusMove(bool returnToFollow)
+    private void BeginEventFocusMove(bool returnToFollow, bool applyEventZoom = true)
     {
         eventFocusStart = transform.position;
         eventFocusStartRotation = transform.rotation;
-        if (!returnToFollow && !eventZoomApplied)
+        if (!returnToFollow && applyEventZoom && !eventZoomApplied)
         {
             preEventZoomOffset = positionOffset;
             preEventEulerAngles = fixedEulerAngles;
@@ -309,7 +363,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         eventFocusElapsed = 0f;
         returnToFollowAfterMove = returnToFollow;
         eventFocusMoving = true;
-        if (!returnToFollow) EventZoomChanged?.Invoke(true);
+        if (!returnToFollow && applyEventZoom) EventZoomChanged?.Invoke(true);
     }
 
     private void AdjustEventFocusForMapPosition(Rect mapBounds)
@@ -358,6 +412,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void RestoreEventZoom()
     {
+        eventFocusArrived = null;
         bool wasApplied = eventZoomApplied;
         if (eventZoomApplied)
         {
@@ -433,6 +488,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
             if (t >= 1f)
             {
                 eventFocusMoving = false;
+                System.Action onArrived = eventFocusArrived;
+                eventFocusArrived = null;
                 if (returnToFollowAfterMove)
                 {
                     smoothedFollowAnchor = FlattenFocusPosition(followTarget != null
@@ -443,6 +500,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
                     panOffset.y = 0f;
                     UnlockExternalFocus();
                 }
+                onArrived?.Invoke();
             }
             return;
         }
