@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: JC_AssociationVisitIndicator
   m_EditorClassIdentifier: 
   animate: 1
-  growSeconds: 0.5
-  shrinkSeconds: 0.5
+  growSeconds: 0.2
+  shrinkSeconds: 0.2
   minimumScale: 0.15
   maximumScale: 1
   riseHeightRatio: 0.1
