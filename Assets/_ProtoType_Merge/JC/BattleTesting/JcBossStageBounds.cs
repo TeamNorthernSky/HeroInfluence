@@ -126,26 +126,6 @@ namespace JC.BattleTesting
             return 1f;
         }
 
-        public Quaternion PlanRotation(Pose start, float startFov, Pose goal, float fov, float aspect, float nearClip, float right)
-        {
-            var angles=goal.rotation.eulerAngles;
-            float best=0f;
-            var result=goal.rotation;
-            // Keep the framing close to the authored shot. Candidates describe endpoints, never lens writes.
-            for (int step=0;step<=14;step++)
-            {
-                int directions=step==0?1:3;
-                for (int i=0;i<directions;i++)
-                {
-                    var rotation=Quaternion.Euler(angles.x+(i==0?0:step),angles.y-(i==1?0:step),angles.z);
-                    float travel=AllowedFraction(start,startFov,new Pose(goal.position,rotation),fov,aspect,nearClip,right);
-                    if (travel>=1f) return rotation;
-                    if (travel>best) { best=travel; result=rotation; }
-                }
-            }
-            return result;
-        }
-
         public static Pose Interpolate(Pose a, Pose b, float t) =>
             new Pose(Vector3.Lerp(a.position,b.position,t),Quaternion.Slerp(a.rotation,b.rotation,t));
     }

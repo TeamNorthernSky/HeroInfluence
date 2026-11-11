@@ -260,7 +260,8 @@ MonoBehaviour:
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
-  battlePulseEnabled: 1
+  battlePulseEnabled: 0
+  battlePulseInBossTestEnabled: 1
   battlePulseColor: {r: 0.65, g: 0.45, b: 1, a: 1}
   battlePulseMix: 0.22
   battlePulseSeconds: 1.4

@@ -30,6 +30,58 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
     private HeroUnionUnit heroUnionUnit;
     private readonly List<PartyGridMover> subscribedMovers = new List<PartyGridMover>();
 
+    // JC | 2026-11-10 | 메인 탐사씬 연출 연결. 방문 상태와 표시 종료 타이밍을 분리하고 기존 등록부의 파티만 구독합니다.
+    private JcAssociationIndicatorMotion indicatorMotion;
+    private PartyRegistry partyRegistry;
+    private PartyGridMover registeredParty;
+    private bool lastEligible, lastEnding;
+    // JC | 2026-11-11 | 메인에서 주입한 등록부는 검색하지 않고, 기존 씬은 Optimize의 단일 파티 구독 갱신을 유지합니다.
+    private bool useConfiguredPartyRegistry;
+
+    public void ConfigureIndicator(GameObject indicator, JcAssociationIndicatorMotion motion, PartyRegistry registry)
+    {
+        visitorIndicator = indicator;
+        indicatorMotion = motion;
+        partyRegistry = registry;
+        useConfiguredPartyRegistry = registry != null;
+        if (partyRegistry != null) BindRegisteredParty();
+    }
+
+    private void LateUpdate()
+    {
+        if (!useConfiguredPartyRegistry && RefreshPlayerSubscription()) EvaluateAllVisits();
+        // JC | 2026-11-10 | 참조/활성/패배 대기/엔딩 변경만 O(1)로 확인합니다. 이동 판정은 GridEntered 이벤트를 유지합니다.
+        if (useConfiguredPartyRegistry && partyRegistry != null && registeredParty != partyRegistry.PlayerParty)
+        {
+            BindRegisteredParty();
+            EvaluateAllVisits();
+        }
+        bool eligible = IsRegisteredPartyEligible();
+        bool ending = DHGameEndState.IsEnding;
+        if (eligible != lastEligible || ending != lastEnding)
+        {
+            lastEligible = eligible;
+            lastEnding = ending;
+            EvaluateAllVisits();
+        }
+    }
+
+    private bool IsRegisteredPartyEligible() => registeredParty != null
+        && registeredParty.gameObject.activeInHierarchy && !DefeatedPartyReturnController.IsPartyWaiting(registeredParty);
+
+    private void BindRegisteredParty()
+    {
+        UnsubscribeAllMovers();
+        registeredParty = partyRegistry.PlayerParty;
+        if (registeredParty != null)
+        {
+            registeredParty.GridEntered += OnPartyGridEntered;
+            subscribedMovers.Add(registeredParty);
+        }
+        lastEligible = IsRegisteredPartyEligible();
+        lastEnding = DHGameEndState.IsEnding;
+    }
+
     private void Awake()
     {
         heroUnionUnit = GetComponent<HeroUnionUnit>();
@@ -37,7 +89,8 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
 
     private void OnEnable()
     {
-        SubscribeAllMovers();
+        if (useConfiguredPartyRegistry && partyRegistry != null) BindRegisteredParty();
+        else RefreshPlayerSubscription();
         EvaluateAllVisits();
     }
 
@@ -48,7 +101,9 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
         //   HQVisitState는 DontDestroyOnLoad이고 다른 씬(로비)에서도 사용. DHScene 재진입 시 OnEnable의
         //   EvaluateAllVisits가 현재 mover 위치 기반으로 재평가하므로 stale 정보 위험 없음.
         UnsubscribeAllMovers();
-        ApplyVisitorIndicator(false);
+        // JC | 2026-11-10 | 씬 종료/건물 비활성화 때는 사라지는 연출을 기다리지 않고 즉시 정리합니다.
+        if (indicatorMotion != null) indicatorMotion.SetVisible(false, true);
+        else ApplyVisitorIndicator(false);
     }
 
     /// <summary>외부에서 즉시 재평가 강제 (게이트씬 부트스트랩 등).</summary>
@@ -57,17 +112,25 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
         EvaluateAllVisits();
     }
 
-    private void SubscribeAllMovers()
+    // JC | 2026-11-10 | 기존 단일 파티가 등록되기 전에도 탐색은 가능하게 유지하되 정상 등록 후에는 참조 읽기만 수행합니다.
+    private bool RefreshPlayerSubscription()
     {
+        if (partyRegistry == null || !partyRegistry.gameObject.activeInHierarchy)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null) party = FindFirstObjectByType<PartyGridMover>();
+        if (party != null && !party.gameObject.activeInHierarchy) party = null;
+        if (party == null ? subscribedMovers.Count == 0 : subscribedMovers.Count == 1 && subscribedMovers[0] == party)
+            return false;
+
         UnsubscribeAllMovers();
-        var movers = FindObjectsByType<PartyGridMover>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < movers.Length; i++)
+        registeredParty = party;
+        if (party != null)
         {
-            var m = movers[i];
-            if (m == null) continue;
-            m.GridEntered += OnPartyGridEntered;
-            subscribedMovers.Add(m);
+            party.GridEntered += OnPartyGridEntered;
+            subscribedMovers.Add(party);
         }
+        return true;
     }
 
     private void UnsubscribeAllMovers()
@@ -105,7 +168,8 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
             return;
         }
 
-        var detected = new HashSet<string>();
+        // JC | 2026-11-11 | Optimize의 호출별 임시 집합 대여를 유지하여 방문 알림 중 재진입해도 연출 판정 결과가 섞이지 않게 합니다.
+        using var detectedLease = UnityEngine.Pool.HashSetPool<string>.Get(out var detected);
 
         for (int i = 0; i < subscribedMovers.Count; i++)
         {
@@ -125,7 +189,8 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
 
         int prevCount = state.VisitingPartyIds.Count;
         state.SetVisitingParties(GetSourceKey(), detected);
-        ApplyVisitorIndicator(state.HasVisitingParty);
+        // JC | 2026-11-10 | 메인 협회 연출은 이 협회의 방문 결과만 사용합니다. 거점 방문의 합집합은 저장/로비 기능에 그대로 둡니다.
+        ApplyVisitorIndicator(indicatorMotion != null ? detected.Count > 0 : state.HasVisitingParty);
 
         if (logVisitChanges && prevCount != state.VisitingPartyIds.Count)
             Debug.Log($"[HeroUnionHQVisitDetector] VisitingParties count: {prevCount} → {state.VisitingPartyIds.Count} [{string.Join(",", detected)}]");
@@ -145,6 +210,11 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
     private void ApplyVisitorIndicator(bool hasVisitor)
     {
         if (visitorIndicator == null) return;
+        if (indicatorMotion != null)
+        {
+            indicatorMotion.SetVisible(hasVisitor);
+            return;
+        }
         if (visitorIndicator.activeSelf != hasVisitor)
             visitorIndicator.SetActive(hasVisitor);
     }

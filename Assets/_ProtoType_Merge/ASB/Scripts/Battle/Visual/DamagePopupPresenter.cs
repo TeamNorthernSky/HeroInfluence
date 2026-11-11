@@ -1,4 +1,4 @@
-﻿using ASB.Work.Battle.Core;
+using ASB.Work.Battle.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,6 +28,34 @@ public class DamagePopupPresenter : MonoBehaviour
     [SerializeField] private Sprite _reducedIcon;
     [Tooltip("기존 프리팹 참조를 보존하는 보조 아이콘입니다. 치명타와 경감은 함께 표시하지 않으므로 비활성화합니다.")]
     [SerializeField] private Image _secondaryIcon;
+
+    // JC | 2026-11-10 | 기존 숫자 프리팹의 폰트·아이콘·움직임을 읽어 카메라 공간을 예약합니다. 실제 피해/RNG는 호출하지 않습니다.
+    public bool TryGetCameraEnvelope(Transform target, int digits, float motionMargin, out Bounds bounds, Quaternion? cameraRotation = null)
+    {
+        bounds = default;
+        if (!_popupPrefab || !target) return false;
+        var label = _popupPrefab.GetComponentInChildren<TextMeshProUGUI>(true);
+        var effect = _popupPrefab.GetComponent<DamagePopupEffect>();
+        if (!label || !effect) return false;
+        float width = 0, height = 0;
+        for (char c = '0'; c <= '9'; c++)
+        {
+            var size = label.GetPreferredValues("<b>" + new string(c, Mathf.Clamp(digits, 1, 12)) + "!</b>");
+            width = Mathf.Max(width, size.x); height = Mathf.Max(height, size.y);
+        }
+        var miss = label.GetPreferredValues("MISS"); width = Mathf.Max(width, miss.x); height = Mathf.Max(height, miss.y);
+        var scale = label.transform.lossyScale;
+        float halfWidth = width * Mathf.Abs(scale.x) * .5f;
+        float halfHeight = height * Mathf.Abs(scale.y) * .5f;
+        foreach (var image in _popupPrefab.GetComponentsInChildren<Image>(true))
+        {
+            var size = image.rectTransform.rect.size; var iconScale = image.transform.lossyScale;
+            halfWidth = Mathf.Max(halfWidth, width * Mathf.Abs(scale.x) * .5f + 5f * Mathf.Abs(scale.x) + size.x * Mathf.Abs(iconScale.x) * .5f);
+            halfHeight = Mathf.Max(halfHeight, size.y * Mathf.Abs(iconScale.y) * .5f);
+        }
+        bounds = effect.CameraEnvelope(target, new Vector2(halfWidth, halfHeight), motionMargin, cameraRotation ?? Quaternion.identity);
+        return true;
+    }
 
     public void Show(BattleHitResult result)
     {

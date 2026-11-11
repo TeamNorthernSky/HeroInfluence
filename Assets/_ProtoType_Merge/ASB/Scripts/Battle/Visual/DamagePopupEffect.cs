@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,8 +24,7 @@ public class DamagePopupEffect : MonoBehaviour
     [SerializeField] private Material _iconMaterial;
     private static readonly List<DamagePopupEffect> active = new List<DamagePopupEffect>();
     private CanvasGroup group;
-    private Transform target, head, socket;
-    private SkinnedMeshRenderer[] bodies;
+    private Transform target;
     private Camera viewCamera;
     private Vector3 lastAnchor, initialScale, riseDirection;
     private float elapsed;
@@ -36,11 +35,7 @@ public class DamagePopupEffect : MonoBehaviour
     public void Follow(Transform actor)
     {
         target = actor;
-        var profile = actor.GetComponent<UnitVisualProfile>();
-        socket = profile != null ? profile.DamagePopupSocket : null;
-        var animator = actor.GetComponentInChildren<Animator>();
-        if (animator != null && animator.isHuman) head = animator.GetBoneTransform(HumanBodyBones.Head);
-        bodies = actor.GetComponentsInChildren<SkinnedMeshRenderer>();
+        cameraTargetId = actor ? actor.GetInstanceID() : 0;
         // 가장 낮은 빈 줄을 배정하므로 앞 수치가 사라져도 기존 수치는 튀지 않습니다.
         for (lane = 0; ; lane++)
         {
@@ -85,19 +80,69 @@ public class DamagePopupEffect : MonoBehaviour
         }
     }
 
-    private Vector3 Anchor()
+    // JC | 2026-11-10 | 카메라 예약 영역도 실제 숫자와 같은 머리/메시/소켓 앵커를 사용합니다. 표시 동작은 유지합니다.
+    public Vector3 PredictAnchor(Transform actor) => ResolveAnchor(actor, _headPadding, lastAnchor);
+    private Vector3 Anchor() => PredictAnchor(target);
+    private static Vector3 ResolveAnchor(Transform actor, float padding, Vector3 previous)
     {
-        if (target == null) return lastAnchor;
-        if (head != null) return head.position + Vector3.up * _headPadding;
-        // 소켓이 없는 비휴머노이드도 실제 표시 메시 상단을 기준으로 합니다.
+        if (!actor) return previous;
+        var animator = actor.GetComponentInChildren<Animator>();
+        var bone = animator && animator.isHuman ? animator.GetBoneTransform(HumanBodyBones.Head) : null;
+        if (bone) return bone.position + Vector3.up * padding;
         bool found = false; Bounds bounds = default;
-        if (bodies != null) foreach (var body in bodies)
+        foreach (var body in actor.GetComponentsInChildren<SkinnedMeshRenderer>())
         {
-            if (body == null || !body.enabled || !body.gameObject.activeInHierarchy) continue;
+            if (!body.enabled || !body.gameObject.activeInHierarchy) continue;
             if (!found) { bounds = body.bounds; found = true; } else bounds.Encapsulate(body.bounds);
         }
-        if (found) return new Vector3(bounds.center.x, bounds.max.y + _headPadding, bounds.center.z);
-        return (socket != null ? socket.position : target.position + Vector3.up * 1.5f) + Vector3.up * _headPadding;
+        if (found) return new Vector3(bounds.center.x, bounds.max.y + padding, bounds.center.z);
+        var profile = actor.GetComponent<UnitVisualProfile>();
+        var anchor = profile && profile.DamagePopupSocket ? profile.DamagePopupSocket.position : actor.position + Vector3.up * 1.5f;
+        return anchor + Vector3.up * padding;
+    }
+
+    // JC | 2026-11-10 | 빌보드 회전/상승/치명타 확대를 포함하는 보수적 월드 영역입니다. 피해 계산이나 파티클 재생은 하지 않습니다.
+    public Bounds CameraEnvelope(Transform actor, Vector2 halfSize, float motionMargin, Quaternion rotation)
+    {
+        // JC | 2026-11-10 | 빈 구체 대신 실제 빌보드 사각형과 상승 구간의 합집합을 사용해 세로 화면의 과도한 축소를 방지합니다.
+        var right = rotation * Vector3.right * (halfSize.x * Mathf.Max(1, _punchScale));
+        var up = rotation * Vector3.up * (halfSize.y * Mathf.Max(1, _punchScale) + Mathf.Max(0, _riseHeight) * .5f);
+        var extents = new Vector3(Mathf.Abs(right.x) + Mathf.Abs(up.x), Mathf.Abs(right.y) + Mathf.Abs(up.y), Mathf.Abs(right.z) + Mathf.Abs(up.z));
+        extents += Vector3.one * Mathf.Max(.02f, motionMargin);
+        return new Bounds(PredictAnchor(actor) + rotation * Vector3.up * (Mathf.Max(0, _riseHeight) * .5f), extents * 2);
+    }
+
+    // JC | 2026-11-10 | 실제 생성된 숫자의 자릿수·아이콘도 진입/복귀에서 보호합니다. targetId는 사망 후에도 생성 시 식별자를 유지합니다.
+    private int cameraTargetId;
+    public static void AppendActiveCameraPoints(int targetId, List<Vector3> points, Quaternion? desiredRotation = null)
+    {
+        foreach (var popup in active)
+        {
+            if (!popup || popup.cameraTargetId != targetId || !popup.playing) continue;
+            void Add(Vector3 world)
+            {
+                // 카메라가 복귀 회전한 뒤 빌보드가 갱신될 자세를 미리 평가합니다. 상승 잔량도 포함합니다.
+                var rotation = desiredRotation ?? popup.transform.rotation;
+                float scaleRatio = Mathf.Abs(popup.initialScale.x) > .00001f ? Mathf.Abs(popup.transform.localScale.x / popup.initialScale.x) : 1;
+                float expansion = popup.critical ? Mathf.Max(1, popup._punchScale / Mathf.Max(.00001f, scaleRatio)) : 1;
+                var point = popup.transform.position + rotation * (Quaternion.Inverse(popup.transform.rotation) * (world - popup.transform.position)) * expansion;
+                var remaining = popup.lastAnchor + popup.riseDirection * (popup._riseHeight + popup.lane * popup._stackSpacing) - popup.transform.position;
+                points.Add(point); points.Add(point + remaining);
+            }
+            foreach (var label in popup.GetComponentsInChildren<TMPro.TMP_Text>())
+            {
+                label.ForceMeshUpdate();
+                var bounds = label.textBounds;
+                for (int i = 0; i < 8; i++) Add(label.transform.TransformPoint(JC.BattleTesting.JcBlackBulletCameraFraming.Corner(bounds, i)));
+            }
+            var corners = new Vector3[4];
+            foreach (var image in popup.GetComponentsInChildren<Image>())
+            {
+                if (!image.enabled) continue;
+                image.rectTransform.GetWorldCorners(corners);
+                foreach (var corner in corners) Add(corner);
+            }
+        }
     }
 
     private void LateUpdate()

@@ -51,11 +51,18 @@ public class TurnOrderUI : MonoBehaviour
         return null;
     }
 
+    // JC | 2026-11-10 | 진형·반복 설정만 바뀔 때 라운드/행동 큐를 재시작하지 않고 표시만 갱신합니다.
+    public void RefreshSimulationPreview()
+    {
+        if (CombatContext.Instance != null && CombatContext.Instance.IsSimulation) Refresh();
+    }
+
     private void Refresh()
     {
         if (flowManager == null) return;
 
-        List<BattleCharactor> order = flowManager.GetPredictedTurnOrder();
+        // JC | 2026-11-10 | 단일 반복턴에서도 현재 턴이 미래 슬롯에 다시 섞이지 않도록 표시 개수를 전달합니다.
+        List<BattleCharactor> order = flowManager.GetPredictedTurnOrder(maxDisplayCount);
         IReadOnlyList<TurnSlotUI> displaySlots = GetDisplaySlots();
         int count = Mathf.Max(0, maxDisplayCount);
 

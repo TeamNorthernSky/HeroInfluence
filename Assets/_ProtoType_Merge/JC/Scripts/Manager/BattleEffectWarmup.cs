@@ -6,14 +6,13 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.VFX;
 
-/// <summary>Player-only, process-lifetime visual warmup. Never invokes a skill or gameplay prefab.</summary>
+/// <summary>JC | 2026-11-11 | 에디터·빌드 공통 시각 준비입니다. 게임 로직 없이 실행 세션 동안 준비 결과를 재사용합니다.</summary>
 public sealed class BattleEffectWarmup : MonoBehaviour
 {
     public static bool IsPreparing { get; private set; }
 
     public static IEnumerator PrepareParty()
     {
-#if !UNITY_EDITOR
         var skills = new HashSet<int>();
         var repository = PersistentUnitRepository.Instance;
         var catalog = DHCsvTemplateCatalog.Instance;
@@ -33,14 +32,10 @@ public sealed class BattleEffectWarmup : MonoBehaviour
                         foreach (var skill in catalog.GetSkillsByClassIndex(classIndex))
                             if (skill != null) skills.Add(skill.skillIndex);
         yield return GetInstance().PrepareSafely(skills);
-#else
-        yield break;
-#endif
     }
 
     public static IEnumerator PrepareBattle(IReadOnlyList<BattleCharactor> units)
     {
-#if !UNITY_EDITOR
         var skills = new HashSet<int>();
         foreach (var unit in units)
         {
@@ -52,12 +47,8 @@ public sealed class BattleEffectWarmup : MonoBehaviour
                 if (skill != null) skills.Add(skill.skillIndex);
         }
         yield return GetInstance().PrepareSafely(skills);
-#else
-        yield break;
-#endif
     }
 
-#if !UNITY_EDITOR
     private static BattleEffectWarmup instance;
     private BattleEffectWarmupData data;
     // Strong asset references intentionally survive scene changes and new/save-game loads.
@@ -65,10 +56,18 @@ public sealed class BattleEffectWarmup : MonoBehaviour
     private readonly Dictionary<GameObject, BattleEffectWarmupData.Recipe> recipes =
         new Dictionary<GameObject, BattleEffectWarmupData.Recipe>();
 
+    // JC | 2026-11-11 | 도메인 리로드를 끈 에디터에서도 이전 Play의 준비 상태를 새 실행으로 넘기지 않습니다.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetSession()
+    {
+        instance = null;
+        IsPreparing = false;
+    }
+
     private static BattleEffectWarmup GetInstance()
     {
         if (instance != null) return instance;
-        var go = new GameObject("Battle effect warmup (Player only)");
+        var go = new GameObject("Battle effect warmup");
         DontDestroyOnLoad(go);
         instance = go.AddComponent<BattleEffectWarmup>();
         instance.data = Resources.Load<BattleEffectWarmupData>("BattleEffectWarmupData");
@@ -77,7 +76,7 @@ public sealed class BattleEffectWarmup : MonoBehaviour
             foreach (var recipe in instance.data.Recipes)
                 if (recipe.Source != null) instance.recipes[recipe.Source] = recipe;
         }
-        else Debug.LogError("[VFX Warmup] Build-time warmup data is missing.");
+        else Debug.LogError("[VFX Warmup] 사전 준비 데이터가 없습니다. Play/빌드 전 데이터 생성 오류를 확인하세요.");
         return instance;
     }
 
@@ -272,5 +271,4 @@ public sealed class BattleEffectWarmup : MonoBehaviour
             if (visual != null) { visual.SetActive(false); Destroy(visual); }
         }
     }
-#endif
 }

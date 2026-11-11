@@ -93,6 +93,9 @@ namespace JC.BuildingColors
             if(!definition){Release();return;}
             if(definition.initial==null||definition.initial.Length==0||definition.initial.Length>BgColorDefinition.Capacity)return;
             EnsureParts();
+            // JC | 2026-11-10 | 적용 대상이 없으면 색상 출력과 처리 재질을 보유하지 않습니다.
+            // 조정값과 기존 재탐색 주기는 유지하며, 대상이 다시 생기면 무효화된 해시로 현재 색상을 재생성합니다.
+            if(targets.Count==0){Release();Status=null;return;}
             if(showOriginal)nightMaterials.Dispose();
             if(Application.isPlaying)foreach(var t in targets)if(!showOriginal)nightMaterials.Bind(t.renderer,t.slot,definition.bindings[t.binding].maskParts);
             int hash=Hash();if(hash==appliedHash)return;

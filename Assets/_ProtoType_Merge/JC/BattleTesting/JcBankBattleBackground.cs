@@ -22,9 +22,7 @@ namespace JC.BattleTesting
         // JC | 2026-11-06 | 반 칸 이동한 은행 진형에 맞춘 기본 A뷰의 수평 이동량입니다. 공용 포즈·원근감 계산은 유지합니다.
         [InspectorName("기본 카메라 X 이동량"), Tooltip("공통 A뷰의 원근감 계산 후 월드 X에 더합니다. 은행 본게임·BankTestScene에서만 적용하며 Y/Z·회전·시야각은 유지합니다.")]
         public float viewAHorizontalOffset;
-        // JC | 2026-11-06 | 4개 스킬의 직접 편집 구도를 본게임과 테스트에서 공유합니다.
-        [Tooltip("은행 블랙불릿 1~4번 스킬의 개별 카메라 프로필입니다. JC/은행/블랙불릿 스킬 카메라 편집 메뉴에서 구도를 저장합니다.")]
-        public JcBankSkillCameraProfile skillCameraProfile;
+        // JC | 2026-11-11 | 스킬 구도 연결은 은행 환경에서 분리하여 블랙불릿 공통 프로필이 소유합니다.
         [Tooltip("은행 전투가 있는 이벤트 구역 번호입니다.")]
         public int zoneId = 1;
         [Tooltip("은행 점령전의 전투 키입니다. 재도전도 같은 키로 판별합니다.")]

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Experimental.Rendering;
 
 namespace JC.Indicators
 {
@@ -31,6 +32,8 @@ namespace JC.Indicators
         private static readonly List<JcTriggerAreaIndicator> controllers = new List<JcTriggerAreaIndicator>();
         private static readonly Dictionary<int, Buffer> buffers = new Dictionary<int, Buffer>();
         private static readonly List<int> staleCameras = new List<int>();
+        // JC | 2026-11-10 | 깊이 제출에서만 화면 밖 테두리를 제외하며 표시 순서 지정은 전체 목록을 유지합니다.
+        private static readonly Plane[] borderFrustum = new Plane[6];
         private static MaterialPropertyBlock properties;
         private static readonly int textureId = Shader.PropertyToID("_JcTriggerBorderDepth");
         private static readonly int activeId = Shader.PropertyToID("_JcTriggerDepthActive");
@@ -131,12 +134,22 @@ namespace JC.Indicators
                 var singleFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RFloat) ? RenderTextureFormat.RFloat : format;
                 buffer.meshOwners = CreateMarkerBuffer("JC Event Mesh Owners", width, height, singleFormat);
                 buffer.otherMeshes = CreateMarkerBuffer("JC Other Owner Depth", width, height, singleFormat);
-                buffer.markerCoverage = CreateMarkerBuffer("JC Visible Event Marker", width, height, RenderTextureFormat.ARGB32);
+                // JC | 2026-11-10 | 소비자는 R만 읽습니다. 기존 8비트 정밀도·출력 알파 합성을 유지하고 중복 GBA 저장만 생략합니다.
+                bool markerR8 = SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Render)
+                    && SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Blend)
+                    && SystemInfo.IsFormatSupported(GraphicsFormat.R8_UNorm, FormatUsage.Sample);
+                buffer.markerCoverage = CreateMarkerBuffer("JC Visible Event Marker", width, height,
+                    markerR8 ? RenderTextureFormat.R8 : RenderTextureFormat.ARGB32);
             }
             try
             {
                 borders.Clear();
                 foreach (var controller in controllers) if (controller) controller.CollectBorders(borders, camera);
+                GeometryUtility.CalculateFrustumPlanes(camera, borderFrustum);
+                // JC | 2026-11-10 | 컨트롤러 전체를 확인합니다. 마커가 없어도 보호 G와 모든 버퍼 초기화는 유지합니다.
+                bool needsMarkerDepth = false;
+                foreach (var controller in controllers)
+                    if (controller && controller.HasMarkerCandidate(camera)) { needsMarkerDepth = true; break; }
                 command.SetGlobalFloat(activeId, 0);
                 command.SetGlobalMatrix("_JcTriggerDepthVP", projection * view);
                 command.SetGlobalMatrix("_JcTriggerDepthView", view);
@@ -155,6 +168,8 @@ namespace JC.Indicators
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
                 foreach (var controller in controllers) if (controller) controller.DrawOccluders(command, camera, properties);
                 command.SetGlobalTexture("_JcTriggerOccluderDepth", buffer.occluders);
+                // JC | 2026-11-10 | 세 메시 패스 직전에 최신 속성을 한 번 읽습니다. 패스 순서와 RT 의존성은 유지합니다.
+                foreach (var controller in controllers) if (controller) controller.PrepareWorldMeshes(camera, needsMarkerDepth);
                 command.SetRenderTarget(buffer.meshes);
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
                 foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshDepth");
@@ -163,19 +178,24 @@ namespace JC.Indicators
                 // 자기 이벤트가 앞에 있어도 그 뒤/아이콘 앞의 다른 건물을 놓치지 않습니다.
                 command.SetRenderTarget(buffer.meshOwners);
                 command.ClearRenderTarget(false, true, new Color(float.MaxValue, float.MaxValue, 0, 0));
-                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshOwner");
+                if (needsMarkerDepth) foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshOwner");
                 command.SetGlobalTexture("_JcTriggerMeshOwners", buffer.meshOwners);
                 command.SetRenderTarget(buffer.otherMeshes);
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 0, 0));
-                foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "OtherOwnerDepth");
+                if (needsMarkerDepth) foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "OtherOwnerDepth");
                 command.SetGlobalTexture("_JcTriggerOtherMeshDepth", buffer.otherMeshes);
                 command.SetGlobalFloat(activeId, 1);
                 command.SetRenderTarget(buffer.markerCoverage);
                 command.ClearRenderTarget(false, true, Color.clear);
-                foreach (var controller in controllers) if (controller) controller.DrawMarkerCoverage(command, camera);
+                if (needsMarkerDepth) foreach (var controller in controllers) if (controller) controller.DrawMarkerCoverage(command, camera);
                 command.SetGlobalTexture("_JcEventMarkerCoverage", buffer.markerCoverage);
             }
-            finally { borders.Clear(); }
+            finally
+            {
+                borders.Clear();
+                // JC | 2026-11-10 | 예외가 나도 준비 목록의 수명을 이번 카메라 처리 안으로 제한합니다.
+                foreach (var controller in controllers) if (controller) controller.ClearPreparedWorldMeshes();
+            }
         }
         // JC | 2026-11-09 | 카메라/해상도 변경과 해제 시 소유권 및 느낌표 마스크의 수명을 함께 정리합니다.
         private static RenderTexture CreateMarkerBuffer(string name, int width, int height, RenderTextureFormat format)
@@ -202,6 +222,8 @@ namespace JC.Indicators
         {
             foreach (var border in borders)
             {
+                // JC | 2026-11-10 | 정점 변형 없는 깊이 패스이므로 전체 메시 bounds가 화면 밖일 때만 생략합니다.
+                if (!GeometryUtility.TestPlanesAABB(borderFrustum, border.renderer.bounds)) continue;
                 int pass = border.material.FindPass(passName);
                 var mesh = border.renderer.GetComponent<MeshFilter>().sharedMesh;
                 if (pass < 0 || !mesh) continue;

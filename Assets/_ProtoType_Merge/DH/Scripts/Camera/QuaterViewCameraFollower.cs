@@ -101,7 +101,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
     public bool IsEventFocusMoving => eventFocusMoving;
     public bool IsTemporaryFocusActive => temporaryFocusActive;
     public event System.Action<bool> EventZoomChanged;
-    public bool IsManualNavigationLocked => externalInputLocked || IsFollowTargetPartyMoving();
+    // JC | 2026-11-10 | DH 수동 탐색만 전환 잠금에 연결하고 자동 추적·초기 카메라 배치는 유지합니다.
+    public bool IsManualNavigationLocked => SceneFadeController.IsInputBlocked || externalInputLocked || IsFollowTargetPartyMoving();
 
     public void SetFollowTarget(Transform target)
     {
@@ -948,7 +949,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private bool IsCameraInputBlocked()
     {
         // 화면 밖은 경계 스크롤에 허용하되, 게임 클릭 게이트와는 구분한다.
-        if (externalInputLocked || !JcPointerInput.CanControl || ModalManager.HasAny || WorldInputGate.IsTurnResolving)
+        // JC | 2026-11-10 | 페이드 중 가장자리/키보드 이동·줌을 막고 Update의 기존 속도 초기화를 사용합니다.
+        if (SceneFadeController.IsInputBlocked || externalInputLocked || !JcPointerInput.CanControl || ModalManager.HasAny || WorldInputGate.IsTurnResolving)
             return true;
 
         return false;
