@@ -95,7 +95,9 @@ public sealed class JcBattleHoverLink : MonoBehaviour
         return relative.sqrMagnitude <= 1f;
     }
 
-    public void Show(BattleCharactor target, bool overUI, TurnSlotUI sourceSlot, Camera camera)
+    // JC | 2026-11-12 | 선택 중에는 배지만 연결합니다. 기존 공격 선택의 모델·그리드 강조에 덧그리지 않습니다.
+    // JC | 2026-11-12 | 정보창에서 선택한 화살표 스타일을 모든 일치 턴 슬롯에 전달합니다.
+    public void Show(BattleCharactor target, bool overUI, TurnSlotUI sourceSlot, Camera camera, bool badgesOnly = false, bool useLegacyArrowStyle = false)
     {
         JcBattleHoverOutlineFeature.Clear(this);
         if (target == null || target.IsPlayer || target.IsDead || !target.gameObject.activeInHierarchy) { Clear(); return; }
@@ -106,7 +108,7 @@ public sealed class JcBattleHoverLink : MonoBehaviour
         float progress = Mathf.Repeat((Time.unscaledTime - hoverStart) / Mathf.Max(.2f, convergenceSeconds), 1f);
         float convergence = 1f - Mathf.SmoothStep(0, 1, progress);
         float glowAlpha = Mathf.Sin(progress * Mathf.PI);
-        bool highlightModel = !overUI || (sourceSlot != null && sourceSlot.DisplayedUnit == target);
+        bool highlightModel = !badgesOnly && (!overUI || (sourceSlot != null && sourceSlot.DisplayedUnit == target));
         SetGround(highlightModel ? target : null);
         float pulse = 0.5f + 0.5f * Mathf.Cos(Time.unscaledTime * Mathf.PI * 2f / Mathf.Max(0.2f, pulseSeconds));
         var color = outlineColor;
@@ -118,10 +120,10 @@ public sealed class JcBattleHoverLink : MonoBehaviour
         foreach (var pair in rings)
         {
             if (pair.Value == null) continue;
-            if (!overUI && pair.Key != null && pair.Key.isActiveAndEnabled && pair.Key.DisplayedUnit == target)
+            if ((!overUI || badgesOnly) && pair.Key != null && pair.Key.isActiveAndEnabled && pair.Key.DisplayedUnit == target)
                 // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
                 pair.Value.Show(badgeColor, badgeWidth, badgePhase,
-                    JC.Tutorial.JcTutorialBattleGuide.HighlightsWorldEnemyBadge(pair.Key));
+                    JC.Tutorial.JcTutorialBattleGuide.HighlightsWorldEnemyBadge(pair.Key), useLegacyArrowStyle);
             else pair.Value.enabled = false;
         }
         if (!highlightModel) return;

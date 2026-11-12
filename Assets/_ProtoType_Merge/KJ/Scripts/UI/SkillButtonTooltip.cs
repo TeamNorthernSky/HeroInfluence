@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 public enum SkillButtonType { ClassSkill, WeaponSkill }
@@ -19,8 +19,6 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     private BattleCharactor currentUnit;
     private bool isHovering;
-    // JC | 2026-11-06: 고정 설명창을 사용하지 않는 기존 호버 툴팁도 IP 구간 변경을 반영합니다.
-    private int displayedIpBand = -1;
 
     private void Awake()
     {
@@ -61,14 +59,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
     public void OnPointerEnter(PointerEventData eventData) { isHovering = true; ShowTip(); }
     public void OnPointerExit(PointerEventData eventData) { isHovering = false; HideTip(); }
 
-    // JC | 2026-11-06: 호버를 유지해도 현재 시전자의 IP 문구를 갱신하며 같은 구간에서는 다시 열지 않습니다.
-    private void LateUpdate()
-    {
-        if (fixedDescription == null && isHovering && currentUnit != null &&
-            displayedIpBand != ClassSkillTooltipText.GetBattleIpBand(currentUnit.CurrentInfluence))
-            ShowTip();
-    }
-
+    // JC | 2026-11-12 | 전투 계수는 IP 구간과 무관하므로 기존 JC의 IP 감시 갱신을 제거합니다.
     private void ShowTip()
     {
         var button = GetComponent<UnityEngine.UI.Button>();
@@ -81,8 +72,6 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
         var tip = SkillTooltip.Instance;
         if (tip == null || currentUnit == null) return;
 
-        // JC | 2026-11-06: 툴팁 본문을 만든 시점의 IP 구간을 기억합니다.
-        displayedIpBand = ClassSkillTooltipText.GetBattleIpBand(currentUnit.CurrentInfluence);
 
         RectTransform target = transform as RectTransform;
         var gm = GameManager.Instance;
@@ -90,7 +79,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
 
         if (skillType == SkillButtonType.ClassSkill)
         {
-            // JC | 2026-11-06: 아이콘/이름/레벨은 유지하고 본문만 전투 전용 확정 문구로 표시합니다.
+            // JC | 2026-11-12 | KJ의 아이콘/이름/레벨 표시를 유지하고 실제 적용 계수로 본문만 구성합니다.
             currentUnit.ResolveSelectedSkill();
             SkillData sd = currentUnit.SelectedSkillData;
             if (sd == null) return;
@@ -100,7 +89,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
             tip.ShowInfo(
                 Sprites.Icon.ClassSkill(sd.skillIndex, lv),
                 $"{sd.skillName} Lv.{lv}",
-                ClassSkillTooltipText.BuildBattleDesc(sd.skillIndex, false, currentUnit.CurrentInfluence),
+                ClassSkillTooltipText.BuildBattleDesc(sd),
                 target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
         }
         else
@@ -117,7 +106,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
             tip.ShowInfo(
                 Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl),
                 $"{wd.WeaponSkillName} Lv.{wl}",
-                ClassSkillTooltipText.BuildBattleDesc(wd.WeaponSkillIndex, true, currentUnit.CurrentInfluence),
+                ClassSkillTooltipText.BuildBattleDesc(wd.ToSkillData(), true),
                 target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
         }
     }

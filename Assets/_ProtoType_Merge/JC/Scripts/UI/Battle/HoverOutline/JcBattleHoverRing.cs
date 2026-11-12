@@ -10,11 +10,12 @@ public sealed class JcBattleHoverRing : MaskableGraphic
     private Image badgeCircle;
     // JC | 2026-11-04 | 턴 배지 외곽을 기준으로 튜토리얼 안내와 강조 윤곽을 정렬합니다.
     private bool guideRing;
-    public const float ArrowClearancePixels = 80f;
+    // JC | 2026-11-12 | 확대된 화살표와 추가 8px 이격까지 툴팁 배치의 회피 영역에 포함합니다.
+    public const float ArrowClearancePixels = 128f;
 
     public void AlignToBadge(Image circle) { badgeCircle = circle; SetVerticesDirty(); }
 
-    public void Show(Color tint, float thickness, float progress = 0, bool useGuideRing = false)
+    public void Show(Color tint, float thickness, float progress = 0, bool useGuideRing = false, bool useLegacyArrowStyle = false)
     {
         if (guideRing != useGuideRing) { guideRing = useGuideRing; SetVerticesDirty(); }
         if (arrow == null)
@@ -31,7 +32,11 @@ public sealed class JcBattleHoverRing : MaskableGraphic
         // Graphic.color는 메시를 재생성하므로 렌더러 색상만 변경합니다.
         canvasRenderer.SetColor(tint);
         arrow.enabled = true;
+        // JC | 2026-11-12 | 배지 점멸은 유지하고 화살표의 표현 스타일만 전환합니다.
+        arrow.SetLegacyStyle(useLegacyArrowStyle);
         arrow.Move(progress);
+        // JC | 2026-11-12 | 화살표 테두리와 턴 배지의 적백 점멸을 같은 색·위상으로 맞춥니다.
+        arrow.SetOutlineColor(tint);
     }
 
     protected override void OnDisable()
@@ -78,7 +83,7 @@ public sealed class JcBattleHoverRing : MaskableGraphic
         // 레이아웃이 갱신될 때만 화살표 기준점을 계산합니다. 원의 형상에는 위상을 사용하지 않습니다.
         float referenceLeft = guideRing ? center.x - outer.x : center.x - inner.x - pixel.x * 6f;
         if (arrow != null)
-            arrow.Configure(new Vector2(referenceLeft - pixel.x * 27f, center.y), pixel);
+            arrow.Configure(new Vector2(referenceLeft - pixel.x * 35f, center.y), pixel);
     }
 
     private static void Band(VertexHelper vh, Vector2 center, Vector2 inner, Vector2 outer, Color innerColor, Color outerColor)

@@ -25,8 +25,6 @@ public class JcSkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private BattleCharactor currentUnit;
     private bool isHovering;
-    // JC | 2026-11-06: 테스트 호버 툴팁도 현재 IP 구간의 변경 여부를 기억합니다.
-    private int displayedIpBand = -1;
 
     // 원본 함수 대응: SkillButtonTooltip.Awake (Assets/_ProtoType_Merge/KJ/Scripts/UI/SkillButtonTooltip.cs)
 
@@ -75,16 +73,7 @@ public class JcSkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointe
     public void OnPointerEnter(PointerEventData eventData) { isHovering = true; ShowTip(); }
     public void OnPointerExit(PointerEventData eventData) { isHovering = false; HideTip(); }
 
-    // JC | 2026-11-06: 본게임과 동일하게 호버 유지 중 IP 구간이 바뀌면 설명을 갱신합니다.
-    private void LateUpdate()
-    {
-        if (fixedDescription == null && isHovering && currentUnit != null &&
-            displayedIpBand != ClassSkillTooltipText.GetBattleIpBand(currentUnit.CurrentInfluence))
-            ShowTip();
-    }
-
-    // 원본 함수 대응: SkillButtonTooltip.ShowTip (Assets/_ProtoType_Merge/KJ/Scripts/UI/SkillButtonTooltip.cs)
-
+    // JC | 2026-11-12 | 전투 계수는 IP 구간과 무관하므로 기존 JC의 IP 감시 갱신을 제거합니다.
     private void ShowTip()
     {
         var button = GetComponent<UnityEngine.UI.Button>();
@@ -97,16 +86,13 @@ public class JcSkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointe
         var tip = SkillTooltip.Instance;
         if (tip == null || currentUnit == null) return;
 
-        // JC | 2026-11-06: 설명을 생성하는 현재 IP 구간을 기록합니다.
-        displayedIpBand = ClassSkillTooltipText.GetBattleIpBand(currentUnit.CurrentInfluence);
 
         RectTransform target = transform as RectTransform;
-        // JC | 2026-11-06: 테스트에서 선택한 실제 스킬 ID로 본게임과 같은 전투 설명을 표시합니다.
+        // JC | 2026-11-12 | 테스트에서 조정된 실제 계수로 본게임과 같은 퍼센트 설명을 표시합니다.
         currentUnit.ResolveSelectedSkill();
         SkillData skill = skillType == SkillButtonType.ClassSkill ? currentUnit.SelectedSkillData : currentUnit.EquippedWeaponData?.ToSkillData();
         if (skill == null) return;
-        string body = ClassSkillTooltipText.BuildBattleDesc(skill.skillIndex,
-            skillType != SkillButtonType.ClassSkill, currentUnit.CurrentInfluence);
+        string body = ClassSkillTooltipText.BuildBattleDesc(skill, skillType != SkillButtonType.ClassSkill);
         var icon = skillType == SkillButtonType.ClassSkill ? Sprites.Icon.ClassSkill(skill.skillIndex, 1) : Sprites.Icon.WeaponSkill(skill.skillIndex, 1);
         tip.ShowInfo(icon, skill.skillName, body, target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
     }
