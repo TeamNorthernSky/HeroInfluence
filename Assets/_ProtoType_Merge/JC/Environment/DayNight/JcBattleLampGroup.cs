@@ -9,6 +9,37 @@ namespace JC.Environment
     // JC | 2026-11-04 | 시간대별 전장 조명을 조절하고 가로등의 중심광과 주변광을 배치에 맞게 적용합니다.
     public sealed class JcBattleLampGroup : MonoBehaviour
     {
+        // JC | 2026-11-12 | 런타임 생성 외형을 전용 테스트씬에 저장할 때 광원/렌즈 연결만 직렬화합니다. 계산과 시간대 프로필은 공통입니다.
+        [SerializeField, HideInInspector] Light[] authoredCores = System.Array.Empty<Light>();
+        [SerializeField, HideInInspector] Light[] authoredSpills = System.Array.Empty<Light>();
+        [SerializeField, HideInInspector] Renderer[] authoredLensRenderers = System.Array.Empty<Renderer>();
+        [SerializeField, HideInInspector] int[] authoredLensSlots = System.Array.Empty<int>();
+        public void CaptureTestStageReferences()
+        {
+            authoredCores = new Light[lamps.Count]; authoredSpills = new Light[lamps.Count];
+            for (int i=0;i<lamps.Count;i++) { authoredCores[i]=lamps[i].core; authoredSpills[i]=lamps[i].spill; }
+            var renderers = new List<Renderer>(); var slots = new List<int>();
+            foreach (var renderer in GetComponentsInChildren<MeshRenderer>(true))
+            {
+                var materials = renderer.sharedMaterials;
+                for (int i=0;i<materials.Length;i++) if (lenses.ContainsValue(materials[i])) { renderers.Add(renderer); slots.Add(i); }
+            }
+            authoredLensRenderers = renderers.ToArray(); authoredLensSlots = slots.ToArray();
+        }
+        void Awake()
+        {
+            for (int i=0;i<authoredCores.Length;i++) if (authoredCores[i] && i<authoredSpills.Length && authoredSpills[i])
+                lamps.Add((authoredCores[i], authoredSpills[i]));
+            for (int i=0;i<authoredLensRenderers.Length;i++)
+            {
+                var renderer=authoredLensRenderers[i]; if (!renderer || i>=authoredLensSlots.Length) continue;
+                int slot=authoredLensSlots[i]; var materials=renderer.sharedMaterials;
+                if (slot<0 || slot>=materials.Length || !materials[slot]) continue;
+                var original=materials[slot];
+                if (!lenses.TryGetValue(original,out var copy)) { copy=new Material(original){hideFlags=HideFlags.DontSave}; lenses.Add(original,copy); }
+                materials[slot]=copy; renderer.sharedMaterials=materials;
+            }
+        }
         readonly List<(Light core, Light spill)> lamps = new List<(Light, Light)>();
         JcBattleLampSettings lastSettings;
         int lastSegment = -1, lastRevision = -1;

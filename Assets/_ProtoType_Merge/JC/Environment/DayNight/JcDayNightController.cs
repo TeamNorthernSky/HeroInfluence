@@ -188,7 +188,8 @@ namespace JC.Environment {
    c.ApplyHour(hours);return c;
   }
   public static JcDayNightController EnsureBattle(Scene scene,double hours,JcDayNightProfile settings,bool isIndoor){
-   if(scene.name!="TmpBattleScene" && scene.name!="TutorialBattleScene")return null;
+   // JC | 2026-11-12 | 전용 JC 테스트씬도 본게임 시간대 조명 적용기를 공유합니다. 임의 탐사씬에는 설치하지 않습니다.
+   if(scene.name!="TmpBattleScene" && scene.name!="TutorialBattleScene" && !JC.BattleTesting.JcStandaloneBattleTest.IsTestScene(scene))return null;
    foreach(var root in scene.GetRootGameObjects()){
     var found=root.GetComponentInChildren<JcDayNightController>(true);if(found!=null){
      if(settings!=null){found.profile=settings;found.battle=true;found.indoor=isIndoor;found.shownHours=hours;found.ApplyHour(hours);}

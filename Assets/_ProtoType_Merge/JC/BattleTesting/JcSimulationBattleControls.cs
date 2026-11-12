@@ -36,7 +36,8 @@ namespace JC.BattleTesting
         readonly Color accent = new Color(.65f, .48f, .08f, 1);
 
         public static bool IsSimulationSession => CombatContext.Instance && CombatContext.Instance.IsSimulation &&
-            CombatContext.Instance.ReturnSceneName == SimulationBattleLauncher.ReturnSceneName;
+            (CombatContext.Instance.ReturnSceneName == SimulationBattleLauncher.ReturnSceneName ||
+             JcStandaloneBattleTest.IsTestScene(SceneManager.GetActiveScene()));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
@@ -45,14 +46,20 @@ namespace JC.BattleTesting
             SceneManager.sceneLoaded += OnSceneLoaded;
             Attach();
         }
-        static void OnSceneLoaded(Scene scene, LoadSceneMode mode) => Attach();
+        static void OnSceneLoaded(Scene scene, LoadSceneMode mode) => AttachToScene(scene);
         static void Attach()
         {
             if (!IsSimulationSession) return;
-            foreach (var manager in FindObjectsByType<BattleFlowManager>(FindObjectsSortMode.None))
-                if (manager.gameObject.scene.name == SimulationBattleLauncher.BattleSceneName &&
-                    !manager.GetComponent<JcSimulationBattleControls>())
-                    manager.gameObject.AddComponent<JcSimulationBattleControls>();
+            // JC | 2026-11-12 | 기존 시뮬레이션과 명시된 JC 전용 테스트씬에서만 공통 편집기를 설치합니다.
+            // JC | 2026-11-12 | 페이드의 추가 로딩 중 아직 활성 씬이 바뀌지 않은 기존 시뮬레이션도 지원합니다.
+            for (int i = 0; i < SceneManager.sceneCount; i++) AttachToScene(SceneManager.GetSceneAt(i));
+        }
+        public static void AttachToScene(Scene scene)
+        {
+            if (!IsSimulationSession || (scene.name != SimulationBattleLauncher.BattleSceneName && !JcStandaloneBattleTest.IsTestScene(scene))) return;
+            foreach (var root in scene.GetRootGameObjects())
+            foreach (var manager in root.GetComponentsInChildren<BattleFlowManager>())
+                if (!manager.GetComponent<JcSimulationBattleControls>()) manager.gameObject.AddComponent<JcSimulationBattleControls>();
         }
 
         void Start()

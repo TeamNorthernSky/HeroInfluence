@@ -49,6 +49,15 @@ public class BattleSceneManager : MonoBehaviour
     [SerializeField] private float fadeOutDuration = 1f;
     [SerializeField] private float fadeInDuration = 0f;
 
+    // JC | 2026-11-12 | 전용 테스트 진입에서만 안내 키와 결과 후 잔류를 설정합니다. 실제 전투/저장 규칙은 유지합니다.
+    private bool standaloneSimulation;
+    public void ConfigureStandaloneSimulation(string tutorialKey)
+    {
+        standaloneSimulation = true;
+        tutorialBattleKeyOverride = tutorialKey ?? string.Empty;
+        tutorialZoneIdOverride = -1;
+    }
+
     private Coroutine returnSceneCoroutine;
 
     private BattleCharactor playerBattleCharactor;
@@ -190,6 +199,12 @@ public class BattleSceneManager : MonoBehaviour
         string contextReturnScene = (isSimulation || isTutorial) && combatContext != null
             ? combatContext.ReturnSceneName
             : string.Empty;
+        // JC | 2026-11-12 | 전용 모의전은 결과 확인 후 제자리에서 재시작을 기다립니다. 게임/튜토리얼 복귀에는 영향이 없습니다.
+        if (isSimulation && standaloneSimulation)
+        {
+            returnSceneCoroutine = null;
+            yield break;
+        }
         if (isSimulation && combatContext != null)
             combatContext.ClearSimulation();
 

@@ -25,7 +25,8 @@ namespace JC.BattleTesting
         static bool IsFixed(GridCellRef cell, BattleCharactor occupant, IReadOnlyList<BattleCharactor> participants)
         {
             // JC | 2026-11-10 | 점유 해제 후 남아 있는 시체·인질·비참가자도 빈 칸으로 오인하지 않습니다.
-            return !cell.gameObject.activeInHierarchy || (occupant && (occupant.IsDead || !participants.Contains(occupant))) ||
+            // JC | 2026-11-12 | 보스 전용 씬의 본체는 페이즈/무대 기준 위치를 유지합니다. 일반 적과 아군은 기존 교환을 사용합니다.
+            return (occupant && occupant.GetComponent<BossController>() && JcStandaloneBattleTest.IsTestScene(cell.gameObject.scene)) || !cell.gameObject.activeInHierarchy || (occupant && (occupant.IsDead || !participants.Contains(occupant))) ||
                 cell.GetComponentInChildren<HostageBattleActor>(true) != null ||
                 cell.GetComponentsInChildren<BattleCharactor>(true).Any(u => u != occupant);
         }

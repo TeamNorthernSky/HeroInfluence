@@ -15,6 +15,9 @@ namespace JC.BattleUI
         public BattlePresentationController presentation;
         [InspectorName("강제 미리보기"), Tooltip("스킬 밖에서도 연결된 게임 카메라로 비교합니다. 점령·은행·보스 제외는 유지합니다. 프로필에는 저장하지 않습니다.")]
         public bool forcePreview;
+        // JC | 2026-11-12 | 실내도 비교할 수 있지만 전용 테스트씬의 강제 미리보기에서만 허용합니다. 실제 전투/프로필에는 저장하지 않습니다.
+        [InspectorName("테스트 실내 DOF 비교"), Tooltip("JC 전용 테스트씬에서 강제 미리보기와 함께 켜면 은행·보스의 블러를 비교합니다. 본게임 적용 범위는 유지합니다.")]
+        public bool indoorTestPreview;
         // JC | 2026-11-11 | 초안만 유지하며 개체/이펙트 Renderer 목록과 카메라 기준 깊이 캐시는 제거합니다.
         JcSkillRearBlurProfile draft, source;
         BattleCharactor caster;
@@ -59,7 +62,9 @@ namespace JC.BattleUI
         {
             get
             {
-                if (!presentation || presentation.BankBackground || presentation.BossCamera) return false;
+                if (!presentation) return false;
+                if (forcePreview && indoorTestPreview && JC.BattleTesting.JcStandaloneBattleTest.IsTestScene(gameObject.scene)) return true;
+                if (presentation.BankBackground || presentation.BossCamera) return false;
                 var context = CombatContext.Instance;
                 if (!context) return true;
                 if (context.IsTutorial && context.TutorialBattleKey == "TUT_02") return false;
