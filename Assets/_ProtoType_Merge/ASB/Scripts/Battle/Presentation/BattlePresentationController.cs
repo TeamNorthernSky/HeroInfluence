@@ -91,8 +91,13 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool panelPositionInitialized;
     private bool panelRequestedVisible;
     private bool entryHudPresented;
+    // JC | 2026-11-12 | 치트/일반 전투의 공통 종료 이후 좌측 HUD 재진입을 막습니다. 카메라·보상 진행은 유지합니다.
+    private bool skillPanelBattleEnded;
+    private bool SkillPanelBattleEnded => skillPanelBattleEnded || (flow != null && flow.IsBattleEnded);
     public void PrepareEntryHud(bool showPlayerPanel)
     {
+        // JC | 2026-11-12 | 늦게 끝난 첫 진입 연출도 종료된 HUD를 다시 열지 않습니다.
+        if (SkillPanelBattleEnded) { HideSkillPanelOnBattleEnd(); return; }
         if (panelMotion != null) StopCoroutine(panelMotion);
         panelMotion = null;
         panelRequestedVisible = showPlayerPanel;
@@ -235,7 +240,13 @@ public sealed class BattlePresentationController : MonoBehaviour
             panelPositionInitialized = true;
         }
         flow = battle != null ? battle.GetComponent<BattleFlowManager>() : null;
-        if (flow != null) flow.OnTurnStarted += HandleTurnStarted;
+        // JC | 2026-11-12 | 스킬을 거치지 않는 Shift+9/0도 같은 전투 종료 이벤트에서 패널 전체를 닫습니다.
+        if (flow != null)
+        {
+            flow.OnTurnStarted += HandleTurnStarted;
+            flow.OnBattleEnded += HandleBattleEnded;
+            if (flow.IsBattleEnded) HideSkillPanelOnBattleEnd();
+        }
         turnBanner = FindSceneComponent<BattleTurnBanner>();
         if (turnBanner != null) turnBanner.TurnBannerShown += HandleTurnBannerShown;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightStarted += HandleProjectileStarted;
@@ -712,6 +723,8 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void HandleTurnStarted(int round, BattleCharactor actor)
     {
+        // JC | 2026-11-12 | 종료 후 지연된 턴 알림으로 진입 코루틴이 다시 만들어지지 않도록 차단합니다.
+        if (SkillPanelBattleEnded) { HideSkillPanelOnBattleEnd(); return; }
         if (entryHudPresented) { entryHudPresented = false; return; }
         CancelTurnPresentation();
         if (cameraMotion != null)
@@ -1488,6 +1501,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     public void ApplySkillPanelLayoutPosition(Vector2 home)
     {
         if (skillPanel == null) return;
+        // JC | 2026-11-12 | 레이아웃 재적용은 숨김 기준 위치만 갱신하며 종료 상태를 해제하지 않습니다.
+        if (SkillPanelBattleEnded) { panelHome = home; HideSkillPanelOnBattleEnd(); return; }
         if (!panelPositionInitialized)
         {
             skillPanel.anchoredPosition = home;
@@ -1500,8 +1515,28 @@ public sealed class BattlePresentationController : MonoBehaviour
         skillPanel.anchoredPosition = panelDestination;
     }
 
+    // JC | 2026-11-12 | 내용 초기화보다 늦은 결과창까지 기다리지 않고 즉시 숨깁니다.
+    // 진입 게이트가 위치/CanvasGroup을 복구해도 보이지 않도록 좌측 패널만 비활성화합니다.
+    private void HandleBattleEnded(BattleResult result) => HideSkillPanelOnBattleEnd();
+
+    private void HideSkillPanelOnBattleEnd()
+    {
+        skillPanelBattleEnded = true;
+        CancelTurnPresentation();
+        if (panelMotion != null) StopCoroutine(panelMotion);
+        panelMotion = null;
+        panelRequestedVisible = false;
+        entryHudPresented = false;
+        if (skillPanel == null) return;
+        panelDestination = HiddenPanelPosition;
+        skillPanel.anchoredPosition = panelDestination;
+        skillPanel.gameObject.SetActive(false);
+    }
+
     private void SetSkillPanelVisible(bool visible)
     {
+        // JC | 2026-11-12 | 실패 행동 복구·턴 연출의 늦은 표시 요청에도 종료 상태가 우선합니다.
+        if (SkillPanelBattleEnded) { HideSkillPanelOnBattleEnd(); return; }
         panelRequestedVisible = visible;
         if (skillPanel == null) return;
         Vector2 destination = visible ? panelHome : HiddenPanelPosition;
@@ -1552,7 +1587,12 @@ public sealed class BattlePresentationController : MonoBehaviour
         RestoreAttackCamera();
         ReleaseBlackBulletResidual();
         CancelTurnPresentation();
-        if (flow != null) flow.OnTurnStarted -= HandleTurnStarted;
+        // JC | 2026-11-12 | 씬 재시작 때 이전 종료 수신자가 남지 않도록 함께 해제합니다.
+        if (flow != null)
+        {
+            flow.OnTurnStarted -= HandleTurnStarted;
+            flow.OnBattleEnded -= HandleBattleEnded;
+        }
         if (turnBanner != null) turnBanner.TurnBannerShown -= HandleTurnBannerShown;
     }
 }

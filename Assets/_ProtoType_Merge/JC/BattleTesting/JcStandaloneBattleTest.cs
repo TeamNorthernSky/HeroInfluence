@@ -20,6 +20,7 @@ namespace JC.BattleTesting
         [HideInInspector] public GameObject[] runtimeRoots;
         SimulationBattleConfig draft, draftSource;
         JcArnoldBattlePresentation presentation;
+        BattleFlowManager runtimeFlow;
         bool started, ownsContext;
         int appliedPeriod = -1;
         public string Status { get; private set; } = "편집 모드 · Play로 전용 전투 시작";
@@ -28,6 +29,9 @@ namespace JC.BattleTesting
         static string restartPath, restartConfig;
         static int restartPeriod;
         static bool restartGuidance;
+        // JC | 2026-11-12 | 편집한 랭크/IP는 연출 중 교체하지 않고 안전한 선택 대기 시점에 한 번만 적용합니다.
+        readonly Dictionary<int, SimulationAllyInput> pendingHeroTuning = new Dictionary<int, SimulationAllyInput>();
+        readonly Dictionary<SimulationAllyInput, int> startedHeroes = new Dictionary<SimulationAllyInput, int>();
         public SimulationBattleConfig Draft
         {
             get
@@ -35,6 +39,7 @@ namespace JC.BattleTesting
                 // JC | 2026-11-12 | 다른 저장 프로필을 연결하면 이전 초안을 새 프로필에 잘못 저장하지 않도록 분리합니다.
                 if (draftSource != profile)
                 {
+                    pendingHeroTuning.Clear(); startedHeroes.Clear();
                     if (draft) { if (Application.isPlaying) Destroy(draft); else DestroyImmediate(draft); }
                     draft = null; draftSource = profile;
                 }
@@ -106,6 +111,9 @@ namespace JC.BattleTesting
             presentation = JcArnoldBattlePresentation.ApplyStandalone(gameObject.scene, stage, Hours[Mathf.Clamp(period, 0, 3)], scenario == Scenario.TutorialFirst);
             JcSimulationBattleControls.AttachToScene(gameObject.scene);
             started = true; appliedPeriod = period;
+            int slot = 0;
+            foreach (var input in Draft.allies.Where(a => a != null && a.Enabled))
+                startedHeroes[input] = allies[slot++].RuntimeUnitIndex;
             Status = "실제 전투 로직 · 임시 파티 · " + Draft.enemyGroupKey;
         }
         public void RefreshLighting()
@@ -115,10 +123,85 @@ namespace JC.BattleTesting
             presentation.SetTestPeriod(period);
             appliedPeriod = period;
         }
-        void Update() { if (started && period != appliedPeriod) RefreshLighting(); }
+        void Update()
+        {
+            if (started && period != appliedPeriod) RefreshLighting();
+            ApplyPendingHeroTuning();
+        }
+
+        public void RequestHeroTuning(SimulationAllyInput input)
+        {
+            if (!Application.isPlaying || !started || !startedHeroes.TryGetValue(input, out int id)) return;
+            pendingHeroTuning[id] = JsonUtility.FromJson<SimulationAllyInput>(JsonUtility.ToJson(input));
+            Status = "랭크/IP 변경 · 선택 대기 상태에서 반영";
+            ApplyPendingHeroTuning();
+        }
+
+        // JC | 2026-11-12 | 초안 입력과 실제 전투 중 변화한 IP를 구분하여 보여줍니다. 다른 씬의 유닛은 조회하지 않습니다.
+        public BattleCharactor GetLiveHero(SimulationAllyInput input)
+        {
+            if (!started || !startedHeroes.TryGetValue(input, out int id)) return null;
+            if (!runtimeFlow) runtimeFlow = gameObject.scene.GetRootGameObjects()
+                .SelectMany(r => r.GetComponentsInChildren<BattleFlowManager>(true)).FirstOrDefault();
+            return runtimeFlow ? runtimeFlow.Participants.FirstOrDefault(u => u && u.SourceData != null &&
+                u.SourceData.UnitIndex == id && u.SourceData.UnitTemplateKey == input.UnitTemplateKey) : null;
+        }
+
+        void ApplyPendingHeroTuning()
+        {
+            if (!Application.isPlaying || pendingHeroTuning.Count == 0 || !started) return;
+            var flow = gameObject.scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<BattleFlowManager>(true)).FirstOrDefault();
+            if (!flow || !flow.CurrentUnit || flow.IsActionInProgress || flow.IsTurnPresentationPending ||
+                flow.IsFlowBlocked || flow.IsEndingBattle || flow.IsBattleEnded) return;
+            using (flow.AcquireFlowLock(this, "테스트 랭크/IP 반영"))
+            {
+                bool refreshed = false, changedRank = false;
+                foreach (var pair in pendingHeroTuning)
+                {
+                    var unit = flow.Participants.FirstOrDefault(u => u && u.SourceData != null && u.SourceData.UnitIndex == pair.Key);
+                    if (!unit || unit.IsDead || unit.SourceData.UnitTemplateKey != pair.Value.UnitTemplateKey)
+                    { Status = "사망하거나 교체된 히어로는 재시작 후 설정됩니다."; continue; }
+                    // 장비·HP 비율은 시작 설정이므로 현재 장비를 보존한 채 랭크와 IP만 변경합니다.
+                    pair.Value.WeaponKey = unit.SourceData.CurrentWeaponKey;
+                    if (!SimulationUnitFactory.TryCreateRuntimeData(pair.Value, 0, out var next, out var error))
+                    { Status = error; continue; }
+                    if (unit.Level != pair.Value.Level)
+                    {
+                        changedRank = true;
+                        foreach (var input in gameObject.scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<InputHandler>(true)))
+                            input.ClearSelectionState();
+                    }
+                    if (unit.ApplySimulationGrowth(next.UnitData))
+                    { refreshed = true; Status = $"{unit.DisplayName} · {UnitRankLookup.GetRank(unit.Level)} · IP {unit.CurrentInfluence:0}/{unit.MaxInfluence:0}"; }
+                }
+                pendingHeroTuning.Clear();
+                if (refreshed)
+                {
+                    foreach (var root in gameObject.scene.GetRootGameObjects())
+                    {
+                        foreach (var info in root.GetComponentsInChildren<HeroInfoPanel>(true)) info.RefreshSimulationDisplay();
+                        if (changedRank)
+                        {
+                            foreach (var skills in root.GetComponentsInChildren<SkillButtonController>(true)) skills.RefreshSimulationSkills();
+                            foreach (var turns in root.GetComponentsInChildren<TurnOrderUI>(true)) turns.RefreshSimulationPreview();
+                        }
+                    }
+                }
+            }
+        }
         public void ReloadProfile()
         {
-            if (profile && Draft) JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), Draft);
+            if (!profile || !Draft) return;
+            var slots = Draft.allies.Select(a => a != null && startedHeroes.TryGetValue(a, out int id) ? id : 0).ToArray();
+            JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), Draft);
+            pendingHeroTuning.Clear(); startedHeroes.Clear();
+            for (int i = 0; i < Mathf.Min(slots.Length, Draft.allies.Count); i++)
+            {
+                var input = Draft.allies[i];
+                if (input == null || slots[i] == 0) continue;
+                startedHeroes[input] = slots[i];
+                RequestHeroTuning(input);
+            }
         }
         public void Restart()
         {

@@ -52,6 +52,10 @@ Shader "JC/Indicators/Bridge Overlay"
                 float _SweepDuration, _SweepInterval, _SweepReverse, _SweepTime;
             CBUFFER_END
             float4 _JcDayNight;
+            // JC | 2026-11-12 | 기둥을 무시하는 상단 표시도 차단기 앞면에서는 숨깁니다. 화면에 차단기가 없으면 샘플하지 않습니다.
+            TEXTURE2D(_JcBridgeGateDepth); SAMPLER(sampler_JcBridgeGateDepth);
+            float4x4 _JcBridgeDepthVP, _JcBridgeDepthView;
+            float _JcBridgeGateDepthActive, _JcBridgeDepthUvFlip;
             struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; float2 uv:TEXCOORD0; };
             struct Varyings { float4 positionCS:SV_POSITION; float2 uv:TEXCOORD0; float2 cellUV:TEXCOORD1; half fog:TEXCOORD2; half shade:TEXCOORD3; float3 positionWS:TEXCOORD4; };
             Varyings vert(Attributes v)
@@ -69,6 +73,15 @@ Shader "JC/Indicators/Bridge Overlay"
             }
             half4 frag(Varyings v):SV_Target
             {
+                if (_JcBridgeGateDepthActive > .5)
+                {
+                    float4 p = mul(_JcBridgeDepthVP, float4(v.positionWS, 1));
+                    float2 uv = p.xy / p.w * .5 + .5;
+                    if (_JcBridgeDepthUvFlip > .5) uv.y = 1 - uv.y;
+                    float gate = SAMPLE_TEXTURE2D_LOD(_JcBridgeGateDepth, sampler_JcBridgeGateDepth, uv, 0).r;
+                    float eye = -mul(_JcBridgeDepthView, float4(v.positionWS, 1)).z;
+                    clip(gate + .002 - eye);
+                }
                 half4 result=_BaseColor;
                 result.rgb*=v.shade;
                 if (_IsFill>.5) result*=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,v.uv);
@@ -94,6 +107,30 @@ Shader "JC/Indicators/Bridge Overlay"
                 result.rgb*=max(0,_Intensity)*lerp(_NightIntensityMultiplier,1,daylight);
                 return result;
             }
+            ENDHLSL
+        }
+        // JC | 2026-11-12 | 등록된 불투명 차단기만 최소 깊이로 기록합니다. 새 색상 드로우나 카메라 깊이 쓰기는 없습니다.
+        Pass
+        {
+            Name "BridgeGateDepth"
+            Tags { "LightMode"="JcBridgeGateDepth" }
+            Blend One One BlendOp Min
+            ZWrite Off ZTest Always Cull Off
+            HLSLPROGRAM
+            #pragma vertex GateVert
+            #pragma fragment GateFrag
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            float4x4 _JcBridgeDepthVP, _JcBridgeDepthView;
+            struct GateVaryings { float4 positionCS:SV_POSITION; float eye:TEXCOORD0; };
+            GateVaryings GateVert(float3 positionOS:POSITION)
+            {
+                GateVaryings o;
+                float4 world = float4(TransformObjectToWorld(positionOS), 1);
+                o.positionCS = mul(_JcBridgeDepthVP, world);
+                o.eye = -mul(_JcBridgeDepthView, world).z;
+                return o;
+            }
+            float GateFrag(GateVaryings input):SV_Target { return input.eye; }
             ENDHLSL
         }
     }

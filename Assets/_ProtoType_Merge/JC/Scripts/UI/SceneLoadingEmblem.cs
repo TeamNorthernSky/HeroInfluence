@@ -25,6 +25,39 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
     private float motionTime;
     private bool motionPaused;
     private float contentRadius;
+    // JC | 2026-11-12 | 비교 씬에서만 선택 아이콘·수정안을 고정합니다. 실제 로딩 호출의 무작위 선택과 기존 동작은 유지합니다.
+    private bool comparisonOnly, comparisonRevision;
+    private int comparisonIcon;
+    private Shader comparisonBurstShader;
+    // JC | 2026-11-12 | 비교 시안의 주먹만 조절하며, 1배는 기존 수정안의 초기/최종 크기를 뜻합니다.
+    private Vector2 justiceStart = new Vector2(-30f, 0f), justiceEnd = new Vector2(6f, 0f);
+    private float justiceInitialSize = 1f, justiceFinalSize = 1f;
+
+    public void SetJusticeComparison(Vector2 start, Vector2 end, float initialSize, float finalSize)
+    {
+        if (!comparisonOnly || !comparisonRevision || comparisonIcon != 0) return;
+        justiceStart = start; justiceEnd = end;
+        justiceInitialSize = Mathf.Clamp(initialSize, .25f, 2f);
+        justiceFinalSize = Mathf.Clamp(finalSize, .25f, 2f);
+    }
+
+    public void InitializeComparison(Transform parent, int iconIndex, bool revised, Shader burstShader)
+    {
+        comparisonOnly = true;
+        comparisonIcon = Mathf.Clamp(iconIndex, 0, IconRegions.Length - 1);
+        comparisonRevision = revised;
+        comparisonBurstShader = burstShader;
+        Initialize(parent);
+        SetMotionPaused(true);
+    }
+
+    // JC | 2026-11-12 | 원본/수정안을 같은 시간으로 평가하여 편집 모드에서도 정지 프레임과 움직임을 비교합니다.
+    public void SampleComparison(float time)
+    {
+        if (!comparisonOnly) return;
+        motionTime = Mathf.Max(0f, time);
+        ApplyMotion(motionTime);
+    }
 
     public void SetMotionPaused(bool paused) => motionPaused = paused;
 
@@ -43,7 +76,8 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
             gameObject.SetActive(false);
             return;
         }
-        iconMaterial = CreateMaterial(shader, 0);
+        // JC | 2026-11-12 | 수정 루미나만 대칭 도형 셰이더를 사용합니다. 원본 아틀라스·임포터·로딩 셰이더는 변경하지 않습니다.
+        iconMaterial = CreateMaterial(comparisonRevision && comparisonIcon == 2 ? comparisonBurstShader : shader, 0);
         maskMaterial = CreateMaterial(shader, 1);
         ringMaterial = CreateMaterial(shader, 2);
         flameMaterial = CreateMaterial(shader, 3);
@@ -74,7 +108,7 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
     {
         if (icon == null) return;
         // Do not consume gameplay's UnityEngine.Random sequence for a cosmetic choice.
-        selectedIcon = SelectionRandom.Next(IconRegions.Length);
+        selectedIcon = comparisonOnly ? comparisonIcon : SelectionRandom.Next(IconRegions.Length);
         var region = IconRegions[selectedIcon];
         icon.uvRect = new Rect(region.x / SheetSize,
             1f - (region.y + region.height) / SheetSize,
@@ -84,11 +118,41 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
         // Match the two upward-facing barrel openings on the crossed-pistol silhouette.
         flashes[0].rectTransform.anchoredPosition = new Vector2(-size.x * .43f, size.y * .36f);
         flashes[1].rectTransform.anchoredPosition = new Vector2(size.x * .43f, size.y * .36f);
+        if (comparisonRevision && selectedIcon == 2)
+            icon.uvRect = new Rect(0f, 0f, 1f, 1f);
+        // JC | 2026-11-12 | 불꽃 중심이 아닌 꼬리 끝을 실제 총구(원본 시트의 검은 개구부 중심)에 연결합니다.
+        // 자식 코어도 같은 시작점에 고정해 확대/반동 중 총구와 불꽃 사이가 벌어지지 않습니다.
+        if (comparisonRevision && selectedIcon == 1)
+        {
+            var muzzlePixels = new[] { new Vector2(126f, 138f), new Vector2(548f, 138f) };
+            for (int i = 0; i < flashes.Length; i++)
+            {
+                var rect = flashes[i].rectTransform;
+                rect.pivot = new Vector2(.5f, 0f);
+                rect.anchoredPosition = new Vector2((muzzlePixels[i].x - region.x) / region.width - .5f,
+                    .5f - (muzzlePixels[i].y - region.y) / region.height) * size;
+                var core = (RectTransform)rect.GetChild(0);
+                core.anchorMin = core.anchorMax = core.pivot = new Vector2(.5f, 0f);
+                core.anchoredPosition = Vector2.zero;
+            }
+        }
         // Reserve space for the entire image, including rotated corners and the largest muzzle flame.
         contentRadius = size.magnitude * .5f;
         if (selectedIcon == 1)
             contentRadius = Mathf.Max(contentRadius, flashes[0].rectTransform.anchoredPosition.magnitude +
                 flashes[0].rectTransform.sizeDelta.magnitude * .5f * 1.25f);
+        if (comparisonRevision && selectedIcon == 1)
+        {
+            // JC | 2026-11-12 | 총구 기준으로 앞쪽에 배치된 불꽃의 최대 확대 네 모서리까지 계산해 원 테두리 잘림을 방지합니다.
+            foreach (var flash in flashes)
+                for (int corner = 0; corner < 4; corner++)
+                {
+                    var rect = flash.rectTransform;
+                    var local = (new Vector2((corner & 1) == 0 ? 0 : 1, (corner & 2) == 0 ? 0 : 1) - rect.pivot) * rect.sizeDelta * 1.25f;
+                    var point = (Vector3)rect.anchoredPosition + rect.localRotation * (Vector3)local;
+                    contentRadius = Mathf.Max(contentRadius, point.magnitude);
+                }
+        }
         RestartMotion();
     }
 
@@ -114,6 +178,8 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
         float active = Mathf.Max(0f, time - EntranceDuration);
         float scale = selectedIcon == 0 ? .72f : 1f;
         float x = 0f, y = 0f, rotation = 0f;
+        // JC | 2026-11-12 | 수정 주먹은 등장 때부터 왼쪽의 작은 준비 자세로 시작합니다.
+        if (comparisonRevision && selectedIcon == 0) { x = justiceStart.x; y = justiceStart.y; scale = .46f * justiceInitialSize; }
         for (int i = 0; i < flashes.Length; i++) flashes[i].gameObject.SetActive(false);
         if (enter >= 1f)
         {
@@ -121,6 +187,27 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
             {
                 case 0: // 오른쪽에서 유지한 뒤 바로 왼쪽으로 당겨 다음 펀치를 준비한다.
                     float punch = Mathf.Repeat(active, 1.5f);
+                    if (comparisonRevision)
+                    {
+                        // JC | 2026-11-12 | 조절한 시작/종료 중심 사이를 이동합니다. 시작점에서 왼쪽 6만큼 당기는 준비 동작과 타이밍은 보존합니다.
+                        Vector2 position = justiceEnd;
+                        Vector2 pulled = justiceStart + Vector2.left * 6f;
+                        scale = .72f * justiceFinalSize;
+                        if (punch < .42f)
+                        {
+                            float pull = Mathf.SmoothStep(0f, 1f, punch / .42f);
+                            position = Vector2.Lerp(active < 1.5f ? justiceStart : justiceEnd, pulled, pull);
+                            scale = Mathf.Lerp(active < 1.5f ? .46f * justiceInitialSize : .72f * justiceFinalSize, .46f * justiceInitialSize, pull);
+                        }
+                        else if (punch < .56f)
+                        {
+                            float strike = 1f - Mathf.Pow(1f - (punch - .42f) / .14f, 3f);
+                            position = Vector2.Lerp(pulled, justiceEnd, strike);
+                            scale = Mathf.Lerp(.46f * justiceInitialSize, .72f * justiceFinalSize, strike);
+                        }
+                        x = position.x; y = position.y;
+                        break;
+                    }
                     x = 14f;
                     if (punch < .42f)
                     {
