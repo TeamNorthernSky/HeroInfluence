@@ -33,7 +33,6 @@ namespace JC.Indicators
         private static readonly Dictionary<int, Buffer> buffers = new Dictionary<int, Buffer>();
         private static readonly List<int> staleCameras = new List<int>();
         // JC | 2026-11-10 | 깊이 제출에서만 화면 밖 테두리를 제외하며 표시 순서 지정은 전체 목록을 유지합니다.
-        private static readonly Plane[] borderFrustum = new Plane[6];
         private static MaterialPropertyBlock properties;
         private static readonly int textureId = Shader.PropertyToID("_JcTriggerBorderDepth");
         private static readonly int activeId = Shader.PropertyToID("_JcTriggerDepthActive");
@@ -90,7 +89,7 @@ namespace JC.Indicators
                 foreach (var controller in controllers) if (controller) controller.DrawColors(command, camera, planes, part);
         }
         internal static void RenderDepth(CommandBuffer command, Camera camera, Matrix4x4 view,
-            Matrix4x4 projection, int width, int height)
+            Matrix4x4 projection, int width, int height, Plane[] planes)
         {
             controllers.RemoveAll(c => !c);
             if (controllers.Count == 0) { Unregister(null); return; }
@@ -145,11 +144,15 @@ namespace JC.Indicators
             {
                 borders.Clear();
                 foreach (var controller in controllers) if (controller) controller.CollectBorders(borders, camera);
-                GeometryUtility.CalculateFrustumPlanes(camera, borderFrustum);
                 // JC | 2026-11-10 | 컨트롤러 전체를 확인합니다. 마커가 없어도 보호 G와 모든 버퍼 초기화는 유지합니다.
-                bool needsMarkerDepth = false;
+                bool needsMarkerDepth = false, needsWorldDepth = false;
+                // JC | 2026-11-12 | 모든 컨트롤러의 후보 목록을 한 번 준비합니다. 첫 후보에서 중단하면 뒤의 보호 마스크가 누락됩니다.
                 foreach (var controller in controllers)
-                    if (controller && controller.HasMarkerCandidate(camera)) { needsMarkerDepth = true; break; }
+                    if (controller)
+                    {
+                        needsMarkerDepth |= controller.PrepareMarkerCandidates(camera, planes);
+                        needsWorldDepth |= controller.NeedsWorldDepth;
+                    }
                 command.SetGlobalFloat(activeId, 0);
                 command.SetGlobalMatrix("_JcTriggerDepthVP", projection * view);
                 command.SetGlobalMatrix("_JcTriggerDepthView", view);
@@ -157,19 +160,19 @@ namespace JC.Indicators
                 command.SetRenderTarget(buffer.texture);
                 command.SetViewport(new Rect(0, 0, width, height));
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
-                DrawBorders(command, "TriggerAreaDepth");
+                DrawBorders(command, "TriggerAreaDepth", planes);
                 command.SetGlobalTexture(textureId, buffer.texture);
                 // JC | 2026-11-05 | 먼저 구한 최근접 깊이에 해당하는 선 중 고정 표시순서가 앞선 선을 픽셀별로 선택합니다.
                 command.SetRenderTarget(buffer.owners);
                 command.ClearRenderTarget(false, true, new Color(float.MaxValue, float.MaxValue, 0, 0));
-                DrawBorders(command, "TriggerAreaOwner");
+                DrawBorders(command, "TriggerAreaOwner", planes);
                 command.SetGlobalTexture(ownersId, buffer.owners);
                 command.SetRenderTarget(buffer.occluders);
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
                 foreach (var controller in controllers) if (controller) controller.DrawOccluders(command, camera, properties);
                 command.SetGlobalTexture("_JcTriggerOccluderDepth", buffer.occluders);
                 // JC | 2026-11-10 | 세 메시 패스 직전에 최신 속성을 한 번 읽습니다. 패스 순서와 RT 의존성은 유지합니다.
-                foreach (var controller in controllers) if (controller) controller.PrepareWorldMeshes(camera, needsMarkerDepth);
+                foreach (var controller in controllers) if (controller) controller.PrepareWorldMeshes(camera, needsWorldDepth, planes);
                 command.SetRenderTarget(buffer.meshes);
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
                 foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshDepth");
@@ -182,7 +185,8 @@ namespace JC.Indicators
                 command.SetGlobalTexture("_JcTriggerMeshOwners", buffer.meshOwners);
                 command.SetRenderTarget(buffer.otherMeshes);
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 0, 0));
-                if (needsMarkerDepth) foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "OtherOwnerDepth");
+                // JC | 2026-11-12 | 자기 건물 표면만 확인하는 방문 팻말에는 외부 소속 깊이 드로우가 필요하지 않습니다.
+                if (needsWorldDepth) foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "OtherOwnerDepth");
                 command.SetGlobalTexture("_JcTriggerOtherMeshDepth", buffer.otherMeshes);
                 command.SetGlobalFloat(activeId, 1);
                 command.SetRenderTarget(buffer.markerCoverage);
@@ -218,12 +222,12 @@ namespace JC.Indicators
             if (result == 0) result = a.rendererId.CompareTo(b.rendererId);
             return result;
         }
-        private static void DrawBorders(CommandBuffer command, string passName)
+        private static void DrawBorders(CommandBuffer command, string passName, Plane[] planes)
         {
             foreach (var border in borders)
             {
                 // JC | 2026-11-10 | 정점 변형 없는 깊이 패스이므로 전체 메시 bounds가 화면 밖일 때만 생략합니다.
-                if (!GeometryUtility.TestPlanesAABB(borderFrustum, border.renderer.bounds)) continue;
+                if (!GeometryUtility.TestPlanesAABB(planes, border.renderer.bounds)) continue;
                 int pass = border.material.FindPass(passName);
                 var mesh = border.renderer.GetComponent<MeshFilter>().sharedMesh;
                 if (pass < 0 || !mesh) continue;

@@ -61,6 +61,8 @@ Shader "JC/Environment/Building Silhouette"
             float4 _JcBuildingTuning; // x: controller enabled, y: opacity, z: depth bias, w: outline width
             half4 _JcBuildingFill;
             float _JcBuildingHighlight;
+            // JC | 2026-11-12 | 지면 아래 받침까지 전체 윤곽으로 확장하면 하단 선이 땅속에서 잘리므로 가시 지면까지만 형상을 만듭니다.
+            float4 _JcBuildingGroundPlane;
 
             struct Attributes
             {
@@ -71,6 +73,7 @@ Shader "JC/Environment/Building Silhouette"
             {
                 float4 positionCS : SV_POSITION;
                 float eyeDepth : TEXCOORD0;
+                float worldY : TEXCOORD1;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
             Varyings Vert(Attributes input)
@@ -81,6 +84,7 @@ Shader "JC/Environment/Building Silhouette"
                 float3 world = TransformObjectToWorld(input.positionOS.xyz);
                 output.positionCS = TransformWorldToHClip(world);
                 output.eyeDepth = -TransformWorldToView(world).z;
+                output.worldY = world.y;
                 return output;
             }
             float4 Frag(Varyings input) : SV_Target
@@ -89,7 +93,12 @@ Shader "JC/Environment/Building Silhouette"
                 // 강조 윤곽선의 형상은 파티/앞쪽 물체로 잘라내지 않는다.
                 // 최종 합성에서만 원본 카메라 깊이와 비교한다.
                 if (_JcBuildingHighlight > .5)
+                {
+                    // JC | 2026-11-12 | 캐릭터에 가려진 형상은 유지하고, 탐사 지면 아래에 묻힌 부분만 제거합니다.
+                    if (_JcBuildingHighlight < 1.5 && _JcBuildingGroundPlane.x > .5)
+                        clip(input.worldY - _JcBuildingGroundPlane.y);
                     return float4(1, rcp(max(input.eyeDepth, .0001)), 0, 0);
+                }
                 float2 uv = GetNormalizedScreenSpaceUV(input.positionCS);
                 float rawDepth = SampleSceneDepth(uv);
                 float sceneDepth = unity_OrthoParams.w > 0.5
