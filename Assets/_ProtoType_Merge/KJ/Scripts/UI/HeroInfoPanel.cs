@@ -26,6 +26,8 @@ public class HeroInfoPanel : MonoBehaviour
 
     [SerializeField, Tooltip("HP 레이블과 수치를 한 줄로 표시합니다.")] private bool inlineHp;
     private BattleCharactor currentUnit;
+    // JC | 2026-11-12 | 이름 옆 성장 랭크와 별도로 IP 행에 현재 영향력 칭호를 표시합니다.
+    private JcHeroInfluenceBadge influenceBadge;
     [Tooltip("씬에 미리 배치한 초상화 Image입니다. 연결하면 실행 중 초상화 오브젝트를 생성하거나 배치를 변경하지 않습니다.")]
     [SerializeField] private Image portraitImage;
     [Tooltip("켜면 현재 IP / 최대 IP로 표시합니다. 끄면 현재 IP만 표시합니다. 기존 씬 호환용 기본값은 켜짐입니다.")]
@@ -34,6 +36,7 @@ public class HeroInfoPanel : MonoBehaviour
     private void Awake()
     {
         Resources.Load<JC.BattleTesting.JcBattleHudLayout>("JC_BattleHud_Layout")?.ApplyBattlePanel(gameObject.scene);
+        influenceBadge = JcHeroInfluenceBadge.Create(ipText);
         if (portraitImage != null) return;
 
         if (portrait != null)
@@ -81,6 +84,7 @@ public class HeroInfoPanel : MonoBehaviour
     {
         UnsubscribeUnit();
         currentUnit = unit;
+        if (influenceBadge) influenceBadge.SetUnit(unit);
 
         if (currentUnit != null)
         {
@@ -156,10 +160,17 @@ public class HeroInfoPanel : MonoBehaviour
 
     private void UpdateIpText(float current, float max)
     {
+        if (influenceBadge) influenceBadge.SetInfluence(current, max);
         if (ipText != null)
             ipText.text = showMaxIp ? $"{(int)current} / {(int)max}" : $"{(int)current}";
         if (ipGauge != null)
             ipGauge.fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
+    }
+
+    // JC | 2026-11-12 | 테스트 랭크 변경 후 턴 이벤트를 재발행하지 않고 표시만 갱신합니다.
+    public void RefreshSimulationDisplay()
+    {
+        if (CombatContext.Instance != null && CombatContext.Instance.IsSimulation) Refresh();
     }
 
     private void UpdatePortrait()

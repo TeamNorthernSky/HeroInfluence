@@ -108,6 +108,8 @@ public class BattleCellVisualSettings : MonoBehaviour
             case BattleCellVisualState.CurrentTurn: return currentTurnPrefab;
             case BattleCellVisualState.Selectable: return selectablePrefab;
             case BattleCellVisualState.ConfirmedArea: return confirmedAreaPrefab;
+            // JC | 2026-11-12 | 치료·부활은 기존 확정 대상 메시 구조를 재사용하고 프로필 색만 분리합니다.
+            case BattleCellVisualState.HealingArea: return confirmedAreaPrefab;
             case BattleCellVisualState.Unavailable: return unavailablePrefab;
             default: return null;
         }
@@ -146,6 +148,8 @@ public class BattleCellVisualSettings : MonoBehaviour
                 view.transform.localRotation = source.transform.localRotation;
                 // 표시 크기는 프리팹 size가 결정합니다. 원본 10m Plane의 축소 배율을 복사하지 않습니다.
                 view.transform.localScale = Vector3.one;
+                // JC | 2026-11-12 | 같은 메시 프리팹을 쓰는 치료·부활도 인스펙터와 렌더 상태가 일치하도록 지정합니다.
+                view.presentationState = state;
                 view.SetDriven(true);
                 presentation.views[state] = view;
                 presentation.templates[state] = prefab;

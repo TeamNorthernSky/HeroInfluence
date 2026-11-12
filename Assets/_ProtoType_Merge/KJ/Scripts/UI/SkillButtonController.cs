@@ -187,6 +187,12 @@ public class SkillButtonController : MonoBehaviour
         SyncSelection();
     }
 
+    // JC | 2026-11-12 | 테스트 랭크 변경 시 기존 잠금·습득 목록을 다시 읽으며 전투 턴 자체는 진행하지 않습니다.
+    public void RefreshSimulationSkills()
+    {
+        if (CombatContext.Instance != null && CombatContext.Instance.IsSimulation) RefreshSkills();
+    }
+
     private void RefreshSkills()
     {
         var unit = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;

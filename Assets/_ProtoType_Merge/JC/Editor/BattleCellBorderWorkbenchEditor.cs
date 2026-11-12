@@ -5,15 +5,16 @@ using UnityEngine;
 [CustomEditor(typeof(BattleCellBorderWorkbench))]
 public sealed class BattleCellBorderWorkbenchEditor : Editor
 {
-    private static readonly string[] Names={"현재 턴 · 노랑","선택 가능 · 보라","확정 대상 · 빨강","선택 불가 · 회색"};
-    private static readonly string[] Fields={"currentTurn","selectable","confirmedArea","unavailable"};
+    // JC | 2026-11-12 | 기존 저장 순서에 치료·부활 흰색 편집 항목을 추가합니다.
+    private static readonly string[] Names={"현재 턴 · 노랑","선택 가능 · 녹색","확정 대상 · 빨강","선택 불가 · 회색","치료·부활 대상 · 흰색"};
+    private static readonly string[] Fields={"currentTurn","selectable","confirmedArea","unavailable","healingArea"};
     public override void OnInspectorGUI()
     {
         var workbench=(BattleCellBorderWorkbench)target;
         serializedObject.Update();
         EditorGUILayout.PropertyField(serializedObject.FindProperty("profile"),new GUIContent("저장 프로필"));
         EditorGUILayout.HelpBox("초안은 즉시 미리보기에 반영됩니다. 프로필 저장을 누르면 전투씬도 같은 값을 사용합니다. 프리팹을 직접 편집할 필요가 없습니다.",MessageType.Info);
-        int index=Mathf.Clamp((int)workbench.selectedState-1,0,3);
+        int index=Mathf.Clamp((int)workbench.selectedState-1,0,Names.Length-1);
         index=EditorGUILayout.Popup("편집할 상태",index,Names);
         serializedObject.FindProperty("selectedState").enumValueIndex=index+1;
         var draft=serializedObject.FindProperty("draft");

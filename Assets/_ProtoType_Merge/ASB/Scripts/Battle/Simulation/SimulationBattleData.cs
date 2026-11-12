@@ -17,6 +17,9 @@ public sealed class SimulationAllyInput
     public string WeaponKey;
     public int SkillIndex;
     [Range(0.01f, 1f)] public float HpRatio = 1f;
+    // JC | 2026-11-12 | 모의전 시작 IP만 보관하며 실제 상한은 기존 성장 계산 결과로 제한합니다.
+    [Min(0), Tooltip("시작 IP입니다. 선택한 랭크·레벨의 실제 IP 상한을 넘을 수 없습니다.")]
+    public float InitialInfluence;
 }
 
 [Serializable]

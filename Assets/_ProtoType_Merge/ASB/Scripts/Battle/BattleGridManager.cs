@@ -11,6 +11,8 @@ namespace ASB.Work.BattleGrid
         private readonly Dictionary<BattleCharactor, GridCell> cellByUnit = new Dictionary<BattleCharactor, GridCell>();
         private readonly List<GridCell> _previewHighlightedCells = new List<GridCell>();
         private GridCell _previewMainTargetCell;
+        // JC | 2026-11-12 | 입력/자동 전투가 전달한 스킬의 표시 종류를 범위와 함께 보존합니다. 대상 판정은 바꾸지 않습니다.
+        private bool previewIsHealing;
         [SerializeField] private Material TargetMaterial;
         [SerializeField] private Material AdditionalTargetMaterial;
         [SerializeField] private Material ClearMaterial;
@@ -217,6 +219,9 @@ namespace ASB.Work.BattleGrid
             ClearPreviewHighlight(false);
             if (mainCell == null) { RefreshTilePresentation(); return; }
 
+            // JC | 2026-11-12 | 치료(1)·부활(2)만 흰색으로 구분합니다. 공격/버프와 정보 호버는 기존 색을 유지합니다.
+            previewIsHealing = skill != null && (skill.classSkillEffect == 1 || skill.classSkillEffect == 2);
+
             bool allConfirmed = useBattleTilePresentation || (skill != null && skill.classSkillTarget == 2);
             mainCell.SetMainTargetHighlight();
             _previewMainTargetCell = mainCell;
@@ -242,6 +247,8 @@ namespace ASB.Work.BattleGrid
 
         private void ClearPreviewHighlight(bool refresh)
         {
+            // JC | 2026-11-12 | 다음 공격 범위가 이전 회복 색을 물려받지 않도록 범위 해제와 함께 초기화합니다.
+            previewIsHealing = false;
             for (int i = 0; i < _previewHighlightedCells.Count; i++)
             {
                 if (_previewHighlightedCells[i] != null)
@@ -319,7 +326,9 @@ namespace ASB.Work.BattleGrid
         {
             if (!useBattleTilePresentation) return;
             bool ended = flowManager != null && flowManager.IsEndingBattle;
-            var current = !ended && flowManager != null ? FindCellByUnit(flowManager.CurrentUnit) : null;
+            // JC | 2026-11-12 | 스킬 연출 중에도 CurrentUnit의 셀을 유지하며 사망/턴 종료/전투 종료 때 해제합니다.
+            var actor = !ended && flowManager != null ? flowManager.CurrentUnit : null;
+            var current = actor != null && !actor.IsDead ? FindCellByUnit(actor) : null;
             bool choosing = !ended && selectingTargets && (flowManager == null || !flowManager.IsActionInProgress);
             var infoCell = !ended ? InfoHoverCell() : null;
             foreach (var cell in cellsByCoords.Values)
@@ -336,10 +345,11 @@ namespace ASB.Work.BattleGrid
                 if (!ended)
                 {
                     if (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)) material = MainTargetHighlightMaterial;
-                    else if (choosing) material = selectableCells.Contains(cell) ? TargetMaterial :
-                        selectableSides.Contains(cell.Coords.x >= 2) ? unavailableMaterial : ClearMaterial;
+                    // JC | 2026-11-12 | 확정 대상 > 선택 후보 > 현재 턴 > 선택 불가. 자기 대상 선택만 노랑을 대체합니다.
+                    else if (choosing && selectableCells.Contains(cell)) material = TargetMaterial;
                     else if (cell == infoCell) material = MainTargetHighlightMaterial;
                     else if (cell == current) material = currentTurnMaterial;
+                    else if (choosing && selectableSides.Contains(cell.Coords.x >= 2)) material = unavailableMaterial;
                 }
                 cell.SetMaterial(material);
                 if (cellVisualSettings != null)
@@ -353,6 +363,10 @@ namespace ASB.Work.BattleGrid
                         material == TargetMaterial ? BattleCellVisualState.Selectable :
                         material == MainTargetHighlightMaterial ? BattleCellVisualState.ConfirmedArea :
                         material == unavailableMaterial ? BattleCellVisualState.Unavailable : BattleCellVisualState.Hidden;
+                    // JC | 2026-11-12 | 재질/입력 연결은 유지하고 실제 스킬 범위에만 흰색 프로필을 전달합니다.
+                    if (visualState == BattleCellVisualState.ConfirmedArea && previewIsHealing &&
+                        (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)))
+                        visualState = BattleCellVisualState.HealingArea;
                     cellVisualSettings.Apply(cell, alpha, visualState);
                 }
             }

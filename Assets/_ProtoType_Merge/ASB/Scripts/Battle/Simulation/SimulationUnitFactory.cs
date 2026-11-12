@@ -13,6 +13,11 @@ public static class SimulationUnitFactory
         int slotIndex,
         out SimulationAllyRuntimeData runtimeData,
         out string error)
+        => TryCreateRuntimeData(input, slotIndex, DHCsvTemplateCatalog.Instance, out runtimeData, out error);
+
+    // JC | 2026-11-12 | 편집기 미리보기도 동일한 생성·상한 계산을 사용하며 전역 카탈로그를 교체하지 않습니다.
+    public static bool TryCreateRuntimeData(SimulationAllyInput input, int slotIndex, DHCsvTemplateCatalog catalog,
+        out SimulationAllyRuntimeData runtimeData, out string error)
     {
         runtimeData = null;
         error = string.Empty;
@@ -23,7 +28,6 @@ public static class SimulationUnitFactory
             return false;
         }
 
-        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null)
         {
             error = "DHCsvTemplateCatalog is not ready.";
@@ -92,7 +96,7 @@ public static class SimulationUnitFactory
             default,
             1,
             0,
-            0f,
+            Mathf.Clamp(float.IsNaN(input.InitialInfluence) ? 0f : input.InitialInfluence, 0f, ingameStats.Influence),
             false);
 
         runtimeData = new SimulationAllyRuntimeData(runtimeUnitIndex, transientUnit);
