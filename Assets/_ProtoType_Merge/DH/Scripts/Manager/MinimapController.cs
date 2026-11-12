@@ -4,10 +4,15 @@ using UnityEngine.UI;
 
 public class MinimapController : MonoBehaviour
 {
-    [System.Serializable]
-    private class ZoneViewCrop
+    private enum ViewSourceType
     {
-        public string zoneId;
+        ZoneLayout = 0,
+        SingleLevel = 1
+    }
+
+    [System.Serializable]
+    private class ViewCrop
+    {
         public int top;
         public int bottom;
         public int left;
@@ -28,6 +33,12 @@ public class MinimapController : MonoBehaviour
             size += new Vector2Int(padLeft + padRight - cropLeft - cropRight,
                 padBottom + padTop - cropBottom - cropTop);
         }
+    }
+
+    [System.Serializable]
+    private class ZoneViewCrop : ViewCrop
+    {
+        public string zoneId;
     }
 
     [Header("References")]
@@ -56,6 +67,13 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private Color visibleColor = new Color(0.22f, 0.28f, 0.24f, 1f);
     [SerializeField] private Color fallbackColor = new Color(0.22f, 0.28f, 0.24f, 1f);
     [SerializeField] private Color obstacleColor = new Color(0f, 0f, 0f, 1f);
+
+    [Header("View Source")]
+    [SerializeField] private ViewSourceType viewSource = ViewSourceType.ZoneLayout;
+
+    [Header("Single Level View Cropping")]
+    [Tooltip("Single Level 모드에서 적용. 양수는 잘라내기, 음수는 검은 여백 추가.")]
+    [SerializeField] private ViewCrop singleLevelViewCrop = new ViewCrop();
 
     [Header("Zone View Cropping")]
     [Tooltip("Positive: crop cells. Negative: add black padding. Top: +Y, Bottom: -Y, Left: -X, Right: +X. First matching Zone ID wins.")]
@@ -105,11 +123,13 @@ public class MinimapController : MonoBehaviour
     private readonly List<Image> strategicIconPool = new List<Image>();
     private readonly List<Image> partyIconPool = new List<Image>();
     private readonly HashSet<Vector2Int> obstacleCellCache = new HashSet<Vector2Int>();
+    private readonly HashSet<Vector2Int> exteriorCellCache = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> dirtyCells = new HashSet<Vector2Int>();
     private bool hasPendingTextureApply;
 
     private bool HasLoadedZoneData =>
-        levelZoneLayoutLoader != null
+        viewSource == ViewSourceType.ZoneLayout
+        && levelZoneLayoutLoader != null
         && levelZoneLayoutLoader.LoadedZones != null
         && levelZoneLayoutLoader.LoadedZones.Count > 0;
 
@@ -133,11 +153,30 @@ public class MinimapController : MonoBehaviour
     {
         UnsubscribeFromLevelLoaders();
         UnsubscribeFromHeroUnionStateChanges();
+        ReleaseIcons(strategicIconPool);
+        ReleaseIcons(partyIconPool);
     }
 
     private void OnDestroy()
     {
+        ReleaseIcons(strategicIconPool);
+        ReleaseIcons(partyIconPool);
         ReleaseTexture();
+    }
+
+    private void ReleaseIcons(List<Image> pool)
+    {
+        for (int i = 0; i < pool.Count; i++)
+        {
+            if (pool[i] == null)
+                continue;
+
+            if (Application.isPlaying)
+                Destroy(pool[i].gameObject);
+            else
+                DestroyImmediate(pool[i].gameObject);
+        }
+        pool.Clear();
     }
 
     private void Update()
@@ -167,9 +206,12 @@ public class MinimapController : MonoBehaviour
         currentViewZoneId = zoneId;
         currentContentBounds = TryGetCurrentPartyZone(out LoadedLevelZoneData currentZone)
             ? new RectInt(currentZone.Anchor, currentZone.Size)
-            : new RectInt(viewOrigin, gridSize);
+            : viewSource == ViewSourceType.SingleLevel && levelData != null
+                ? new RectInt(Vector2Int.zero, levelData.GridSize)
+                : new RectInt(viewOrigin, gridSize);
         EnsureTexture(gridSize);
         RebuildObstacleCellCache();
+        RebuildTutorialExteriorCellCache();
         DrawCells(viewOrigin, gridSize);
         DrawStrategicObjects(gridSize);
         minimapTexture.Apply(false);
@@ -493,7 +535,7 @@ public class MinimapController : MonoBehaviour
 
     private void DrawStrategicObjectIcons(Vector2Int gridSize)
     {
-        if (!showStrategicObjectIcons || targetImage == null)
+        if (!Application.isPlaying || !showStrategicObjectIcons || targetImage == null)
         {
             HideStrategicIcons(0);
             return;
@@ -505,6 +547,7 @@ public class MinimapController : MonoBehaviour
         iconIndex = DrawOutpostIcons(gridSize, iconIndex);
         iconIndex = DrawHeroUnionIcons(gridSize, iconIndex);
         iconIndex = DrawVillainUnionIcons(gridSize, iconIndex);
+        iconIndex = DrawTutorialBuildingIcons(gridSize, iconIndex);
         iconIndex = DrawGateIcons(gridSize, iconIndex);
         iconIndex = DrawMainEventIcons(gridSize, iconIndex);
         iconIndex = DrawEnemyIcons(gridSize, iconIndex, EnemyBehaviorType.Static);
@@ -517,6 +560,24 @@ public class MinimapController : MonoBehaviour
     private void RefreshStrategicObjectIconsOnly(Vector2Int gridSize)
     {
         DrawStrategicObjectIcons(gridSize);
+    }
+
+    private int DrawTutorialBuildingIcons(Vector2Int gridSize, int iconIndex)
+    {
+        TutorialBuildingObject[] buildings = FindObjectsByType<TutorialBuildingObject>(FindObjectsSortMode.None);
+        for (int i = 0; i < buildings.Length; i++)
+        {
+            TutorialBuildingObject building = buildings[i];
+            if (building == null || !building.isActiveAndEnabled)
+                continue;
+
+            bool isEnemyBuilding = building.BuildingType == TutorialBuildingType.EnemyBase;
+            Sprite sprite = isEnemyBuilding ? enemyBuildingSprite : playerBuildingSprite;
+            float scale = isEnemyBuilding ? villainUnionIconScale : heroUnionIconScale;
+            iconIndex = TryDrawStrategicIcon(building, sprite, scale, gridSize, building.GetAnchorGrid(), iconIndex);
+        }
+
+        return iconIndex;
     }
 
     private int DrawOutpostIcons(Vector2Int gridSize, int iconIndex)
@@ -907,6 +968,7 @@ public class MinimapController : MonoBehaviour
 
         icon.raycastTarget = false;
         icon.preserveAspect = false;
+        icon.gameObject.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
         icon.gameObject.SetActive(false);
         return icon;
     }
@@ -922,7 +984,7 @@ public class MinimapController : MonoBehaviour
 
     private void DrawPartyIcons(Vector2Int gridSize)
     {
-        if (!showPartyIcons || targetImage == null)
+        if (!Application.isPlaying || !showPartyIcons || targetImage == null)
         {
             HidePartyIcons(0);
             return;
@@ -988,6 +1050,7 @@ public class MinimapController : MonoBehaviour
 
         icon.raycastTarget = false;
         icon.color = partyIconColor;
+        icon.gameObject.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
         icon.gameObject.SetActive(false);
         return icon;
     }
@@ -1035,7 +1098,60 @@ public class MinimapController : MonoBehaviour
 
     private Color GetCellColor(Vector2Int grid)
     {
-        return IsObstacleCell(grid) ? obstacleColor : fallbackColor;
+        return IsObstacleCell(grid) || exteriorCellCache.Contains(grid) ? obstacleColor : fallbackColor;
+    }
+
+    private void RebuildTutorialExteriorCellCache()
+    {
+        exteriorCellCache.Clear();
+        if (gameObject.scene.name != "TutorialExploreScene" || levelData == null)
+            return;
+
+        Vector2Int size = levelData.GridSize;
+        HashSet<Vector2Int> boundaryCells = new HashSet<Vector2Int>(obstacleCellCache);
+        TutorialBuildingObject[] buildings = FindObjectsByType<TutorialBuildingObject>(FindObjectsSortMode.None);
+        for (int i = 0; i < buildings.Length; i++)
+        {
+            TutorialBuildingObject building = buildings[i];
+            if (!building.isActiveAndEnabled || building.gameObject.scene != gameObject.scene)
+                continue;
+
+            IReadOnlyList<Vector2Int> cells = building.GetOccupiedCells();
+            for (int j = 0; j < cells.Count; j++)
+                boundaryCells.Add(cells[j]);
+        }
+
+        Queue<Vector2Int> pending = new Queue<Vector2Int>();
+        void EnqueueExterior(Vector2Int cell)
+        {
+            if (IsGridInMinimap(cell, size) && !boundaryCells.Contains(cell) && exteriorCellCache.Add(cell))
+                pending.Enqueue(cell);
+        }
+
+        for (int x = 0; x < size.x; x++)
+        {
+            EnqueueExterior(new Vector2Int(x, 0));
+            EnqueueExterior(new Vector2Int(x, size.y - 1));
+        }
+        for (int y = 0; y < size.y; y++)
+        {
+            EnqueueExterior(new Vector2Int(0, y));
+            EnqueueExterior(new Vector2Int(size.x - 1, y));
+        }
+
+        // 이동과 같은 8방향으로 외곽 연결 영역을 계산하고, 다음 전체 갱신까지 재사용한다.
+        while (pending.Count > 0)
+        {
+            Vector2Int cell = pending.Dequeue();
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int x = -1; x <= 1; x++)
+                {
+                    if (x != 0 || y != 0)
+                        EnqueueExterior(cell + new Vector2Int(x, y));
+                }
+            }
+        }
     }
 
     private bool IsObstacleCell(Vector2Int grid)
@@ -1111,6 +1227,18 @@ public class MinimapController : MonoBehaviour
 
     private bool TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize, out string zoneId)
     {
+        if (viewSource == ViewSourceType.SingleLevel)
+        {
+            viewOrigin = Vector2Int.zero;
+            zoneId = string.Empty;
+            gridSize = levelData != null ? levelData.GridSize : Vector2Int.zero;
+            if (gridSize.x <= 0 || gridSize.y <= 0)
+                return false;
+
+            singleLevelViewCrop?.Apply(ref viewOrigin, ref gridSize);
+            return true;
+        }
+
         if (TryGetCurrentPartyZone(out LoadedLevelZoneData zone))
         {
             viewOrigin = zone.Anchor;
