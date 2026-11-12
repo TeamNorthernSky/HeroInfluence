@@ -116,7 +116,7 @@ MonoBehaviour:
 
       Disable_MainQuest3-3'
     "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-1 \uC2B9\uB9AC \uBCF4\uC0C1
-      / \uBA54\uC778 \uD018\uC2A4\uD2B8 1 \uC644\uB8CC / \uB300\uCCB4 \uD018\uC2A4\uD2B8
+      / \uBA54\uC778 \uD018\uC2A4\uD2B8 3 \uC644\uB8CC / \uB300\uCCB4 \uD018\uC2A4\uD2B8
       \uBE44\uD65C\uC131\uD654"
   - Branch_ID: 40401
     Selection_Index: 1C
@@ -203,7 +203,7 @@ MonoBehaviour:
     Selection_Text: 
     Target_Talk_ID: 4030010
     Trigger_Effect: 
-    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC7AC\uC804\uD22C \uC804\uD22C \uC2B9\uB9AC"
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC7AC\uC804\uD22C \uC2B9\uB9AC"
   - Branch_ID: 40503
     Selection_Index: 2A
     Trigger_Type: Flag
@@ -212,7 +212,7 @@ MonoBehaviour:
     Selection_Text: 
     Target_Talk_ID: 4040010
     Trigger_Effect: 
-    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC7AC\uC804\uD22C \uC804\uD22C \uD328\uBC30"
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC7AC\uC804\uD22C \uD328\uBC30"
   - Branch_ID: 40600
     Selection_Index: 1A
     Trigger_Type: Flag
@@ -381,7 +381,7 @@ MonoBehaviour:
 
       Disable_MainQuest3-2'
     "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-3 \uC2B9\uB9AC \uBCF4\uC0C1
-      / \uACF5\uB3CC\uC774 \uB3D9\uD589 / \uBA54\uC778 \uD018\uC2A4\uD2B8 1 \uC644\uB8CC
+      / \uACF5\uB3CC\uC774 \uB3D9\uD589 / \uBA54\uC778 \uD018\uC2A4\uD2B8 3 \uC644\uB8CC
       / \uB300\uCCB4 \uD018\uC2A4\uD2B8 \uBE44\uD65C\uC131\uD654"
   - Branch_ID: 41201
     Selection_Index: 1C
@@ -422,7 +422,7 @@ MonoBehaviour:
     Selection_Text: 
     Target_Talk_ID: 4110010
     Trigger_Effect: 
-    "\uBE44\uACE0": "\uBA54\uC778 3-3 \uC7AC\uC804\uD22C \uC804\uD22C \uC2B9\uB9AC"
+    "\uBE44\uACE0": "\uBA54\uC778 3-3 \uC7AC\uC804\uD22C \uC2B9\uB9AC"
   - Branch_ID: 41302
     Selection_Index: 2A
     Trigger_Type: Flag
@@ -431,7 +431,7 @@ MonoBehaviour:
     Selection_Text: 
     Target_Talk_ID: 4120010
     Trigger_Effect: 
-    "\uBE44\uACE0": "\uBA54\uC778 3-3 \uC7AC\uC804\uD22C \uC804\uD22C \uD328\uBC30"
+    "\uBE44\uACE0": "\uBA54\uC778 3-3 \uC7AC\uC804\uD22C \uD328\uBC30"
   - Branch_ID: 41400
     Selection_Index: 1A
     Trigger_Type: Flag
@@ -1053,7 +1053,7 @@ MonoBehaviour:
     Trigger_Value:
     - Flag_UMT2Clear==1
     Selection_Text: 
-    Target_Talk_ID: 4360011
+    Target_Talk_ID: 4363010
     Trigger_Effect: 
     "\uBE44\uACE0": "UMT \uC7AC\uB4F1\uC7A5"
   - Branch_ID: 43605
@@ -1061,6 +1061,6 @@ MonoBehaviour:
     Trigger_Type: 
     Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 4363010
+    Target_Talk_ID: 4360011
     Trigger_Effect: 
     "\uBE44\uACE0": "UMT \uCD5C\uCD08 \uB4F1\uC7A5"

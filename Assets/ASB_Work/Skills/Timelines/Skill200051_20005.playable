@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0.21666666666666667
-  _speed: 0.75
+  _speed: 1.125
 --- !u!114 &-7426672867708633406
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -325,7 +325,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0.3333333333333333
-  _speed: 0.45000002
+  _speed: 0.675
 --- !u!114 &-5354211714018488050
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -467,7 +467,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0
-  _speed: 0.45000002
+  _speed: 0.675
 --- !u!114 &571618621207249536
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -704,7 +704,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0.13333333333333333
-  _speed: 0.22500001
+  _speed: 0.3375
 --- !u!114 &4243743452583643204
 MonoBehaviour:
   m_ObjectHideFlags: 1

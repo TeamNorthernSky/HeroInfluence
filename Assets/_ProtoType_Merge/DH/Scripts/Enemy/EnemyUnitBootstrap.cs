@@ -373,6 +373,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             groupKey, zoneId, EnemyBehaviorType.Mobile);
 
         FinishVisualInitialization();
+        GetComponent<EnemyZoneClearIndicator>()?.RefreshVisibility();
         return true;
     }
 

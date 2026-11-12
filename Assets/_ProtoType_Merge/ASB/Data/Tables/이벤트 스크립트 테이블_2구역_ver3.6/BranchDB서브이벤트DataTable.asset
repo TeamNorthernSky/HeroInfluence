@@ -124,7 +124,7 @@ MonoBehaviour:
     Selection_Text: 
     Target_Talk_ID: 0
     Trigger_Effect: Set_Flag_SubEvent3RetryAvailable
-    "\uBE44\uACE0": "\uC7AC\uD328\uBC30 / \uBCF4\uC0C1 \uC911\uBCF5 \uC9C0\uAE08
+    "\uBE44\uACE0": "\uC7AC\uD328\uBC30 / \uBCF4\uC0C1 \uC911\uBCF5 \uC9C0\uAE09
       \uBC29\uC9C0"
   - Branch_ID: 43500
     Selection_Index: 1A
@@ -200,5 +200,5 @@ MonoBehaviour:
     Selection_Text: 
     Target_Talk_ID: 0
     Trigger_Effect: Set_Flag_SubEvent4RetryAvailable
-    "\uBE44\uACE0": "\uC7AC\uD328\uBC30 / \uBCF4\uC0C1 \uC911\uBCF5 \uC9C0\uAE08
+    "\uBE44\uACE0": "\uC7AC\uD328\uBC30 / \uBCF4\uC0C1 \uC911\uBCF5 \uC9C0\uAE09
       \uBC29\uC9C0"
