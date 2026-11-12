@@ -401,15 +401,5 @@ namespace JC.BattleTesting.Editor
         }
     }
 
-    // JC | 2026-11-06 | 기존 BankTestScene 진입 오브젝트에서 편집 도구를 찾을 수 있게 연결합니다.
-    [CustomEditor(typeof(JcBankBattleTest))]
-    public sealed class JcBankBattleTestEditor : UnityEditor.Editor
-    {
-        public override void OnInspectorGUI()
-        {
-            DrawDefaultInspector();
-            using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
-                if (GUILayout.Button(new GUIContent("블랙불릿 4개 스킬 카메라 편집", "은행 배경·진형을 에디트 모드에서 미리 보고 스킬별 카메라 구도를 저장하는 창을 엽니다."))) JcBankSkillCameraWindow.Open();
-        }
-    }
+    // JC | 2026-11-12 | 편집창 진입 버튼은 네 전투 공통 테스트 인스펙터로 이동했습니다. 촬영 도구 자체는 유지합니다.
 }

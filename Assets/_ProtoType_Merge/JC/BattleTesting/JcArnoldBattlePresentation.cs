@@ -200,6 +200,37 @@ namespace JC.BattleTesting
             finally { if (source != null) Destroy(source); }
         }
 
+        // JC | 2026-11-12 | 전용 테스트씬은 전환/배경 중복 생성 없이 같은 본게임 표시 설치 경로를 직접 호출합니다.
+        public static JcArnoldBattlePresentation ApplyStandalone(Scene scene, GameObject stage, double hour, bool tutorial)
+        {
+            if (!JcStandaloneBattleTest.IsTestScene(scene) || !stage) throw new InvalidOperationException("전용 테스트씬과 무대가 필요합니다.");
+            var owner = new GameObject("JC_BattlePresentation");
+            SceneManager.MoveGameObjectToScene(owner, scene);
+            var bridge = owner.AddComponent<JcArnoldBattlePresentation>();
+            bridge.destination = scene.name;
+            bridge.profile = Resources.Load<JcBattleCameraProfile>("JC_BattleCamera_Default");
+            bridge.background = stage;
+            bridge.lightingHour = hour;
+            bridge.lightingProfile = JC.Environment.JcDayNightController.SnapshotForBattle();
+            bridge.bossBackground = JcBossBattleBackground.Load()?.Matches(CombatContext.Instance) == true;
+            var bank = JcBankBattleBackground.Load();
+            bridge.bankSettings = bank && bank.Matches(CombatContext.Instance) ? bank : null;
+            bridge.clearTutorialArenaTrees = tutorial;
+            bridge.Loaded(scene, LoadSceneMode.Single);
+            return bridge;
+        }
+        // JC | 2026-11-12 | 테스트 시간 선택은 도시/야외 조명만 바꾸며 은행 고정 실내광은 그대로 둡니다.
+        public void SetTestPeriod(int period)
+        {
+            if (!JcStandaloneBattleTest.IsTestScene(gameObject.scene)) return;
+            double hour = new[] { 8.5, 14.5, 20.5, 2.5 }[Mathf.Clamp(period, 0, 3)];
+            if (bossBackground)
+                foreach (var root in gameObject.scene.GetRootGameObjects())
+                    foreach (var city in root.GetComponentsInChildren<JcBossCityLighting>()) city.SelectPeriod(period);
+            else if (!bankSettings)
+                JC.Environment.JcDayNightController.EnsureBattle(gameObject.scene, hour, lightingProfile, false);
+        }
+
         void Loaded(Scene scene, LoadSceneMode mode)
         {
             if (scene.name != destination) { if (mode == LoadSceneMode.Single) Destroy(gameObject); return; }
