@@ -96,7 +96,8 @@ MonoBehaviour:
     Selection_Index: 2
     Trigger_Type: 
     Trigger_Value: []
-    Selection_Text: "\uB124\uCF54\uBC0D \uB124\uAC00 \uC880 \uC5B4\uB5BB\uAC8C \uD574\uBD10!"
+    Selection_Text: "\uB124\uCF54\uBC0D, \uB124\uAC00 \uC880 \uC5B4\uB5BB\uAC8C \uD574
+      \uBD10!"
     Target_Talk_ID: 1120300
     Trigger_Effect: 
     "\uBE44\uACE0": "\uB124\uCF54\uBC0D \uC7AC\uC559 \uC18C\uBB38"
