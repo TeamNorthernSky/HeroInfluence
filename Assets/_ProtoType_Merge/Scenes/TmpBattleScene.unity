@@ -677,7 +677,7 @@ RectTransform:
   m_GameObject: {fileID: 57315000}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.98, y: 0.98, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1935000011}
@@ -691,9 +691,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 16, y: -86.8}
+  m_AnchoredPosition: {x: 0, y: -125.2}
   m_SizeDelta: {x: -32, y: 76.8}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &57315002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -850,15 +850,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hoverScale: 1
+  hoverScale: 1.04
   hoverScaleSeconds: 0.12
   sharedSettings: {fileID: 918636222}
-  availableEffect: {fileID: 741630105}
+  availableEffect: {fileID: 0}
   selectedFrame: {fileID: 224286895}
-  showAvailableEffect: 1
+  showAvailableEffect: 0
   availableColor: {r: 0.2, g: 0.65, b: 1, a: 1}
   glowIntensity: 1.2
-  sweepIntensity: 0.8
+  sweepIntensity: 0
   sweepCycle: 2.5
   sweepDuration: 0.6
   selectedColor: {r: 1, g: 0.75, b: 0.1, a: 1}
@@ -3158,7 +3158,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 237374291}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -3786,7 +3786,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -306.8}
+  m_AnchoredPosition: {x: 0, y: -321.818}
   m_SizeDelta: {x: 0, y: 337.2}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &289341250
@@ -10898,7 +10898,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 741630104}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -11155,7 +11155,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -216}
+  m_AnchoredPosition: {x: 0, y: -235.018}
   m_SizeDelta: {x: 0, y: 76.8}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &757777490
@@ -11271,7 +11271,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 759129869}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -14301,7 +14301,7 @@ RectTransform:
   m_GameObject: {fileID: 888000021}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.98, y: 0.98, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1935000001}
@@ -14316,9 +14316,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 16, y: 0}
+  m_AnchoredPosition: {x: 0, y: -38.4}
   m_SizeDelta: {x: -32, y: 76.8}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &888000023
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -14503,7 +14503,7 @@ RectTransform:
   m_GameObject: {fileID: 888000031}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.98, y: 0.98, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1324392302}
@@ -14516,9 +14516,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 16, y: 0}
+  m_AnchoredPosition: {x: 0, y: -38.4}
   m_SizeDelta: {x: -32, y: 76.8}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &888000033
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -14801,15 +14801,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hoverScale: 1
+  hoverScale: 1.04
   hoverScaleSeconds: 0.12
   sharedSettings: {fileID: 918636222}
-  availableEffect: {fileID: 1092356850}
+  availableEffect: {fileID: 0}
   selectedFrame: {fileID: 1952088960}
-  showAvailableEffect: 1
+  showAvailableEffect: 0
   availableColor: {r: 0.2, g: 0.65, b: 1, a: 1}
   glowIntensity: 1.2
-  sweepIntensity: 0.8
+  sweepIntensity: 0
   sweepCycle: 2.5
   sweepDuration: 0.6
   selectedColor: {r: 1, g: 0.75, b: 0.1, a: 1}
@@ -15813,7 +15813,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63da73f29716e0e4586fad2514e2586e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showAvailableEffect: 1
+  showAvailableEffect: 0
   glowColor: {r: 0.2, g: 0.65, b: 1, a: 1}
   glowWidth: 0.008
   glowInnerWidth: 0.025
@@ -15821,7 +15821,7 @@ MonoBehaviour:
   glowLumEdge: 1
   gleamTexture: {fileID: 2800000, guid: fa1ad0058cb602442924be7412b31a34, type: 3}
   sweepColor: {r: 1, g: 0.8353, b: 0.2, a: 1}
-  sweepIntensity: 0.8
+  sweepIntensity: 0
   gleamTilt: 13
   gleamScale: 1.43
   gleamWidth: 1.37
@@ -18483,7 +18483,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1092356847}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -19076,7 +19076,7 @@ MonoBehaviour:
   bloomRadius: 14
   bloomIntensity: 0.4
   bloomSoftKnee: 2.2
-  selectedColor: {r: 0.015, g: 1, b: 0.12, a: 1}
+  selectedColor: {r: 1, g: 0.75, b: 0.1, a: 1}
   selectedWidth: 0.065
   selectedIntensity: 3.2
   selectedOrbit: 1
@@ -24165,7 +24165,7 @@ RectTransform:
   m_GameObject: {fileID: 1457325133}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.98, y: 0.98, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1935000031}
@@ -24179,9 +24179,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 16, y: -260.40002}
+  m_AnchoredPosition: {x: 0, y: -298.80002}
   m_SizeDelta: {x: -32, y: 76.8}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1457325135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24338,15 +24338,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hoverScale: 1
+  hoverScale: 1.04
   hoverScaleSeconds: 0.12
   sharedSettings: {fileID: 918636222}
-  availableEffect: {fileID: 1687431589}
+  availableEffect: {fileID: 0}
   selectedFrame: {fileID: 761302723}
-  showAvailableEffect: 1
+  showAvailableEffect: 0
   availableColor: {r: 0.2, g: 0.65, b: 1, a: 1}
   glowIntensity: 1.2
-  sweepIntensity: 0.8
+  sweepIntensity: 0
   sweepCycle: 2.5
   sweepDuration: 0.6
   selectedColor: {r: 1, g: 0.75, b: 0.1, a: 1}
@@ -25571,7 +25571,7 @@ RectTransform:
   m_GameObject: {fileID: 1515773280}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.98, y: 0.98, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1935000021}
@@ -25585,9 +25585,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 16, y: -173.6}
+  m_AnchoredPosition: {x: 0, y: -212}
   m_SizeDelta: {x: -32, y: 76.8}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1515773282
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25744,15 +25744,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hoverScale: 1
+  hoverScale: 1.04
   hoverScaleSeconds: 0.12
   sharedSettings: {fileID: 918636222}
-  availableEffect: {fileID: 759129870}
+  availableEffect: {fileID: 0}
   selectedFrame: {fileID: 1755546252}
-  showAvailableEffect: 1
+  showAvailableEffect: 0
   availableColor: {r: 0.2, g: 0.65, b: 1, a: 1}
   glowIntensity: 1.2
-  sweepIntensity: 0.8
+  sweepIntensity: 0
   sweepCycle: 2.5
   sweepDuration: 0.6
   selectedColor: {r: 1, g: 0.75, b: 0.1, a: 1}
@@ -29138,7 +29138,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687431587}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -34011,15 +34011,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hoverScale: 1
+  hoverScale: 1.04
   hoverScaleSeconds: 0.12
   sharedSettings: {fileID: 918636222}
-  availableEffect: {fileID: 237374292}
+  availableEffect: {fileID: 0}
   selectedFrame: {fileID: 1492584528}
-  showAvailableEffect: 1
+  showAvailableEffect: 0
   availableColor: {r: 0.2, g: 0.65, b: 1, a: 1}
   glowIntensity: 1.2
-  sweepIntensity: 0.8
+  sweepIntensity: 0
   sweepCycle: 2.5
   sweepDuration: 0.6
   selectedColor: {r: 1, g: 0.75, b: 0.1, a: 1}

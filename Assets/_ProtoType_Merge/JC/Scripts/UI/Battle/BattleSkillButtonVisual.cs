@@ -78,6 +78,11 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
     private void Awake()
     {
         restingScale = transform.localScale;
+        // JC | 2026-11-12 | 테스트씬 직접 시작은 공통 HUD 재배치 없이 실행되므로 저장된 코어 텍스트도 여기서 연결합니다.
+        // 공통 재배치가 실행되는 경로는 해당 코드에서 새 기본 위치를 다시 연결하며, 기존 형제 계층은 그대로 유지합니다.
+        if (sharedSettings != null && sharedSettings.SupportsMotionControls && name == "Button_Skill_2" &&
+            transform.parent != null && transform.parent.name == "CoreSkillPanel")
+            BindScaleCompanion(transform.parent.Find("Title") as RectTransform);
         selectable = GetComponent<Selectable>();
         var face = GetComponent<Image>();
         systemButtonStyle = face != null && face.material != null &&
@@ -167,11 +172,106 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
 
     private void Update()
     {
-        if (hoverScale <= 1f) return;
+        // JC | 2026-11-12 | 6씬의 공통 초안을 매 프레임 읽어 기본 너비·배율·두 축 피봇을 즉시 반영합니다.
+        float scale = hoverScale;
+        bool useMotion = false;
+        if (sharedSettings != null && sharedSettings.isActiveAndEnabled &&
+            sharedSettings.TryGetMotionDraft(out var sharedScale, out var pivotX, out var pivotY, out var widthRatio))
+        {
+            useMotion = true;
+            scale = sharedScale;
+            ApplyMotionWidth(widthRatio);
+            ApplyMotionPivot(new Vector2(pivotX, pivotY));
+        }
+        if (!useMotion && scale <= 1f) return;
         bool canHover = (hovered || wasSelected) && (selectable == null || selectable.IsInteractable());
         hoverBlend = Mathf.MoveTowards(hoverBlend, canHover ? 1f : 0f,
             Time.unscaledDeltaTime / Mathf.Max(.01f, hoverScaleSeconds));
-        transform.localScale = restingScale * Mathf.Lerp(1f, hoverScale, Mathf.SmoothStep(0f, 1f, hoverBlend));
+        // JC | 2026-11-12 | 확대 중 1배로 낮춰도 반드시 기본 크기로 돌아오며, 씬의 98% 기본 배율은 유지합니다.
+        transform.localScale = restingScale * Mathf.Lerp(1f, scale, Mathf.SmoothStep(0f, 1f, hoverBlend));
+    }
+
+    // JC | 2026-11-12 | 원래 스트레치 배치를 보관해 축소를 반복하거나 부모 너비가 바뀌어도 원래 좌측 경계에서 계산합니다.
+    private bool motionLayoutCaptured;
+    private Vector2 originalHorizontalAnchors;
+    private float originalWidthDelta, originalPositionX, originalPivotX;
+    private float companionWidthReduction;
+
+    public void CaptureMotionLayout()
+    {
+        var rect = transform as RectTransform;
+        if (rect == null) return;
+        originalHorizontalAnchors = new Vector2(rect.anchorMin.x, rect.anchorMax.x);
+        originalWidthDelta = rect.sizeDelta.x;
+        originalPositionX = rect.anchoredPosition.x;
+        originalPivotX = rect.pivot.x;
+        companionWidthReduction = 0;
+        motionLayoutCaptured = true;
+    }
+
+    private void ApplyMotionWidth(float ratio)
+    {
+        var rect = transform as RectTransform;
+        var parent = rect != null ? rect.parent as RectTransform : null;
+        if (parent == null) return;
+        if (!motionLayoutCaptured) CaptureMotionLayout();
+        float originalWidth = parent.rect.width * (originalHorizontalAnchors.y - originalHorizontalAnchors.x) + originalWidthDelta;
+        if (originalWidth <= 0) return;
+        float width = originalWidth * Mathf.Clamp(ratio, .6f, 1f);
+        float originalLocalX = parent.rect.xMin + parent.rect.width * Mathf.Lerp(originalHorizontalAnchors.x, originalHorizontalAnchors.y, originalPivotX) + originalPositionX;
+        float left = originalLocalX - originalWidth * originalPivotX * restingScale.x;
+        // JC | 2026-11-12 | 배율로 찌그러뜨리지 않고 Rect 너비만 변경합니다. 원래 비확대 왼쪽 경계에서 현재 피봇 위치를 다시 구합니다.
+        rect.sizeDelta = new Vector2(originalWidthDelta + width - originalWidth, rect.sizeDelta.y);
+        var position = rect.localPosition;
+        position.x = left + width * rect.pivot.x * restingScale.x;
+        rect.localPosition = position;
+        companionWidthReduction = (originalWidth - width) * restingScale.x;
+    }
+
+    private void ApplyMotionPivot(Vector2 pivot)
+    {
+        var rect = transform as RectTransform;
+        if (rect == null || rect.pivot == pivot) return;
+        // JC | 2026-11-12 | 두 축 모두 비확대 상태의 중심 기준으로 보정하여 피봇 변경 중 행 정렬·간격을 보존합니다.
+        Vector2 delta = pivot - rect.pivot;
+        Vector3 offset = new Vector3(delta.x * rect.rect.width * restingScale.x, delta.y * rect.rect.height * restingScale.y, 0);
+        Vector3 position = rect.localPosition + rect.localRotation * offset;
+        rect.pivot = pivot;
+        rect.localPosition = position;
+    }
+
+    // JC | 2026-11-12 | 코어스킬명은 버튼의 형제이므로 기존 계층·참조를 유지하면서 같은 피봇/배율로 동반 확대합니다.
+    private RectTransform scaleCompanion;
+    private Vector2 companionRestPosition;
+    private Vector3 companionRestScale;
+    private float companionRestWidthDelta;
+
+    public void BindScaleCompanion(RectTransform label)
+    {
+        scaleCompanion = label;
+        if (label == null) return;
+        companionRestPosition = label.anchoredPosition;
+        companionRestScale = label.localScale;
+        companionRestWidthDelta = label.sizeDelta.x;
+    }
+
+    private void LateUpdate()
+    {
+        if (scaleCompanion == null || scaleCompanion.parent != transform.parent || restingScale.x == 0 || restingScale.y == 0) return;
+        // JC | 2026-11-12 | 매번 원래 앵커 위치에서 계산하므로 해상도 변경과 반복 호버에도 텍스트 위치가 누적 이동하지 않습니다.
+        scaleCompanion.anchoredPosition = companionRestPosition;
+        // JC | 2026-11-12 | 형제인 코어스킬명의 오른쪽 텍스트 영역도 줄어든 버튼 너비를 따라가게 합니다.
+        scaleCompanion.sizeDelta = new Vector2(companionRestWidthDelta - companionWidthReduction, scaleCompanion.sizeDelta.y);
+        Vector3 multiplier = new Vector3(transform.localScale.x / restingScale.x, transform.localScale.y / restingScale.y, 1);
+        scaleCompanion.localPosition = transform.localPosition + Vector3.Scale(scaleCompanion.localPosition - transform.localPosition, multiplier);
+        scaleCompanion.localScale = Vector3.Scale(companionRestScale, multiplier);
+    }
+
+    private void RestoreScaleCompanion()
+    {
+        if (scaleCompanion == null) return;
+        scaleCompanion.anchoredPosition = companionRestPosition;
+        scaleCompanion.localScale = companionRestScale;
     }
 
     private void OnDisable()
@@ -179,7 +279,10 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
         SetState(false, false);
         hovered = false;
         hoverBlend = 0f;
-        if (hoverScale > 1f) transform.localScale = restingScale;
+        // JC | 2026-11-12 | 공통 확대 설정을 사용하는 스킬도 비활성화 시 기본 크기로 복원합니다.
+        if (hoverScale > 1f || (sharedSettings != null && sharedSettings.SupportsMotionControls)) transform.localScale = restingScale;
+        // JC | 2026-11-12 | 버튼 비활성화 시 별도 텍스트도 원래 배치로 복원합니다.
+        RestoreScaleCompanion();
     }
 
     private void UpdateOrbitPixelSize()
@@ -204,6 +307,8 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
 
     private void OnDestroy()
     {
+        // JC | 2026-11-12 | 시각 컴포넌트만 제거되는 경우에도 형제 텍스트에 확대값을 남기지 않습니다.
+        RestoreScaleCompanion();
         if (inset != null)
         {
             if (Application.isPlaying) Destroy(inset.gameObject);
