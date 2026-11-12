@@ -363,7 +363,56 @@ public class GateThreatController : MonoBehaviour
             }
 
             RefreshGateOpenStateForZone(condition.zoneId);
+            QueueBlockedGateThreatFocus(condition.zoneId);
         }
+    }
+
+    private void QueueBlockedGateThreatFocus(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        bool hasBlockedGate = false;
+        for (int i = 0; i < gates.Count; i++)
+        {
+            GateRuntimeController gate = gates[i];
+            if (gate != null &&
+                MapProgressKey.NormalizeSegment(gate.FirstZoneId) == normalizedZoneId &&
+                !gate.IsOpen && HasLiveThreatEnemyConnectedToGate(gate))
+            {
+                hasBlockedGate = true;
+                break;
+            }
+        }
+        if (!hasBlockedGate || !HasLiveThreatEnemyInZone(normalizedZoneId, string.Empty))
+            return;
+
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null) return;
+
+        string prefix = $"runtime_enemy_gate_threat_{normalizedZoneId}_";
+        EnemyGridMover nearest = null;
+        float bestDistance = float.PositiveInfinity;
+        EnemyGridMover[] enemies = FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            EnemyGridMover enemy = enemies[i];
+            if (!enemy.isActiveAndEnabled || enemy.gameObject.scene != gameObject.scene ||
+                enemy.BehaviorType != EnemyBehaviorType.Mobile)
+                continue;
+
+            EnemyIdentity identity = enemy.GetComponent<EnemyIdentity>();
+            string key = identity != null ? MapProgressKey.NormalizeSegment(identity.PlacementKey) : string.Empty;
+            if (!key.StartsWith(prefix, System.StringComparison.Ordinal)) continue;
+            MapProgressRepository repository = MapProgressRepository.Instance;
+            if (repository == null || !repository.TryGetEnemyState(key, out EnemyWorldState state) ||
+                state == null || state.Defeated)
+                continue;
+
+            float distance = (enemy.transform.position - party.transform.position).sqrMagnitude;
+            if (distance >= bestDistance) continue;
+            nearest = enemy;
+            bestDistance = distance;
+        }
+        if (nearest != null) GateCameraFocusController.TryQueueThreatFocus(nearest);
     }
 
     private void EnsureInitialZoneThreatTimer()
@@ -845,7 +894,7 @@ public class GateThreatController : MonoBehaviour
              HasLiveThreatEnemyInZone(gate.SecondZoneId, string.Empty));
     }
 
-    private bool IsZoneClearedForGateOpen(string zoneId)
+    public bool IsZoneClearedForGateOpen(string zoneId)
     {
         string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
         if (string.IsNullOrWhiteSpace(normalizedZoneId))

@@ -16,6 +16,8 @@ public sealed class GateCameraFocusController : MonoBehaviour
     private sealed class Change
     {
         public string Key;
+        public EnemyGridMover ThreatEnemy;
+        public bool IsThreatFocus;
         public readonly List<GateRuntimeController> Gates = new List<GateRuntimeController>();
         public bool Revealed;
         public System.Action OnRevealed;
@@ -60,20 +62,42 @@ public sealed class GateCameraFocusController : MonoBehaviour
             gate == null || !gate.gameObject.scene.isLoaded)
             return false;
 
+        if (!EnsureInstance(gate.gameObject)) return false;
+        Instance.QueueChange(gate, onRevealed);
+        return true;
+    }
+
+    public static bool TryQueueThreatFocus(EnemyGridMover enemy)
+    {
+        if (!Application.isPlaying || DHGameEndState.IsEnding || DHGameStateRestoreService.IsRestoring ||
+            enemy == null || !enemy.isActiveAndEnabled || !enemy.gameObject.scene.isLoaded)
+            return false;
+
+        if (!EnsureInstance(enemy.gameObject)) return false;
+        string key = "threat:" + enemy.GetInstanceID();
+        if ((Instance.current != null && Instance.current.Key == key) || Instance.queuedByKey.ContainsKey(key))
+            return true;
+
+        Change change = new Change { Key = key, ThreatEnemy = enemy, IsThreatFocus = true };
+        Instance.queuedByKey.Add(key, change);
+        Instance.pending.Enqueue(change);
+        return true;
+    }
+
+    private static bool EnsureInstance(GameObject source)
+    {
         if (Instance == null)
         {
             Instance = FindFirstObjectByType<GateCameraFocusController>();
             if (Instance == null)
             {
                 GameObject root = new GameObject("[DH_GateCameraFocus]");
-                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, gate.gameObject.scene);
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, source.scene);
                 Instance = root.AddComponent<GateCameraFocusController>();
             }
         }
 
-        if (!Instance.isActiveAndEnabled) return false;
-        Instance.QueueChange(gate, onRevealed);
-        return true;
+        return Instance.isActiveAndEnabled;
     }
 
     public static IEnumerator WaitForIdle()
@@ -133,12 +157,20 @@ public sealed class GateCameraFocusController : MonoBehaviour
                 current = pending.Dequeue();
                 queuedByKey.Remove(current.Key);
                 GateRuntimeController focusGate = SelectFocusGate(current);
-                if (cameraFollower != null && focusGate != null)
+                EnemyGridMover threat = current.ThreatEnemy;
+                bool hasTarget = current.IsThreatFocus
+                    ? threat != null && threat.isActiveAndEnabled
+                    : focusGate != null;
+                if (cameraFollower != null && hasTarget)
                 {
+                    Vector3 focus = current.IsThreatFocus
+                        ? GetPresentationFocus(threat.transform.position)
+                        : GetPresentationFocus(focusGate);
                     ownsCameraFocus = true;
-                    yield return cameraFollower.PlayTemporaryFocus(GetPresentationFocus(focusGate),
+                    yield return cameraFollower.PlayTemporaryFocus(focus,
                         moveDuration, holdDuration, returnDuration, () => current.Reveal(true),
                         () => !isActiveAndEnabled || DHGameEndState.IsEnding ||
+                              (current.IsThreatFocus && (threat == null || !threat.isActiveAndEnabled)) ||
                               SceneFadeController.HideCursorDuringTransition,
                         () => current != null && current.IsAnimating);
                     ownsCameraFocus = false;
@@ -170,8 +202,13 @@ public sealed class GateCameraFocusController : MonoBehaviour
 
     private Vector3 GetPresentationFocus(GateRuntimeController gate)
     {
+        return GetPresentationFocus(gate.GetFocusWorldPosition());
+    }
+
+    private Vector3 GetPresentationFocus(Vector3 position)
+    {
         Vector3 screenUpOnGround = Vector3.ProjectOnPlane(cameraFollower.transform.up, Vector3.up).normalized;
-        return gate.GetFocusWorldPosition() + screenUpOnGround * focusVerticalOffset;
+        return position + screenUpOnGround * focusVerticalOffset;
     }
 
     private GateRuntimeController SelectFocusGate(Change change)
