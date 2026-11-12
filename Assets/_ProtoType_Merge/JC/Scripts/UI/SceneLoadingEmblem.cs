@@ -119,12 +119,13 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
         {
             switch (selectedIcon)
             {
-                case 0: // 왼쪽으로 당긴 뒤 오른쪽으로 빠르게 찌르고 중앙으로 회수한다.
+                case 0: // 오른쪽에서 유지한 뒤 바로 왼쪽으로 당겨 다음 펀치를 준비한다.
                     float punch = Mathf.Repeat(active, 1.5f);
+                    x = 14f;
                     if (punch < .42f)
                     {
                         float pull = Mathf.SmoothStep(0f, 1f, punch / .42f);
-                        x = Mathf.Lerp(0f, -24f, pull);
+                        x = Mathf.Lerp(active < 1.5f ? 0f : 14f, -24f, pull);
                         scale = Mathf.Lerp(.72f, .46f, pull);
                     }
                     else if (punch < .56f)
@@ -133,10 +134,6 @@ public sealed class SceneLoadingEmblem : MonoBehaviour
                         x = Mathf.Lerp(-24f, 14f, strike);
                         scale = Mathf.Lerp(.46f, .72f, strike);
                     }
-                    else if (punch < .66f)
-                        x = 14f;
-                    else if (punch < .96f)
-                        x = Mathf.Lerp(14f, 0f, Mathf.SmoothStep(0f, 1f, (punch - .66f) / .3f));
                     break;
                 case 1: // Alternating shots with a brief flame and opposite recoil.
                     int shot = Mathf.FloorToInt(active / .48f);

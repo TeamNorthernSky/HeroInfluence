@@ -183,6 +183,13 @@ public sealed class TutorialOutpostObject : MonoBehaviour
 
     private void ApplyStateVisuals()
     {
+        if (buildingObject != null)
+        {
+            buildingObject.SetBuildingType(currentClaimState == TutorialOutpostClaimState.HeroClaimed
+                ? TutorialBuildingType.Association
+                : TutorialBuildingType.EnemyBase);
+        }
+
         ApplyMaterial();
         ApplyOverlayColor();
     }
