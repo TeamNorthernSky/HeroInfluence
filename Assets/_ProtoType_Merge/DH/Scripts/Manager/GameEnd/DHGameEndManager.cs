@@ -16,10 +16,10 @@ public class DHGameEndManager : MonoBehaviour
     [SerializeField] private GameObject gameOverPanel;
 
     [Header("Scene")]
-    [SerializeField] private string fallbackTitleSceneName = "TitleScene";
+    [SerializeField] private string gameOverCreditSceneName = "Credit Scene";
     [SerializeField] private string clearEndingSceneName = "Ending CutScene";
 
-    private bool returnToTitleStarted;
+    private bool gameOverCreditsStarted;
     private bool clearEndingStarted;
 
     private void Awake()
@@ -29,7 +29,7 @@ public class DHGameEndManager : MonoBehaviour
 
     public void ShowResult(DHGameEndResult result)
     {
-        returnToTitleStarted = false;
+        gameOverCreditsStarted = false;
         DHGameEndState.BeginEnding();
 
         if (result == DHGameEndResult.Clear)
@@ -42,15 +42,15 @@ public class DHGameEndManager : MonoBehaviour
         }
     }
 
-    public void ReturnToTitleNow()
+    public void GoToGameOverCreditsNow()
     {
-        if (returnToTitleStarted)
+        if (gameOverCreditsStarted)
             return;
 
-        returnToTitleStarted = true;
+        gameOverCreditsStarted = true;
         Time.timeScale = 1f;
 
-        LoadTitleScene();
+        LoadGameOverCreditScene();
     }
 
     private void ShowPanel(GameObject panel)
@@ -70,7 +70,7 @@ public class DHGameEndManager : MonoBehaviour
             gameOverPanel.SetActive(false);
     }
 
-    private void ResetProgressForTitle()
+    private void ResetProgressForGameEnd()
     {
         if (GameManager.Instance != null)
             GameManager.Instance.ResetForNewGame();
@@ -89,20 +89,19 @@ public class DHGameEndManager : MonoBehaviour
         var request = SceneFadeController.LoadSceneAsyncWithFade(clearEndingSceneName, prepare: () =>
         {
             HidePanels();
-            ResetProgressForTitle();
+            ResetProgressForGameEnd();
             return true;
         }, onFailed: () => { if (this != null) { clearEndingStarted = false; ShowPanel(clearPanel); } });
         if (request == null) clearEndingStarted = false;
     }
 
-    private void LoadTitleScene()
+    private void LoadGameOverCreditScene()
     {
-        string destination = GameSceneManager.Instance != null ? GameSceneManager.Instance.TitleScene : fallbackTitleSceneName;
-        var request = SceneFadeController.LoadSceneAsyncWithFade(destination, prepare: () =>
+        var request = SceneFadeController.LoadSceneAsyncWithFade(gameOverCreditSceneName, prepare: () =>
         {
-            ResetProgressForTitle();
+            ResetProgressForGameEnd();
             return true;
-        }, onFailed: () => { if (this != null) returnToTitleStarted = false; });
-        if (request == null) returnToTitleStarted = false;
+        }, onFailed: () => { if (this != null) gameOverCreditsStarted = false; });
+        if (request == null) gameOverCreditsStarted = false;
     }
 }
