@@ -216,12 +216,12 @@ MonoBehaviour:
     shadowBias: 0.05
     shadowNormalBias: 0.2
   - playerBackFill: 0
-    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 10\uC2DC \uADF8\uB9BC\uC790"
+    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 8\uC2DC 30\uBD84 \uADF8\uB9BC\uC790"
     fixturePrefab: {fileID: 0}
     enabled: 1
     type: 2
     position: {x: 6, y: 14, z: 6}
-    rotation: {x: 50.19443, y: 288.24808, z: -0.0000026672742}
+    rotation: {x: 50.19443, y: 212.7968, z: 0}
     color: {r: 1, g: 0.9686275, b: 0.85098046, a: 1}
     intensity: 1
     range: 47.1

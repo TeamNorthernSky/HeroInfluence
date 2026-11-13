@@ -25,7 +25,7 @@ public sealed class JcBattleHoverRing : MaskableGraphic
 
     public void AlignToBadge(Image circle) { badgeCircle = circle; SetVerticesDirty(); }
 
-    public void Show(Color tint, float thickness, float progress = 0, bool useGuideRing = false, bool useLegacyArrowStyle = false, JcBattleTurnSlotConfiguration settings = null, bool healing = false)
+    public void Show(Color tint, float thickness, float progress = 0, bool useGuideRing = false, bool useLegacyArrowStyle = false, JcBattleTurnSlotConfiguration settings = null, bool healing = false, bool showArrow = true)
     {
         if (guideRing != useGuideRing) { guideRing = useGuideRing; SetVerticesDirty(); }
         if (arrow == null)
@@ -62,7 +62,9 @@ public sealed class JcBattleHoverRing : MaskableGraphic
             settings?.innerSeparatorColor ?? new Color(.07843138f, .12941177f, .23921569f, 1f), settings?.innerSeparatorOpacity ?? 1f);
         // Graphic.color는 메시를 재생성하므로 렌더러 색상만 변경합니다.
         canvasRenderer.SetColor(tint);
-        arrow.enabled = true;
+        // JC | 2026-11-13 | 확정 광역 대상의 원은 유지하되 화살표는 실제 호버 대상에만 표시합니다.
+        // 호버가 옮겨져도 원은 계속 활성 상태일 수 있으므로 화살표 상태를 매번 갱신합니다.
+        arrow.enabled = showArrow;
         // JC | 2026-11-12 | 배지 점멸은 유지하고 화살표의 표현 스타일만 전환합니다.
         if (settings != null) arrow.SetAppearance(settings.style, healing, settings.arrowScale, settings.arrowTravel, settings.arrowOutlineWidth, settings.arrowCornerRadius);
         else arrow.SetLegacyStyle(useLegacyArrowStyle);

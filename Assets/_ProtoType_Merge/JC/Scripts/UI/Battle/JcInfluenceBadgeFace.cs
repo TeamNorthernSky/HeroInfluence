@@ -7,7 +7,8 @@ public sealed class JcInfluenceBadgeFace : MaskableGraphic
 {
     Color surface, border;
     float sweep = -1;
-    public void SetStyle(Color fill, Color edge) { surface = fill; border = edge; SetVerticesDirty(); }
+    // JC | 2026-11-13 | 실시간 색상 조절 중 실제 색이 바뀔 때만 메시를 다시 만듭니다.
+    public void SetStyle(Color fill, Color edge) { if (surface == fill && border == edge) return; surface = fill; border = edge; SetVerticesDirty(); }
     public void SetSweep(float value) { if (sweep == value) return; sweep = value; SetVerticesDirty(); }
     protected override void OnPopulateMesh(VertexHelper vh)
     {

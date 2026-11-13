@@ -205,6 +205,9 @@ namespace JC.BattleTesting
                 }
                 if (spec.fixturePrefab && !fixtures.ContainsKey(light)) {
                     var fixture = Instantiate(spec.fixturePrefab, light.transform, false);
+                    // JC | 2026-11-13 | 은행 벽 부착물은 그림자를 투사하지 않습니다. 원본 프리팹·광원 설정은 유지하고 생성한 외형만 제외합니다.
+                    foreach (var renderer in fixture.GetComponentsInChildren<Renderer>(true))
+                        renderer.shadowCastingMode = ShadowCastingMode.Off;
                     fixture.name = "월마운트 램프 외형"; fixtures.Add(light, fixture); fixtureSources.Add(light, spec.fixturePrefab);
                 }
                 // JC | 2026-11-09 | 은행 저장 번호를 의미로 변환한 뒤 보스와 동일한 광원 적용기를 사용합니다.
