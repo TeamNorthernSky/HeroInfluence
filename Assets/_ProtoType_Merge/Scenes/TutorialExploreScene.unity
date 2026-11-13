@@ -19978,6 +19978,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 925910761}
   m_CullTransparentMesh: 1
+--- !u!224 &927309888 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1175441453535269570, guid: 84f1cc0a884961c419cc368e0f93fb45,
+    type: 3}
+  m_PrefabInstance: {fileID: 1004272264}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &928142268
 GameObject:
   m_ObjectHideFlags: 0
@@ -22002,12 +22008,12 @@ PrefabInstance:
     - target: {fileID: 550799698881257728, guid: 84f1cc0a884961c419cc368e0f93fb45,
         type: 3}
       propertyPath: m_fontSize
-      value: 38.2
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 550799698881257728, guid: 84f1cc0a884961c419cc368e0f93fb45,
         type: 3}
       propertyPath: m_fontSizeBase
-      value: 38.2
+      value: 28
       objectReference: {fileID: 0}
     - target: {fileID: 652014773195917849, guid: 84f1cc0a884961c419cc368e0f93fb45,
         type: 3}
@@ -22127,7 +22133,7 @@ PrefabInstance:
     - target: {fileID: 2188311172140203822, guid: 84f1cc0a884961c419cc368e0f93fb45,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 436.8908
+      value: 471.9691
       objectReference: {fileID: 0}
     - target: {fileID: 2188311172140203822, guid: 84f1cc0a884961c419cc368e0f93fb45,
         type: 3}
@@ -22342,7 +22348,7 @@ PrefabInstance:
     - target: {fileID: 4369825574514893666, guid: 84f1cc0a884961c419cc368e0f93fb45,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 375.8468
+      value: 372
       objectReference: {fileID: 0}
     - target: {fileID: 4369825574514893666, guid: 84f1cc0a884961c419cc368e0f93fb45,
         type: 3}
@@ -28592,12 +28598,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1004272264}
   m_PrefabAsset: {fileID: 0}
---- !u!224 &1224759753 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1234277616002649776, guid: 84f1cc0a884961c419cc368e0f93fb45,
-    type: 3}
-  m_PrefabInstance: {fileID: 1004272264}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1224759757
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28610,7 +28610,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c50609eec887b0c4f90b9b4d4a3cd2d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  content: {fileID: 1224759753}
+  content: {fileID: 927309888}
   itemPrefab: {fileID: 5942687418010741995, guid: c5160c5197544f64b9f48e61e15cf486,
     type: 3}
   controller: {fileID: 799728449}
