@@ -127,7 +127,7 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
 
         if (_releasing) _releaseElapsed += Time.deltaTime;
         float weight = _releasing
-            ? 1f - Mathf.Clamp01(_releaseElapsed / _releaseDuration)
+            ? 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_releaseElapsed / _releaseDuration))
             : 1f;
         if (weight <= 0f)
         {
@@ -136,13 +136,12 @@ public sealed class UmtWaveLeftFootPlant : MonoBehaviour
         }
         if (_releasing && _hasReturnPose)
         {
-            float progress = Mathf.Clamp01(_releaseElapsed / _releaseDuration);
-            ApplyReturnPose(1f - Mathf.SmoothStep(0f, 1f, progress));
-            // 골반이 Idle로 옮겨지는 동안 양발은 마지막 Timeline 위치를 유지한다.
-            ApplyPose();
+            ApplyReturnPose(weight);
+            // Fade the foot constraints with the pose instead of releasing both feet in one frame.
+            ApplyPose(weight);
             ApplyFootPose(_rightUpper, _rightLower, _rightFoot,
                 _rightAnchorLocalPosition, _rightAnchorLocalRotation,
-                _rightKneeBendLocalDirection, 1f);
+                _rightKneeBendLocalDirection, weight);
         }
         else
             ApplyPose(weight);

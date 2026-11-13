@@ -14842,8 +14842,8 @@ ParticleSystem:
     enabled: 1
     startLifetime:
       serializedVersion: 2
-      minMaxState: 3
-      scalar: 0.9
+      minMaxState: 0
+      scalar: 0.5
       minScalar: 0.35999998
       maxCurve:
         serializedVersion: 2
@@ -15478,7 +15478,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 0.7
+      value: 0.25
       mode: 0
       spread: 0
       speed:
@@ -15597,7 +15597,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 70
+      scalar: 140
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -98667,7 +98667,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &199531128558061722
 Transform:
   m_ObjectHideFlags: 0

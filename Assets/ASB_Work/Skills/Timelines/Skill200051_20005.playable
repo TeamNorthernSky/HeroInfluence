@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0.21666666666666667
-  _speed: 1.125
+  _speed: 1.2
 --- !u!114 &-7426672867708633406
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -195,8 +195,8 @@ MonoBehaviour:
     m_Start: 0.3
     m_ClipIn: 1.1666666666666667
     m_Asset: {fileID: 7228190562714446115}
-    m_Duration: 0.30000003973642975
-    m_TimeScale: 0.5555555555555556
+    m_Duration: 0.45
+    m_TimeScale: 0.37037037037037035
     m_ParentTrack: {fileID: -6842477093891157138}
     m_EaseInDuration: 0
     m_EaseOutDuration: 0
@@ -325,7 +325,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0.3333333333333333
-  _speed: 0.675
+  _speed: 1
 --- !u!114 &-5354211714018488050
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -404,9 +404,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of UMT_EquipOverShoulder_Reverse_ToFootLockedIdle
+  m_Name: AnimationPlayableAsset of UMT_Wave_ReturnLower_Smooth
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: 1d38622b8a534b243943fcef24465246, type: 2}
+  m_Clip: {fileID: 7400000, guid: b7dab80959f566248b4c486fac9f774c, type: 2}
   m_Position: {x: -0.00233, y: 0, z: -0.02}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -428,7 +428,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62dd47085fb715741b7d8a4ee9f474fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.6000000397349999
+  m_Time: 0.75
   _sectionId: Attack
   _boundary: 1
 --- !u!114 &11400000
@@ -467,7 +467,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0
-  _speed: 0.675
+  _speed: 0.40500003
 --- !u!114 &571618621207249536
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -606,8 +606,8 @@ MonoBehaviour:
     m_Start: 0.4
     m_ClipIn: 0
     m_Asset: {fileID: -3178097809739908180}
-    m_Duration: 0.2
-    m_TimeScale: 8.333333730697632
+    m_Duration: 0.35
+    m_TimeScale: 4.761904988970076
     m_ParentTrack: {fileID: 1755557791179200079}
     m_EaseInDuration: 0
     m_EaseOutDuration: 0
@@ -670,7 +670,7 @@ MonoBehaviour:
     m_PreExtrapolationMode: 0
     m_PostExtrapolationTime: Infinity
     m_PreExtrapolationTime: 0
-    m_DisplayName: Return Lower Body To FootLocked Idle
+    m_DisplayName: Smooth Lower Body Return To Idle
   m_Markers:
     m_Objects: []
   m_InfiniteClipPreExtrapolation: 0
@@ -704,7 +704,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0.13333333333333333
-  _speed: 0.3375
+  _speed: 0.20250002
 --- !u!114 &4243743452583643204
 MonoBehaviour:
   m_ObjectHideFlags: 1

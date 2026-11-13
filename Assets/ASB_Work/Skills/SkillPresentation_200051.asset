@@ -50,7 +50,7 @@ MonoBehaviour:
   ProjectileVisual:
     Prefab: {fileID: 1258701090467093537, guid: 027abf3da80074f43a8bfae32722c091,
       type: 3}
-    Speed: 12
+    Speed: 20
     Trajectory: 0
     ArcHeight: 1.2
     Acceleration: 0
