@@ -21,6 +21,8 @@ namespace JC.BattleTesting.Editor
             if (!controls.SsaoAvailable) EditorGUILayout.HelpBox("은행 SSAO 연결이 없습니다. 공유 환경 프로필의 연결을 확인해 주세요.", MessageType.Warning);
             // JC | 2026-11-05 | 저장 전 초안만 조절하여 플레이 검수 중 공유 원본을 자동 변경하지 않습니다.
             var serialized = new SerializedObject(controls.Draft); serialized.Update();
+            // JC | 2026-11-12 | IBL도 같은 런타임 초안과 기존 저장/다시 적용 버튼을 사용합니다.
+            JcIndoorIblEditor.Draw(serialized,controls.Draft.ibl,true);
             foreach (var name in new[] { "ssaoEnabled", "ssaoIntensity", "ssaoRadius", "ssaoDirectLightingStrength", "ssaoDownsample", "ambientColor", "ambientIntensity", "reflectionIntensity", "reflectionPosition", "reflectionSize", "glyphHaloColor", "glyphHaloIntensity", "glyphHaloWidth", "lights" })
                 EditorGUILayout.PropertyField(serialized.FindProperty(name), true);
             if (serialized.ApplyModifiedProperties()) controls.ApplyDraft();

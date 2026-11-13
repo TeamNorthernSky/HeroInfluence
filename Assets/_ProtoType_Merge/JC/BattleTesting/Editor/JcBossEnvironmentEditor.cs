@@ -20,9 +20,12 @@ namespace JC.BattleTesting.Editor
             }
             // JC | 2026-11-05 | 원경은 월드 시간대가 소유하므로 이전 환경 보정 항목이 적용되는 것처럼 표시하지 않습니다.
             bool worldCity = JcBossCityLighting.IsActive(controller.gameObject.scene);
-            EditorGUILayout.HelpBox("테스트와 실제 BE490이 같은 프로필을 사용합니다. 플레이 종료 전에 저장해야 유지됩니다. 실내·캐릭터는 창문광과 추가 라이트만 받습니다. 원경은 월드의 4개 시간대 조명을 사용합니다.", MessageType.Info);
+            // JC | 2026-11-12 | 전용 IBL 추가 후에도 원경의 시간대와 실내 설정은 독립적임을 안내합니다.
+            EditorGUILayout.HelpBox("테스트와 실제 BE490이 같은 프로필을 사용합니다. 플레이 종료 전에 저장해야 유지됩니다. 실내는 창문광·추가광과 선택한 실내 IBL을 받습니다. 원경은 월드의 4개 시간대 조명을 유지합니다.", MessageType.Info);
             var serialized = new SerializedObject(controller.Draft);
             serialized.Update();
+            // JC | 2026-11-12 | 외부 도시 환경 잠금과 독립적으로 실내 IBL을 조절합니다.
+            JcIndoorIblEditor.Draw(serialized,controller.Draft.ibl,false);
             // JC | 2026-11-05 | 조명 차단과 창문광도 기존 즉시 반영/명시적 프로필 저장 흐름을 사용합니다.
             foreach (string field in new[] { "isolateInterior", "windows", "directionalIntensity", "directionalTint", "shadowStrength", "ambientIntensity", "ambientTint", "reflectionIntensity", "lights", "materials" })
                 using(new EditorGUI.DisabledScope(worldCity && field!="isolateInterior" && field!="windows" && field!="lights" && field!="materials"))

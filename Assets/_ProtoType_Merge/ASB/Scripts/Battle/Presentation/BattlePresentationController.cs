@@ -91,8 +91,13 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool panelPositionInitialized;
     private bool panelRequestedVisible;
     private bool entryHudPresented;
+    // JC | 2026-11-12 | 치트/일반 전투의 공통 종료 이후 좌측 HUD 재진입을 막습니다. 카메라·보상 진행은 유지합니다.
+    private bool skillPanelBattleEnded;
+    private bool SkillPanelBattleEnded => skillPanelBattleEnded || (flow != null && flow.IsBattleEnded);
     public void PrepareEntryHud(bool showPlayerPanel)
     {
+        // JC | 2026-11-12 | 늦게 끝난 첫 진입 연출도 종료된 HUD를 다시 열지 않습니다.
+        if (SkillPanelBattleEnded) { HideSkillPanelOnBattleEnd(); return; }
         if (panelMotion != null) StopCoroutine(panelMotion);
         panelMotion = null;
         panelRequestedVisible = showPlayerPanel;
@@ -192,6 +197,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool projectileFocusLatched;
     private Vector3 projectileFocusPoint;
     private bool followAttackFocus;
+    // JC | 2026-11-13 | 젬 파워의 공통 이동 추적은 보스 기본뷰 경계에 고정하지 않습니다. 일반 스킬 정본과 별도 수명입니다.
+    private bool followCoreActor;
 
     public static BattlePresentationController FindInScene(UnityEngine.SceneManagement.Scene scene)
     {
@@ -235,7 +242,13 @@ public sealed class BattlePresentationController : MonoBehaviour
             panelPositionInitialized = true;
         }
         flow = battle != null ? battle.GetComponent<BattleFlowManager>() : null;
-        if (flow != null) flow.OnTurnStarted += HandleTurnStarted;
+        // JC | 2026-11-12 | 스킬을 거치지 않는 Shift+9/0도 같은 전투 종료 이벤트에서 패널 전체를 닫습니다.
+        if (flow != null)
+        {
+            flow.OnTurnStarted += HandleTurnStarted;
+            flow.OnBattleEnded += HandleBattleEnded;
+            if (flow.IsBattleEnded) HideSkillPanelOnBattleEnd();
+        }
         turnBanner = FindSceneComponent<BattleTurnBanner>();
         if (turnBanner != null) turnBanner.TurnBannerShown += HandleTurnBannerShown;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightStarted += HandleProjectileStarted;
@@ -351,7 +364,8 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void ApplyCameraPose(Vector3 position, Quaternion rotation, float fov, float blackBulletEntryBlend = 1f)
     {
-        if (BossCamera && !blackBulletProtection && !blackBulletResidual)
+        // JC | 2026-11-13 | JC 보스 경계 분기가 ASB 젬 파워 추적을 막던 문제를 수정합니다. 진입·추적·복귀는 공통 계산을 그대로 적용합니다.
+        if (BossCamera && !followCoreActor && !blackBulletProtection && !blackBulletResidual)
         {
             BossCamera.ApplyPose(position,rotation,fov);
             return;
@@ -712,6 +726,8 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void HandleTurnStarted(int round, BattleCharactor actor)
     {
+        // JC | 2026-11-12 | 종료 후 지연된 턴 알림으로 진입 코루틴이 다시 만들어지지 않도록 차단합니다.
+        if (SkillPanelBattleEnded) { HideSkillPanelOnBattleEnd(); return; }
         if (entryHudPresented) { entryHudPresented = false; return; }
         CancelTurnPresentation();
         if (cameraMotion != null)
@@ -857,6 +873,8 @@ public sealed class BattlePresentationController : MonoBehaviour
         shieldGuardEffects.Clear();
         attackFocusActor = actor;
         attackFocusTarget = target;
+        // JC | 2026-11-13 | 특정 캐릭터/씬별 카메라를 만들지 않고 같은 근접 코어 HCS001에만 추적 우선권을 줍니다.
+        followCoreActor = skill != null && skill.skillKey == "HCS001";
         rifleBarrageUnits.Clear();
         if (shouldFrameRifleBarrage)
             foreach (var unit in FindObjectsOfType<BattleCharactor>())
@@ -871,14 +889,16 @@ public sealed class BattlePresentationController : MonoBehaviour
         nekoFallingPaw = null;
         nekoHealProjectiles.Clear();
         nekoHealTargets.Clear();
+        // JC | 2026-11-13 | ASB 공통 코어 추적을 복원합니다. JC의 블랙불릿 시작점 고정은 일반 스킬에만 적용합니다.
+        bool blackBulletClassSkill = !(skill?.skillKey?.StartsWith("HCS", StringComparison.Ordinal) ?? false);
         frameRangedPair = !focusShieldGuard && !focusDebuffTarget && target != null && skill != null &&
             ((frameEnemyRangedTarget && !actor.IsPlayer && target.IsPlayer &&
                 !BattleManager.IsMeleeSkillRange(actor, skill)) ||
-             (frameBlackBulletTarget && actor.IsPlayer && actor.PresentationIndex == "10003" && !target.IsPlayer));
+             (frameBlackBulletTarget && blackBulletClassSkill && actor.IsPlayer && actor.PresentationIndex == "10003" && !target.IsPlayer));
         if (shouldFrameRifleBarrage) frameRangedPair = true;
         // JC | 2026-11-06 | ASB 공용 연출 안의 기존 JC 블랙불릿 구도만 시작 시 확정합니다.
         // 대상 사망·파괴 이후에도 이 상태를 유지하고 RestoreAttackCamera에서 해제합니다.
-        blackBulletPairActive = (!BossCamera || canonicalSkill) && (frameRangedPair || canonicalSkill) && actor.IsPlayer &&
+        blackBulletPairActive = blackBulletClassSkill && (!BossCamera || canonicalSkill) && (frameRangedPair || canonicalSkill) && actor.IsPlayer &&
             actor.PresentationIndex == "10003" && target != null && rifleBarrageUnits.Count == 0;
         if (blackBulletPairActive)
         {
@@ -1431,6 +1451,8 @@ public sealed class BattlePresentationController : MonoBehaviour
         blackBulletResidual = blackBulletLivePoints.Count > 0;
         blackBulletProtection = false;
         blackBulletResidualFov = attackCameraFov;
+        // JC | 2026-11-13 | 정상 종료·중단 모두 원래 보스 기본뷰 경계 소유권을 복구합니다. 저장 프로필은 변경하지 않습니다.
+        followCoreActor = false;
         if (previewCamera != null)
         {
             ApplyCameraPose(attackCameraPosition, attackCameraRotation, attackCameraFov);
@@ -1488,6 +1510,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     public void ApplySkillPanelLayoutPosition(Vector2 home)
     {
         if (skillPanel == null) return;
+        // JC | 2026-11-12 | 레이아웃 재적용은 숨김 기준 위치만 갱신하며 종료 상태를 해제하지 않습니다.
+        if (SkillPanelBattleEnded) { panelHome = home; HideSkillPanelOnBattleEnd(); return; }
         if (!panelPositionInitialized)
         {
             skillPanel.anchoredPosition = home;
@@ -1500,8 +1524,28 @@ public sealed class BattlePresentationController : MonoBehaviour
         skillPanel.anchoredPosition = panelDestination;
     }
 
+    // JC | 2026-11-12 | 내용 초기화보다 늦은 결과창까지 기다리지 않고 즉시 숨깁니다.
+    // 진입 게이트가 위치/CanvasGroup을 복구해도 보이지 않도록 좌측 패널만 비활성화합니다.
+    private void HandleBattleEnded(BattleResult result) => HideSkillPanelOnBattleEnd();
+
+    private void HideSkillPanelOnBattleEnd()
+    {
+        skillPanelBattleEnded = true;
+        CancelTurnPresentation();
+        if (panelMotion != null) StopCoroutine(panelMotion);
+        panelMotion = null;
+        panelRequestedVisible = false;
+        entryHudPresented = false;
+        if (skillPanel == null) return;
+        panelDestination = HiddenPanelPosition;
+        skillPanel.anchoredPosition = panelDestination;
+        skillPanel.gameObject.SetActive(false);
+    }
+
     private void SetSkillPanelVisible(bool visible)
     {
+        // JC | 2026-11-12 | 실패 행동 복구·턴 연출의 늦은 표시 요청에도 종료 상태가 우선합니다.
+        if (SkillPanelBattleEnded) { HideSkillPanelOnBattleEnd(); return; }
         panelRequestedVisible = visible;
         if (skillPanel == null) return;
         Vector2 destination = visible ? panelHome : HiddenPanelPosition;
@@ -1552,7 +1596,12 @@ public sealed class BattlePresentationController : MonoBehaviour
         RestoreAttackCamera();
         ReleaseBlackBulletResidual();
         CancelTurnPresentation();
-        if (flow != null) flow.OnTurnStarted -= HandleTurnStarted;
+        // JC | 2026-11-12 | 씬 재시작 때 이전 종료 수신자가 남지 않도록 함께 해제합니다.
+        if (flow != null)
+        {
+            flow.OnTurnStarted -= HandleTurnStarted;
+            flow.OnBattleEnded -= HandleBattleEnded;
+        }
         if (turnBanner != null) turnBanner.TurnBannerShown -= HandleTurnBannerShown;
     }
 }

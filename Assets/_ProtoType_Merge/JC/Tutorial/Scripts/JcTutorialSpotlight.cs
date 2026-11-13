@@ -73,8 +73,10 @@ namespace JC.Tutorial
         private RectTransform[] extra = System.Array.Empty<RectTransform>();
         private RectTransform roundedTarget;
         private float cornerRadius;
-        public void SetRoundedTarget(RectTransform target, float radius)
-        { roundedTarget = target; cornerRadius = Mathf.Max(0, radius); SetVerticesDirty(); }
+        // JC | 2026-11-13 | 코어 버튼은 원본 Rect 단위 반경을 전달합니다. 기존 배지 반경의 해석은 유지합니다.
+        private bool radiusInTargetUnits;
+        public void SetRoundedTarget(RectTransform target, float radius, bool useTargetUnits = false)
+        { roundedTarget = target; cornerRadius = Mathf.Max(0, radius); radiusInTargetUnits = useTargetUnits; SetVerticesDirty(); }
         public void SetExtraTargets(RectTransform[] targets) { extra = targets ?? System.Array.Empty<RectTransform>(); SetVerticesDirty(); }
         private readonly Vector3[] corners = new Vector3[4];
         public void SetTargets(RectTransform message, RectTransform window = null)
@@ -111,7 +113,9 @@ namespace JC.Tutorial
             foreach (var target in extra) if (target != null && target.gameObject.activeInHierarchy) holes.Add(Bounds(target));
             bool rounded = roundedTarget != null && roundedTarget.gameObject.activeInHierarchy && cornerRadius > 0;
             Rect roundBounds = rounded ? Bounds(roundedTarget) : new Rect();
-            float radius = rounded ? Mathf.Min(cornerRadius, Mathf.Min(roundBounds.width,roundBounds.height)*.5f) : 0;
+            // JC | 2026-11-13 | 딤의 구멍과 노란 윤곽선에 같은 화면 반경을 사용합니다.
+            float radiusScale = rounded && radiusInTargetUnits && roundedTarget.rect.height > 0 ? roundBounds.height / roundedTarget.rect.height : 1f;
+            float radius = rounded ? Mathf.Min(cornerRadius * radiusScale, Mathf.Min(roundBounds.width,roundBounds.height)*.5f) : 0;
             var yList = new System.Collections.Generic.List<float> { r.yMin, r.yMax };
             foreach (var hole in holes) { yList.Add(Mathf.Clamp(hole.yMin,r.yMin,r.yMax)); yList.Add(Mathf.Clamp(hole.yMax,r.yMin,r.yMax)); }
             // Subpixel strips retain correct union with overlapping tooltip/badge holes.

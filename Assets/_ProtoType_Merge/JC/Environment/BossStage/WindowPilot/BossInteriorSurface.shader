@@ -40,11 +40,15 @@ Shader "JC/Environment/Boss Interior Surface"
             // JC | 2026-11-05 | 창문 마스크가 실제 추가광에 적용되도록 URP 쿠키 변형을 포함합니다.
             #pragma multi_compile_fragment _ _LIGHT_COOKIES
             #pragma multi_compile _ _FORWARD_PLUS
+            // JC | 2026-11-12 | 보스 실내로 등록한 재질만 전용 IBL을 받습니다.
+            #pragma multi_compile_local_fragment _ _JC_INDOOR_IBL_TARGET
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
             // JC | 2026-11-05 | 반사량과 퍼짐을 분리하기 위해 기존 URP의 스페큘러 조명 경로를 재사용합니다.
             #define _SPECULAR_SETUP 1
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
+            // JC | 2026-11-12 | 월드 차단 해제 경로도 동일 실내 IBL을 사용하며 기본 차단 경로는 별도로 합산합니다.
+            #include "Assets/_ProtoType_Merge/JC/BattleTesting/JcIndoorLighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
             #include "Assets/_ProtoType_Merge/JC/BattleTesting/JcBossLocalLighting.hlsl"
             // JC | 2026-11-09 | 보스 표면에만 공통 접점 음영을 적용하며 도시 재질은 등록하지 않습니다.

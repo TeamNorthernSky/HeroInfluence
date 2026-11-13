@@ -1,6 +1,7 @@
 using UnityEngine;
 
-public enum BattleCellVisualState { Hidden, CurrentTurn, Selectable, ConfirmedArea, Unavailable }
+// JC | 2026-11-12 | 기존 저장 상태 번호를 유지하면서 치료·부활 표시를 끝에 추가합니다.
+public enum BattleCellVisualState { Hidden, CurrentTurn, Selectable, ConfirmedArea, Unavailable, HealingArea }
 
 /// <summary>대상 판정을 갖지 않는 셀 테두리 프리팹입니다. 테두리와 채움의 외형만 담당합니다.</summary>
 [ExecuteAlways, DisallowMultipleComponent]

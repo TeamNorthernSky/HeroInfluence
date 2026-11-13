@@ -248,14 +248,16 @@ namespace JC.Indicators
         }
         // JC | 2026-11-09 | 별도 깊이 버퍼만 사용하므로 다른 인디케이터의 장면 깊이에는 영향을 주지 않습니다.
         // JC | 2026-11-10 | 카메라별 한 번만 준비하고 부적합한 씬/바인딩에서는 이전 목록을 비웁니다.
-        internal void PrepareWorldMeshes(Camera camera, bool needsMarkerDepth)
+        internal void PrepareWorldMeshes(Camera camera, bool needsWorldDepth, Plane[] planes)
         {
-            meshVisibility.ClearPrepared();
-            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.PrepareDraw(camera, needsMarkerDepth);
+            // JC | 2026-11-12 | 직전 후보 수집 결과를 유지하며 카메라당 한 번 계산한 절두체도 공유합니다.
+            if (bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene)) meshVisibility.PrepareDraw(camera, needsWorldDepth, planes);
         }
         // JC | 2026-11-10 | 모든 컨트롤러의 후보를 현재 카메라/씬 기준으로 합산하여 다른 이벤트의 가림도 보존합니다.
-        internal bool HasMarkerCandidate(Camera camera) =>
-            bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene) && meshVisibility.HasMarkerCandidate(camera);
+        internal bool PrepareMarkerCandidates(Camera camera, Plane[] planes) =>
+            bound && (!camera.scene.IsValid() || camera.scene == gameObject.scene) && meshVisibility.PrepareMarkerCandidates(camera, planes);
+        // JC | 2026-11-12 | 방문 팻말만 있으면 기존 보호 메시로 충분하며 전체 월드 깊이는 느낌표 후보가 요구할 때만 준비합니다.
+        internal bool NeedsWorldDepth => meshVisibility.NeedsWorldDepth;
         internal void ClearPreparedWorldMeshes() => meshVisibility.ClearPrepared();
         internal void DrawWorldMeshes(CommandBuffer command, Camera camera, string passName)
         {

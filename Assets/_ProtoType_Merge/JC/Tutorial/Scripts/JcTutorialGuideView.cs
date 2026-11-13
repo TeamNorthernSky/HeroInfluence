@@ -225,10 +225,13 @@ namespace JC.Tutorial
         public bool FixedBattleOutline { get; set; }
         private float? originalFocusGlow;
         private float? originalFocusRadius;
-        public void SetVisible(bool value, RectTransform target = null, FocusPresentation presentation = FocusPresentation.PointerAbove)
+        // JC | 2026-11-13 | 코어 버튼의 둥근 윤곽만 별도 반경으로 표시하고 다음 단계에서 자동 해제합니다.
+        private float focusCornerRadius;
+        public void SetVisible(bool value, RectTransform target = null, FocusPresentation presentation = FocusPresentation.PointerAbove, float cornerRadius = 0)
         {
             if (!value) SetActionHint(ActionHint.None);
             visible = value; focus = value ? target : null; focusPresentation = presentation;
+            focusCornerRadius = Mathf.Max(0, cornerRadius);
             if (spotlight != null && (!value || (presentation != FocusPresentation.Spotlight && presentation != FocusPresentation.DimmedExplanation && presentation != FocusPresentation.BuildingExplanation))) spotlight.gameObject.SetActive(false);
         }
         [Min(0), Tooltip("탐사 본문이 있는 메시지 박스의 최소 높이(Canvas 단위)입니다. 긴 본문은 필요한 만큼 더 늘어납니다.")]
@@ -301,7 +304,7 @@ namespace JC.Tutorial
             if (focusFrame == null || pointer == null) return;
             originalFocusGlow ??= focusFrame.GlowWidth;
             originalFocusRadius ??= focusFrame.Radius;
-            focusFrame.SetRadius(FixedBattleOutline ? 0 : originalFocusRadius.Value);
+            focusFrame.SetRadius(focusCornerRadius > 0 ? focusCornerRadius : FixedBattleOutline ? 0 : originalFocusRadius.Value);
             focusFrame.SetGlowWidth(FixedBattleOutline ? 0 : originalFocusGlow.Value);
             focusFrame.gameObject.SetActive(showFocus); pointer.gameObject.SetActive(showFocus);
             // JC | 2026-11-09 | 스킬 교정 중에는 위 안내 Canvas에서 재사용하는 수렴 Graphic을 일반 포커스가 끄지 않도록 합니다.
@@ -346,6 +349,9 @@ namespace JC.Tutorial
             var rect = focusFrame.rectTransform;
             rect.localPosition = (min + max) * .5f;
             rect.sizeDelta = max - min;
+            // JC | 2026-11-13 | 버튼과 안내 Canvas의 배율이 달라도 실제 버튼의 모서리 곡률을 유지합니다.
+            if (focusCornerRadius > 0 && focus.rect.height > 0)
+                focusFrame.SetRadius(focusCornerRadius * rect.rect.height / focus.rect.height);
             focusFrame.color = new Color(accent.r, accent.g, accent.b, accent.a * (FixedBattleOutline ? .9f : Mathf.Lerp(.45f, .9f, pulse)));
             focusFrame.SetBorderWidth(focus == centeredPointerTarget ? centeredBorderWidth : 6);
             if(convergenceTarget!=focus){convergenceTarget=focus;convergenceElapsed=0;}

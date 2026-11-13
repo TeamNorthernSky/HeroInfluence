@@ -11,6 +11,8 @@ Shader "JC/Indicators/EventMarkerMeshVisibility"
         [PerRendererData] _EnableExternalAlpha ("External Alpha Enabled", Float) = 0
         [MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
         [HideInInspector] _JcMarkerOwner ("Event owner", Float) = 0
+        // JC | 2026-11-12 | 방문 팻말은 자기 건물 표면 검사만으로 처리해 전체 장면의 다층 깊이 생성을 요구하지 않습니다.
+        [HideInInspector] _JcMarkerOwnSurfaceOnly ("Own surface only", Float) = 0
         [HideInInspector] _MeshMap ("Mesh alpha", 2D) = "white" {}
         [HideInInspector] _MeshTint ("Mesh tint", Color) = (1,1,1,1)
         [HideInInspector] _MeshCull ("Mesh cull", Float) = 2
@@ -24,7 +26,7 @@ Shader "JC/Indicators/EventMarkerMeshVisibility"
         #include "UnitySprites.cginc"
         UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
         sampler2D _JcTriggerMeshDepth, _JcTriggerMeshOwners, _JcTriggerOtherMeshDepth;
-        float _JcTriggerDepthActive, _JcTriggerDepthUvFlip, _JcMarkerOwner;
+        float _JcTriggerDepthActive, _JcTriggerDepthUvFlip, _JcMarkerOwner, _JcMarkerOwnSurfaceOnly;
         float4x4 _JcTriggerDepthVP, _JcTriggerDepthView;
         struct MarkerOutput { float4 pos:SV_POSITION; fixed4 color:COLOR; float2 uv:TEXCOORD0; float3 world:TEXCOORD1; float4 screen:TEXCOORD2; UNITY_VERTEX_OUTPUT_STEREO };
         MarkerOutput MarkerVert(appdata_t v)
@@ -60,11 +62,14 @@ Shader "JC/Indicators/EventMarkerMeshVisibility"
                 float2 uv=PrivateUv(i.world);
                 float meshEye=tex2D(_JcTriggerMeshDepth,uv).r;
                 float owner=tex2D(_JcTriggerMeshOwners,uv).r;
-                float otherEye=tex2D(_JcTriggerOtherMeshDepth,uv).r;
+
                 // 자기 메시가 최근접인 경우에만 예외입니다. 그 뒤의 다른 건물이 아이콘 앞에 있으면 여전히 가립니다.
                 bool ownSurface=_JcMarkerOwner>0 && abs(owner-_JcMarkerOwner)<.25;
                 clip(_JcTriggerDepthActive>.5 && ownSurface &&
-                    abs(meshEye-sceneEye)<max(.004,sceneEye*.00003) && otherEye+bias>=eye ? 1 : -1);
+                    abs(meshEye-sceneEye)<max(.004,sceneEye*.00003) ? 1 : -1);
+                // JC | 2026-11-12 | 카메라에 보이는 앞쪽 물체가 자기 건물일 때만 통과합니다. 다른 물체가 맨 앞이면 위에서 탈락합니다.
+                if (_JcMarkerOwnSurfaceOnly < .5)
+                    clip(tex2D(_JcTriggerOtherMeshDepth,uv).r+bias-eye);
             }
         }
         fixed4 MarkerFrag(MarkerOutput i):SV_Target

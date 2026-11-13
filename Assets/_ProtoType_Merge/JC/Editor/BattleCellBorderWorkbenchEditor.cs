@@ -5,33 +5,20 @@ using UnityEngine;
 [CustomEditor(typeof(BattleCellBorderWorkbench))]
 public sealed class BattleCellBorderWorkbenchEditor : Editor
 {
-    private static readonly string[] Names={"현재 턴 · 노랑","선택 가능 · 보라","확정 대상 · 빨강","선택 불가 · 회색"};
-    private static readonly string[] Fields={"currentTurn","selectable","confirmedArea","unavailable"};
+    // JC | 2026-11-12 | 기존 저장 순서에 치료·부활 흰색 편집 항목을 추가합니다.
+    private static readonly string[] Names={"현재 턴 · 노랑","선택 가능 · 녹색","확정 대상 · 빨강","선택 불가 · 회색","치료·부활 대상 · 흰색"};
+    private static readonly string[] Fields={"currentTurn","selectable","confirmedArea","unavailable","healingArea"};
     public override void OnInspectorGUI()
     {
         var workbench=(BattleCellBorderWorkbench)target;
         serializedObject.Update();
         EditorGUILayout.PropertyField(serializedObject.FindProperty("profile"),new GUIContent("저장 프로필"));
         EditorGUILayout.HelpBox("초안은 즉시 미리보기에 반영됩니다. 프로필 저장을 누르면 전투씬도 같은 값을 사용합니다. 프리팹을 직접 편집할 필요가 없습니다.",MessageType.Info);
-        int index=Mathf.Clamp((int)workbench.selectedState-1,0,3);
+        int index=Mathf.Clamp((int)workbench.selectedState-1,0,Names.Length-1);
         index=EditorGUILayout.Popup("편집할 상태",index,Names);
         serializedObject.FindProperty("selectedState").enumValueIndex=index+1;
         var draft=serializedObject.FindProperty("draft");
-        var style=draft.FindPropertyRelative(Fields[index]);
-        EditorGUILayout.LabelField("선택한 상태의 형태",EditorStyles.boldLabel);
-        var shape=style.FindPropertyRelative("shape");
-        string[] shapeFields={"size","padding","cornerRadius","curveSegments","outerWidth","mainWidth","innerWidth","depth","floatHeight"};
-        string[] shapeLabels={"기준 셀 크기","셀 안쪽 여백","모서리 반지름","모서리 곡선 분할 수","바깥 보조선 폭","대상색 본체 폭","안쪽 보조선 폭","메시 세로 두께","기본 부유 높이"};
-        for(int i=0;i<shapeFields.Length;i++)Draw(shape,shapeFields[i],shapeLabels[i]);
-        EditorGUILayout.LabelField("색상과 표시",EditorStyles.boldLabel);
-        string[] styleFields={"showOuter","showInner","outlineColor","mainColor","allowSweep","useFill","fillColor","fillOpacity","fillTexture"};
-        string[] styleLabels={"바깥 보조선 표시","안쪽 보조선 표시","보조선 공통 색상","대상색 본체 색상","스윕 허용","내부 채움 표시","내부 채움 색상","내부 채움 불투명도","내부 채움 문양"};
-        for(int i=0;i<styleFields.Length;i++)Draw(style,styleFields[i],styleLabels[i]);
-        EditorGUILayout.Space();EditorGUILayout.LabelField("공통 상하 움직임",EditorStyles.boldLabel);
-        Draw(draft,"bobPeriod","기본 왕복 주기(초)");Draw(draft,"bobAmplitude","상하 한쪽 진폭");Draw(draft,"resyncDuration","상태 전환 합류 시간(초)");
-        EditorGUILayout.LabelField("모든 상태가 같은 주기·위상으로 왕복 · 높이 변경 시 부드럽게 합류",EditorStyles.wordWrappedMiniLabel);
-        EditorGUILayout.Space();EditorGUILayout.LabelField("공통 스윕",EditorStyles.boldLabel);
-        foreach(string field in new[]{"useSweep","sweepColor","sweepIntensity","sweepWidth","sweepSoftness","sweepTilt","sweepDuration","sweepInterval","reverseSweep"})EditorGUILayout.PropertyField(draft.FindPropertyRelative(field));
+        DrawConfiguration(draft, index);
         EditorGUILayout.Space();EditorGUILayout.LabelField("하단 표시의 상태 전환 검수",EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(serializedObject.FindProperty("autoSwitch"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("switchInterval"));
@@ -53,6 +40,26 @@ public sealed class BattleCellBorderWorkbenchEditor : Editor
         {Undo.RecordObject(workbench,"테두리 플레이 초안 가져오기");workbench.draft=remembered;changed=true;}
         if(workbench.profile!=null)EditorGUILayout.LabelField(JsonUtility.ToJson(workbench.draft)==JsonUtility.ToJson(workbench.profile.settings)?"프로필과 동일":"● 프로필과 다른 초안",EditorStyles.miniLabel);
         if(changed){BattleCellBorderPlayDraft.Remember(workbench);EditorUtility.SetDirty(workbench);if(!Application.isPlaying)EditorSceneManager.MarkSceneDirty(workbench.gameObject.scene);SceneView.RepaintAll();}
+    }
+    // JC | 2026-11-13 | CellBox와 설정씬이 같은 편집 UI/필드를 사용합니다. 실전에는 미리보기 오브젝트를 생성하지 않습니다.
+    public static void DrawConfiguration(SerializedProperty draft, int index)
+    {
+        var style=draft.FindPropertyRelative(Fields[index]);
+        EditorGUILayout.LabelField("선택한 상태의 형태",EditorStyles.boldLabel);
+        var shape=style.FindPropertyRelative("shape");
+        string[] shapeFields={"size","padding","cornerRadius","curveSegments","outerWidth","mainWidth","innerWidth","depth","floatHeight"};
+        string[] shapeLabels={"기준 셀 크기","셀 안쪽 여백","모서리 반지름","모서리 곡선 분할 수","바깥 보조선 폭","대상색 본체 폭","안쪽 보조선 폭","메시 세로 두께","기본 부유 높이"};
+        for(int i=0;i<shapeFields.Length;i++)Draw(shape,shapeFields[i],shapeLabels[i]);
+        EditorGUILayout.LabelField("색상과 표시",EditorStyles.boldLabel);
+        string[] styleFields={"showOuter","showInner","outlineColor","mainColor","allowSweep","useFill","fillColor","fillOpacity","fillTexture"};
+        string[] styleLabels={"바깥 보조선 표시","안쪽 보조선 표시","보조선 공통 색상","대상색 본체 색상","스윕 허용","내부 채움 표시","내부 채움 색상","내부 채움 불투명도","내부 채움 문양"};
+        for(int i=0;i<styleFields.Length;i++)Draw(style,styleFields[i],styleLabels[i]);
+        EditorGUILayout.Space();EditorGUILayout.LabelField("공통 상하 움직임",EditorStyles.boldLabel);
+        Draw(draft,"bobPeriod","기본 왕복 주기(초)");Draw(draft,"bobAmplitude","상하 한쪽 진폭");Draw(draft,"resyncDuration","상태 전환 합류 시간(초)");
+        EditorGUILayout.LabelField("모든 상태가 같은 주기·위상으로 왕복 · 높이 변경 시 부드럽게 합류",EditorStyles.wordWrappedMiniLabel);
+        EditorGUILayout.Space();EditorGUILayout.LabelField("공통 스윕",EditorStyles.boldLabel);
+        foreach(string field in new[]{"useSweep","sweepColor","sweepIntensity","sweepWidth","sweepSoftness","sweepTilt","sweepDuration","sweepInterval","reverseSweep"})EditorGUILayout.PropertyField(draft.FindPropertyRelative(field));
+        Draw(draft,"highlightTargetModel","선택 대상 호버 모델 윤곽선");
     }
     private static void Draw(SerializedProperty parent,string field,string label)
     {
