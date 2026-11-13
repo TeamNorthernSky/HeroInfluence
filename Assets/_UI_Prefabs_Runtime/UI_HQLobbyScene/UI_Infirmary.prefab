@@ -2272,8 +2272,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1006, y: -803}
-  m_SizeDelta: {x: 238, y: 122}
+  m_AnchoredPosition: {x: 1122.5, y: -64.5}
+  m_SizeDelta: {x: 87, y: 87}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7097240047361728346
 CanvasRenderer:
@@ -2303,7 +2303,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3403,8 +3403,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 741.3546, y: -803}
-  m_SizeDelta: {x: 273.2908, y: 122}
+  m_AnchoredPosition: {x: 1029.4, y: -797}
+  m_SizeDelta: {x: 273.25, y: 122}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4256394445675297730
 CanvasRenderer:
@@ -3599,10 +3599,11 @@ MonoBehaviour:
   lockedButton: {fileID: 6083984259345963818}
   unlockedButton: {fileID: 2042791635086271749}
   facilityModal: {fileID: 4418712407900619276}
-  buildDesc: "\uD788\uC5B4\uB85C\uC758 \uCCB4\uB825\uC744 \uD68C\uBCF5\uD569\uB2C8\uB2E4."
+  buildDesc: "\uBD80\uC0C1\uB2F9\uD55C\n\uD788\uC5B4\uB85C\uC758 \uCCB4\uB825\uC744\n\uD68C\uBCF5\uC2DC\uD0B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uC5F0\uAD6C\uC18C Lv.1 + \uACF5\uBC29
     Lv.1"
-  upgradeDesc: "\uD68C\uBCF5\uC5D0 \uD544\uC694\uD55C \uBE44\uC6A9\uC774 \n\uAC10\uC18C\uD569\uB2C8\uB2E4."
+  upgradeDesc: "\uD788\uC5B4\uB85C\uB97C\n\uD68C\uBCF5\uD558\uB294 \uB370 \uD544\uC694\uD55C\n\uBE44\uC6A9\uC774
+    \uAC10\uC18C\uD569\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 4424539200109489504}
   - {fileID: 7878963476507113066}
@@ -4895,7 +4896,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &9016416450568910850
 RectTransform:
   m_ObjectHideFlags: 0

@@ -1475,7 +1475,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 400, y: -169}
+  m_AnchoredPosition: {x: 400, y: -161.8}
   m_SizeDelta: {x: 680, y: 54}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &5003541262740610495
@@ -2355,7 +2355,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &9032929848628351243
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2604,7 +2604,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4160455956211185460
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3600,8 +3600,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 658, y: -756}
-  m_SizeDelta: {x: 238, y: 118}
+  m_AnchoredPosition: {x: 826.38, y: -705.76}
+  m_SizeDelta: {x: 292.6191, y: 145.28}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &3667717328264401534
 CanvasRenderer:
@@ -3902,8 +3902,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 918, y: -756}
-  m_SizeDelta: {x: 238, y: 118}
+  m_AnchoredPosition: {x: 1080, y: -25}
+  m_SizeDelta: {x: 87, y: 87}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &6693876612806837524
 CanvasRenderer:
@@ -3933,7 +3933,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4001,9 +4001,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   background: {fileID: 3382119125799981434}
   hoverOverlay: {fileID: 3336434971478741038}
-  normalSprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
-  hoverSprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
-  closedSprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
+  normalSprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
+  hoverSprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
+  closedSprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
 --- !u!114 &6502566570710940176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4978,12 +4978,12 @@ MonoBehaviour:
   lockedButton: {fileID: 7235823541976643745}
   unlockedButton: {fileID: 6910883356381271342}
   facilityModal: {fileID: 7398358766025800464}
-  buildDesc: "\uC601\uC6C5\uC758 \uB2A5\uB825\uCE58\uB97C \uAC15\uD654\uD560 \uC218
-    \uC788\uC2B5\uB2C8\uB2E4."
+  buildDesc: "\uD6C8\uB828\uC744 \uC9C4\uD589\uD558\uC5EC\n\uC601\uC6C5\uC758 \uB2A5\uB825\uCE58\uB97C\n\uAC15\uD654\uD560
+    \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uC5F0\uAD6C\uC18C Lv.1 + \uACF5\uBC29
     Lv.1"
-  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \uC601\uC6C5 \n\uB2A5\uB825\uCE58
-    \uAC15\uD654\uAC00 \uAC00\uB2A5\uD569\uB2C8\uB2E4."
+  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \n\uD6C8\uB828\uC744\n\uC9C4\uD589\uD560
+    \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 964745219396226795}
   - {fileID: 6724960381819999713}

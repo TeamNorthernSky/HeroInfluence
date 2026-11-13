@@ -10482,7 +10482,7 @@ MonoBehaviour:
   tutorialBattleKeyOverride: TUT_01
   tutorialZoneIdOverride: 1
   battleUIManager: {fileID: 1283565776}
-  resultPanelDelay: 1
+  resultPanelDelay: 2
   returnSceneName: TutorialExploreScene
   returnDelay: 0.5
   fadeOutDuration: 1

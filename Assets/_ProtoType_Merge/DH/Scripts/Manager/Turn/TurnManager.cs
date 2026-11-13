@@ -20,6 +20,8 @@ public class TurnManager : MonoBehaviour
     [Header("Automatic Turn End")]
     [Tooltip("End the player turn after movement uses all move points, once interactions and combat follow-up finish.")]
     [SerializeField] private bool autoEndTurnWhenMovePointsDepleted;
+    [Tooltip("자동 턴 종료 조건을 만족한 뒤 기다리는 시간(초). 전투·대화 등으로 차단되면 다시 계산합니다.")]
+    [SerializeField, Min(0f)] private float automaticEndTurnDelay = 0.3f;
     public bool AutoTurnEnd
     { 
         get => autoEndTurnWhenMovePointsDepleted; 
@@ -36,6 +38,7 @@ public class TurnManager : MonoBehaviour
     private CombatEncounterManager combatEncounterManager;
     private bool playerMovementStarted;
     private int automaticEndTurnReadyFrames;
+    private float automaticEndTurnReadySince = -1f;
 
     public bool IsEnemyTurnRunning => enemyTurnRunning;
     public bool IsPlayerTurn => !enemyTurnRunning && !completingTurn && pendingEnemyTurnStartCoroutine == null;
@@ -116,6 +119,7 @@ public class TurnManager : MonoBehaviour
         if (DHGameStateRestoreService.IsRestoring)
         {
             automaticEndTurnReadyFrames = 0;
+            automaticEndTurnReadySince = -1f;
             return;
         }
 
@@ -135,6 +139,7 @@ public class TurnManager : MonoBehaviour
         if (repository == null || !repository.HasPendingAutomaticEndTurn)
         {
             automaticEndTurnReadyFrames = 0;
+            automaticEndTurnReadySince = -1f;
             return;
         }
 
@@ -147,11 +152,15 @@ public class TurnManager : MonoBehaviour
         if (!CanExecuteAutomaticEndTurn())
         {
             automaticEndTurnReadyFrames = 0;
+            automaticEndTurnReadySince = -1f;
             return;
         }
 
         // Allow deferred chat effects and condition-event checks to open their UI first.
-        if (++automaticEndTurnReadyFrames >= 2)
+        if (automaticEndTurnReadySince < 0f)
+            automaticEndTurnReadySince = Time.unscaledTime;
+        if (++automaticEndTurnReadyFrames >= 2 &&
+            Time.unscaledTime - automaticEndTurnReadySince >= Mathf.Max(0f, automaticEndTurnDelay))
             EndPlayerTurn();
     }
 
@@ -163,6 +172,7 @@ public class TurnManager : MonoBehaviour
         UnbindAutomaticEndTurnParty();
         // Keep the repository reservation across combat scene changes.
         automaticEndTurnReadyFrames = 0;
+        automaticEndTurnReadySince = -1f;
     }
 
     private void BindAutomaticEndTurnParty()
@@ -218,6 +228,7 @@ public class TurnManager : MonoBehaviour
 
         MapProgressRepository.Instance?.ReserveAutomaticEndTurn(day, autoEndTurnPartyIdentity.PartyId);
         automaticEndTurnReadyFrames = 0;
+        automaticEndTurnReadySince = -1f;
     }
 
     private bool CanExecuteAutomaticEndTurn()
@@ -257,6 +268,7 @@ public class TurnManager : MonoBehaviour
         MapProgressRepository.Instance?.ClearAutomaticEndTurn();
         playerMovementStarted = false;
         automaticEndTurnReadyFrames = 0;
+        automaticEndTurnReadySince = -1f;
     }
 
     private IEnumerator StartEnemyTurnAfterPendingThreats()

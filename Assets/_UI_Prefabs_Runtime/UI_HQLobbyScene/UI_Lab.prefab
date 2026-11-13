@@ -8294,11 +8294,11 @@ MonoBehaviour:
   lockedButton: {fileID: 4470837229798074837}
   unlockedButton: {fileID: 4632744738017986816}
   facilityModal: {fileID: 1920546220820987810}
-  buildDesc: "\uD788\uC5B4\uB85C\uC758 \uC2A4\uD0AC\uC744 \uAC15\uD654\uD560 \uC218
-    \uC788\uC2B5\uB2C8\uB2E4."
+  buildDesc: "\uD788\uC5B4\uB85C \uBA54\uB2EC\uC744 \uC0AC\uC6A9\uD574\n\uD788\uC5B4\uB85C\uC758
+    \uC2A4\uD0AC\uC744\n\uAC15\uD654\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uD64D\uBCF4\uBD80 Lv.1"
-  upgradeDesc: "\uC2A4\uD0AC\uC744 \uB354 \uB192\uC740 \uB4F1\uAE09\uC73C\uB85C \n\uAC15\uD654\uD560
-    \uC218 \uC788\uC2B5\uB2C8\uB2E4.\r"
+  upgradeDesc: "\uC2A4\uD0AC\uC744\n\uB354 \uB192\uC740 \uB4F1\uAE09\uC73C\uB85C
+    \n\uAC15\uD654\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.\r"
   lockedHoverComponents:
   - {fileID: 6269612402502262687}
   - {fileID: 518633310359733397}
@@ -12125,8 +12125,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 662, y: -740}
-  m_SizeDelta: {x: 238, y: 118}
+  m_AnchoredPosition: {x: 835.7, y: -711.6}
+  m_SizeDelta: {x: 276.9631, y: 137.32}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &304619674303990623
 CanvasRenderer:
@@ -12589,8 +12589,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 922, y: -740}
-  m_SizeDelta: {x: 238, y: 118}
+  m_AnchoredPosition: {x: 1073, y: -25}
+  m_SizeDelta: {x: 87, y: 87}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &4494045628151462964
 CanvasRenderer:
@@ -12620,7 +12620,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -12688,9 +12688,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   background: {fileID: 4880610445323096144}
   hoverOverlay: {fileID: 6810260966083173276}
-  normalSprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
-  hoverSprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
-  closedSprite: {fileID: 0}
+  normalSprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
+  hoverSprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
+  closedSprite: {fileID: 21300000, guid: 22c7303e5ca56c24c9d5973a9f14271f, type: 3}
 --- !u!114 &4769936826683019469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13957,7 +13957,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7754755836069951524
 RectTransform:
   m_ObjectHideFlags: 0
@@ -14822,7 +14822,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &4088607300240551772
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15483,6 +15483,11 @@ PrefabInstance:
     - target: {fileID: 1765037485393827994, guid: b3b0a0955a57c2f45863f873dc1d007f,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1777586195337363752, guid: b3b0a0955a57c2f45863f873dc1d007f,
+        type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3275758488822502536, guid: b3b0a0955a57c2f45863f873dc1d007f,
