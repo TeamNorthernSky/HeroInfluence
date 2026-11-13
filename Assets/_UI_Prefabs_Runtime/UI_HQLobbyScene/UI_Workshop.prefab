@@ -4365,11 +4365,11 @@ MonoBehaviour:
   lockedButton: {fileID: 4299596201257255815}
   unlockedButton: {fileID: 4910381872950954535}
   facilityModal: {fileID: 2409200406903537437}
-  buildDesc: "\uC601\uC6C5\uC758 \uC7A5\uBE44\uB97C \uC81C\uC791 \xB7 \uAC15\uD654
+  buildDesc: "\uD788\uC5B4\uB85C \uC82C\uC73C\uB85C\n\uCF54\uC5B4\uB97C \uC81C\uC791\uD558\uAC70\uB098\n\uAC15\uD654
     \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uD64D\uBCF4\uBD80 Lv.1"
-  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \n\uC7A5\uBE44 \uC81C\uC791
-    \xB7 \uAC15\uD654\uAC00 \n\uAC00\uB2A5\uD569\uB2C8\uB2E4."
+  upgradeDesc: "\uC81C\uC791\uB41C \uCF54\uC5B4\uB97C\n\uB354 \uB192\uC740 \uB4F1\uAE09\uC73C\uB85C\n\uAC15\uD654\uD560
+    \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 5954465075921008077}
   - {fileID: 185262264999685831}
