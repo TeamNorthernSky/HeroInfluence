@@ -13,6 +13,8 @@ namespace JC.Tutorial
         private int pressFrame = -1;
         public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
         {
+            // JC | 2026-11-13 | 전투 자동/배속의 사용 불가 안내만 딤 아래로 통과시키며 안내 닫기 입력으로 취급하지 않습니다.
+            if (battleGuide != null && JcTutorialBattleControlLock.ContainsPointer(gameObject.scene, screenPoint)) return false;
             if (battleGuide != null && battleGuide.GuidedActive)
                 return !battleGuide.IsAllowedPointer(screenPoint);
             var target = guide != null ? guide.AllowedInputTarget : null;
@@ -27,6 +29,8 @@ namespace JC.Tutorial
         }
         public void OnPointerClick(PointerEventData data)
         {
+            // JC | 2026-11-13 | 안내 도중 눌림/해제 위치가 바뀌어도 제한 버튼 클릭으로 메시지를 넘기지 않습니다.
+            if (battleGuide != null && JcTutorialBattleControlLock.ContainsPointer(gameObject.scene, data.position)) { pressFrame = -1; return; }
             if (data.button == PointerEventData.InputButton.Left && guide != null && pressFrame > guide.PresentationOpenedFrame)
                 guide.ContinueExplanation();
             if(data.button==PointerEventData.InputButton.Left&&battleGuide!=null&&pressFrame>battleGuide.ResultOpenedFrame)battleGuide.DismissResult();
