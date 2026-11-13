@@ -6,6 +6,9 @@ using UnityEngine.SceneManagement;
 public sealed class ExplorationChatCameraFocus : MonoBehaviour
 {
     private static ExplorationChatCameraFocus active;
+
+    public static bool BlocksSystemMenuEscape =>
+        active != null && !active.finished && ModalManager.Top == active.gameObject;
     private Transform source;
     private Transform party;
     private QuarterViewCameraFollower cameraFollower;

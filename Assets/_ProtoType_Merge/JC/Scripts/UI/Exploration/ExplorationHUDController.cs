@@ -29,10 +29,8 @@ public class ExplorationHUDController : MonoBehaviour
     private Canvas canvas;
     private GraphicRaycaster graphicRaycaster;
     private QuarterViewCameraFollower cameraFollower;
-    private bool cameraPresentationBlocked;
     private Button publicityButton;
     private bool publicityCameraBlocked;
-    private bool publicityWasInteractable;
     private ExplorationDefeatBlockPanelController defeatBlockPanelController;
 
     private void Awake()
@@ -72,22 +70,24 @@ public class ExplorationHUDController : MonoBehaviour
         if (subscribedTM == null) TrySubscribe();
         bool cameraBlocked = IsCameraPresentationBlocking();
         RefreshPublicityCameraState(cameraBlocked);
-        if (cameraPresentationBlocked != cameraBlocked ||
-            (cameraBlocked && nextTurnButton != null && nextTurnButton.interactable))
-        {
-            cameraPresentationBlocked = cameraBlocked;
-            RefreshNextTurnInteractable();
-        }
+        RefreshNextTurnInteractable();
         if (Input.GetKeyDown(KeyCode.R) && CanUseRestShortcut())
             nextTurnButton.onClick.Invoke();
+    }
+
+    public bool CanUseExplorationActions()
+    {
+        if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
+        return turnManager != null && turnManager.IsPlayerTurn && !turnManager.IsEnemyTurnRunning &&
+            !IsCameraPresentationBlocking();
     }
 
     private bool CanUseRestShortcut()
     {
         if (gameObject.scene != SceneManager.GetActiveScene() ||
             nextTurnButton == null || !nextTurnButton.isActiveAndEnabled || !nextTurnButton.IsInteractable() ||
-            turnManager == null || !turnManager.IsPlayerTurn || turnManager.IsEnemyTurnRunning ||
-            DHGameEndState.IsEnding || DHGameStateRestoreService.IsRestoring || IsCameraPresentationBlocking() ||
+            !CanUseExplorationActions() ||
+            DHGameEndState.IsEnding || DHGameStateRestoreService.IsRestoring ||
             ModalManager.HasAny || WorldInputGate.IsTurnResolving || GateCameraFocusController.IsBusy ||
             JC.Environment.JcDayNightController.IsTransitioning ||
             ChatModalController.IsOpen || (ChatManager.Instance != null && ChatManager.Instance.IsRunning) ||
@@ -143,17 +143,13 @@ public class ExplorationHUDController : MonoBehaviour
         if (publicityButton == null) return;
         if (blocked)
         {
-            if (!publicityCameraBlocked)
-            {
-                publicityWasInteractable = publicityButton.interactable;
-                publicityCameraBlocked = true;
-            }
+            publicityCameraBlocked = true;
             publicityButton.interactable = false;
         }
         else if (publicityCameraBlocked)
         {
             publicityCameraBlocked = false;
-            publicityButton.interactable = publicityWasInteractable;
+            publicityButton.interactable = true;
         }
     }
 
@@ -221,7 +217,7 @@ public class ExplorationHUDController : MonoBehaviour
     private void ApplyEnemyTurnUIState(bool enemyRunning)
     {
         bool playerTurn = !enemyRunning && (turnManager == null || turnManager.IsPlayerTurn);
-        if (nextTurnButton != null) nextTurnButton.interactable = playerTurn && !IsCameraPresentationBlocking();
+        if (nextTurnButton != null) nextTurnButton.interactable = CanUseExplorationActions();
         if (graphicRaycaster != null) graphicRaycaster.enabled = playerTurn;
     }
 
@@ -232,7 +228,7 @@ public class ExplorationHUDController : MonoBehaviour
     {
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
         if (turnManager == null) return;
-        if (!turnManager.IsPlayerTurn || turnManager.IsEnemyTurnRunning || IsCameraPresentationBlocking()) return;
+        if (!CanUseExplorationActions()) return;
         if (defeatBlockPanelController != null) defeatBlockPanelController.HideForNextTurn();
         if (pressNextTurnPanel != null) pressNextTurnPanel.SetActive(false);
         if (nextTurnButton != null) nextTurnButton.interactable = false;
