@@ -77,6 +77,8 @@ MonoBehaviour:
   arriveThreshold: 0.01
   movePointsPerTurn: 5
   behaviorType: 0
+  footstepDuration: 0.25
+  footstepInterval: 0.3
 --- !u!114 &1551455330694247835
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -92,6 +94,7 @@ MonoBehaviour:
   enemyId: 0
   placementKey: 
   placementSource: 0
+  enemyGroupKey: 
 --- !u!114 &3969977321118942795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134,7 +137,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyGridMover: {fileID: 7835340759501969377}
   unitMotionControllers: []
-  logMovementVisualChanges: 0
 --- !u!114 &3368788190685830569
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,8 +147,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 885549d1dd6b03a48a608d3544c98301, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   indicator: {fileID: 2215924132878518457}
 --- !u!1001 &8268063595999469079
 PrefabInstance:
@@ -159,17 +161,17 @@ PrefabInstance:
     - target: {fileID: 7817856749428512429, guid: 396949316a9014e4c9dacd4790cf4b01,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.5
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 7817856749428512429, guid: 396949316a9014e4c9dacd4790cf4b01,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.5
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 7817856749428512429, guid: 396949316a9014e4c9dacd4790cf4b01,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.5
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 7817856749428512429, guid: 396949316a9014e4c9dacd4790cf4b01,
         type: 3}
@@ -220,6 +222,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: 396949316a9014e4c9dacd4790cf4b01,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7817856749428512430, guid: 396949316a9014e4c9dacd4790cf4b01,
         type: 3}
