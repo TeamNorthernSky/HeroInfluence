@@ -131,6 +131,8 @@ public class BattleManager : MonoBehaviour
 
     public void ChangeBattleSpeed(float newSpeed)
     {
+        // JC | 2026-11-13 | 저장된 배속과 외부 호출도 튜토리얼에서는 1배속으로 제한합니다. 타격 정지/스킬 내부 속도는 변경하지 않습니다.
+        if (JC.Tutorial.JcTutorialBattleControlLock.IsRestricted(gameObject.scene)) newSpeed = BattleRuntimeSettings.NormalSpeed;
         BattleRuntimeSettings.SetBattleSpeed(newSpeed);
         _currentBattleSpeed = BattleRuntimeSettings.BattleSpeed;
         ApplyBattleSpeedToAllActiveUnits();

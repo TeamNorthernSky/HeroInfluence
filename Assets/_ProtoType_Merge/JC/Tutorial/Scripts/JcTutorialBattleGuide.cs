@@ -67,6 +67,8 @@ namespace JC.Tutorial
         {
             if (guidedActive) return;
             if (!noticeOpen) return;
+            // JC | 2026-11-13 | 기존 결과/설명 단계가 닫히는 순간에도 제한 안내를 남기지 않습니다.
+            JcTutorialBattleControlNotice.OnGuideTransition(gameObject.scene);
             if (instructionStep >= 0) instructionDismissPending = true;
             noticeOpen = false; releasePending = true;
             if (dim != null) dim.gameObject.SetActive(false);
@@ -97,6 +99,8 @@ namespace JC.Tutorial
         }
         private void BeginNotice(Button button, RectTransform skill = null)
         {
+            // JC | 2026-11-13 | 결과/기존 안내 메시지의 표시도 동일한 0.3초 종료 규칙을 사용합니다.
+            JcTutorialBattleControlNotice.OnGuideTransition(gameObject.scene);
             noticeOpen = true; resultElapsed = 0; ResultOpenedFrame = Time.frameCount;
             lockedButton = button;
             if (button != null) { originalInteractable = button.interactable; button.interactable = false; }

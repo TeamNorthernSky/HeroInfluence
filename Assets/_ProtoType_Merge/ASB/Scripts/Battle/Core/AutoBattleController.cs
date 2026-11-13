@@ -28,6 +28,8 @@ public class AutoBattleController : MonoBehaviour
         get => isAutoBattle;
         set
         {
+            // JC | 2026-11-13 | 튜토리얼 전투 전체를 수동으로 유지합니다. 이전 자동 설정과 직접 호출도 실행 전에 차단합니다.
+            if (JC.Tutorial.JcTutorialBattleControlLock.IsRestricted(gameObject.scene)) value = false;
             if (value && JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
             if (isAutoBattle == value)
             {

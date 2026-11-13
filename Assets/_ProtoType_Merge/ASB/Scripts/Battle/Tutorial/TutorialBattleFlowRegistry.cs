@@ -55,6 +55,13 @@ public sealed class TutorialBattleFlowRegistry
     private static string Normalize(string battleKey)
         => string.IsNullOrWhiteSpace(battleKey) ? string.Empty : battleKey.Trim();
 
+    // JC | 2026-11-13 | 버튼 제한도 실제 등록표로 판단합니다. 조회할 때마다 안내 플로 인스턴스를 만들지 않습니다.
+    public bool Contains(int zoneId, string battleKey)
+    {
+        string key = Normalize(battleKey);
+        return map.ContainsKey((zoneId, key)) || map.ContainsKey((-1, key));
+    }
+
     /// <summary>기본 튜토리얼 4개 등록. BattleKey/ZoneId는 콘텐츠 확정 시 각 Flow에서 교체.</summary>
     public static TutorialBattleFlowRegistry CreateDefault()
     {

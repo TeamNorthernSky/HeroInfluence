@@ -84,6 +84,9 @@ public class ToggleButton : MonoBehaviour
 
     protected virtual void OnClick()
     {
+       // JC | 2026-11-13 | 자동/배속에 부착된 잠금만 검사하여 다른 토글은 보존합니다. 시각 전환과 이벤트보다 먼저 차단합니다.
+       var tutorialLock = GetComponent<JC.Tutorial.JcTutorialBattleControlLock>();
+       if (tutorialLock != null && tutorialLock.RejectClick()) return;
        isOn = !isOn;
        ApplySprite();
        OnValueChanged?.Invoke(isOn);
@@ -110,6 +113,9 @@ public class ToggleButton : MonoBehaviour
     
     public void ChangeState()
     {
+        // JC | 2026-11-13 | 코드로 토글 외형을 바꾸는 경로도 튜토리얼 잠금을 따릅니다.
+        var tutorialLock = GetComponent<JC.Tutorial.JcTutorialBattleControlLock>();
+        if (tutorialLock != null && tutorialLock.RejectClick()) return;
         isOn = !isOn;
         ApplySprite();
     }

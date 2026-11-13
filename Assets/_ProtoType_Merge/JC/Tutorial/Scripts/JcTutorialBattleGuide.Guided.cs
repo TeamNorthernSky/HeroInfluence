@@ -221,6 +221,8 @@ namespace JC.Tutorial
         }
         private void SetGuidedPhase(int phase)
         {
+            // JC | 2026-11-13 | 새 안내 단계가 시작되면 사용 불가 팝업을 현재 알파에서 빠르게 닫습니다.
+            JcTutorialBattleControlNotice.OnGuideTransition(gameObject.scene);
             view.SetActionHint(JcTutorialGuideView.ActionHint.None);
             guidedPhase = phase; phaseFrame = Time.frameCount; clickDownFrame = -1;
             nextPending = false; allowedPointer = null;
@@ -359,8 +361,10 @@ namespace JC.Tutorial
             if (guidedEventSystem != null && !FreeGuide) guidedEventSystem.SetSelectedGameObject(null);
             if (!FreeGuide && Time.frameCount > phaseFrame)
             {
-                if (Input.GetMouseButtonDown(0)) clickDownFrame = Time.frameCount;
-                if (Input.GetMouseButtonUp(0) && clickDownFrame > phaseFrame) RequestGuidedNext();
+                // JC | 2026-11-13 | 전체 화면 클릭 감지와 UI 클릭은 별개이므로, 제한 버튼에서 시작한 클릭은 안내 진행에서 제외합니다.
+                if (Input.GetMouseButtonDown(0)) clickDownFrame = JcTutorialBattleControlLock.ContainsPointer(gameObject.scene, Input.mousePosition) ? -1 : Time.frameCount;
+                if (Input.GetMouseButtonUp(0) && clickDownFrame > phaseFrame &&
+                    !JcTutorialBattleControlLock.ContainsPointer(gameObject.scene, Input.mousePosition)) RequestGuidedNext();
             }
             if (nextPending && !Input.GetMouseButton(0))
             {
@@ -406,6 +410,8 @@ namespace JC.Tutorial
         }
         private void EndGuided(bool notify)
         {
+            // JC | 2026-11-13 | 자유 조작/다음 턴으로 전환될 때도 사용 불가 팝업을 정리합니다.
+            JcTutorialBattleControlNotice.OnGuideTransition(gameObject.scene);
             if (!guidedActive) return;
             guidedActive = false; formation = false;
             // JC | 2026-11-09 | 올바른 선택·턴 변경·전투 종료·비활성화 시 수렴 효과와 클릭 안내를 즉시 정리합니다.
