@@ -9136,7 +9136,7 @@ MonoBehaviour:
   tutorialBattleKeyOverride: 
   tutorialZoneIdOverride: -1
   battleUIManager: {fileID: 1283565776}
-  resultPanelDelay: 1
+  resultPanelDelay: 2
   returnSceneName: DHScene_3
   returnDelay: 0.5
   fadeOutDuration: 1

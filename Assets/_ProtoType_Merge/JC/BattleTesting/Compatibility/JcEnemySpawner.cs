@@ -883,7 +883,8 @@ public class JcEnemySpawner : MonoBehaviour
     public void ScheduleCorpseRemoval(BattleCharactor bc, int gridNumber)
     {
         if (bc == null || bc.IsPlayer) return;   // 플레이어 방어(정상적으론 적만 구독)
-        StartCoroutine(RemoveCorpseAfter(bc, gridNumber, _corpseRemovalDelay));
+        float delay = bc.PresentationIndex == "20005" ? 1.2f : _corpseRemovalDelay;
+        StartCoroutine(RemoveCorpseAfter(bc, gridNumber, delay));
     }
 
     // 원본 함수 대응: EnemySpawner.RemoveCorpseAfter (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemySpawner.cs)
