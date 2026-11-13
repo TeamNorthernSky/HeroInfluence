@@ -8,6 +8,8 @@ namespace JC.BattleTesting
     [CreateAssetMenu(menuName = "JC/전투/은행 실내 조명 프로필")]
     public sealed class JcBankEnvironmentProfile : JcIndoorEnvironmentProfile
     {
+        // JC | 2026-11-13 | 공유 은행 부착물의 국소광 그림자 재질입니다. 표시 재질/사용자 조명값과 분리하며 빌드 참조를 유지합니다.
+        [HideInInspector] public Material localAttachmentShadowMaterial;
         [Header("시간대와 무관한 실내 환경광")]
         [Tooltip("태양·하늘 대신 사용하는 고정 실내 간접광 색상입니다.")]
         [ColorUsage(false), InspectorName("실내 음영 색상")] public Color ambientColor = new Color(.65f, .68f, .73f);

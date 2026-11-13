@@ -26,6 +26,6 @@ MonoBehaviour:
       border: {r: 0.38, g: 0.65, b: 0.9, a: 1}
       text: {r: 1, g: 1, b: 1, a: 1}
     national:
-      surface: {r: 0.53, g: 0.35, b: 0.1, a: 1}
-      border: {r: 0.95, g: 0.76, b: 0.34, a: 1}
+      surface: {r: 0.9811321, g: 0.7066185, b: 0, a: 1}
+      border: {r: 1, g: 0.7466017, b: 0, a: 1}
       text: {r: 1, g: 1, b: 1, a: 1}

@@ -36,6 +36,8 @@ public partial class SkillTooltip
         influenceGrade.text = "등급: " + grade;
         influenceBody.text = "IP가 높을수록 일반 스킬 공격의 피해량이 증가합니다.\n반격에는 이 배율이 적용되지 않습니다.";
         influenceValue.font = influenceGrade.font = influenceBody.font = font;
+        // JC | 2026-11-13 | 현재 IP와 칭호 두 행만 굵게 표시하고, 굵어진 글자 기준으로 기존 여백을 계산합니다.
+        influenceValue.fontStyle = influenceGrade.fontStyle = FontStyles.Bold;
         // 글자를 줄이거나 자동 줄바꿈하지 않고 가장 긴 원문에 패딩을 더해 패널 폭을 결정합니다.
         Vector2 a = influenceValue.GetPreferredValues(), b = influenceGrade.GetPreferredValues(), c = influenceBody.GetPreferredValues();
         float contentWidth = Mathf.Ceil(Mathf.Max(a.x, Mathf.Max(b.x, c.x)));
