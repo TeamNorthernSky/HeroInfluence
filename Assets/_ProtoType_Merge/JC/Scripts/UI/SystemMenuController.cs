@@ -49,6 +49,7 @@ public class SystemMenuController : MonoBehaviour
 
         // [KJ 260729] ChatModal이 Top이면 ESC = 스킵 확인 팝업 토글(대화는 ESC로 닫히지 않음).
         if (ChatModalController.HandleEscape()) return;
+        if (ExplorationChatCameraFocus.BlocksSystemMenuEscape) return;
 
         // [JC 260513] ESC 정책 통일 — 모든 씬 공통: Top 모달이 있으면 그것 닫고, 없으면 시스템 메뉴 토글.
         // 기존 정책(LobbyScene만 Top닫기, 그 외 무조건 TogglePause) 폐기.
