@@ -11,6 +11,7 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 public class EnemySpawner : MonoBehaviour
 {
     private static readonly Quaternion FacingPlayerYawOffset = Quaternion.Euler(0f, 180f, 0f);
+    private const float UmtCorpseRemovalDelay = 1.2f;
 
     [Serializable]
     public struct SpawnRequest
@@ -914,7 +915,8 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
         _pendingCorpseRemovals[bc] = gridNumber;
-        StartCoroutine(RemoveCorpseAfter(bc, gridNumber, _corpseRemovalDelay));
+        float delay = bc.PresentationIndex == "20005" ? UmtCorpseRemovalDelay : _corpseRemovalDelay;
+        StartCoroutine(RemoveCorpseAfter(bc, gridNumber, delay));
     }
 
     private System.Collections.IEnumerator RemoveCorpseAfter(BattleCharactor bc, int gridNumber, float delay)
