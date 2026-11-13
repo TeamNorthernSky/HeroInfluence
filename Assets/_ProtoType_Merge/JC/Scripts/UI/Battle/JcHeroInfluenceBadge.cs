@@ -8,18 +8,13 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
 {
     // JC | 2026-11-13 | IP 최하위 칭호를 듣보로 변경하며 배지와 툴팁 안내에 같은 명칭을 표시합니다.
     static readonly string[] Titles = { "듣보", "유망주", "베테랑", "국가권력" };
-    static readonly Color[] Surfaces = {
-        new Color(.33f,.36f,.40f), new Color(.15f,.38f,.24f),
-        new Color(.13f,.30f,.53f), new Color(.53f,.35f,.10f) };
-    static readonly Color[] Borders = {
-        new Color(.64f,.68f,.72f), new Color(.39f,.70f,.46f),
-        new Color(.38f,.65f,.90f), new Color(.95f,.76f,.34f) };
+    // JC | 2026-11-13 | 구형 미리보기의 기본 색도 공용 설정과 같은 정의를 사용합니다.
+    static readonly JcInfluenceBadgeConfiguration DefaultColors = new JcInfluenceBadgeConfiguration();
     TMP_Text reference, label;
     RectTransform rect;
     JcInfluenceBadgeFace face;
     Material lettering;
     BattleCharactor unit;
-    Sprite ipIcon;
     float current, maximum, sweepTime;
     int tier = -1;
     bool hovering;
@@ -64,7 +59,6 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
         badge.lettering.SetFloat(ShaderUtilities.ID_UnderlaySoftness, .15f);
         badge.label.fontSharedMaterial = badge.lettering;
         var icon = ipText.transform.parent.Find("IpIcon")?.GetComponent<Image>();
-        badge.ipIcon = icon ? icon.sprite : null;
         if (icon) { icon.raycastTarget = true; icon.gameObject.AddComponent<JcInfluenceBadgeHover>().badge = badge; }
         ipText.raycastTarget = true;
         ipText.gameObject.AddComponent<JcInfluenceBadgeHover>().badge = badge;
@@ -87,7 +81,7 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
         {
             tier = next; sweepTime = 0;
             label.text = Titles[tier];
-            face.SetStyle(Surfaces[tier], Borders[tier]);
+            ApplyColors();
             face.SetSweep(-1);
         }
         Layout();
@@ -96,6 +90,7 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
     void LateUpdate()
     {
         Layout();
+        ApplyColors();
         // JC | 2026-11-12 | 스윕은 배지 표면만 밝히며, HUD를 숨겼을 때의 잔상은 유지하지 않습니다.
         if (tier == 3)
         {
@@ -103,6 +98,15 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
             float phase = sweepTime % 5.5f;
             face.SetSweep(phase >= 4.6f ? (phase - 4.6f) / .9f : -1);
         }
+    }
+    // JC | 2026-11-13 | 자기 전투씬의 임시 색상만 읽고 저장 프로필이나 다른 씬의 초안을 바꾸지 않습니다.
+    void ApplyColors()
+    {
+        if (tier < 0 || !face || !label) return;
+        var settings = JcInfluenceBadgeSettings.ForScene(gameObject.scene.handle);
+        var colors = (settings ? settings.Draft : DefaultColors).Get(tier);
+        face.SetStyle(colors.surface, colors.border);
+        if (label.color != colors.text) label.color = colors.text;
     }
     void Layout()
     {
@@ -133,8 +137,8 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
     void ShowTip()
     {
         if (!SkillTooltip.Instance || !unit) return;
-        SkillTooltip.Instance.ShowInfo(ipIcon, "I.P · " + Titles[tier],
-            $"현재 IP: {current:0} / {maximum:0}\n\nIP가 높을수록 일반 스킬 공격의 피해량이 증가합니다.\n반격에는 이 배율이 적용되지 않습니다.\n\n듣보 0–49 · 유망주 50–99\n베테랑 100–139 · 국가권력 140 이상", rect);
+        // JC | 2026-11-13 | 아이콘/중복 제목/등급 구간 표를 제외한 IP 전용 HUD형 패널입니다.
+        SkillTooltip.Instance.ShowInfluence(current, maximum, Titles[tier], rect, reference.font);
     }
     void OnDisable() { EndHover(); sweepTime = 0; if (face) face.SetSweep(-1); }
     void OnDestroy() { if (lettering) { if (Application.isPlaying) Destroy(lettering); else DestroyImmediate(lettering); } }

@@ -9,7 +9,7 @@ using UnityEngine.UI;
 /// 위치: TipB는 대상 아이콘 중앙 + infoOffset(좌상단 모서리), TipC는 대상 아이콘 중앙 + compareOffset(상단-중앙).
 /// </summary>
 [DisallowMultipleComponent]
-public class SkillTooltip : MonoBehaviour
+public partial class SkillTooltip : MonoBehaviour
 {
     public static SkillTooltip Instance { get; private set; }
 
@@ -170,6 +170,8 @@ public class SkillTooltip : MonoBehaviour
 
     public void Hide()
     {
+        // JC | 2026-11-13 | IP 전용 패널도 기존 공용 툴팁의 표시/해제 수명에 맞춥니다.
+        if (influenceRoot != null) influenceRoot.gameObject.SetActive(false);
         if (tipBRoot != null) tipBRoot.SetActive(false);
         if (tipCRoot != null) tipCRoot.SetActive(false);
     }

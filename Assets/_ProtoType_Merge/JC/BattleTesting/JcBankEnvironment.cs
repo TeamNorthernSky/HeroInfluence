@@ -190,6 +190,8 @@ namespace JC.BattleTesting
                 var go = new GameObject("은행 조명") { hideFlags = HideFlags.DontSave };
                 go.transform.SetParent(lightRoot, false);
                 var light = go.AddComponent<Light>(); light.hideFlags = HideFlags.HideInInspector;
+                // JC | 2026-11-13 | 국소광은 프로필의 그림자 보정값을 사용하도록 전용 데이터를 한 번 생성합니다.
+                go.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>();
                 // JC | 2026-11-09 | 은행과 보스에서 동일한 하위 광원 편집기를 사용합니다.
                 lights.Add(light); go.AddComponent<JcIndoorLightControl>().Bind(this, lights.Count - 1);
             }
@@ -205,6 +207,9 @@ namespace JC.BattleTesting
                 }
                 if (spec.fixturePrefab && !fixtures.ContainsKey(light)) {
                     var fixture = Instantiate(spec.fixturePrefab, light.transform, false);
+                    // JC | 2026-11-13 | 표시 외형은 주광 그림자에서 제외하고, 같은 메시의 국소광 전용 그림자만 한 번 생성합니다.
+                    // 원본 프리팹·표시 재질·조명의 그림자 ON/OFF 값은 보존합니다.
+                    AddLocalFixtureShadows(fixture);
                     fixture.name = "월마운트 램프 외형"; fixtures.Add(light, fixture); fixtureSources.Add(light, spec.fixturePrefab);
                 }
                 // JC | 2026-11-09 | 은행 저장 번호를 의미로 변환한 뒤 보스와 동일한 광원 적용기를 사용합니다.
@@ -212,6 +217,10 @@ namespace JC.BattleTesting
                 JcIndoorLightSettings.Apply(light, Stage, spec.label, spec.enabled, JcIndoorLightSettings.Resolve(spec.type),
                     spec.position, spec.rotation, spec.color, spec.intensity, Mathf.Max(1,spec.range), Mathf.Min(170,spec.spotAngle),
                     spec.innerSpotRatio, spec.shadows, spec.shadowStrength, spec.shadowBias, spec.shadowNormalBias);
+                // JC | 2026-11-13 | 공용 URP 바이어스가 금고 요철 그림자를 벌어지게 하던 문제를 수정합니다.
+                // 스팟·포인트에만 저장된 보정값을 적용하고, 방향광의 기존 공용 설정은 유지합니다.
+                light.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>().usePipelineSettings =
+                    light.type == LightType.Directional;
                 if (spec.playerBackFill) { JcIndoorLightSettings.ApplyPlayerFill(light,spec.enabled); continue; }
                 if (light.type == LightType.Directional && light.enabled && !RenderSettings.sun) RenderSettings.sun = light;
             }
@@ -226,6 +235,31 @@ namespace JC.BattleTesting
                 haloRenderer.sharedMaterial = haloPreview;
             }
             RequestReflection();
+        }
+
+        // JC | 2026-11-13 | 은행 월마운트는 불투명 MeshRenderer 외형입니다. 스캔은 외형 생성 시 한 번만 하며 스킬 효과/다른 씬에는 적용하지 않습니다.
+        void AddLocalFixtureShadows(GameObject fixture)
+        {
+            foreach (var visual in fixture.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                visual.shadowCastingMode = ShadowCastingMode.Off;
+                var filter = visual.GetComponent<MeshFilter>();
+                if (!filter || !filter.sharedMesh || !Draft.localAttachmentShadowMaterial) continue;
+                var go = new GameObject("실내 조명 전용 그림자");
+                go.layer = visual.gameObject.layer;
+                go.transform.SetParent(visual.transform, false);
+                go.AddComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
+                var shadow = go.AddComponent<MeshRenderer>();
+                var materials = new Material[filter.sharedMesh.subMeshCount];
+                for (int slot = 0; slot < materials.Length; slot++) materials[slot] = Draft.localAttachmentShadowMaterial;
+                shadow.sharedMaterials = materials;
+                shadow.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                shadow.receiveShadows = false;
+                shadow.lightProbeUsage = LightProbeUsage.Off;
+                shadow.reflectionProbeUsage = ReflectionProbeUsage.Off;
+                shadow.renderingLayerMask = visual.renderingLayerMask;
+                shadow.enabled = visual.enabled;
+            }
         }
 
         // JC | 2026-11-05 | 슬라이더 변경을 묶어 실내만 다시 캡처합니다. 매 프레임 반사를 재계산하지 않습니다.

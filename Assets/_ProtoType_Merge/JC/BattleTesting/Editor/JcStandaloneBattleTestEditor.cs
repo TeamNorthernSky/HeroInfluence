@@ -97,6 +97,10 @@ namespace JC.BattleTesting.Editor
                         EditorGUILayout.LabelField("IP 상한 / 칭호", $"{cap:0} / {JcHeroInfluenceBadge.Title(input.InitialInfluence)}");
                         var live = test.GetLiveHero(input);
                         if (live) EditorGUILayout.LabelField("현재 전투 상태", $"{UnitRankLookup.GetRank(live.Level)} · IP {live.CurrentInfluence:0}/{live.MaxInfluence:0}");
+                        // JC | 2026-11-13 | 현재 전투에만 정상 사망 경로를 요청합니다. 시작 HP/저장 프로필은 변경하지 않습니다.
+                        if (live) EditorGUILayout.LabelField("현재 HP", live.IsDead ? "사망" : $"{live.CurrentHp:0}");
+                        using (new EditorGUI.DisabledScope(!Application.isPlaying || !live || live.IsDead))
+                            if (GUILayout.Button("이 아군 사망 처리 · 현재 전투만")) test.RequestHeroDeath(input);
                         if (catalog.TryGetPlayerUnitTemplate(input.UnitTemplateKey, out var template))
                         {
                             var learned = catalog.GetCurrentClassSkills(template.ClassIndex, input.Level);

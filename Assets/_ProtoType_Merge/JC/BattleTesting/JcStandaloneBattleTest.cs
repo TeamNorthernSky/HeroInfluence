@@ -32,6 +32,8 @@ namespace JC.BattleTesting
         // JC | 2026-11-12 | 편집한 랭크/IP는 연출 중 교체하지 않고 안전한 선택 대기 시점에 한 번만 적용합니다.
         readonly Dictionary<int, SimulationAllyInput> pendingHeroTuning = new Dictionary<int, SimulationAllyInput>();
         readonly Dictionary<SimulationAllyInput, int> startedHeroes = new Dictionary<SimulationAllyInput, int>();
+        // JC | 2026-11-13 | 테스트용 사망 요청은 실제 유닛 참조만 보관하며 시작 프로필에는 저장하지 않습니다.
+        readonly Queue<BattleCharactor> pendingHeroDeaths = new Queue<BattleCharactor>();
         public SimulationBattleConfig Draft
         {
             get
@@ -127,6 +129,33 @@ namespace JC.BattleTesting
         {
             if (started && period != appliedPeriod) RefreshLighting();
             ApplyPendingHeroTuning();
+            ApplyPendingHeroDeaths();
+        }
+
+        public void RequestHeroDeath(SimulationAllyInput input)
+        {
+            if (!Application.isPlaying || !started) return;
+            var unit = GetLiveHero(input);
+            if (!unit || !unit.IsPlayer || unit.IsDead || pendingHeroDeaths.Contains(unit)) return;
+            pendingHeroDeaths.Enqueue(unit);
+            Status = unit.DisplayName + " · 사망 처리 대기 (공격/턴 연출 종료 후)";
+            ApplyPendingHeroDeaths();
+        }
+
+        // JC | 2026-11-13 | 기존 피해→사망 이벤트를 그대로 사용해 턴/애니메이션/부활 연결을 유지합니다.
+        // 무적·최소 HP·전용 무력화 규칙은 강제로 우회하지 않고 결과를 상태란에 알립니다.
+        void ApplyPendingHeroDeaths()
+        {
+            if (!Application.isPlaying || !started || pendingHeroDeaths.Count == 0 || !runtimeFlow) return;
+            if (runtimeFlow.IsEndingBattle || runtimeFlow.IsBattleEnded) { pendingHeroDeaths.Clear(); return; }
+            if (!runtimeFlow.CurrentUnit || runtimeFlow.IsActionInProgress || runtimeFlow.IsTurnPresentationPending || runtimeFlow.IsFlowBlocked) return;
+            var unit = pendingHeroDeaths.Dequeue();
+            if (!unit || unit.IsDead || !unit.IsPlayer || !runtimeFlow.Participants.Contains(unit)) return;
+            foreach (var root in gameObject.scene.GetRootGameObjects())
+                foreach (var input in root.GetComponentsInChildren<InputHandler>(true)) input.ClearSelectionState();
+            unit.TakeDamage(unit.CurrentHp);
+            Status = unit.IsDead ? unit.DisplayName + " · 사망 처리 완료 (시작 설정은 유지)"
+                : unit.DisplayName + " · 전투의 피해 방지/무력화 규칙에 의해 사망하지 않았습니다.";
         }
 
         public void RequestHeroTuning(SimulationAllyInput input)

@@ -27,6 +27,8 @@ MonoBehaviour:
   ssaoRadius: 0.9
   ssaoDirectLightingStrength: 0.272
   ssaoDownsample: 0
+  localAttachmentShadowMaterial: {fileID: 2100000, guid: b751423f1d72ddc47933c78bad91c88c,
+    type: 2}
   ambientColor: {r: 0.65, g: 0.68, b: 0.73, a: 1}
   ambientIntensity: 0.95
   reflectionIntensity: 0.89
@@ -96,7 +98,7 @@ MonoBehaviour:
     range: 16
     spotAngle: 120
     innerSpotRatio: 0.05
-    shadows: 0
+    shadows: 2
     shadowStrength: 0.65
     shadowBias: 0.05
     shadowNormalBias: 0.2
@@ -112,7 +114,7 @@ MonoBehaviour:
     range: 70
     spotAngle: 120
     innerSpotRatio: 0.05
-    shadows: 0
+    shadows: 2
     shadowStrength: 0.65
     shadowBias: 0.05
     shadowNormalBias: 0.2
@@ -128,7 +130,7 @@ MonoBehaviour:
     range: 70
     spotAngle: 120
     innerSpotRatio: 0.05
-    shadows: 0
+    shadows: 2
     shadowStrength: 0.65
     shadowBias: 0.05
     shadowNormalBias: 0.2
@@ -144,7 +146,7 @@ MonoBehaviour:
     range: 16
     spotAngle: 120
     innerSpotRatio: 0.05
-    shadows: 0
+    shadows: 2
     shadowStrength: 0.65
     shadowBias: 0.05
     shadowNormalBias: 0.2
@@ -160,7 +162,7 @@ MonoBehaviour:
     range: 70
     spotAngle: 88
     innerSpotRatio: 0.712
-    shadows: 0
+    shadows: 2
     shadowStrength: 0.566
     shadowBias: 0.05
     shadowNormalBias: 0.1
@@ -177,7 +179,7 @@ MonoBehaviour:
     range: 25
     spotAngle: 110
     innerSpotRatio: 0.515
-    shadows: 0
+    shadows: 2
     shadowStrength: 0.65
     shadowBias: 0.05
     shadowNormalBias: 0.2
@@ -194,7 +196,7 @@ MonoBehaviour:
     range: 32.3
     spotAngle: 120
     innerSpotRatio: 0.523
-    shadows: 0
+    shadows: 2
     shadowStrength: 0.65
     shadowBias: 0.05
     shadowNormalBias: 0.2
@@ -211,17 +213,17 @@ MonoBehaviour:
     range: 25
     spotAngle: 110
     innerSpotRatio: 0.499
-    shadows: 0
+    shadows: 2
     shadowStrength: 0.65
     shadowBias: 0.05
     shadowNormalBias: 0.2
   - playerBackFill: 0
-    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 10\uC2DC \uADF8\uB9BC\uC790"
+    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 8\uC2DC 30\uBD84 \uADF8\uB9BC\uC790"
     fixturePrefab: {fileID: 0}
     enabled: 1
     type: 2
     position: {x: 6, y: 14, z: 6}
-    rotation: {x: 50.19443, y: 288.24808, z: -0.0000026672742}
+    rotation: {x: 50.19443, y: 212.7968, z: 0}
     color: {r: 1, g: 0.9686275, b: 0.85098046, a: 1}
     intensity: 1
     range: 47.1

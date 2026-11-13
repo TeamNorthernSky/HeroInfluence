@@ -32,7 +32,12 @@ namespace JC.Tutorial
         private float pointerElapsed, convergenceElapsed;
         private RectTransform convergenceTarget;
         private bool suppressPanel;
-        public void SetPanelSuppressed(bool value) { suppressPanel=value;if(value&&panel!=null){panel.alpha=0;panel.blocksRaycasts=false;} }
+        public void SetPanelSuppressed(bool value)
+        {
+            // JC | 2026-11-13 | 숨겼던 안내 본문을 다시 표시할 때 기존 사용 불가 팝업을 빠르게 닫습니다.
+            if (suppressPanel && !value) JcTutorialBattleControlNotice.OnGuideTransition(gameObject.scene);
+            suppressPanel=value;if(value&&panel!=null){panel.alpha=0;panel.blocksRaycasts=false;}
+        }
         public const float ConvergenceExpansion=36;
 
         private sealed class WordWrap : ITextPreprocessor
@@ -229,6 +234,8 @@ namespace JC.Tutorial
         private float focusCornerRadius;
         public void SetVisible(bool value, RectTransform target = null, FocusPresentation presentation = FocusPresentation.PointerAbove, float cornerRadius = 0)
         {
+            // JC | 2026-11-13 | 매 프레임 유지 호출은 제외하고 메시지 표시가 시작되는 순간만 통지합니다.
+            if (value && !visible) JcTutorialBattleControlNotice.OnGuideTransition(gameObject.scene);
             if (!value) SetActionHint(ActionHint.None);
             visible = value; focus = value ? target : null; focusPresentation = presentation;
             focusCornerRadius = Mathf.Max(0, cornerRadius);

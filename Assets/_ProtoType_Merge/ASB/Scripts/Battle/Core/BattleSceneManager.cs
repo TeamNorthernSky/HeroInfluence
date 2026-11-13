@@ -36,6 +36,17 @@ public class BattleSceneManager : MonoBehaviour
     [SerializeField, Min(-1)] private int tutorialZoneIdOverride = -1;
     private TutorialBattleFlowRegistry tutorialFlowRegistry;
 
+    // JC | 2026-11-13 | 안내 표시 여부가 아닌 전투 진입 키로 자동/배속을 제한합니다. 일반 전투와 안내 없는 모의전은 유지합니다.
+    public bool LocksTutorialBattleControls
+    {
+        get
+        {
+            ResolveTutorialEntry(CombatContext.Instance, out int zone, out string key);
+            if (tutorialFlowRegistry == null) tutorialFlowRegistry = TutorialBattleFlowRegistry.CreateDefault();
+            return tutorialFlowRegistry.Contains(zone, key);
+        }
+    }
+
     [Header("UI")]
     [SerializeField] private BattleUIManager battleUIManager;
     [Tooltip("마지막 연출(스킬·이펙트·사망 애니)이 끝난 뒤 결과창을 띄우기 전 추가로 쉬는 시간(초).")]
@@ -552,30 +563,8 @@ public class BattleSceneManager : MonoBehaviour
 
         // 기본 경로는 '일반 전투'다. 튜토리얼은 진입 키가 매칭될 때만 켜지는 특수 케이스로 취급한다.
         // 진입 키 우선순위: 이벤트 전투 → 탐사에서 넘어온 CombatContext 튜토리얼 키 → 씬 override(테스트용, §11.1).
-        bool hasEventBattle = combatContext != null && combatContext.HasEventBattle;
-        int tutorialZoneId;
-        string tutorialKey;
-        if (hasEventBattle)
-        {
-            tutorialZoneId = combatContext.EventBattle.ZoneId;
-            tutorialKey = combatContext.EventBattle.BattleKey;
-        }
-        else if (combatContext != null && combatContext.IsTutorial &&
-                 !string.IsNullOrWhiteSpace(combatContext.TutorialBattleKey))
-        {
-            tutorialZoneId = combatContext.TutorialZoneId;
-            tutorialKey = combatContext.TutorialBattleKey;
-        }
-        else if (!string.IsNullOrWhiteSpace(tutorialBattleKeyOverride))
-        {
-            tutorialZoneId = tutorialZoneIdOverride;
-            tutorialKey = tutorialBattleKeyOverride.Trim();
-        }
-        else
-        {
-            tutorialZoneId = -1;
-            tutorialKey = null;
-        }
+        // JC | 2026-11-13 | 버튼 잠금과 튜토리얼 실행의 키 우선순위를 한 곳에서 해석합니다.
+        ResolveTutorialEntry(combatContext, out int tutorialZoneId, out string tutorialKey);
 
         ITutorialBattleFlow tutorialFlow = ResolveTutorialFlow(tutorialZoneId, tutorialKey);
         if (tutorialFlow == null)
@@ -662,6 +651,17 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         return tutorialFlowRegistry.Resolve(zoneId, battleKey);
+    }
+
+    // JC | 2026-11-13 | 기존 이벤트→튜토리얼 컨텍스트→씬 override 순서를 보존합니다.
+    private void ResolveTutorialEntry(CombatContext context, out int zone, out string key)
+    {
+        if (context != null && context.HasEventBattle)
+        { zone = context.EventBattle.ZoneId; key = context.EventBattle.BattleKey; }
+        else if (context != null && context.IsTutorial && !string.IsNullOrWhiteSpace(context.TutorialBattleKey))
+        { zone = context.TutorialZoneId; key = context.TutorialBattleKey; }
+        else
+        { zone = tutorialZoneIdOverride; key = tutorialBattleKeyOverride; }
     }
 
     private bool TryPrepareEventSlotMap(

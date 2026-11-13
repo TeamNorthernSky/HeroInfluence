@@ -125,3 +125,4 @@ MonoBehaviour:
     sweepDuration: 0.8
     sweepInterval: 1.5
     reverseSweep: 0
+    highlightTargetModel: 0
