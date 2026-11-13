@@ -25,7 +25,7 @@ MonoBehaviour:
     Speed: 2
     EnemySkill1_Name: "\uC704\uD611 \uC0AC\uACA9"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4."
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 2
     EnemySkill1RangeLine: 1
@@ -79,7 +79,7 @@ MonoBehaviour:
     Speed: 3
     EnemySkill1_Name: "\uC6D0\uAC70\uB9AC \uC0AC\uACA9"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4."
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -90,8 +90,8 @@ MonoBehaviour:
     EnemySkill1Value: 1
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uC6D0\uAC70\uB9AC \uB09C\uC0AC"
-    EnemySkill2_Description: "\uC0C1\uB300 1\uC5F4\uC5D0 \uB300\uBBF8\uC9C0\uB97C
-      \uC900\uB2E4."
+    EnemySkill2_Description: "\uC0C1\uB300 \uAC00\uB85C\uC904 1\uC5F4\uC5D0 \uACF5\uACA9\uB825\uC758
+      {EnemySkill2Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 1
     EnemySkill2RangeLine: 1
@@ -138,7 +138,8 @@ MonoBehaviour:
     Speed: 0
     EnemySkill1_Name: "\uBC29\uD328 \uCE58\uAE30"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4. (\uC804\uC5F4 \uC6B0\uC120)"
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4.
+      (\uC804\uC5F4 \uC6B0\uC120)"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -149,9 +150,9 @@ MonoBehaviour:
     EnemySkill1Value: 0.8
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB300\uC2E0 \uB9DE\uAE30"
-    EnemySkill2_Description: "\uB2E4\uC74C \uC790\uC2E0\uC758 \uCC28\uB840\uAE4C\uC9C0
-      \uC9C0\uC815\uD55C \uC544\uAD70 \uC720\uB2DB\uC744 \uACF5\uACA9\uD558\uB294
-      \uB2E8\uC77C \uACF5\uACA9\uC744 1\uD68C \uBC29\uC5B4\uD55C\uB2E4."
+    EnemySkill2_Description: "\uB2E4\uC74C \uC790\uC2E0\uC758 \uCC28\uB840 \uC804\uAE4C\uC9C0
+      \uC9C0\uC815\uD55C \uC544\uAD70\uC774 \uBC1B\uB294 \uB2E8\uC77C \uACF5\uACA9\uC744
+      1\uD68C \uB300\uC2E0 \uB9DE\uB294\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -194,12 +195,7 @@ MonoBehaviour:
     ReduceRate: 0.15
     Speed: 2
     EnemySkill1_Name: "\uCDA9\uC804 \uD3EC\uACA9"
-    EnemySkill1_Description: "\uCDA9\uC804 \uD3EC\uACA9\t(1\uD134) \uD788\uC5B4\uB85C
-      1\uBA85 \uB610\uB294 \uD574\uB2F9 \uD0C0\uC77C\uC744 \uC9C0\uC815\uD558\uACE0
-      \uD53C\uD574 \uBC94\uC704 \uD45C\uC2DC (2\uD134) \uB300\uC0C1 \uC720\uB2DB\uC5D0\uAC8C
-      {EnemySkill1Value} \uB9CC\uD07C \uB300\uBBF8\uC9C0, \uC8FC\uBCC0 \uC720\uB2DB\uC5D0\uAC8C
-      {EnemySkill1SubValue} \uB300\uBBF8\uC9C0  (3\uD134) \uD734\uC2DD (\uCC28\uB840
-      \uC2A4\uD0B5)"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -253,7 +249,7 @@ MonoBehaviour:
     Speed: 3
     EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4."
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -264,7 +260,8 @@ MonoBehaviour:
     EnemySkill1Value: 1
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uC5F0\uACA9"
-    EnemySkill2_Description: "\uC0C1\uB300 \uC720\uB2DB 2\uBA85\uC5D0\uAC8C \uD53C\uD574\uB97C
+    EnemySkill2_Description: "\uBB34\uC791\uC704 \uC801 2\uBA85\uC5D0\uAC8C \uAC01\uAC01
+      \uACF5\uACA9\uB825\uC758 {EnemySkill2Value}, {EnemySkill2SubValue} \uD53C\uD574\uB97C
       \uC900\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
@@ -312,7 +309,7 @@ MonoBehaviour:
     Speed: 3
     EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4."
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -323,7 +320,8 @@ MonoBehaviour:
     EnemySkill1Value: 1
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uC5F0\uACA9"
-    EnemySkill2_Description: "\uC0C1\uB300 \uC720\uB2DB 2\uBA85\uC5D0\uAC8C \uD53C\uD574\uB97C
+    EnemySkill2_Description: "\uBB34\uC791\uC704 \uC801 2\uBA85\uC5D0\uAC8C \uAC01\uAC01
+      \uACF5\uACA9\uB825\uC758 {EnemySkill2Value}, {EnemySkill2SubValue} \uD53C\uD574\uB97C
       \uC900\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
@@ -370,7 +368,7 @@ MonoBehaviour:
     Speed: 3
     EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4."
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -381,7 +379,8 @@ MonoBehaviour:
     EnemySkill1Value: 1
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uC5F0\uACA9"
-    EnemySkill2_Description: "\uC0C1\uB300 \uC720\uB2DB 2\uBA85\uC5D0\uAC8C \uD53C\uD574\uB97C
+    EnemySkill2_Description: "\uBB34\uC791\uC704 \uC801 2\uBA85\uC5D0\uAC8C \uAC01\uAC01
+      \uACF5\uACA9\uB825\uC758 {EnemySkill2Value}, {EnemySkill2SubValue} \uD53C\uD574\uB97C
       \uC900\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
@@ -428,7 +427,7 @@ MonoBehaviour:
     Speed: 3
     EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4."
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -439,7 +438,8 @@ MonoBehaviour:
     EnemySkill1Value: 1
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uC5F0\uACA9"
-    EnemySkill2_Description: "\uC0C1\uB300 \uC720\uB2DB 2\uBA85\uC5D0\uAC8C \uD53C\uD574\uB97C
+    EnemySkill2_Description: "\uBB34\uC791\uC704 \uC801 2\uBA85\uC5D0\uAC8C \uAC01\uAC01
+      \uACF5\uACA9\uB825\uC758 {EnemySkill2Value}, {EnemySkill2SubValue} \uD53C\uD574\uB97C
       \uC900\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
@@ -487,7 +487,7 @@ MonoBehaviour:
     Speed: 3
     EnemySkill1_Name: "\uC6D0\uAC70\uB9AC \uC0AC\uACA9"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4."
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -498,8 +498,8 @@ MonoBehaviour:
     EnemySkill1Value: 1
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uC6D0\uAC70\uB9AC \uB09C\uC0AC"
-    EnemySkill2_Description: "\uC0C1\uB300 1\uC5F4\uC5D0 \uB300\uBBF8\uC9C0\uB97C
-      \uC900\uB2E4."
+    EnemySkill2_Description: "\uC0C1\uB300 \uAC00\uB85C\uC904 1\uC5F4\uC5D0 \uACF5\uACA9\uB825\uC758
+      {EnemySkill2Value} \uD53C\uD574\uB97C \uC900\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -558,7 +558,8 @@ MonoBehaviour:
     Speed: 0
     EnemySkill1_Name: "\uBC29\uD328 \uCE58\uAE30"
     EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
-      \uD53C\uD574\uB97C \uC900\uB2E4. (\uC804\uC5F4 \uC6B0\uC120)"
+      \uACF5\uACA9\uB825\uC758 {EnemySkill1Value} \uD53C\uD574\uB97C \uC900\uB2E4.
+      (\uC804\uC5F4 \uC6B0\uC120)"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -569,9 +570,9 @@ MonoBehaviour:
     EnemySkill1Value: 0.8
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB300\uC2E0 \uB9DE\uAE30"
-    EnemySkill2_Description: "\uB2E4\uC74C \uC790\uC2E0\uC758 \uCC28\uB840\uAE4C\uC9C0
-      \uC9C0\uC815\uD55C \uC544\uAD70 \uC720\uB2DB\uC744 \uACF5\uACA9\uD558\uB294
-      \uB2E8\uC77C \uACF5\uACA9\uC744 1\uD68C \uBC29\uC5B4\uD55C\uB2E4."
+    EnemySkill2_Description: "\uB2E4\uC74C \uC790\uC2E0\uC758 \uCC28\uB840 \uC804\uAE4C\uC9C0
+      \uC9C0\uC815\uD55C \uC544\uAD70\uC774 \uBC1B\uB294 \uB2E8\uC77C \uACF5\uACA9\uC744
+      1\uD68C \uB300\uC2E0 \uB9DE\uB294\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -629,7 +630,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 3
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -640,7 +641,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -685,7 +686,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 2
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -696,7 +697,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -741,7 +742,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 1
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -752,7 +753,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -797,7 +798,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 3
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -808,7 +809,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -853,7 +854,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 2
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -864,7 +865,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -909,7 +910,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 1
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -920,7 +921,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -965,7 +966,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 3
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -976,7 +977,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -1021,7 +1022,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 2
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -1032,7 +1033,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -1077,7 +1078,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 1
     EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
-    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -1088,7 +1089,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB09C\uB3D9"
-    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -1133,9 +1134,7 @@ MonoBehaviour:
     ReduceRate: 0.2
     Speed: 0
     EnemySkill1_Name: "\uB098\uB77D\uC758 \uD3ED\uD48D"
-    EnemySkill1_Description: "\uD788\uC5B4\uB85C \uC911 \uBB34\uC791\uC704 \uB300\uC0C1\uC774
-      \uD3EC\uD568\uB41C \uC5F4 \uC804\uCCB4 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value}
-      \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -1146,9 +1145,7 @@ MonoBehaviour:
     EnemySkill1Value: 1.2
     EnemySkill1SubValue: 1.2
     EnemySkill2_Name: "\uACF5\uBA78\uC758 \uADA4\uC801"
-    EnemySkill2_Description: "\uD788\uC5B4\uB85C \uC911 \uBB34\uC791\uC704 \uB300\uC0C1\uC774
-      \uC704\uCE58\uD55C \uD589 \uC804\uCCB4 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill2Value}
-      \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 1
     EnemySkill2RangeLine: 1
@@ -1209,7 +1206,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 3
     EnemySkill1_Name: "\uC751\uCD95"
-    EnemySkill1_Description: "{EnergyStack} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -1220,8 +1217,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB2A5\uB825 \uAC1C\uBC29"
-    EnemySkill2_Description: "\uC728\uB9AC\uC544\uC5D0\uAC8C  \uC2A4\uD0AC{\uB098\uB77D\uC758
-      \uD3ED\uD48D} \uC608\uC57D \uBC84\uD504 \uBD80\uC5EC"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -1286,7 +1282,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 2
     EnemySkill1_Name: "\uC751\uCD95"
-    EnemySkill1_Description: "{EnergyStack} 1 \uC99D\uAC00"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -1297,8 +1293,7 @@ MonoBehaviour:
     EnemySkill1Value: 0
     EnemySkill1SubValue: 0
     EnemySkill2_Name: "\uB2A5\uB825 \uAC1C\uBC29"
-    EnemySkill2_Description: "\uC728\uB9AC\uC544\uC5D0\uAC8C  \uC2A4\uD0AC{\uACF5\uBA78\uC758
-      \uADA4\uC801} \uC608\uC57D \uBC84\uD504 \uBD80\uC5EC"
+    EnemySkill2_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -1365,15 +1360,7 @@ MonoBehaviour:
     ReduceRate: 0.2
     Speed: 0
     EnemySkill1_Name: "\uC808\uB9DD\uC758 \uAD74\uB808"
-    EnemySkill1_Description: "\uC2DC\uC804\uC790 \uC9C4\uC601\uC758 \uC804\uC5F4(1,2,3
-      \uD0C0\uC77C)\uC5D0 \uC808\uB9DD\uC758 \uAD74\uB801\uC1E0 \uC18C\uD658\n\uC808\uB9DD\uC758
-      \uAD74\uB801\uC1E0\uB294 \uC720\uB2DB\uC73C\uB85C \uCDE8\uAE09\uB418\uBA70
-      \uACF5\uACA9 \uB300\uC0C1\uC774 \uB418\uC5B4 \uD53C\uD574\uB97C \uC785\uC744
-      \uC218 \uC788\uC74C.\n\uC808\uB9DD\uC758 \uAD74\uB801\uC1E0 \uC18C\uD658 \uD6C4
-      \uD55C \uB77C\uC6B4\uB4DC\uAC00 \uC9C0\uB098 \uBCF8\uC778 \uD134\uC774 \uB3CC\uC544\uC624\uBA74
-      \uD574\uB2F9 \uC720\uB2DB\uC774 \uC18D\uD55C \uD589\uC758 \uD788\uC5B4\uB85C
-      \uC9C4\uC601\uC73C\uB85C \uB3CC\uC9C4\uD574 \uD589 \uC804\uCCB4\uC5D0 {EnemySkill1Value}
-      \uB9CC\uD07C \uAD11\uC5ED\uD53C\uD574"
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -1432,9 +1419,7 @@ MonoBehaviour:
     ReduceRate: 0
     Speed: 1
     EnemySkill1_Name: "\uB3CC\uC9C4"
-    EnemySkill1_Description: "\uAD74\uB801\uC1E0\uAC00 \uC704\uCE58\uD55C \uD589\uC758
-      \uD788\uC5B4\uB85C \uC9C4\uC601\uC73C\uB85C \uB3CC\uC9C4 \uD6C4 \uC0AC\uB77C\uC9C4\uB2E4.
-      100 \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4. "
+    EnemySkill1_Description: "\uBBF8\uC0AC\uC6A9"
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1

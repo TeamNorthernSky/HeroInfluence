@@ -3,6 +3,8 @@ using UnityEngine;
 using Cell = ASB.Work.BattleGrid.GridCell;
 
 /// <summary>기존 셀 상태에 맞춰 테두리 프리팹과 스윕을 표시합니다. 대상 판정은 변경하지 않습니다.</summary>
+// JC | 2026-11-13 | 편집 모드에도 인스펙터 초안만 준비합니다. 셀 표시 갱신은 기존 전투 관리자가 호출합니다.
+[ExecuteAlways]
 public class BattleCellVisualSettings : MonoBehaviour
 {
     [Tooltip("설정 씬에서 저장한 외형·스윕·상하 운동 프로필입니다. 연결된 경우 아래 구형 스윕 값 대신 프로필을 사용합니다.")]
@@ -59,6 +61,12 @@ public class BattleCellVisualSettings : MonoBehaviour
         public readonly Dictionary<BattleCellVisualState, BattleCellBorderVisual> templates = new Dictionary<BattleCellVisualState, BattleCellBorderVisual>();
     }
     private readonly Dictionary<Cell, Presentation> presentations = new Dictionary<Cell, Presentation>();
+
+    // JC | 2026-11-13 | 저장 자산은 보존하고 CellBox의 임시 초안만 즉시 표시합니다.
+    [SerializeField, HideInInspector] private BattleCellBorderConfiguration draft;
+    public BattleCellBorderConfiguration Draft { get { if (draft == null) LoadProfile(); return draft; } }
+    public void LoadProfile() => draft = profile != null ? profile.settings.Copy() : new BattleCellBorderConfiguration();
+    private void OnEnable() => LoadProfile();
 
     public void Apply(Cell cell, float alpha, BattleCellVisualState state = BattleCellVisualState.Hidden, BattleCellBorderConfiguration presentationOverride = null)
     {
@@ -134,7 +142,7 @@ public class BattleCellVisualSettings : MonoBehaviour
         }
         source.enabled = false;
         if (state == BattleCellVisualState.Hidden) presentation.motion.Reset();
-        var configuration = presentationOverride ?? (profile != null ? profile.settings : null);
+        var configuration = presentationOverride ?? (profile != null ? Draft : null);
         float lift = configuration != null && state != BattleCellVisualState.Hidden ? presentation.motion.Evaluate(state, configuration, Time.unscaledTimeAsDouble) : 0f;
         var prefab = PrefabFor(state);
         if (prefab != null)
@@ -189,23 +197,3 @@ public class BattleCellVisualSettings : MonoBehaviour
         originals.Clear(); renderers.Clear();
     }
 }
-
-#if UNITY_EDITOR
-[UnityEditor.CustomEditor(typeof(BattleCellVisualSettings))]
-public class BattleCellVisualSettingsEditor : UnityEditor.Editor
-{
-    public override void OnInspectorGUI()
-    {
-        serializedObject.Update();
-        UnityEditor.EditorGUILayout.PropertyField(serializedObject.FindProperty("profile"));
-        if (serializedObject.FindProperty("profile").objectReferenceValue == null)
-            DrawPropertiesExcluding(serializedObject, "m_Script", "profile");
-        else
-            foreach (string name in new[] { "currentTurnAlpha", "selectableAlpha", "confirmedAreaAlpha", "unavailableAlpha", "currentTurnPrefab", "selectablePrefab", "confirmedAreaPrefab", "unavailablePrefab", "cellRenderers" })
-                UnityEditor.EditorGUILayout.PropertyField(serializedObject.FindProperty(name), true);
-        serializedObject.ApplyModifiedProperties();
-        UnityEditor.EditorGUILayout.Space();
-        UnityEditor.EditorGUILayout.HelpBox("외형·스윕·상하 운동은 JC_TestScenes의 BattleCellBorderSettings 씬에서 조절하고 프로필로 저장합니다. 이 오브젝트는 프로필과 셀 표시 연결을 담당합니다. 내부 채움은 독립적인 불투명도를 사용합니다.", UnityEditor.MessageType.Info);
-    }
-}
-#endif

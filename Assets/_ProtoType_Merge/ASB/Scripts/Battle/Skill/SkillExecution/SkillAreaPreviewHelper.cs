@@ -19,6 +19,14 @@ namespace ASB.Work.Battle.SkillExecution
         public static bool IsFullSideAttack(SkillData skill) =>
             skill != null && skill.classSkillTarget == 2;
 
+        // JC | 2026-11-13 | 표시 전용 분류입니다. 4040의 아군 부활만 흰색이고 함께 실행되는 적 전체 공격은 빨강입니다.
+        // 기존 효과/대상 계산은 유지하며 그리드와 턴 슬롯에서 같은 진영 판정을 사용합니다.
+        public static bool IsHealingPreviewSide(SkillData skill, BattleCharactor caster, bool targetIsPlayer)
+        {
+            if (skill == null || (skill.classSkillEffect != 1 && skill.classSkillEffect != 2)) return false;
+            return !HeroSkillRules.IsFamily(skill, 4040) || (caster != null && caster.IsPlayer == targetIsPlayer);
+        }
+
         /// <summary>
         /// 범위 공격: 중심 Main + 범위 Additional.
         /// 전체 공격(classSkillTarget==2): 범위 전체 Main.

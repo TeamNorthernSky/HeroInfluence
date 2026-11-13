@@ -63,6 +63,9 @@ public class SkillButtonController : MonoBehaviour
     private bool HasHeroSlots => heroSlots != null && heroSlots.Length > 0;
     public SkillData CurrentSkillData { get; private set; }
 
+    // JC | 2026-11-13 | 튜토리얼은 KJ의 실제 코어 버튼을 강조 대상으로 읽기만 합니다. 선택·실행 연결은 유지합니다.
+    public RectTransform CoreSkillRect => toggle2 != null ? toggle2.transform as RectTransform : null;
+
     public Button FindSkillButton(int skillId)
     {
         if (heroSlots != null) foreach (var slot in heroSlots)

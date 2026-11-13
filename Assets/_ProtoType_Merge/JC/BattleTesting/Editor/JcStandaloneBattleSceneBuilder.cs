@@ -123,6 +123,16 @@ namespace JC.BattleTesting.Editor
                     settings.encounterPosition = entry != null && entry.overrideAnchor ? entry.anchor : anchor;
                     settings.enemyPosition = settings.encounterPosition + Vector3.forward; settings.axis = entry?.axis ?? JcBattleRoadAxis.Auto;
                 }
+                // JC | 2026-11-13 | 편집 모드 지연 콜백 전에 확정 드레싱을 연결하여 본게임과 같은 도로·연석으로 테스트 배경을 만듭니다.
+                if (tutorial)
+                {
+                    var overlay = roots.SelectMany(r => r.GetComponentsInChildren<EnvironmentDetail.JcExploreDetailOverlay>(true)).SingleOrDefault();
+                    if (overlay != null)
+                    {
+                        if (overlay.IsPreview) throw new InvalidOperationException("튜토리얼 드레싱 미리보기를 먼저 확정 또는 취소해 주세요.");
+                        overlay.Refresh();
+                    }
+                }
                 source = JcDynamicBattleGeometry.Capture(scene, tutorial);
                 var cameras = Resources.Load<JcBattleCameraProfile>("JC_BattleCamera_Default");
                 cameras.viewA.Resolve(Vector3.zero, out var a, out _, out _); cameras.viewB.Resolve(Vector3.zero, out var b, out _, out _);

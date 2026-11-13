@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -17,6 +17,8 @@ namespace JC.BattleTesting
             public Vector3 origin, direction;
             public Material material;
             public float baselineWidth;
+            // JC | 2026-11-13 | 튜토리얼 전투 원경만 큰 묶음으로 도색하며 근경 조명 분할은 유지합니다.
+            public float tutorialRearStart = float.PositiveInfinity;
             public readonly List<Vector2> paint = new List<Vector2>();
             public readonly List<Vector2> seeds = new List<Vector2>();
         }
@@ -177,6 +179,29 @@ namespace JC.BattleTesting
             }
         }
 
+        // JC | 2026-11-13 | 원경 중앙선도 기존 도색 기록을 연장하여 플레이 중 색상·간격 재적용 시 끊기지 않게 합니다.
+        internal void ExtendTutorialRearLine(float centerX, float startZ, float endZ)
+        {
+            int matches = 0;
+            foreach (var record in lineRecords)
+            {
+                var line = record.line;
+                if (Mathf.Abs(line.origin.x-centerX) > .01f || Mathf.Abs(line.direction.z) < .999f) continue;
+                for (int i=0;i<record.spans.Count;i++)
+                {
+                    var span=record.spans[i];
+                    float t=(startZ-line.origin.z)/line.direction.z;
+                    if(t < span.x || t > span.y)continue;
+                    if(line.direction.z>0)span.y=(endZ-line.origin.z)/line.direction.z;
+                    else span.x=(endZ-line.origin.z)/line.direction.z;
+                    record.spans[i]=span; line.tutorialRearStart=startZ; matches++;
+                }
+            }
+            if(matches!=1)throw new InvalidOperationException("튜토리얼 후방에 연결할 중앙선은 하나여야 합니다: "+matches);
+            var profile=Profile;
+            SetRoadValues(new Vector3(profile.lineWidth,profile.dashLength,profile.dashGap),lineColor);
+        }
+
         static bool RoadInterval(RoadFace face, RoadLine line, out Vector2 interval)
         {
             interval = default;
@@ -261,7 +286,8 @@ namespace JC.BattleTesting
                 for (float begin = first; begin + length <= limit + .001f; begin += period)
                 {
                     float end = begin + length;
-                    if (end - chunkStart > maxChunkLength) FlushChunk();
+                    float limitLength = line.origin.z + line.direction.z * begin > line.tutorialRearStart ? 256f : maxChunkLength;
+                    if (end - chunkStart > limitLength) FlushChunk();
                     if (vertices.Count == 0) chunkStart = begin;
                     var a = line.origin + line.direction * begin + Vector3.up * .008f;
                     var b = line.origin + line.direction * end + Vector3.up * .008f;

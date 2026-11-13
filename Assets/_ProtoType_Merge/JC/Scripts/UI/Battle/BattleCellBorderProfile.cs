@@ -63,6 +63,10 @@ public sealed class BattleCellBorderConfiguration
     [Min(0), Tooltip("스윕 반복 사이의 대기 시간(초)입니다.")] public float sweepInterval = 1.5f;
     [Tooltip("스윕 이동 방향을 반대로 바꿉니다.")] public bool reverseSweep;
 
+    // JC | 2026-11-13 | 선택 중 모델 윤곽선만 제어하며 ASB 대상 판정과 그리드 상태를 변경하지 않습니다.
+    [Tooltip("스킬 대상 호버 중 캐릭터에 대상 그리드와 같은 색의 윤곽선을 표시합니다.")]
+    public bool highlightTargetModel = true;
+
     public BattleCellBorderStyle For(BattleCellVisualState state)
     {
         switch (state) {

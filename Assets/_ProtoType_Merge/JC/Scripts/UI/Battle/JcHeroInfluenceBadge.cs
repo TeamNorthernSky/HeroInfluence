@@ -6,7 +6,8 @@ using UnityEngine.UI;
 // JC | 2026-11-12 | 현재 IP 칭호는 성장 랭크 배지와 분리합니다. 기존 IP 행과 공용 툴팁을 재사용합니다.
 public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    static readonly string[] Titles = { "뉴비", "유망주", "베테랑", "국가권력" };
+    // JC | 2026-11-13 | IP 최하위 칭호를 듣보로 변경하며 배지와 툴팁 안내에 같은 명칭을 표시합니다.
+    static readonly string[] Titles = { "듣보", "유망주", "베테랑", "국가권력" };
     static readonly Color[] Surfaces = {
         new Color(.33f,.36f,.40f), new Color(.15f,.38f,.24f),
         new Color(.13f,.30f,.53f), new Color(.53f,.35f,.10f) };
@@ -114,7 +115,9 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
         rect.anchorMin = rect.anchorMax = new Vector2(1, 1);
         rect.pivot = new Vector2(1, .5f);
         rect.anchoredPosition = new Vector2(0, source.anchoredPosition.y - source.rect.height * .5f);
-        rect.sizeDelta = new Vector2(width, source.rect.height);
+        // JC | 2026-11-13 | 기존 측정 폭 기준으로 박스를 10% 확대하고 글자만 10% 줄입니다.
+        rect.sizeDelta = new Vector2(width, source.rect.height) * 1.1f;
+        label.fontSize = size * .9f;
     }
     public void OnPointerEnter(PointerEventData data)
     {
@@ -131,7 +134,7 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
     {
         if (!SkillTooltip.Instance || !unit) return;
         SkillTooltip.Instance.ShowInfo(ipIcon, "I.P · " + Titles[tier],
-            $"현재 IP: {current:0} / {maximum:0}\n\nIP가 높을수록 일반 스킬 공격의 피해량이 증가합니다.\n반격에는 이 배율이 적용되지 않습니다.\n\n뉴비 0–49 · 유망주 50–99\n베테랑 100–139 · 국가권력 140 이상", rect);
+            $"현재 IP: {current:0} / {maximum:0}\n\nIP가 높을수록 일반 스킬 공격의 피해량이 증가합니다.\n반격에는 이 배율이 적용되지 않습니다.\n\n듣보 0–49 · 유망주 50–99\n베테랑 100–139 · 국가권력 140 이상", rect);
     }
     void OnDisable() { EndHover(); sweepTime = 0; if (face) face.SetSweep(-1); }
     void OnDestroy() { if (lettering) { if (Application.isPlaying) Destroy(lettering); else DestroyImmediate(lettering); } }

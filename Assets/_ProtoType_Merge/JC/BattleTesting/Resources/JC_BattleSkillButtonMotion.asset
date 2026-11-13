@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ecdab7415614ba6bbd4a543aa83ccb4, type: 3}
   m_Name: JC_BattleSkillButtonMotion
   m_EditorClassIdentifier: 
-  hoverScale: 1.06
+  hoverScale: 1.08
   widthRatio: 0.99
   pivotX: 0.465
   pivotY: 0.169

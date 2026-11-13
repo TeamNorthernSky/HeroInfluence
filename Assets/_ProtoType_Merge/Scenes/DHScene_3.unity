@@ -145367,7 +145367,7 @@ PrefabInstance:
     - target: {fileID: 4388382754207104738, guid: 40561ac7b1243f642903bdd7d68333af,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ReturnToTitleNow
+      value: GoToGameOverCreditsNow
       objectReference: {fileID: 0}
     - target: {fileID: 4388382754207104738, guid: 40561ac7b1243f642903bdd7d68333af,
         type: 3}
@@ -243313,6 +243313,10 @@ MonoBehaviour:
   holdDuration: 0.5
   returnDuration: 0.35
   focusVerticalOffset: 2
+  threatMoveDuration: 0.35
+  threatHoldDuration: 1.5
+  threatReturnDuration: 0.35
+  threatFocusVerticalOffset: 0
 --- !u!114 &1808059224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251461,7 +251465,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clearPanel: {fileID: 558267533}
   gameOverPanel: {fileID: 1030292276}
-  fallbackTitleSceneName: TitleScene
+  gameOverCreditSceneName: Credit Scene
   clearEndingSceneName: Ending CutScene
 --- !u!114 &1870279758
 MonoBehaviour:

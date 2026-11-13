@@ -67,15 +67,11 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     [Tooltip("툴팁과 턴 프레임·강조 모델 사이의 여백입니다. Canvas 단위이며 0이면 경계에 붙습니다.")]
     [SerializeField, Min(0f)] private float outlineClearance = 12f;
 
-    // JC | 2026-11-12 | 조절값은 임시 미리보기로 보관하고 명시적 저장 시에만 공용 프로필에 반영합니다.
-    [SerializeField, HideInInspector] private bool useLegacyArrowStyle;
-    public bool UseLegacyArrowStyle { get => useLegacyArrowStyle; set => useLegacyArrowStyle = value; }
-    public JcBattleHoverArrowProfile ArrowStyleProfile => Resources.Load<JcBattleHoverArrowProfile>(JcBattleHoverArrowProfile.ResourceName);
-    public void LoadArrowStyle()
-    {
-        var profile = ArrowStyleProfile;
-        useLegacyArrowStyle = profile != null && profile.useLegacyStyle;
-    }
+    // JC | 2026-11-13 | 시각 조절은 JC_BattleUI_VFX 하위에서만 소유합니다. 툴팁은 실제 선택 결과와 설정을 읽습니다.
+    [SerializeField, Tooltip("JC_BattleUI_VFX/TurnSlotHover의 공용 배지·화살표 조절기입니다.")]
+    private JcBattleTurnSlotSettings turnSlotSettings;
+    [SerializeField, Tooltip("JC_BattleUI_VFX/CellBox의 그리드 외형과 선택 호버 윤곽선 설정입니다.")]
+    private BattleCellVisualSettings cellVisualSettings;
 
     private JcBattleHoverLink hoverLink;
     private readonly JcBattleTooltipPlacement tooltipPlacement = new JcBattleTooltipPlacement();
@@ -94,7 +90,6 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     private void OnEnable()
     {
         // JC | 2026-11-12 | 모든 전투씬에서 저장된 동일 스타일로 시작합니다.
-        LoadArrowStyle();
         hoverLink = GetComponent<JcBattleHoverLink>();
         if (hoverLink == null) hoverLink = gameObject.AddComponent<JcBattleHoverLink>();
         hoverLink.Initialize(battleCanvas);
@@ -117,7 +112,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
         if (battleEnded || panel == null || battleCanvas == null || flow == null || input == null) return true;
         if (Time.timeScale <= 0f || !flow.isActiveAndEnabled || flow.CurrentUnit == null ||
             flow.IsFlowBlocked || flow.IsActionInProgress) return true;
-        // JC | 2026-11-12 | 스킬 대상 선택은 배지 안내만 허용하고 스킵·도주 및 실행 중 차단은 유지합니다.
+        // JC | 2026-11-13 | 대상 선택 중 배지·모델 안내만 허용합니다. 정보창과 실행·도주 중 호버 차단은 유지합니다.
         if (input.PendingAction != PendingActionType.None &&
             input.PendingAction != PendingActionType.ClassSkill && input.PendingAction != PendingActionType.WeaponSkill) return true;
         // 기존 연출 상태를 읽습니다. 전투 로직·공용 툴팁의 상태는 변경하지 않습니다.
@@ -128,15 +123,26 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     {
         if (ShouldHide()) { Hide(); return; }
         var target = FindHoveredUnit();
-        if (target == null || target.IsDead || !target.gameObject.activeInHierarchy ||
-            (target.IsPlayer && !hoveredTurnUI)) { Hide(); return; }
+        bool selectingSkill = input.PendingAction != PendingActionType.None;
+        // ASB가 이미 계산한 필드 호버를 사용하여 부활/영역 선택까지 실제 선택 가능 대상과 일치시킵니다.
+        if (selectingSkill && !hoveredTurnUI) target = input.PreviewHoverTarget;
+        // JC | 2026-11-13 | 부활 분류만 보고 적까지 회복 대상으로 취급하지 않고 실제 호버 대상의 진영을 구분합니다.
+        bool healing = selectingSkill && target != null &&
+            ASB.Work.Battle.SkillExecution.SkillAreaPreviewHelper.IsHealingPreviewSide(input.PendingSkill, flow.CurrentUnit, target.IsPlayer);
+        if (target == null || (!healing && target.IsDead) || !target.gameObject.activeInHierarchy ||
+            (target.IsPlayer && !hoveredTurnUI && !healing) ||
+            (selectingSkill && !input.IsValidPreviewTarget(target))) { Hide(); return; }
         if (!JC.Tutorial.JcTutorialBattleGuide.AllowsHover(gameObject.scene, target, hoveredTurnUI)) { Hide(); return; }
         // JC | 2026-11-12 | 정보창과 선택 중 배지 표시를 분리합니다. ASB 입력·선택 대상에는 쓰지 않습니다.
-        bool selectingSkill = input.PendingAction != PendingActionType.None;
-        if (selectingSkill && target.IsPlayer) { Hide(); return; }
-        if (target.IsPlayer) hoverLink.Clear();
+        var settings = turnSlotSettings != null ? turnSlotSettings.Draft : null;
+        var cells = cellVisualSettings != null ? cellVisualSettings.Draft : null;
+        if (target.IsPlayer && !healing) hoverLink.Clear();
         else hoverLink.Show(target, hoveredTurnUI, hoveredTurnSlot,
-            battlefieldCamera != null ? battlefieldCamera : Camera.main, selectingSkill, useLegacyArrowStyle);
+            battlefieldCamera != null ? battlefieldCamera : Camera.main, selectingSkill, false, settings, healing,
+            cells != null && cells.highlightTargetModel,
+            selectingSkill && cells != null ? (Color?)cells.For(healing ? BattleCellVisualState.HealingArea : BattleCellVisualState.ConfirmedArea).mainColor : null,
+            !healing || (settings != null && settings.showHealingTargets),
+            selectingSkill ? input.PendingSkill : null, selectingSkill ? flow.CurrentUnit : null);
         if (selectingSkill) { HidePanel(); return; }
         if (target != shownUnit) Bind(target);
         RefreshStats();

@@ -13,3 +13,22 @@ MonoBehaviour:
   m_Name: JC_BattleHoverArrowStyle
   m_EditorClassIdentifier: 
   useLegacyStyle: 0
+  settings:
+    style: 2
+    innerDiameter: 0.96
+    outerDiameter: 1.2
+    centerOffset: {x: 0, y: 0}
+    innerSeparatorWidth: 2
+    innerSeparatorColor: {r: 1, g: 1, b: 1, a: 1}
+    innerSeparatorOpacity: 1
+    arrowOffset: {x: 0, y: 0}
+    arrowScale: 1
+    arrowTravel: 6
+    arrowOutlineWidth: 2
+    arrowCornerRadius: 4.85
+    cycleSeconds: 1.6
+    showHealingTargets: 0
+    enemyColor: {r: 1, g: 0.08, b: 0.06, a: 1}
+    enemyFlash: {r: 1, g: 1, b: 1, a: 1}
+    healingColor: {r: 0.12, g: 0.4, b: 1, a: 1}
+    healingFlash: {r: 1, g: 1, b: 1, a: 1}

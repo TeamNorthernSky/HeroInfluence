@@ -13,7 +13,7 @@ using UnityEngine.UI;
 [ExecuteAlways]
 public class ChatBubbleView : MonoBehaviour
 {
-    public float textwidth = 150f;
+    public float textwidth = 155f;
     private const int TypePlayer = 1;    // 플레이어 — 우측
     private const int TypeNarration = 2; // 상황 설명 — 가운데
 
