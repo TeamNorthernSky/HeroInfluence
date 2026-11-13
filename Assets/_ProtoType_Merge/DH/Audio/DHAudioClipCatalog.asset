@@ -377,7 +377,7 @@ MonoBehaviour:
   - key: Battle_BarCounting02
     clip: {fileID: 8300000, guid: a23b005359235e844b1c655e6c1a5720, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 0.25
     loop: 0
     allowOverlap: 1
   - key: Battle_Retire
@@ -425,7 +425,7 @@ MonoBehaviour:
   - key: Explore_MoveFail
     clip: {fileID: 8300000, guid: 8ecda5945a20bd144a6696ffa7c8535d, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 0.25
     loop: 0
     allowOverlap: 1
   - key: PopupWarning
@@ -449,7 +449,7 @@ MonoBehaviour:
   - key: Explore_TextBubbleNPC
     clip: {fileID: 8300000, guid: 8f483bb7a3df25848bafeb5f3e345e2d, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.2
+    defaultVolume: 0.125
     loop: 0
     allowOverlap: 1
   - key: Explore_TextBubbleCar
@@ -467,13 +467,13 @@ MonoBehaviour:
   - key: Explore_Barricade_Up
     clip: {fileID: 8300000, guid: a4bfc2cafbe92b34185b17cabc7f1b07, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 0.25
     loop: 0
     allowOverlap: 1
   - key: Explore_Barricade_Down
     clip: {fileID: 8300000, guid: f700e572e56d9274783a47f8c02871a3, type: 3}
     introClip: {fileID: 0}
-    defaultVolume: 0.5
+    defaultVolume: 0.25
     loop: 0
     allowOverlap: 1
   - key: Tutorial_Clear
