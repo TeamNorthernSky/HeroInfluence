@@ -1148,7 +1148,7 @@ MonoBehaviour:
     Trigger_Value:
     - Flag_UMT2Clear==1
     Selection_Text: 
-    Target_Talk_ID: 1570010
+    Target_Talk_ID: 1571010
     Trigger_Effect: 
     "\uBE44\uACE0": "2\uAD6C\uC5ED \uD074\uB9AC\uC5B4 \uD6C4 \uC7AC\uC870\uC6B0"
   - Branch_ID: 15201
@@ -1439,3 +1439,12 @@ MonoBehaviour:
 
       Set_Flag_UMT2Clear'
     "\uBE44\uACE0": "\uC804\uD22C \uC2B9\uB9AC \uBCF4\uC0C1"
+  - Branch_ID: 0
+    Selection_Index: 
+    Trigger_Type: 
+    Trigger_Value:
+    - 15201
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
