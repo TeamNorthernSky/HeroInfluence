@@ -47,7 +47,7 @@ MonoBehaviour:
     ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58"
     ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C \uACF5\uACA9\uB825\uC758 {ClassSkillValue}
       \uD53C\uD574\uB97C \uC900\uB2E4. \uB300\uC0C1\uC774 \uC804\uC5F4\uC77C \uACBD\uC6B0
-      \uACF5\uACA9\uB825\uC758 {ClassSkillValue}+{ClassSkillSubValue} \uD53C\uD574\uB97C
+      \uACF5\uACA9\uB825\uC758 {ClassSkillSubValue} \uCD94\uAC00 \uD53C\uD574\uB97C
       \uC900\uB2E4."
     IPCost: 0
     ClassSkillEffect: 0
@@ -159,7 +159,7 @@ MonoBehaviour:
     ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58+"
     ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C \uACF5\uACA9\uB825\uC758 {ClassSkillValue}
       \uD53C\uD574\uB97C \uC900\uB2E4. \uB300\uC0C1\uC774 \uC804\uC5F4\uC77C \uACBD\uC6B0
-      \uACF5\uACA9\uB825\uC758 {ClassSkillValue}+{ClassSkillSubValue} \uD53C\uD574\uB97C
+      \uACF5\uACA9\uB825\uC758 {ClassSkillSubValue} \uCD94\uAC00 \uD53C\uD574\uB97C
       \uC900\uB2E4."
     IPCost: 0
     ClassSkillEffect: 0
@@ -324,7 +324,7 @@ MonoBehaviour:
     ClassSkillDescription: "\uBAA8\uB4E0 \uC801\uC5D0\uAC8C \uACF5\uACA9\uB825\uC758
       {ClassSkillValue} \uD53C\uD574\uB97C \uC900\uB2E4. \uAC01 \uB300\uC0C1\uC758
       \uD604\uC7AC \uCCB4\uB825\uC774 50% \uBBF8\uB9CC\uC77C \uACBD\uC6B0 \uACF5\uACA9\uB825\uC758
-      {ClassSkillValue}+{ClassSkillSubValue} \uD53C\uD574\uB97C \uC900\uB2E4."
+      {ClassSkillSubValue} \uCD94\uAC00 \uD53C\uD574\uB97C \uC900\uB2E4."
     IPCost: 0
     ClassSkillEffect: 0
     ClassSkillRange: 1
@@ -432,7 +432,7 @@ MonoBehaviour:
     ClassSkillDescription: "\uBAA8\uB4E0 \uC801\uC5D0\uAC8C \uACF5\uACA9\uB825\uC758
       {ClassSkillValue} \uD53C\uD574\uB97C \uC900\uB2E4. \uAC01 \uB300\uC0C1\uC758
       \uD604\uC7AC \uCCB4\uB825\uC774 50% \uBBF8\uB9CC\uC77C \uACBD\uC6B0 \uACF5\uACA9\uB825\uC758
-      {ClassSkillValue}+{ClassSkillSubValue} \uD53C\uD574\uB97C \uC900\uB2E4."
+      {ClassSkillSubValue} \uCD94\uAC00 \uD53C\uD574\uB97C \uC900\uB2E4."
     IPCost: 0
     ClassSkillEffect: 0
     ClassSkillRange: 1
@@ -485,7 +485,7 @@ MonoBehaviour:
     ClassSkillName: "\uD504\uB860\uD2B8 \uB77C\uC778 \uBE0C\uB808\uC774\uD06C \uBD88\uB9BF"
     ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C \uACF5\uACA9\uB825\uC758 {ClassSkillValue}
       \uD53C\uD574\uB97C \uC900\uB2E4. \uB300\uC0C1\uC774 \uC804\uC5F4\uC77C \uACBD\uC6B0
-      \uACF5\uACA9\uB825\uC758 {ClassSkillValue}+{ClassSkillSubValue} \uD53C\uD574\uB97C
+      \uACF5\uACA9\uB825\uC758 {ClassSkillSubValue} \uCD94\uAC00 \uD53C\uD574\uB97C
       \uC900\uB2E4."
     IPCost: 0
     ClassSkillEffect: 0
@@ -594,7 +594,7 @@ MonoBehaviour:
     ClassSkillName: "\uD504\uB860\uD2B8 \uB77C\uC778 \uBE0C\uB808\uC774\uD06C \uBD88\uB9BF+"
     ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C \uACF5\uACA9\uB825\uC758 {ClassSkillValue}
       \uD53C\uD574\uB97C \uC900\uB2E4. \uB300\uC0C1\uC774 \uC804\uC5F4\uC77C \uACBD\uC6B0
-      \uACF5\uACA9\uB825\uC758 {ClassSkillValue}+{ClassSkillSubValue} \uD53C\uD574\uB97C
+      \uACF5\uACA9\uB825\uC758 {ClassSkillSubValue} \uCD94\uAC00 \uD53C\uD574\uB97C
       \uC900\uB2E4."
     IPCost: 0
     ClassSkillEffect: 0
