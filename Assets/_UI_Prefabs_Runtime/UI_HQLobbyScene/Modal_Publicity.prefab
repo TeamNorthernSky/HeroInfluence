@@ -2114,8 +2114,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2868,7 +2868,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: ffbe234d5f11fd04c8b8565ead7338d2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9ccf22fe4717991429e0ca419ae7c9a1, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2936,9 +2936,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   background: {fileID: 8486130945255926223}
   hoverOverlay: {fileID: 8767450480450052274}
-  normalSprite: {fileID: 21300000, guid: ffbe234d5f11fd04c8b8565ead7338d2, type: 3}
-  hoverSprite: {fileID: 21300000, guid: ffbe234d5f11fd04c8b8565ead7338d2, type: 3}
-  closedSprite: {fileID: 21300000, guid: 7dea11e5d51695b45acc7837b5f13241, type: 3}
+  normalSprite: {fileID: 21300000, guid: 9ccf22fe4717991429e0ca419ae7c9a1, type: 3}
+  hoverSprite: {fileID: 21300000, guid: 9ccf22fe4717991429e0ca419ae7c9a1, type: 3}
+  closedSprite: {fileID: 21300000, guid: 4b8fcbd5ffa58074d9ef1a2b6e337770, type: 3}
 --- !u!1 &7108441248903739142
 GameObject:
   m_ObjectHideFlags: 0
@@ -3845,8 +3845,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
