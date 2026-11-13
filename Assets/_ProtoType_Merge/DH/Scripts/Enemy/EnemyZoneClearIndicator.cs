@@ -9,6 +9,7 @@ public sealed class EnemyZoneClearIndicator : MonoBehaviour
     private EnemyIdentity identity;
     private EnemyGridMover mover;
     private DHEventStateRepository eventRepository;
+    private bool spawnPresentationActive;
 
     private void OnEnable()
     {
@@ -27,7 +28,14 @@ public sealed class EnemyZoneClearIndicator : MonoBehaviour
         if (eventRepository != null)
             eventRepository.FlagChanged -= HandleFlagChanged;
         eventRepository = null;
+        spawnPresentationActive = false;
         SetVisible(false);
+    }
+
+    public void SetSpawnPresentationActive(bool active)
+    {
+        spawnPresentationActive = active;
+        RefreshVisibility();
     }
 
     public void RefreshVisibility()
@@ -46,7 +54,8 @@ public sealed class EnemyZoneClearIndicator : MonoBehaviour
         }
 
         MapProgressRepository progress = MapProgressRepository.Instance;
-        bool visible = isActiveAndEnabled && mover != null && mover.BehaviorType == EnemyBehaviorType.Mobile &&
+        bool visible = isActiveAndEnabled && !spawnPresentationActive &&
+            mover != null && mover.BehaviorType == EnemyBehaviorType.Mobile &&
             identity != null && progress != null &&
             progress.TryGetEnemyState(identity.PlacementKey, out EnemyWorldState state) &&
             state != null && !state.Defeated && GateThreatController.Instance != null &&
