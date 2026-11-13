@@ -3648,10 +3648,6 @@ MonoBehaviour:
     tileKey: tilemap_01
     materialKey: 
     renderMode: 3
-  - gridPosition: {x: 39, y: 18}
-    tileKey: tilemap_01
-    materialKey: 
-    renderMode: 3
   - gridPosition: {x: 40, y: 18}
     tileKey: tilemap_01
     materialKey: 
@@ -9016,6 +9012,10 @@ MonoBehaviour:
     tileKey: tilemap_01
     materialKey: 
     renderMode: 3
+  - gridPosition: {x: 39, y: 18}
+    tileKey: tilemap_01
+    materialKey: 
+    renderMode: 3
   obstacleCells:
   - {x: 49, y: 18}
   - {x: 48, y: 18}
@@ -10694,7 +10694,7 @@ MonoBehaviour:
   outpostPlacements:
   - gridPosition: {x: 32, y: 28}
     outpostType: 0
-    resourcePerTurn: 1000
+    resourcePerTurn: 2000
     initialState: 1
   eventPlacements: []
   enemyPlacements: []
@@ -11692,6 +11692,34 @@ MonoBehaviour:
   - gridPosition: {x: 16, y: 29}
     worldEventId: C_NPC_01_006
     eventType: 1
+    rotation: 0
+  - gridPosition: {x: 26, y: 12}
+    worldEventId: R_NPC_01_004
+    eventType: 2
+    rotation: 0
+  - gridPosition: {x: 33, y: 9}
+    worldEventId: R_NPC_01_004
+    eventType: 2
+    rotation: 0
+  - gridPosition: {x: 25, y: 31}
+    worldEventId: R_NPC_01_004
+    eventType: 2
+    rotation: 0
+  - gridPosition: {x: 45, y: 13}
+    worldEventId: C_NPC_01_006
+    eventType: 1
+    rotation: 0
+  - gridPosition: {x: 44, y: 35}
+    worldEventId: C_NPC_01_006
+    eventType: 1
+    rotation: 0
+  - gridPosition: {x: 10, y: 19}
+    worldEventId: C_NPC_01_006
+    eventType: 1
+    rotation: 0
+  - gridPosition: {x: 37, y: 27}
+    worldEventId: S_NPC_01_003
+    eventType: 3
     rotation: 0
   gatePlacements:
   - gateId: gate_001

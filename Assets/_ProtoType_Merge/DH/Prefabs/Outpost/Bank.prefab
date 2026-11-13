@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outpostType: 0
-  resourcePerTurn: 1000
+  resourcePerTurn: 2000
   outpostState: 0
   zoneId: 
   resolvedEnemyLevel: 1

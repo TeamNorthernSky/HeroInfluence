@@ -41,8 +41,8 @@ public class OutpostPanelUI : MonoBehaviour
             }
 
             ExplorationModalEvents.RaiseOutpostNotice(new OutpostNoticeRequest {
-                title       = $"{name} 해방",
-                description = $"빌런에게서 {name} 탈환"/*"\n 4턴 마다 {resourceName} {amount} 지급"*/,
+                title       = $"{name} 해방 보상",
+                description = $"{resourceName} 획득",
                 amount         = amount,
                 buildingSprite = entry.BuildingSprite,
                 resourceSprite = entry.ResourceSprite,
