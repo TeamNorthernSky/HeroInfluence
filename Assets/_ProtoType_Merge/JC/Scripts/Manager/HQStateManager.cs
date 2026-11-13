@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -24,7 +23,7 @@ public class HQStateManager : MonoBehaviour
     [Header("이전 부서·단계 비용 (미사용)")]
     [SerializeField] private List<UpgradeCostEntry> upgradeCosts = new List<UpgradeCostEntry>();
 
-    [Header("부서별 선행 조건 (부서 N이 1단계 되려면 의존 부서들이 모두 충족)")]
+    [Header("이전 시설 선행 조건 (미사용, 기존 데이터 보존)")]
     [SerializeField] private List<PrerequisiteEntry> prerequisites = new List<PrerequisiteEntry>();
 
     [Header("이전 본부 수입 (호환용 보존, 실제 수입은 본부자금 테이블 사용)")]
@@ -131,51 +130,16 @@ public class HQStateManager : MonoBehaviour
 
     public bool ArePrerequisitesMet(HQDepartment d)
     {
-        var entry = FindPrerequisiteEntry(d);
-        if (entry == null || entry.requirements == null) return true;
-        for (int i = 0; i < entry.requirements.Count; i++)
-        {
-            var req = entry.requirements[i];
-            if (req == null) continue;
-            if (GetLevel(req.dependsOn) < req.requiredLevel) return false;
-        }
+        // 시설 성장 트리는 사용하지 않는다. 비용과 최대 단계는 기존 경로에서 검사한다.
         return true;
     }
 
     /// <summary>
-    /// 미충족 사유 텍스트. 예: "홍보 1단계 필요", "공방 1단계, 연구소 1단계 필요".
-    /// 모두 충족 또는 항목 없음이면 빈 문자열.
+    /// 시설 선행 조건이 없으므로 선행 시설 안내를 표시하지 않는다.
     /// </summary>
     public string GetUnmetReasonText(HQDepartment d)
     {
-        var entry = FindPrerequisiteEntry(d);
-        if (entry == null || entry.requirements == null) return string.Empty;
-        var sb = new StringBuilder();
-        for (int i = 0; i < entry.requirements.Count; i++)
-        {
-            var req = entry.requirements[i];
-            if (req == null) continue;
-            if (GetLevel(req.dependsOn) >= req.requiredLevel) continue;
-            if (sb.Length > 0) sb.Append(", ");
-            sb.Append(GetDepartmentKoreanName(req.dependsOn));
-            sb.Append(' ');
-            sb.Append(req.requiredLevel);
-            sb.Append("단계");
-        }
-        if (sb.Length == 0) return string.Empty;
-        sb.Append(" 필요");
-        return sb.ToString();
-    }
-
-    private PrerequisiteEntry FindPrerequisiteEntry(HQDepartment d)
-    {
-        if (prerequisites == null) return null;
-        for (int i = 0; i < prerequisites.Count; i++)
-        {
-            var e = prerequisites[i];
-            if (e != null && e.department == d) return e;
-        }
-        return null;
+        return string.Empty;
     }
 
     public static string GetDepartmentKoreanName(HQDepartment d)
