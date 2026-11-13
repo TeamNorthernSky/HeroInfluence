@@ -55,17 +55,20 @@ public class EnemyTurnController : MonoBehaviour
     private IEnumerator PlaySpawnAppearance(EnemyGridMover enemy)
     {
         var entrance = enemy.GetComponentInChildren<HeroInfluence.Events.ArnoldEntrancePlayer>(true);
-        if (entrance == null || !entrance.PlayEntrance())
-            yield break;
-
+        EnemyZoneClearIndicator indicator = enemy.GetComponent<EnemyZoneClearIndicator>();
+        indicator?.SetSpawnPresentationActive(true);
         try
         {
+            if (entrance == null || !entrance.PlayEntrance())
+                yield break;
+
             while (enemy != null && entrance != null && entrance.IsPlaying && !DHGameEndState.IsEnding)
                 yield return null;
         }
         finally
         {
             if (entrance != null && entrance.IsPlaying) entrance.CancelEntrance();
+            if (indicator != null) indicator.SetSpawnPresentationActive(false);
         }
     }
 
