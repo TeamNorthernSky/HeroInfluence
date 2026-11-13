@@ -13,6 +13,13 @@ public sealed class GateCameraFocusController : MonoBehaviour
     [Tooltip("World-space offset along screen up on the ground plane. Positive values frame the gate lower on screen.")]
     [SerializeField] private float focusVerticalOffset = 2f;
 
+    [Header("Mobile Enemy Camera")]
+    [SerializeField, Min(0f)] private float threatMoveDuration = 0.35f;
+    [SerializeField, Min(0f)] private float threatHoldDuration = 1.5f;
+    [SerializeField, Min(0f)] private float threatReturnDuration = 0.35f;
+    [Tooltip("이동형 적 포커스 보정. 양수는 화면 아래로, 음수는 위로 배치합니다.")]
+    [SerializeField] private float threatFocusVerticalOffset = 0f;
+
     private sealed class Change
     {
         public string Key;
@@ -164,11 +171,14 @@ public sealed class GateCameraFocusController : MonoBehaviour
                 if (cameraFollower != null && hasTarget)
                 {
                     Vector3 focus = current.IsThreatFocus
-                        ? GetPresentationFocus(threat.transform.position)
+                        ? GetPresentationFocus(threat.transform.position, threatFocusVerticalOffset)
                         : GetPresentationFocus(focusGate);
                     ownsCameraFocus = true;
                     yield return cameraFollower.PlayTemporaryFocus(focus,
-                        moveDuration, holdDuration, returnDuration, () => current.Reveal(true),
+                        current.IsThreatFocus ? threatMoveDuration : moveDuration,
+                        current.IsThreatFocus ? threatHoldDuration : holdDuration,
+                        current.IsThreatFocus ? threatReturnDuration : returnDuration,
+                        () => current.Reveal(true),
                         () => !isActiveAndEnabled || DHGameEndState.IsEnding ||
                               (current.IsThreatFocus && (threat == null || !threat.isActiveAndEnabled)) ||
                               SceneFadeController.HideCursorDuringTransition,
@@ -202,13 +212,13 @@ public sealed class GateCameraFocusController : MonoBehaviour
 
     private Vector3 GetPresentationFocus(GateRuntimeController gate)
     {
-        return GetPresentationFocus(gate.GetFocusWorldPosition());
+        return GetPresentationFocus(gate.GetFocusWorldPosition(), focusVerticalOffset);
     }
 
-    private Vector3 GetPresentationFocus(Vector3 position)
+    private Vector3 GetPresentationFocus(Vector3 position, float verticalOffset)
     {
         Vector3 screenUpOnGround = Vector3.ProjectOnPlane(cameraFollower.transform.up, Vector3.up).normalized;
-        return position + screenUpOnGround * focusVerticalOffset;
+        return position + screenUpOnGround * verticalOffset;
     }
 
     private GateRuntimeController SelectFocusGate(Change change)

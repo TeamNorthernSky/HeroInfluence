@@ -303,15 +303,19 @@ namespace JC.Tutorial
                 return;
             }
             if (formation) { UpdateFormationFocus(); return; }
-            // JC | 2026-11-09 | 임시 코어 단계는 설명·확인만 제공하며 특정 캐릭터/스킬을 강조하거나 선택시키지 않습니다.
+            // JC | 2026-11-13 | 코어 설명은 실제 젬 버튼만 밝히되, 기존 설명 단계의 입력 차단은 유지합니다.
             if (IsCoreSkillGuide)
             {
                 allowedPointer = null;
-                view.SetVisible(true, null, JcTutorialGuideView.FocusPresentation.BorderOnly);
+                var core = guidedSkills != null ? guidedSkills.CoreSkillRect : null;
+                // JC | 2026-11-13 | HudSkill 원본의 14px 둥근 모서리를 Sliced 이미지 배율로 환산합니다.
+                var coreImage = core != null ? core.GetComponent<UnityEngine.UI.Image>() : null;
+                float radius = coreImage != null ? 14f / Mathf.Max(.01f, coreImage.pixelsPerUnit * coreImage.pixelsPerUnitMultiplier) : 0f;
+                view.SetVisible(true, core, JcTutorialGuideView.FocusPresentation.BorderOnly, radius);
                 view.ShowBadgeOutline(null, false);
-                dim.SetTargets(layoutPanel, null);
+                dim.SetTargets(layoutPanel, core);
                 dim.SetExtraTargets(Array.Empty<RectTransform>());
-                dim.SetTooltip(null); dim.SetRoundedTarget(null, 0);
+                dim.SetTooltip(null); dim.SetRoundedTarget(core, radius, true);
                 dim.gameObject.SetActive(true); resultShield.SetActive(true);
                 return;
             }
@@ -336,7 +340,8 @@ namespace JC.Tutorial
                 currentTurnFocus.sizeDelta = new Vector2(turnFocus.rect.width, turnFocus.rect.height * (311f / 1069f));
             }
             var badge = guidedSlot != null ? guidedSlot.transform as RectTransform : null;
-            RectTransform focus = guidedPhase == 1 ? profileFocus : guidedPhase == 2 ? turnFocus :
+            // JC | 2026-11-13 | 첫 화면 개요는 현재 턴을 예외로 밝히지 않습니다. 실제 턴 설명 단계는 유지합니다.
+            RectTransform focus = guidedPhase == 0 ? null : guidedPhase == 1 ? profileFocus : guidedPhase == 2 ? turnFocus :
                 guidedPhase == 3 ? worldFocus : guidedPhase == 4 ? badge : currentTurnFocus;
             allowedPointer = guidedPhase == 3 ? worldFocus : guidedPhase == 4 ? badge : null;
             view.SetVisible(true, guidedPhase == 4 ? null : focus, JcTutorialGuideView.FocusPresentation.BorderOnly);

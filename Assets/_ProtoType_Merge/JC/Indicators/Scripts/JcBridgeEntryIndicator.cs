@@ -6,7 +6,7 @@ namespace JC.Indicators
 {
     /// <summary>기존 게이트의 이동 판정을 읽어 진입 셀만 표시합니다. 해금·이동·저장 상태는 변경하지 않습니다.</summary>
     [DisallowMultipleComponent]
-    public sealed class JcBridgeEntryIndicator : MonoBehaviour
+    public sealed partial class JcBridgeEntryIndicator : MonoBehaviour
     {
         [SerializeField, Tooltip("표시할 기존 게이트 식별자입니다. 이동 판정과 같은 게이트 쌍을 사용합니다.")]
         private string gateId = "gate_001";
@@ -63,7 +63,8 @@ namespace JC.Indicators
         private float configuredSize = -1;
         private float configuredArrowScale = -1;
 
-        private void OnEnable() { nextRefresh = 0; }
+        // JC | 2026-11-12 | 기존 렌더 패스가 활성 다리만 참조하며 씬 전체 검색을 추가하지 않습니다.
+        private void OnEnable() { nextRefresh = 0; depthInstances.Add(this); }
 
         private void LateUpdate()
         {
@@ -84,6 +85,8 @@ namespace JC.Indicators
             var registry = FindInScene<PartyRegistry>();
             party = registry != null ? registry.PlayerParty : null;
             ResolveGates();
+            // JC | 2026-11-12 | 게이트 교체 때만 차단기 렌더러/슬롯을 수집합니다.
+            CacheGateDepth();
             cells.Clear();
             if (sourceGate != null) sourceGate.CollectTeleportCells(cells);
             returnCells.Clear();
@@ -344,6 +347,6 @@ namespace JC.Indicators
             northBorderMaterial = null; northArrowMaterial = null;
         }
 
-        private void OnDisable() { ClearViews(); warpAvailable = false; pillarFade?.Dispose(); pillarFade = null; }
+        private void OnDisable() { ReleaseGateDepth(); ClearViews(); warpAvailable = false; pillarFade?.Dispose(); pillarFade = null; }
     }
 }

@@ -33,6 +33,10 @@ public class InputHandler : MonoBehaviour
     public event Action SelectionChanged;
     public PendingActionType PendingAction => pendingAction;
     public SkillData PendingSkill { get; private set; }
+    // JC | 2026-11-13 | UI는 ASB가 이미 판정한 대상만 읽습니다. 호버 알림이 선택 목록을 다시 계산하거나 쓰지 않습니다.
+    public BattleCharactor PreviewHoverTarget => hoverTarget;
+    public bool IsValidPreviewTarget(BattleCharactor target) => target != null && validTargets.Contains(target) &&
+        TryGetCurrentActor(out BattleCharactor actor) && TargetingHelper.IsStillValidTarget(actor, pendingAction, target);
     private BattleCharactor selectionActor;
 
     [Tooltip("기존 씬의 턴 시작 자동 선택입니다. 개편 전투씬에서는 끄고 매 시전마다 스킬을 직접 선택합니다.")]
@@ -635,7 +639,8 @@ public class InputHandler : MonoBehaviour
                 splashCells.Add(cell);
         }
 
-        ASBGridManager.Instance?.ShowPreviewHighlight(skill, mainCell, splashCells);
+        // JC | 2026-11-13 | 기존 대상 판정은 유지하고 복합 스킬 색상 분류에 필요한 시전자만 전달합니다.
+        ASBGridManager.Instance?.ShowPreviewHighlight(skill, mainCell, splashCells, actor);
     }
 
     private void UpdateAoEPreview(BattleCharactor hoverUnit, SkillData currentSelectedSkill)
@@ -648,7 +653,8 @@ public class InputHandler : MonoBehaviour
                 out ASBGridCell centerCell, out List<ASBGridCell> splashCells))
         { ASBGridManager.Instance?.ClearPreviewHighlight(); return; }
 
-        ASBGridManager.Instance?.ShowPreviewHighlight(currentSelectedSkill, centerCell, splashCells);
+        // JC | 2026-11-13 | 부활 아군과 자동으로 공격할 적 범위의 색상을 각각 표시하도록 문맥을 전달합니다.
+        ASBGridManager.Instance?.ShowPreviewHighlight(currentSelectedSkill, centerCell, splashCells, actor);
     }
 
     private bool TryResolveSkillData(BattleCharactor actor, PendingActionType actionType, out SkillData skillData)

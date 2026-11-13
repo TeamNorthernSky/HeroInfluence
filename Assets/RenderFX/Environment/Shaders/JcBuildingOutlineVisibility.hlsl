@@ -5,6 +5,8 @@ TEXTURE2D_X(_JcBuildingShapeDepth);
 // JC | 2026-11-04 | 외곽선에 쓸 실루엣 경계를 분리해 건물 내부의 가림 경계까지 강조되는 것을 막습니다.
 float _JcBuildingHighlight, _JcBuildingExteriorOnly;
 float4 _JcBuildingExteriorRadius;
+// JC | 2026-11-12 | 바닥과 맞닿은 선의 화면 확장분은 바닥이 가리지 않되 앞쪽 캐릭터의 깊이 판정은 유지합니다.
+float4 _JcBuildingGroundPlane;
 // JC | 2026-11-09 | 오브젝트 호버만 실제로 보이는 느낌표 뒤에 합성합니다. 건물 뒤에 숨은 아이콘은 마스크가 0입니다.
 TEXTURE2D(_JcEventMarkerCoverage);
 float _JcTriggerDepthActive;
@@ -42,6 +44,17 @@ half JcOutlineVisibility(float2 uv, float2 radius, float bias)
     if (inverseDepth <= 0) return 0;
     float rawDepth = SampleSceneDepth(uv);
     float sceneDepth = unity_OrthoParams.w > .5 ? LinearDepthToEyeDepth(rawDepth) : LinearEyeDepth(rawDepth, _ZBufferParams);
-    return step(rcp(inverseDepth), sceneDepth + max(bias, .0001));
+    if (sceneDepth + max(bias, .0001) >= rcp(inverseDepth)) return 1;
+    // JC | 2026-11-12 | 하단 선은 건물 밖(지면)으로 확장됩니다. 그 픽셀의 지면 깊이를 건물 앞 장애물로 오인하지 않습니다.
+    // 실제로 깊이 검사에 실패한 선 픽셀에만 위치 복원을 수행하며, 지면보다 높은 캐릭터/소품은 계속 가립니다.
+    if (_JcBuildingGroundPlane.x > .5)
+    {
+        #if !UNITY_REVERSED_Z
+            rawDepth = lerp(UNITY_NEAR_CLIP_VALUE, 1, rawDepth);
+        #endif
+        float3 scenePosition = ComputeWorldSpacePosition(uv, rawDepth, UNITY_MATRIX_I_VP);
+        if (scenePosition.y <= _JcBuildingGroundPlane.y + .002) return 1;
+    }
+    return 0;
 }
 #endif

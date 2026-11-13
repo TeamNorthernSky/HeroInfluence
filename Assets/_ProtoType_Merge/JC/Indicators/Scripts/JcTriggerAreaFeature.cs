@@ -17,7 +17,7 @@ namespace JC.Indicators
             var data = renderingData.cameraData;
             if (data.renderType == CameraRenderType.Overlay ||
                 (data.cameraType != CameraType.Game && data.cameraType != CameraType.SceneView)) return;
-            if (JcTriggerAreaDepth.HasControllers || JcMoveGridMesh.HasInstances) renderer.EnqueuePass(pass);
+            if (JcTriggerAreaDepth.HasControllers || JcMoveGridMesh.HasInstances || JcBridgeEntryIndicator.HasDepthInstances) renderer.EnqueuePass(pass);
         }
 
         private sealed class DepthPass : ScriptableRenderPass
@@ -46,13 +46,16 @@ namespace JC.Indicators
                     command.SetGlobalFloat("_JcTriggerDepthActive", 0);
                     // JC | 2026-11-05 | URP가 렌더에 쓰는 뷰/투영을 사용하고 전용 RT의 Y 방향만 변환합니다.
                     var projection = GL.GetGPUProjectionMatrix(data.GetProjectionMatrix(), true);
+                    GeometryUtility.CalculateFrustumPlanes(data.camera, planes);
                     JcTriggerAreaDepth.RenderDepth(command, data.camera, data.GetViewMatrix(), projection,
+                        data.cameraTargetDescriptor.width, data.cameraTargetDescriptor.height, planes);
+                    // JC | 2026-11-12 | 차단기도 같은 패스/절두체를 사용하며 별도 렌더 기능이나 장면 재검색을 만들지 않습니다.
+                    JcBridgeEntryIndicator.DrawGateDepth(command, data.camera, planes, data.GetViewMatrix(), projection,
                         data.cameraTargetDescriptor.width, data.cameraTargetDescriptor.height);
                     // 전용 RT 작성 후 색상/깊이 타깃을 복구해 이후 구름·투명 표시를 같은 카메라에 계속 그립니다.
                     CoreUtils.SetRenderTarget(command, data.renderer.cameraColorTargetHandle,
                         data.renderer.cameraDepthTargetHandle, ClearFlag.None, Color.clear);
                     if (data.renderer.cameraColorTargetHandle.rt == null) command.SetViewport(data.camera.pixelRect);
-                    GeometryUtility.CalculateFrustumPlanes(data.camera, planes);
                     JcTriggerAreaDepth.DrawColors(command, data.camera, planes);
                     JcMoveGridMesh.DrawAll(command, data.camera, planes);
                     context.ExecuteCommandBuffer(command);
@@ -64,6 +67,8 @@ namespace JC.Indicators
             {
                 // JC | 2026-11-05 | 다음 카메라나 트리거 없는 씬에 이전 마스크가 사용되지 않게 합니다.
                 cmd.SetGlobalFloat("_JcTriggerDepthActive", 0);
+                // JC | 2026-11-12 | 차단기 마스크도 다음 카메라에 재사용되지 않도록 종료합니다.
+                cmd.SetGlobalFloat("_JcBridgeGateDepthActive", 0);
             }
         }
     }

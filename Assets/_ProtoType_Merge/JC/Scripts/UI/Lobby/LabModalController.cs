@@ -44,7 +44,7 @@ public class LabModalController : MonoBehaviour
             if (cardImage == null) return;
             cardImage.sprite = selected ? highlighted : normal;
             if (nameText != null) { nameText.text = skillName; nameText.color = selected ? Color.white : Color.black; }
-            if (levelText != null) { levelText.text = learned ? (level <= 1 ? "기본" : $"+{level - 1}") : "미습득"; levelText.color = selected ? Color.white : Color.black; }
+            if (levelText != null) { levelText.text = learned ? $"Lv {level}" : "미습득"; levelText.color = selected ? Color.white : Color.black; }
             if (firstLevelGauge != null)
             {
                 firstLevelGauge.gameObject.SetActive(enhanceable);
@@ -309,7 +309,7 @@ public class LabModalController : MonoBehaviour
         }
         int reached = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId);
         MouseClickSfx.PlayUpgradeSuccess();
-        ShowCompletion($"{SkillName(skill)} +{reached - 1} 강화 완료!");
+        ShowCompletion($"{SkillName(skill)} Lv {reached} 강화 완료!");
         ClearSelection();
         Refresh();
     }
@@ -349,15 +349,15 @@ public class LabModalController : MonoBehaviour
 
         if (!learned || level >= LabManager.MaxSkillLevel)
         {
-            string label = !learned ? "미습득" : "최고 단계";
+            string label = !learned ? "미습득" : $"Lv {level} · 최고 단계";
             SkillTooltip.Instance.ShowInfo(GetSkillIcon(rowIndex, level), $"{SkillName(skill)} ({label})", EffectText(skill, level), rt);
         }
         else
         {
             int cur = level, next = level + 1;
             SkillTooltip.Instance.ShowCompare(
-                GetSkillIcon(rowIndex, cur),  $"{SkillName(skill)} {(cur == 1 ? "기본" : "+" + (cur - 1))}",  EffectText(skill, cur),
-                GetSkillIcon(rowIndex, next), $"{SkillName(skill)} +{next - 1}", EffectText(skill, next), rt,
+                GetSkillIcon(rowIndex, cur),  $"{SkillName(skill)} Lv {cur}",  EffectText(skill, cur),
+                GetSkillIcon(rowIndex, next), $"{SkillName(skill)} Lv {next}", EffectText(skill, next), rt,
                 SkillValueAt(skill.NumericSkillId, cur), SkillValueAt(skill.NumericSkillId, next));
         }
     }

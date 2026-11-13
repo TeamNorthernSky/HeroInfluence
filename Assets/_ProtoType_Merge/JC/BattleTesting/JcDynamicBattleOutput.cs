@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 namespace JC.BattleTesting
 {
@@ -69,6 +69,47 @@ namespace JC.BattleTesting
             if(terrain)TerrainRenderers.Add(renderer);
             return renderer;
         }
+        // JC | 2026-11-13 | 튜토리얼 원경의 반복 표면만 독립 텍스처를 사용합니다. 공용 텍스처 임포터와 탐사 재질의 Clamp 설정은 보존합니다.
+        readonly Dictionary<Texture,Texture> repeatingSurfaces = new Dictionary<Texture,Texture>();
+        internal void RepeatTutorialSurface(MeshRenderer renderer)
+        {
+            foreach (var material in renderer.sharedMaterials)
+            {
+                if (!material) continue;
+                foreach (var property in new[] { "_BaseMap", "_MainTex" })
+                {
+                    if (!material.HasProperty(property)) continue;
+                    var original=material.GetTexture(property);
+                    if (!original || original.wrapMode != TextureWrapMode.Clamp) continue;
+                    if (!repeatingSurfaces.TryGetValue(original,out var repeated))
+                    {
+                        // JC | 2026-11-13 | Read/Write가 꺼진 원본도 GPU에서만 복사합니다. Instantiate(Texture)는 런타임에서 실패합니다.
+                        // 선형 HDR 표면으로 색 변환 손실을 줄이고, 원경 밉맵은 최초 복사 직후 한 번만 생성합니다.
+                        var copy = new RenderTexture(original.width, original.height, 0, RenderTextureFormat.ARGBHalf, RenderTextureReadWrite.Linear)
+                        {
+                            name = original.name+"_TutorialRepeat", hideFlags = HideFlags.DontSave,
+                            wrapMode = TextureWrapMode.Repeat, filterMode = original.filterMode, anisoLevel = original.anisoLevel,
+                            mipMapBias = original.mipMapBias, useMipMap = original.mipmapCount > 1, autoGenerateMips = false
+                        };
+                        // 생성 도중 실패해도 출력 오브젝트의 공통 정리 경로에서 GPU 자원을 회수합니다.
+                        owned.Add(copy);
+                        var active = RenderTexture.active;
+                        bool srgbWrite = GL.sRGBWrite;
+                        try
+                        {
+                            copy.Create(); GL.sRGBWrite = false;
+                            Graphics.Blit(original, copy);
+                            if (copy.useMipMap) copy.GenerateMips();
+                        }
+                        finally { GL.sRGBWrite = srgbWrite; RenderTexture.active = active; }
+                        repeated = copy;
+                        repeatingSurfaces.Add(original,repeated);
+                    }
+                    material.SetTexture(property,repeated);
+                }
+            }
+        }
+
         internal void AddDistantGround(JcDynamicBattleSource source, Matrix4x4 fieldToBattle)
         {
             Material grass = null;

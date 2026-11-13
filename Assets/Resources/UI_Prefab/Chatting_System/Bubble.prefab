@@ -92,7 +92,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca721153adcf1f8459644a2b4bf1e41c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textwidth: 200
+  textwidth: 155
   rowLayout: {fileID: 546746767760783916}
   nameText: {fileID: 1957907045575630732}
   messageText: {fileID: 1013990506630523192}

@@ -3,6 +3,52 @@ using UnityEngine;
 /// <summary>전투 스킬 5버튼의 공통 시각 설정. 출전 버튼 셰이더의 시각 옵션만 제공하며 사용 가능 판정은 하지 않습니다.</summary>
 public class BattleSkillSweepSettings : MonoBehaviour
 {
+    // JC | 2026-11-12 | 초안을 비직렬화하여 플레이 조절이 저장 프로필이나 씬 원본을 자동 덮어쓰지 않게 합니다.
+    private BattleSkillButtonMotionProfile motionProfile;
+    private bool motionDraftLoaded;
+    private float motionScale = 1.04f;
+    // JC | 2026-11-12 | 기본 너비 조절도 저장 전 초안과 공유 프로필을 분리합니다.
+    private float motionWidthRatio = 1f;
+    // JC | 2026-11-12 | 좌우·상하 피봇 초안을 함께 보관하고 명시적인 저장 시에만 프로필에 반영합니다.
+    private float motionPivotX = .5f;
+    private float motionPivotY = .5f;
+    public bool SupportsMotionControls => IsSkillButtonStyle && BattleSkillButtonMotionProfile.SupportsScene(gameObject.scene.name);
+    public BattleSkillButtonMotionProfile MotionProfile
+    {
+        get
+        {
+            if (!SupportsMotionControls) return null;
+            if (motionProfile == null) motionProfile = Resources.Load<BattleSkillButtonMotionProfile>(BattleSkillButtonMotionProfile.ResourceName);
+            return motionProfile;
+        }
+    }
+
+    public bool TryGetMotionDraft(out float scale, out float pivotX, out float pivotY, out float widthRatio)
+    {
+        if (!motionDraftLoaded) ReloadMotionDraft();
+        scale = motionScale;
+        pivotX = motionPivotX;
+        pivotY = motionPivotY;
+        widthRatio = motionWidthRatio;
+        return SupportsMotionControls && motionDraftLoaded;
+    }
+
+    public void SetMotionDraft(float scale, float pivotX, float pivotY, float widthRatio)
+    {
+        // JC | 2026-11-12 | 인스펙터 조절값을 유효 범위로 제한하며 저장은 명시적인 버튼에서만 수행합니다.
+        motionScale = Mathf.Clamp(scale, 1f, 1.12f);
+        motionPivotX = Mathf.Clamp01(pivotX);
+        motionPivotY = Mathf.Clamp01(pivotY);
+        motionWidthRatio = Mathf.Clamp(widthRatio, .6f, 1f);
+        motionDraftLoaded = true;
+    }
+
+    public void ReloadMotionDraft()
+    {
+        var profile = MotionProfile;
+        if (profile != null) SetMotionDraft(profile.hoverScale, profile.pivotX, profile.pivotY, profile.widthRatio);
+    }
+
     [Tooltip("사용 가능한 히어로/코어 버튼의 반복 강조를 켭니다. 선택 테두리는 별도입니다.")]
     public bool showAvailableEffect = true;
     [Header("외곽 광선 — 출전 버튼과 같은 옵션")]

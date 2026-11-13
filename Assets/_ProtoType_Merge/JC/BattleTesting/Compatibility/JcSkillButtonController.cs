@@ -57,8 +57,6 @@ public class JcSkillButtonController : MonoBehaviour
     private Button hoveredSkillButton;
     private bool descriptionBattleEnded;
     private BattleCharactor displayedUnit;
-    // JC | 2026-11-06: 같은 IP 구간에서는 설명/스크롤을 유지하고 경계를 넘을 때만 갱신합니다.
-    private int descriptionIpBand = -1;
 
     private Action<bool> onToggle1;
     private Action<bool> onToggle2;
@@ -324,11 +322,8 @@ public class JcSkillButtonController : MonoBehaviour
             return;
         }
 
-        // JC | 2026-11-06: 실제 선택/호버 스킬 ID와 행동 유닛 IP로 전투 전용 확정 문구를 표시합니다.
-        // 전투 수치, 장비 주입 및 로비·연구소의 설명 경로는 변경하지 않습니다.
-        descriptionIpBand = ClassSkillTooltipText.GetBattleIpBand(unit.CurrentInfluence);
-        string body = ClassSkillTooltipText.BuildBattleDesc(skill.skillIndex,
-            action == PendingActionType.WeaponSkill, unit.CurrentInfluence);
+        // JC | 2026-11-12 | 기존 KJ/테스트 입력 흐름을 유지하고 이번 시전 계수만 % 설명으로 표시합니다.
+        string body = ClassSkillTooltipText.BuildBattleDesc(skill, action == PendingActionType.WeaponSkill);
         SetDescription(skill.skillName, body, skill);
     }
 
@@ -339,13 +334,7 @@ public class JcSkillButtonController : MonoBehaviour
         var actor = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
         // 턴 팝업 중에도 이름/초상화와 같은 유닛의 스킬을 표시합니다. 입력 허용 시점은 바꾸지 않습니다.
         if (displayedUnit != actor) RefreshSkills();
-        // JC | 2026-11-06: 설명을 연 채 IP가 변해도 현재 구간을 표시합니다. 비주얼 연결 유무와 무관하게 갱신합니다.
-        if (actor != null && actor.IsPlayer && !descriptionBattleEnded &&
-            descriptionIpBand != ClassSkillTooltipText.GetBattleIpBand(actor.CurrentInfluence))
-        {
-            descriptionIpBand = ClassSkillTooltipText.GetBattleIpBand(actor.CurrentInfluence);
-            RefreshDescription();
-        }
+        // JC | 2026-11-12 | 계수 설명은 IP 구간에 무관하므로 IP 변화에 따른 본문 재작성은 하지 않습니다.
         if (coreVisual == null && (!HasHeroSlots || !System.Array.Exists(heroSlots, s => s != null && s.visual != null))) return;
         bool ready = actor != null && actor.IsPlayer && !actor.IsDead && !descriptionBattleEnded &&
             !battleFlowManager.IsEndingBattle && !battleFlowManager.IsActionInProgress &&
@@ -392,17 +381,14 @@ public class JcSkillButtonController : MonoBehaviour
             }
         }
         if (descriptionTags == null) return;
+        // JC | 2026-11-12 | 원거리 항목이 없는 공용 목록을 앞에서부터 채웁니다. 빈 중간 슬롯을 만들지 않습니다.
+        var tags = skill != null ? SkillTagText.Build(skill.skillIndex, skill.classSkillEffect,
+            skill.classSkillRange, skill.classSkillTarget) : null;
         for (int i = 0; i < descriptionTags.Length; i++)
         {
             var label = descriptionTags[i];
             if (label == null) continue;
-            string text = string.Empty;
-            if (skill != null)
-            {
-                if (i == 0) text = HeroSkillRules.IsFamily(skill, 4020) ? "공격/회복" : skill.classSkillEffect switch { 0 => "공격", 1 => "회복", 2 => "부활", 3 => "버프", 4 => "디버프", _ => string.Empty };
-                if (i == 1) text = skill.classSkillRange switch { 0 => "근거리", 1 => "원거리", _ => string.Empty };
-                if (i == 2) text = skill.classSkillTarget switch { 0 => "단수", 1 => "복수", 2 => "전체", _ => string.Empty };
-            }
+            string text = tags != null && i < tags.Count ? tags[i] : string.Empty;
             // 효과·사거리·대상 태그 모두 한 줄 높이를 온전히 사용합니다.
             var margin = label.margin;
             label.margin = new Vector4(margin.x, 0f, margin.z, 0f);

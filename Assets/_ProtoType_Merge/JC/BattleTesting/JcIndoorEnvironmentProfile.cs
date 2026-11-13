@@ -6,6 +6,9 @@ namespace JC.BattleTesting
     // 광원 열거형은 기존 프로필에 남겨 Spot/Point 저장 번호가 뒤바뀌지 않게 합니다.
     public abstract class JcIndoorEnvironmentProfile : ScriptableObject
     {
+        // JC | 2026-11-12 | 본게임·테스트가 기존 조명 프로필의 IBL 초안/저장값을 함께 사용합니다.
+        [InspectorName("실내 전용 IBL"), Tooltip("은행·보스별 독립 환경광과 반사 설정입니다. 현재 조명 저장 버튼으로 함께 보존됩니다.")]
+        public JcIndoorIblSettings ibl = new JcIndoorIblSettings();
         public enum CharacterLighting
         {
             [InspectorName("기존 전투별 방식 유지")] Preserve = 0,

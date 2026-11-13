@@ -13,9 +13,10 @@ namespace JC.BattleTesting
 
         // JC | 2026-11-05 | 실내와 캐릭터는 보스 조명만 받고 도시의 낮밤 조명은 그대로 유지합니다.
         [Header("실내·캐릭터 조명 분리")]
-        [InspectorName("월드 조명 차단"), Tooltip("실내 표면과 캐릭터의 태양광·환경광·환경 반사·자체 밝기 보정을 차단합니다. 창문광과 아래 추가 라이트만 받습니다.")]
+        // JC | 2026-11-12 | 외부 환경 차단과 새 실내 전용 IBL의 역할을 구분합니다.
+        [InspectorName("월드 조명 차단"), Tooltip("외부 태양광·환경광·환경 반사·자체 밝기 보정을 차단합니다. 창문광·추가 라이트와 켜진 실내 전용 IBL은 받습니다.")]
         public bool isolateInterior = true;
-        [InspectorName("창문 투사광"), Tooltip("실제 창문 메시의 크기와 위치를 사용합니다. 모두 끄고 추가 라이트도 끄면 실내·캐릭터는 검게 됩니다.")]
+        [InspectorName("창문 투사광"), Tooltip("실제 창문 메시의 크기와 위치를 사용합니다. 창문광·추가광·실내 IBL을 모두 끄면 실내는 검게 됩니다.")]
         public List<WindowLight> windows = new List<WindowLight>();
 
         [Serializable]

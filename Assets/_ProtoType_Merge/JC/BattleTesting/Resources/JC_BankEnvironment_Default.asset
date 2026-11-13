@@ -12,6 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1643420ee9dd85439ef7d41cad56b5a, type: 3}
   m_Name: JC_BankEnvironment_Default
   m_EditorClassIdentifier: 
+  ibl:
+    enabled: 1
+    environment: {fileID: 11400000, guid: 8819e1a4a54d34e4e9dbaf206931e4a5, type: 2}
+    diffuseIntensity: 0.6
+    specularIntensity: 0.5
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    rotation: 0
+    bankProbeBlend: 0.25
   ssaoFeature: {fileID: -1878332245247344467, guid: ae0cc4904269f6c45906c992c0d617c2,
     type: 2}
   ssaoEnabled: 1

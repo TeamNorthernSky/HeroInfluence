@@ -164,6 +164,9 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
             tutorialMaskPass.throughWalls = interaction;
             // JC | 2026-11-04 | 건물 강조만 내부 틈을 제거한 외곽을 사용하며 상호작용 표식의 투과 정책은 유지합니다.
             tutorialMaskPass.exteriorOnly = !interaction;
+            // JC | 2026-11-12 | 탐사 지면 아래의 모델 받침은 호버 실루엣에서 제외합니다. 이미 등록된 그리드만 읽고 장면을 검색하지 않습니다.
+            if (!interaction && Game.Grid && Game.Grid.gameObject.scene == scene)
+                tutorialMaskPass.SetGroundPlane(Game.Grid.GetLandSurfaceY() - .01f);
             tutorialMaskPass.SetAntialiasing(smoothing);
             tutorialMaskPass.renderPassEvent = !interaction ? (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents - 2) : RenderPassEvent.AfterRenderingTransparents;
             tutorialCompositePass.renderPassEvent = (RenderPassEvent)((int)tutorialMaskPass.renderPassEvent + 1);
@@ -212,6 +215,9 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
         // JC | 2026-11-10 | 렌더 시점에 지원 포맷을 한 번 확인하며, 미지원 장치도 같은 비트 표현을 RGBA8의 R에 저장합니다.
         private GraphicsFormat envelopeFormat;
         private bool exteriorReady;
+        // JC | 2026-11-12 | 한 번의 기존 마스크/합성에서 공유하는 지면 기준입니다. 추가 RT나 지면 드로우를 만들지 않습니다.
+        private Vector4 groundPlane;
+        public void SetGroundPlane(float y) => groundPlane = new Vector4(1, y, 0, 0);
         public RTHandle Mask => exteriorReady ? exteriorMask : rawMask;
         public Renderer[] explicitRenderers;
         public bool throughWalls, exteriorOnly;
@@ -230,6 +236,7 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
         public void Setup(bool enabled, JcBuildingSilhouetteSettings tuning, Camera camera)
         {
             orbit = Vector4.zero;
+            groundPlane = Vector4.zero;
             // JC | 2026-11-06 | 튜토리얼은 회전광 범위를 설정하지 않으므로 이전 호버 대상의 범위가 외곽선을 자르지 않게 초기화합니다.
             orbitBounds = Vector4.zero;
             edgeSmoothing = 0;
@@ -275,6 +282,7 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
         public void WriteTuning(CommandBuffer cmd)
         {
             cmd.SetGlobalFloat("_JcBuildingExteriorOnly", exteriorOnly ? 1 : 0);
+            cmd.SetGlobalVector("_JcBuildingGroundPlane", groundPlane);
             cmd.SetGlobalVector("_JcBuildingExteriorRadius", new Vector4(pixelSize.x, pixelSize.y, tuningVector.w + orbit.w + edgeSmoothing + 1, 0));
             cmd.SetGlobalFloat("_JcBuildingHighlight", overrideMaterial != null && explicitRenderers != null ? (throughWalls ? 2f : 1f) : 0f);
             if (Mask != null) cmd.SetGlobalTexture("_JcBuildingShapeDepth", Mask.nameID);
@@ -293,6 +301,7 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
         {
             cmd.SetGlobalFloat("_JcBuildingHighlight", 0);
             cmd.SetGlobalFloat("_JcBuildingExteriorOnly", 0);
+            cmd.SetGlobalVector("_JcBuildingGroundPlane", Vector4.zero);
             cmd.SetGlobalTexture("_JcBuildingShapeDepth", Texture2D.blackTexture);
             cmd.SetGlobalFloat(EdgeSmoothingId, 0);
             cmd.SetGlobalVector(TuningId, Vector4.zero);

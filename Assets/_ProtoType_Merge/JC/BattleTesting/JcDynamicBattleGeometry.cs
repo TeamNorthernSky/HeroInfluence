@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 namespace JC.BattleTesting
 {
-    public static class JcDynamicBattleGeometry
+    public static partial class JcDynamicBattleGeometry
     {
         static readonly HashSet<string> roots = new HashSet<string>{"Land","DecorativeSystemAndRoot","JC_WorldDressing","GateSystemAndRoot","HeroUnionSystem","OutpostSystemAndRoot","VillainUnionSystem","ObstacleRoot"};
         static bool Ancestor(Transform t,string name){for(;t!=null;t=t.parent)if(t.name==name)return true;return false;}
@@ -45,7 +45,9 @@ namespace JC.BattleTesting
                 if(!(originalRoad?original.enabled:r.enabled)||r.forceRenderingOff)continue;
                 bool tutorialSurface = tutorial && f.transform.parent != null && f.transform.parent.name == "Tutorial_VisualOnly";
                 bool ground=Ancestor(f.transform,"Generated Tile Meshes")||Ancestor(f.transform,"JC_ExploreDetail_Visuals")||tutorialSurface;
-                if(!ground&&!roots.Contains(f.transform.root.name))continue;
+                // JC | 2026-11-13 | 튜토리얼 건물의 외형만 포함하며 적·아이템·전투 기능은 복제하지 않습니다.
+                bool tutorialBuilding = tutorial && (f.GetComponentInParent<TutorialBuildingObject>() != null || f.GetComponentInParent<TutorialOutpostObject>() != null);
+                if(!ground&&!tutorialBuilding&&!roots.Contains(f.transform.root.name))continue;
                 if(f.GetComponentInParent<JcDynamicBattleOutput>()!=null)continue;
                 var inputMesh=originalRoad?original.mesh:f.sharedMesh;
                 // Edit-mode cache generation needs the imported source. Both player and
@@ -411,7 +413,9 @@ namespace JC.BattleTesting
                 else if (source.sourceScene != null && source.sourceScene.EndsWith("/TutorialExploreScene.unity", StringComparison.Ordinal))
                     JcBattleSurfaceDressing.ApplyAuthoredLineSpacing(root);
                 // Add after dressing so the distant ground never receives roads or scatter props.
+                // JC | 2026-11-13 | 본게임·테스트 배경 생성에 동일한 튜토리얼 도로 접합 처리를 적용합니다.
                 output.AddDistantGround(source, transform);
+                if (source.sourceScene != null && source.sourceScene.EndsWith("/TutorialExploreScene.unity", StringComparison.Ordinal)) RepairTutorialRoads(root);
                 Debug.Log(output.Report,root);
                 return root;
             }

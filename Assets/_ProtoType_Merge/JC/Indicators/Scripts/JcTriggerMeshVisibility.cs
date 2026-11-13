@@ -10,7 +10,7 @@ namespace JC.Indicators
     internal sealed class JcTriggerMeshVisibility
     {
         // JC | 2026-11-09 | 느낌표마다 소속 이벤트를 구분합니다. 배경/다른 이벤트는 가림 예외가 아닙니다.
-        private sealed class Marker { internal SpriteRenderer renderer; internal Material original, copy; internal bool occlusion; internal int ownerId; }
+        private sealed class Marker { internal SpriteRenderer renderer; internal Material original, copy; internal bool occlusion, ownSurfaceOnly; internal int ownerId, coveragePass; }
         // JC | 2026-11-10 | 수집 주기는 유지하며 호출별 임시 배열/집합만 재사용합니다. 다음 수집에서 다시 채웁니다.
         private readonly HashSet<Component> collectedOwners = new HashSet<Component>();
         private readonly List<GameObject> scanRoots = new List<GameObject>();
@@ -29,15 +29,20 @@ namespace JC.Indicators
         private readonly List<Material> materials = new List<Material>();
         // JC | 2026-11-09 | Unity 네이티브 객체는 MonoBehaviour 필드 생성자가 아닌 렌더 호출의 메인 스레드에서 만듭니다.
         private MaterialPropertyBlock block, slotBlock;
-        private readonly Plane[] frustum = new Plane[6];
+        // JC | 2026-11-12 | 후보는 카메라당 한 번만 판정하고 깊이 준비·보호 마스크에서 같은 목록을 사용합니다.
+        private readonly List<Marker> visibleMarkers = new List<Marker>();
+        private readonly HashSet<int> visibleOwners = new HashSet<int>();
+        internal bool NeedsWorldDepth { get; private set; }
         // JC | 2026-11-10 | 한 카메라 깊이 처리에서만 공유하는 슬롯별 준비 결과입니다. 다음 처리에서는 다시 읽습니다.
         private struct PreparedMesh { internal Renderer renderer; internal Material material; internal int slot, owner; internal Vector4 roles; }
         private readonly List<PreparedMesh> prepared = new List<PreparedMesh>();
         private Shader shader;
         private float nextScan;
+        private Scene sourceScene;
 
         internal void Collect(IReadOnlyList<InteractionOverlayCell> cells, Scene scene)
         {
+            sourceScene = scene;
             if (!shader) shader = Resources.Load<Shader>("JcTriggerMeshVisibility");
             protectedMeshes.Clear(); currentMarkers.Clear(); meshOwners.Clear();
             var owners = collectedOwners; owners.Clear();
@@ -48,9 +53,10 @@ namespace JC.Indicators
                 scanRenderers.Clear(); owner.GetComponentsInChildren<Renderer>(true, scanRenderers);
                 foreach (var r in scanRenderers)
                     if ((r is MeshRenderer || r is SkinnedMeshRenderer) && !r.GetComponentInParent<Canvas>()) protectedMeshes.Add(r);
-                // 기존 메인 이벤트의 느낌표만 식별합니다. 파티 UI/월드 표식 스프라이트에는 적용하지 않습니다.
-                if (!(owner is MainEventObject)) continue;
-                var slot = owner.transform.Find("iconSlot/iconImage");
+                // JC | 2026-11-12 | 방문 팻말도 기존 소속별 깊이에 함께 등록합니다. 팻말마다 별도 장면 수집/깊이 패스를 만들지 않습니다.
+                string markerPath = owner is MainEventObject ? "iconSlot/iconImage" : owner is HeroUnionUnit ? "VisitorIndicator" : null;
+                if (markerPath == null) continue;
+                var slot = owner.transform.Find(markerPath);
                 var sprite = slot ? slot.GetComponent<SpriteRenderer>() : null;
                 if (!sprite || !sprite.sharedMaterial || !shader) continue;
                 currentMarkers.Add(sprite);
@@ -60,9 +66,11 @@ namespace JC.Indicators
                     var copy = new Material(shader) { name = original.name + " (소속 이벤트만 가림 제외)", hideFlags = HideFlags.HideAndDontSave,
                         renderQueue = original.renderQueue };
                     copy.CopyMatchingPropertiesFromMaterial(original);
-                    marker = new Marker { renderer = sprite, original = original, copy = copy, occlusion = sprite.allowOcclusionWhenDynamic, ownerId = ++nextOwnerId };
+                    marker = new Marker { renderer = sprite, original = original, copy = copy, occlusion = sprite.allowOcclusionWhenDynamic, ownerId = ++nextOwnerId, ownSurfaceOnly = owner is HeroUnionUnit, coveragePass = copy.FindPass("MarkerCoverage") };
                     markers.Add(sprite, marker);
                     copy.SetFloat("_JcMarkerOwner", marker.ownerId);
+                    // JC | 2026-11-12 | 방문 팻말은 자기 건물 표면만 확인합니다. 다른 이벤트의 다층 가림 준비를 팻말 때문에 시작하지 않습니다.
+                    copy.SetFloat("_JcMarkerOwnSurfaceOnly", marker.ownSurfaceOnly ? 1 : 0);
                     sprite.sharedMaterial = copy;
                     sprite.allowOcclusionWhenDynamic = false;
                 }
@@ -72,11 +80,17 @@ namespace JC.Indicators
             removed.Clear();
             foreach (var pair in markers) if (!pair.Key || !currentMarkers.Contains(pair.Key)) removed.Add(pair.Key);
             foreach (var key in removed) { Restore(markers[key]); markers.Remove(key); }
+        }
+
+        // JC | 2026-11-12 | 전체 월드 깊이를 실제로 소비할 때만 기존 2초 캐시를 갱신합니다.
+        // 팻말만 보이거나 모든 마커가 화면 밖인 동안은 배경 재수집/슬롯 준비를 시작하지 않습니다.
+        private void RefreshWorldMeshes()
+        {
             // 배경 목록만 주기적으로 캐시합니다. 스킨 포즈와 Transform/재질 값은 그릴 때 최신값을 사용합니다.
             if (Time.unscaledTime >= nextScan || worldMeshes.Count == 0)
             {
                 nextScan = Time.unscaledTime + 2; worldMeshes.Clear();
-                scanRoots.Clear(); scene.GetRootGameObjects(scanRoots);
+                scanRoots.Clear(); sourceScene.GetRootGameObjects(scanRoots);
                 foreach (var root in scanRoots)
                 {
                     scanRenderers.Clear(); root.GetComponentsInChildren<Renderer>(true, scanRenderers);
@@ -91,27 +105,34 @@ namespace JC.Indicators
         }
 
         // JC | 2026-11-10 | 어느 컨트롤러에도 표시 후보가 없으면 월드 R만 생략하고 채움 보호 G는 유지합니다.
-        internal void PrepareDraw(Camera camera, bool needsMarkerDepth)
+        internal void PrepareDraw(Camera camera, bool needsWorldDepth, Plane[] frustum)
         {
             prepared.Clear();
             if (!shader || (markers.Count == 0 && protectedMeshes.Count == 0)) return;
             if (block == null) { block = new MaterialPropertyBlock(); slotBlock = new MaterialPropertyBlock(); }
-            GeometryUtility.CalculateFrustumPlanes(camera, frustum);
             drawn.Clear();
-            foreach (var r in worldMeshes) DrawOne(r);
+            // JC | 2026-11-12 | 전체 월드 깊이가 필요 없으면 방문 팻말 소속과 기존 채움 보호 대상만 준비합니다.
+            if (needsWorldDepth)
+            {
+                RefreshWorldMeshes();
+                foreach (var r in worldMeshes) DrawOne(r);
+            }
             // 새로 스폰된 이벤트는 배경 캐시 주기를 기다리지 않고 같은 프레임에 보호합니다.
-            foreach (var r in protectedMeshes) if (!drawn.Contains(r)) DrawOne(r);
+            foreach (var r in protectedMeshes) DrawOne(r);
             void DrawOne(Renderer r)
             {
-                if (!r || !r.enabled || r.forceRenderingOff || !r.gameObject.activeInHierarchy ||
+                // JC | 2026-11-12 | 월드/보호 목록에 함께 있는 메시의 화면 밖 판정도 한 번만 수행합니다.
+                if (!r || !drawn.Add(r) || !r.enabled || r.forceRenderingOff || !r.gameObject.activeInHierarchy ||
                     (camera.cullingMask & (1 << r.gameObject.layer)) == 0 || !GeometryUtility.TestPlanesAABB(frustum, r.bounds)) return;
-                drawn.Add(r); r.GetSharedMaterials(materials); block.Clear(); r.GetPropertyBlock(block);
+                r.GetSharedMaterials(materials); block.Clear(); r.GetPropertyBlock(block);
                 bool protect = protectedMeshes.Contains(r);
+                int ownerId = meshOwners.TryGetValue(r, out int id) ? id : 0;
+                bool markerMesh = needsWorldDepth || visibleOwners.Contains(ownerId);
                 for (int slot = 0; slot < materials.Count; slot++)
                 {
                     var source = materials[slot]; if (!source) continue;
                     // 투명 안내 메시의 깊이를 월드로 오인하지 않습니다. 이벤트 소품은 투명 재질도 보호 대상으로 기록합니다.
-                    bool worldDepth = needsMarkerDepth && markers.Count > 0 && source.renderQueue <= 2500;
+                    bool worldDepth = markerMesh && source.renderQueue <= 2500;
                     if (!worldDepth && !protect) continue;
                     // JC | 2026-11-09 | 원본 재질을 공유해도 인스턴스 속성 블록의 알파가 섞이지 않도록 렌더러/슬롯별로 보관합니다.
                     var key = (r, slot);
@@ -131,7 +152,7 @@ namespace JC.Indicators
                     copy.SetFloat("_MeshCutoff", source.IsKeywordEnabled("_ALPHATEST_ON") && source.HasProperty("_Cutoff") ? source.GetFloat("_Cutoff") : .001f);
                     prepared.Add(new PreparedMesh { renderer = r, material = copy, slot = slot,
                         roles = new Vector4(worldDepth ? 1 : 0, protect ? 1 : 0, 0, 0),
-                        owner = meshOwners.TryGetValue(r, out int ownerId) ? ownerId : 0 });
+                        owner = ownerId });
                 }
             }
         }
@@ -140,38 +161,41 @@ namespace JC.Indicators
         {
             // JC | 2026-11-10 | 소속/외부 깊이 셰이더가 전 픽셀을 버리는 보호 전용 슬롯은 제출하지 않습니다.
             bool worldOnly = passName != "WorldMeshDepth";
+            // JC | 2026-11-12 | 모든 준비 재질이 같은 셰이더이므로 패스 검색은 슬롯별로 반복하지 않습니다.
+            if (prepared.Count == 0) return;
+            int pass = prepared[0].material.FindPass(passName);
             foreach (var item in prepared)
             {
                 if (worldOnly && item.roles.x < .5f) continue;
                 cmd.SetGlobalVector("_JcMeshDepthRoles", item.roles);
                 cmd.SetGlobalFloat("_JcMeshOwner", item.owner);
-                cmd.DrawRenderer(item.renderer, item.material, item.slot, item.material.FindPass(passName));
+                cmd.DrawRenderer(item.renderer, item.material, item.slot, pass);
             }
         }
         // JC | 2026-11-10 | 카메라 처리 종료 시 참조를 비워 다음 카메라/프레임으로 준비 결과가 넘어가지 않게 합니다.
-        internal void ClearPrepared() => prepared.Clear();
+        internal void ClearPrepared() { prepared.Clear(); visibleMarkers.Clear(); visibleOwners.Clear(); NeedsWorldDepth = false; }
         // JC | 2026-11-09 | 실제 표시와 같은 알파/가림 판정으로 호버 윤곽선에서 보호할 픽셀만 기록합니다.
         internal void DrawMarkerCoverage(CommandBuffer cmd, Camera camera)
         {
-            GeometryUtility.CalculateFrustumPlanes(camera, frustum);
+            // JC | 2026-11-12 | 같은 카메라의 후보 판정을 재사용하여 절두체/활성 검사와 재질 조회를 반복하지 않습니다.
+            foreach (var marker in visibleMarkers)
+                cmd.DrawRenderer(marker.renderer, marker.copy, 0, marker.coveragePass);
+        }
+        internal bool PrepareMarkerCandidates(Camera camera, Plane[] frustum)
+        {
+            visibleMarkers.Clear(); visibleOwners.Clear(); NeedsWorldDepth = false;
             foreach (var marker in markers.Values)
-                if (IsMarkerCandidate(marker, camera))
-                    cmd.DrawRenderer(marker.renderer, marker.copy, 0, marker.copy.FindPass("MarkerCoverage"));
-        }
-        // JC | 2026-11-10 | 가림 결과가 아닌 제출 후보만 검사합니다. 가려졌다가 나타나는 아이콘도 깊이를 계속 준비합니다.
-        internal bool HasMarkerCandidate(Camera camera)
-        {
-            GeometryUtility.CalculateFrustumPlanes(camera, frustum);
-            foreach (var marker in markers.Values) if (IsMarkerCandidate(marker, camera)) return true;
-            return false;
-        }
-        // JC | 2026-11-10 | 후보 검사와 실제 보호 마스크 제출이 같은 활성/레이어/절두체 조건을 사용합니다.
-        private bool IsMarkerCandidate(Marker marker, Camera camera)
-        {
-            var r = marker.renderer;
-            return r && r.enabled && !r.forceRenderingOff && r.gameObject.activeInHierarchy &&
-                r.sharedMaterial == marker.copy && (camera.cullingMask & (1 << r.gameObject.layer)) != 0 &&
-                GeometryUtility.TestPlanesAABB(frustum, r.bounds);
+            {
+                var r = marker.renderer;
+                if (r && r.enabled && !r.forceRenderingOff && r.gameObject.activeInHierarchy &&
+                    r.sharedMaterial == marker.copy && (camera.cullingMask & (1 << r.gameObject.layer)) != 0 &&
+                    GeometryUtility.TestPlanesAABB(frustum, r.bounds))
+                {
+                    visibleMarkers.Add(marker); visibleOwners.Add(marker.ownerId);
+                    NeedsWorldDepth |= !marker.ownSurfaceOnly;
+                }
+            }
+            return visibleMarkers.Count > 0;
         }
         internal void Clear()
         {
@@ -180,7 +204,7 @@ namespace JC.Indicators
             // JC | 2026-11-10 | 재사용 중복 검사 목록도 해제 시 렌더러 참조를 비웁니다.
             drawn.Clear();
             foreach (var m in depthCopies.Values) Destroy(m);
-            depthCopies.Clear(); prepared.Clear(); nextScan = 0;
+            depthCopies.Clear(); prepared.Clear(); visibleMarkers.Clear(); visibleOwners.Clear(); NeedsWorldDepth = false; nextScan = 0;
             // JC | 2026-11-10 | 수집 버퍼가 보유한 참조도 정리합니다.
             collectedOwners.Clear(); scanRoots.Clear(); scanRenderers.Clear();
         }

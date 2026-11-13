@@ -353,6 +353,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
             if (gridManager != null && TryGetMapWorldBounds(out Rect eventBounds))
             {
                 AdjustEventFocusForMapPosition(eventBounds);
+                FitEventZoomToFocusX(eventBounds);
             }
         }
         // Resolve the existing map boundary/zoom constraints at the destination.
@@ -374,6 +375,48 @@ public class QuarterViewCameraFollower : MonoBehaviour
             externalFocusWorldPosition.z);
         positionOffset.z = Mathf.Lerp(-2.5f, -1.5f, upperMapRatio);
         fixedEulerAngles.x = Mathf.Lerp(40f, 55f, upperMapRatio);
+    }
+
+    private void FitEventZoomToFocusX(Rect mapBounds)
+    {
+        if (!clampToMapBounds || targetCamera == null || gridManager == null) return;
+
+        Vector3 offset = positionOffset;
+        float groundY = gridManager.GetLandSurfaceY();
+        if (offset.y <= groundY) return;
+        Plane ground = new Plane(Vector3.up, new Vector3(0f, groundY, 0f));
+        transform.rotation = Quaternion.Euler(fixedEulerAngles);
+
+        // Scaling height and depth together keeps the event framing while reducing
+        // the footprint that previously pushed the camera away from the target X.
+        bool Fits(float scale)
+        {
+            transform.position = new Vector3(externalFocusWorldPosition.x,
+                groundY + (offset.y - groundY) * scale,
+                externalFocusWorldPosition.z + offset.z * scale);
+            return TryGetViewportGroundRect(ground, out Rect viewport) &&
+                Mathf.Abs(CalculateAxisCorrection(viewport.xMin, viewport.xMax,
+                    mapBounds.xMin, mapBounds.xMax)) <= 0.0001f;
+        }
+
+        if (Fits(1f)) return;
+        // Do not approach or cross the ground when no centered framing is possible.
+        float minimumHeight = 0.05f;
+        foreach (Vector3 corner in ViewportCorners)
+        {
+            Ray ray = targetCamera.ViewportPointToRay(corner);
+            minimumHeight = Mathf.Max(minimumHeight, transform.position.y - ray.origin.y + 0.001f);
+        }
+        float low = Mathf.Min(1f, minimumHeight / (offset.y - groundY));
+        if (!Fits(low)) return;
+        float high = 1f;
+        for (int i = 0; i < 24; i++)
+        {
+            float mid = (low + high) * 0.5f;
+            if (Fits(mid)) low = mid;
+            else high = mid;
+        }
+        positionOffset = new Vector3(0f, groundY + (offset.y - groundY) * low, offset.z * low);
     }
 
     public void LockExternalFocusTarget(Transform target, bool snapImmediately = true)

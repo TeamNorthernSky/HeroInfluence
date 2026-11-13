@@ -12,6 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7300fda7b46e411297a174dd61e9f429, type: 3}
   m_Name: JC_BossEnvironment
   m_EditorClassIdentifier: 
+  ibl:
+    enabled: 1
+    environment: {fileID: 11400000, guid: ad02f6952ae86d8499048871c34d70e3, type: 2}
+    diffuseIntensity: 0.35
+    specularIntensity: 0.5
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    rotation: 0
+    bankProbeBlend: 0
   characterLighting: 0
   ssaoFeature: {fileID: 0}
   ssaoEnabled: 1

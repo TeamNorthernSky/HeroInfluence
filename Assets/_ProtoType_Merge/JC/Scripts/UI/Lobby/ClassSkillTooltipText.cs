@@ -5,72 +5,51 @@
 /// </summary>
 public static class ClassSkillTooltipText
 {
-    // JC | 2026-11-06: 전투 IP 구간은 HUD와 동일하게 현재 IP의 소수점을 버려 판정합니다.
-    // IP 0도 첫 구간에 포함하며, 계산용 IP나 전투 효과량은 변경하지 않습니다.
-    public static int GetBattleIpBand(float currentInfluence)
+    // JC | 2026-11-12 | IP 정성 문구 대신 이번 시전에 적용된 강화 계수를 백분율로 표시합니다.
+    // 원본 테이블·피해 계산은 수정하지 않으며 본게임/튜토리얼/테스트의 설명 경로를 공유합니다.
+    public static string BuildBattleDesc(SkillData skill, bool weapon = false)
     {
-        int ip = (int)UnityEngine.Mathf.Max(0f, currentInfluence);
-        return ip <= 50 ? 0 : ip <= 100 ? 1 : ip <= 150 ? 2 : 3;
-    }
-
-    // JC | 2026-11-06: PPT 1슬라이드와 JC가 확정한 네 구간의 전투 전용 표현입니다.
-    public static string GetBattleIpDescription(float currentInfluence)
-    {
-        switch (GetBattleIpBand(currentInfluence))
-        {
-            case 0: return "적은 IP의 힘을 더해";
-            case 1: return "보통 IP의 힘을 더해";
-            case 2: return "많은 IP의 힘을 더해";
-            default: return "매우 많은 IP의 힘을 더해";
-        }
-    }
-
-    // JC | 2026-11-06: 확정된 전투 설명만 구성합니다. 기존 카탈로그의 ID/계열을 사용하며
-    // 원본 Description·계수와 아래 BuildDesc/습득 안내는 보존하여 전투 밖 표시에 영향을 주지 않습니다.
-    // 기본/+ 본문은 같고 이름은 호출처가 그대로 표시합니다. 튜토리얼/테스트도 이 경로를 사용합니다.
-    public static string BuildBattleDesc(int skillIndex, bool weapon, float currentInfluence)
-    {
-        string description;
+        if (skill == null) return string.Empty;
+        int skillIndex = skill.skillIndex;
+        string v = BattlePercent(skill.skillValue);
+        string sub = BattlePercent(skill.skillSubValue);
         if (weapon)
         {
             switch (skillIndex)
             {
-                case 1: description = "적 1명에게 {IPdescription} 대미지를 준다."; break;
-                case 2: description = "모든 적에게 {IPdescription} 대미지를 준다."; break;
-                case 3: description = "히어로젬의 힘으로 보호막을 생성하여, 다음 자신의 차례 전까지 자신이 받는 대미지를 감소시킨다."; break;
-                case 4: description = "히어로젬의 힘으로 아군 1명의 체력을 회복한다."; break;
-                case 5: description = "히어로젬의 힘으로 모든 적의 방어력을 1턴 동안 감소시킨다."; break;
+                case 1: return $"적 1명에게 {v}의 대미지를 준다.";
+                case 2: return $"모든 적에게 {v}의 대미지를 준다.";
+                case 3: return $"히어로젬의 힘으로 보호막을 생성하여, 다음 자신의 차례 전까지 자신이 받는 대미지를 {v} 감소시킨다.";
+                case 4: return $"히어로젬의 힘으로 아군 1명의 체력을 시전자의 최대 체력의 {v}만큼 회복한다.";
+                case 5: return $"히어로젬의 힘으로 모든 적의 방어력을 1턴 동안 {v} 감소시킨다.";
                 default: throw new System.ArgumentOutOfRangeException(nameof(skillIndex), skillIndex, "전투용 코어 스킬 설명이 확정되지 않았습니다.");
             }
         }
-        else
+        // 조건부 추가 계수와 회복 기준은 기존 실행 방식대로 구분하여 총합/1회당 수치를 혼동하지 않게 합니다.
+        switch (HeroSkillRules.FamilyId(skillIndex))
         {
-            switch (HeroSkillRules.FamilyId(skillIndex))
-            {
-                case 1010: description = "적 1명에게 {IPdescription} 대미지를 주고, 다음 자신의 차례 전까지 모든 적의 단일 공격 대상을 자신으로 변경한다."; break;
-                case 1020: description = "적 1명에게 {IPdescription} 대미지를 주며, 대상이 전열에 있을 경우 추가 대미지를 준다."; break;
-                // JC | 2026-11-06: 대쉬는 후열 추가 피해로 JC 확인을 받았으며 전열 보너스 스킬과 구분합니다.
-                case 1030: description = "적을 관통해 해당 가로줄의 적들에게 {IPdescription} 대미지를 주며, 후열의 적에게는 추가 대미지를 준다."; break;
-                case 1040: description = "모든 적에게 {IPdescription} 대미지를 주고, 다음 자신의 차례 전까지 모든 적의 단일 공격 대상을 자신으로 변경한다."; break;
-                case 2010: description = "적 1명에게 {IPdescription} 대미지를 준다."; break;
-                case 2020: description = "선택한 적 1명에게 {IPdescription} 대미지를 주고, 인접한 적 1명에게도 대미지를 준다."; break;
-                case 2030: description = "선택한 세로줄에 있는 모든 적에게 {IPdescription} 대미지를 준다."; break;
-                case 2040: description = "모든 적에게 {IPdescription} 대미지를 주며, 현재 체력이 최대 체력의 50% 미만인 대상에게는 추가 대미지를 준다."; break;
-                case 3010: description = "적 1명에게 {IPdescription} 대미지를 준다."; break;
-                case 3020: description = "적 1명에게 {IPdescription} 대미지를 주며, 대상이 전열에 있을 경우 추가 대미지를 준다."; break;
-                case 3030: description = "적 1명을 {IPdescription} 2회 공격한다. 치명타와 피해 경감 판정은 각 공격마다 별도로 적용된다."; break;
-                // JC | 2026-11-06: 마지막 확인에서 JC가 지정한 현재 체력 기준 정성 문구를 그대로 사용합니다.
-                case 3040: description = "적 1명에게 {IPdescription} 대미지를 준다. 대상의 현재 체력이 낮을수록 더 큰 대미지를 준다."; break;
-                case 4010: description = "아군 1명의 체력을 회복한다."; break;
-                case 4020: description = "적 1명에게 {IPdescription} 대미지를 주고, 실제 입힌 대미지만큼 무작위 아군 1명의 체력을 회복한다."; break;
-                case 4030: description = "모든 아군의 체력을 회복한다."; break;
-                case 4040: description = "리타이어한 아군 1명의 체력을 일부 회복시켜 부활시키고, 모든 적에게 {IPdescription} 대미지를 준다. 부활 효과는 전투당 1회만 적용되며, 이후 사용 시에는 적 전체 공격 효과만 적용된다."; break;
-                default: throw new System.ArgumentOutOfRangeException(nameof(skillIndex), skillIndex, "전투용 히어로 스킬 설명이 확정되지 않았습니다.");
-            }
+            case 1010: return $"적 1명에게 {v}의 대미지를 주고, 다음 자신의 차례 전까지 모든 적의 단일 공격 대상을 자신으로 변경한다.";
+            case 1020: return $"적 1명에게 {v}의 대미지를 주며, 대상이 전열에 있을 경우 {sub}의 추가 대미지를 준다.";
+            case 1030: return $"적을 관통해 해당 가로줄의 적들에게 대미지를 준다. 전열에는 {v}, 후열에는 {sub}의 대미지를 준다.";
+            case 1040: return $"모든 적에게 {v}의 대미지를 주고, 다음 자신의 차례 전까지 모든 적의 단일 공격 대상을 자신으로 변경한다.";
+            case 2010: return $"적 1명에게 {v}의 대미지를 준다.";
+            case 2020: return $"선택한 적 1명에게 {v}의 대미지를 주고, 인접한 적 1명에게도 {sub}의 대미지를 준다.";
+            case 2030: return $"선택한 세로줄에 있는 모든 적에게 {v}의 대미지를 준다.";
+            case 2040: return $"모든 적에게 {v}의 대미지를 주며, 현재 체력이 최대 체력의 50% 미만인 대상에게는 {sub}의 추가 대미지를 준다.";
+            case 3010: return $"적 1명에게 {v}의 대미지를 준다.";
+            case 3020: return $"적 1명에게 {v}의 대미지를 주며, 대상이 전열에 있을 경우 {sub}의 추가 대미지를 준다.";
+            case 3030: return $"적 1명을 1회당 {v}의 대미지로 2회 공격한다. 치명타와 피해 경감 판정은 각 공격마다 별도로 적용된다.";
+            case 3040: return $"적 1명에게 {v}의 대미지를 준다. 대상의 잃은 체력 10%마다 {sub}의 추가 대미지를 준다(최대 9회).";
+            case 4010: return $"아군 1명의 체력을 시전자의 최대 체력의 {v}만큼 회복한다.";
+            case 4020: return $"적 1명에게 {v}의 대미지를 주고, 실제 입힌 대미지만큼 무작위 아군 1명의 체력을 회복한다.";
+            case 4030: return $"모든 아군의 체력을 시전자의 최대 체력의 {v}만큼 회복한다.";
+            case 4040: return $"리타이어한 아군 1명을 대상 최대 체력의 {sub}로 부활시키고, 모든 적에게 {v}의 대미지를 준다. 부활 효과는 전투당 1회만 적용되며, 이후 사용 시에는 적 전체 공격 효과만 적용된다.";
+            default: throw new System.ArgumentOutOfRangeException(nameof(skillIndex), skillIndex, "전투용 히어로 스킬 설명이 확정되지 않았습니다.");
         }
-        // JC | 2026-11-06: IP가 직접 반영되는 공격 문장에만 토큰이 있고 회복/방어 문장에는 없습니다.
-        return description.Replace("{IPdescription}", GetBattleIpDescription(currentInfluence));
     }
+
+    private static string BattlePercent(float value) =>
+        (value * 100f).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%";
 
     public static string BuildDesc(DHClassSkillTemplate s, int level, bool percentageValues = false, int unitIndex = 0, BattleCharactor caster = null)
     {
@@ -109,7 +88,7 @@ public static class ClassSkillTooltipText
     internal static string BuildAcquisitionDescription(string description, float value, float subValue)
     {
         // JC | 2026-11-09: 일반·튜토리얼의 스킬 습득/강화 안내에서만 IP 서술을 생략합니다.
-        // 원본 설명과 전투 툴팁의 현재 IP 구간 표현은 유지하고 기존 공용 생략 함수를 재사용합니다.
+        // 원본 설명과 전투 툴팁의 퍼센트 표현은 유지하고 기존 공용 생략 함수를 재사용합니다.
         return SkillTooltipNumbers.OmitIPDescription(
             ReplaceBattleCoefficients(description, "ClassSkill", value, subValue));
     }
