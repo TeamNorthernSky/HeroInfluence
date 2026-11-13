@@ -282,54 +282,13 @@ namespace JC.BattleTesting
 
         private void Start()
         {
-#if UNITY_EDITOR
-            if (gameObject.scene.path == "Assets/_ProtoType_Merge/JC/JC_TestScenes/JC_BossTestScene.unity")
-            {
-                LaunchProductionBoss();
-                return;
-            }
-#endif
+            // JC | 2026-11-12 | 보스 테스트는 전용 씬의 원본 전투 관리자로 직접 시작합니다. 이 레거시 세션은 기존 JC_BattleTestScene 용도로만 남깁니다.
+
             Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.ApplyTopRightButtons(gameObject.scene);
             InitializeCameraViews();
             ApplyAndRestart();
         }
-#if UNITY_EDITOR
-        // Direct editor entry uses the shipping scene, HUD, stage and skill cameras.
-        // Only read the cast and hero levels from the legacy test settings.
-        private void LaunchProductionBoss()
-        {
-            const int zone = 2;
-            const string key = "BE490";
-            const string destination = SimulationBattleLauncher.BattleSceneName;
-            DHCsvTemplateCatalog.Instance.ReloadTemplates();
-            EventScriptCatalog.Instance.Reload();
-            var allies = new List<SimulationAllyRuntimeData>();
-            foreach (var row in settings.allies)
-            {
-                var input = new SimulationAllyInput { Enabled = true, UnitTemplateKey = row.unitKey, Level = row.level };
-                if (!SimulationUnitFactory.TryCreateRuntimeData(input, allies.Count, out var ally, out var error))
-                    throw new InvalidOperationException("보스 테스트 파티 준비 실패: " + error);
-                allies.Add(ally);
-            }
-            if (allies.Count == 0) throw new InvalidOperationException("보스 테스트 파티가 비어 있습니다.");
-            int enemyLevel = YT.Simulation.YtOutpostSimulation.ResolveEnemyLevel(zone, key, allies.Average(a => a.UnitData.Level));
-            if (!SimulationUnitFactory.ValidateEnemy(key, zone, enemyLevel, out var reason))
-                throw new InvalidOperationException(reason);
-            var context = CombatContext.EnsureInstance();
-            if (!context.BeginSimulation("JC_BOSS_PREVIEW", allies, key, enemyLevel, "TitleScene", zone))
-                throw new InvalidOperationException("보스 테스트 컨텍스트 생성 실패");
-            try
-            {
-                JcArnoldBattlePresentation.PrepareCameraOnly(destination);
-                SceneManager.LoadScene(destination);
-            }
-            catch
-            {
-                context.ClearSimulation();
-                throw;
-            }
-        }
-#endif
+
 
         private void Update()
         {

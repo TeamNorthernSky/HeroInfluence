@@ -75,6 +75,8 @@ namespace JC.BattleTesting
                 var rule = FindSurface(binding.original);
                 if (rule == null) continue;
                 var material = binding.preview;
+                // JC | 2026-11-12 | 전용 표면 복제본에만 IBL을 허용하여 같은 셰이더의 원경/원본 재질을 보존합니다.
+                if(material.shader.name=="JC/Environment/Contact Lit") material.EnableKeyword("_JC_INDOOR_IBL_TARGET");
                 material.SetColor("_BaseColor", binding.original.GetColor("_BaseColor") * rule.tint);
                 material.SetFloat("_Metallic", Mathf.Clamp01(rule.metallic));
                 material.SetFloat("_Smoothness", Mathf.Clamp01(rule.smoothness));

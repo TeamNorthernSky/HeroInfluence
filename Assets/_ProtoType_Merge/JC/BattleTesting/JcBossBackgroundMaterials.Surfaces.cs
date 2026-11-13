@@ -47,6 +47,8 @@ namespace JC.BattleTesting
                     var copy = new Material(originals[slot]) { shader = SurfaceDraft.surfaceShader, hideFlags = HideFlags.DontSave, name = originals[slot].name + " (보스 표면)" };
                     copy.shaderKeywords = new string[0];
                     copy.SetFloat("_BossLocalOnly", isolated ? 1 : 0);
+                    // JC | 2026-11-12 | 도시에도 같은 원본 재질이 있을 수 있으므로 실내 렌더러만 IBL 대상으로 지정합니다.
+                    if(Environment && Environment.IsInterior(renderer)) copy.EnableKeyword("_JC_INDOOR_IBL_TARGET");
                     if (rule != null)
                     {
                         copy.SetFloat("_Smoothness", rule.smoothness); copy.SetColor("_SpecColor", new Color(rule.specular,rule.specular,rule.specular,1));

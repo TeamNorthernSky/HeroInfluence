@@ -1240,7 +1240,8 @@ public class BattleFlowManager : MonoBehaviour
             return;
         }
 
-        GridManagerRef.Instance?.ShowPreviewHighlight(skill, mainCell, splashCells);
+        // JC | 2026-11-13 | 자동전투도 수동 선택과 동일한 부활/공격 색상을 사용하며 실행 대상/피해 계산은 유지합니다.
+        GridManagerRef.Instance?.ShowPreviewHighlight(skill, mainCell, splashCells, caster);
     }
 
     /// <summary>스킬 정보 없이 선택 대상 1칸만 표시합니다.</summary>

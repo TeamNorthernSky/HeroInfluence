@@ -11,6 +11,7 @@ public sealed class AudioManagerEditor : Editor
     private SerializedProperty masterVolumeProperty;
     private SerializedProperty bgmVolumeProperty;
     private SerializedProperty sfxVolumeProperty;
+    private SerializedProperty bgmDuckingMultiplierProperty;
     private SerializedProperty playBgmOnSceneLoadedProperty;
     private SerializedProperty stopBgmWhenSceneHasNoBindingProperty;
     private SerializedProperty sceneBgmBindingsProperty;
@@ -24,6 +25,7 @@ public sealed class AudioManagerEditor : Editor
         masterVolumeProperty = serializedObject.FindProperty("masterVolume");
         bgmVolumeProperty = serializedObject.FindProperty("bgmVolume");
         sfxVolumeProperty = serializedObject.FindProperty("sfxVolume");
+        bgmDuckingMultiplierProperty = serializedObject.FindProperty("bgmDuckingMultiplier");
         playBgmOnSceneLoadedProperty = serializedObject.FindProperty("playBgmOnSceneLoaded");
         stopBgmWhenSceneHasNoBindingProperty = serializedObject.FindProperty("stopBgmWhenSceneHasNoBinding");
         sceneBgmBindingsProperty = serializedObject.FindProperty("sceneBgmBindings");
@@ -46,6 +48,10 @@ public sealed class AudioManagerEditor : Editor
         EditorGUILayout.PropertyField(masterVolumeProperty);
         EditorGUILayout.PropertyField(bgmVolumeProperty);
         EditorGUILayout.PropertyField(sfxVolumeProperty);
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("BGM Ducking", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(bgmDuckingMultiplierProperty);
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Scene BGM", EditorStyles.boldLabel);

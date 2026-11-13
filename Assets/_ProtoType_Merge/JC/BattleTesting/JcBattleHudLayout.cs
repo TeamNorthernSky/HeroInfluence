@@ -151,19 +151,40 @@ namespace JC.BattleTesting
                 }
             }
             const float height = 88, gap = 10;
-            Place("CoreSkillPanel", 0, -204, 0, height, true);
+            // JC | 2026-11-12 | 대상 6씬은 버튼 중심에서 확대합니다. 실행 시 재배치가 씬의 중앙 피봇을 왼쪽 위로 되돌리지 않게 합니다.
+            bool centeredSkillButtons = scene.name == "TmpBattleScene" || scene.name == "TutorialBattleScene" ||
+                scene.name == "JC_Main12BattleTestScene" || scene.name == "JC_TutorialFirstBattleTestScene" ||
+                scene.name == "JC_BossTestScene" || scene.name == "BankTestScene";
+            // JC | 2026-11-12 | 기본 코어 상단204.88과 구분선의 보이는 하단197.75 사이7.13을 두 배로 넓힙니다.
+            // 버튼 높이·배율은 유지하고 5행 모두 같은 pitch를 써 코어 다음 간격도 일반 스킬 간격과 일치시킵니다.
+            float skillTop = centeredSkillButtons ? 211.13f : 204f;
+            Place("CoreSkillPanel", 0, -skillTop, 0, height, true);
             Place("CoreSkillPanel/Button_Skill_2", 16, 0, -32, height, true);
             // JC | 2026-11-09 | 확대된 아이콘만큼 스킬명을 10만큼 옮기고 우측 경계는 유지합니다.
             Place("CoreSkillPanel/Title", 114, 0, -130, height, true);
             var title = Rect("CoreSkillPanel/Title").GetComponent<TMP_Text>();
             title.alignment = TextAlignmentOptions.MidlineLeft;
-            Place("HeroSkillPanel", 0, -302, 0, height * 4 + gap * 3, true);
+            Place("HeroSkillPanel", 0, -(skillTop + height + gap), 0, height * 4 + gap * 3, true);
             string[] paths = { "CoreSkillPanel/Button_Skill_2", "HeroSkillPanel/Button_Skill", "HeroSkillPanel/HeroSkillSlot_2", "HeroSkillPanel/HeroSkillSlot_3", "HeroSkillPanel/HeroSkillSlot_4" };
             var face = skillButtonFace ? skillButtonFace : surface;
             for (int i = 0; i < paths.Length; i++)
             {
                 string path = paths[i]; var row = Rect(path); if (row == null) continue;
                 if(i > 0) Place(path, 16, -(height + gap) * (i - 1), -32, height, true);
+                if (centeredSkillButtons)
+                {
+                    // JC | 2026-11-12 | 좌우 스트레치의 중앙과 기존 행 중심을 유지합니다. 씬의 98% 기본 배율은 확대 컴포넌트가 그대로 사용합니다.
+                    row.pivot = new Vector2(.5f, .5f);
+                    row.anchoredPosition = new Vector2(0, -(i > 0 ? (height + gap) * (i - 1) : 0) - height * .5f);
+                    // JC | 2026-11-12 | 공통 HUD의 원래 너비를 다시 기록해 반복 재배치 후 축소 기준이 누적되지 않게 합니다.
+                    row.GetComponent<BattleSkillButtonVisual>()?.CaptureMotionLayout();
+                    if (i == 0)
+                    {
+                        // JC | 2026-11-12 | 형제 오브젝트인 코어스킬명도 버튼과 함께 확대합니다. 기존 경로·텍스트 참조와 기본 위치는 유지합니다.
+                        title.rectTransform.localScale = Vector3.one;
+                        row.GetComponent<BattleSkillButtonVisual>()?.BindScaleCompanion(title.rectTransform);
+                    }
+                }
                 // JC | 2026-11-09 | 사용자 수정 시안에 맞춰 묶음을 68→78로 확대하고 행의 세로 중앙은 유지합니다.
                 Place(path + "/IconVisual", 8, -5, 78, 78);
                 // JC | 2026-11-09 | 초기 표시와 잠긴 슬롯도 스킬 전용 여백을 적용합니다.

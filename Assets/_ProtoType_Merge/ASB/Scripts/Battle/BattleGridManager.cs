@@ -11,6 +11,9 @@ namespace ASB.Work.BattleGrid
         private readonly Dictionary<BattleCharactor, GridCell> cellByUnit = new Dictionary<BattleCharactor, GridCell>();
         private readonly List<GridCell> _previewHighlightedCells = new List<GridCell>();
         private GridCell _previewMainTargetCell;
+        // JC | 2026-11-13 | 복합 스킬은 셀마다 회복/공격 색을 구분하므로 스킬과 시전자 문맥을 보존합니다.
+        private SkillData previewSkill;
+        private BattleCharactor previewCaster;
         [SerializeField] private Material TargetMaterial;
         [SerializeField] private Material AdditionalTargetMaterial;
         [SerializeField] private Material ClearMaterial;
@@ -211,11 +214,15 @@ namespace ASB.Work.BattleGrid
         }
 
 
-        public void ShowPreviewHighlight(SkillData skill, GridCell mainCell, List<GridCell> splashCells)
+        public void ShowPreviewHighlight(SkillData skill, GridCell mainCell, List<GridCell> splashCells, BattleCharactor caster = null)
         {
             // 새 범위를 확정한 뒤 한 번만 표시해 셀 메시의 해제·재생성을 방지합니다.
             ClearPreviewHighlight(false);
             if (mainCell == null) { RefreshTilePresentation(); return; }
+
+            // JC | 2026-11-13 | 입력·자동전투가 넘긴 시전자를 사용합니다. 기존 호출부는 연결된 현재 턴을 읽습니다.
+            previewSkill = skill;
+            previewCaster = caster != null ? caster : (flowManager != null ? flowManager.CurrentUnit : null);
 
             bool allConfirmed = useBattleTilePresentation || (skill != null && skill.classSkillTarget == 2);
             mainCell.SetMainTargetHighlight();
@@ -242,6 +249,9 @@ namespace ASB.Work.BattleGrid
 
         private void ClearPreviewHighlight(bool refresh)
         {
+            // JC | 2026-11-13 | 선택 취소/다음 행동이 이전 복합 스킬의 색상 문맥을 물려받지 않도록 해제합니다.
+            previewSkill = null;
+            previewCaster = null;
             for (int i = 0; i < _previewHighlightedCells.Count; i++)
             {
                 if (_previewHighlightedCells[i] != null)
@@ -319,7 +329,9 @@ namespace ASB.Work.BattleGrid
         {
             if (!useBattleTilePresentation) return;
             bool ended = flowManager != null && flowManager.IsEndingBattle;
-            var current = !ended && flowManager != null ? FindCellByUnit(flowManager.CurrentUnit) : null;
+            // JC | 2026-11-12 | 스킬 연출 중에도 CurrentUnit의 셀을 유지하며 사망/턴 종료/전투 종료 때 해제합니다.
+            var actor = !ended && flowManager != null ? flowManager.CurrentUnit : null;
+            var current = actor != null && !actor.IsDead ? FindCellByUnit(actor) : null;
             bool choosing = !ended && selectingTargets && (flowManager == null || !flowManager.IsActionInProgress);
             var infoCell = !ended ? InfoHoverCell() : null;
             foreach (var cell in cellsByCoords.Values)
@@ -336,10 +348,11 @@ namespace ASB.Work.BattleGrid
                 if (!ended)
                 {
                     if (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)) material = MainTargetHighlightMaterial;
-                    else if (choosing) material = selectableCells.Contains(cell) ? TargetMaterial :
-                        selectableSides.Contains(cell.Coords.x >= 2) ? unavailableMaterial : ClearMaterial;
+                    // JC | 2026-11-12 | 확정 대상 > 선택 후보 > 현재 턴 > 선택 불가. 자기 대상 선택만 노랑을 대체합니다.
+                    else if (choosing && selectableCells.Contains(cell)) material = TargetMaterial;
                     else if (cell == infoCell) material = MainTargetHighlightMaterial;
                     else if (cell == current) material = currentTurnMaterial;
+                    else if (choosing && selectableSides.Contains(cell.Coords.x >= 2)) material = unavailableMaterial;
                 }
                 cell.SetMaterial(material);
                 if (cellVisualSettings != null)
@@ -353,6 +366,11 @@ namespace ASB.Work.BattleGrid
                         material == TargetMaterial ? BattleCellVisualState.Selectable :
                         material == MainTargetHighlightMaterial ? BattleCellVisualState.ConfirmedArea :
                         material == unavailableMaterial ? BattleCellVisualState.Unavailable : BattleCellVisualState.Hidden;
+                    // JC | 2026-11-13 | 아군은 x<2, 적은 x>=2인 기존 보드 좌표로 부활과 적 공격을 동시에 구분합니다.
+                    if (visualState == BattleCellVisualState.ConfirmedArea &&
+                        SkillAreaPreviewHelper.IsHealingPreviewSide(previewSkill, previewCaster, cell.Coords.x < 2) &&
+                        (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)))
+                        visualState = BattleCellVisualState.HealingArea;
                     cellVisualSettings.Apply(cell, alpha, visualState);
                 }
             }

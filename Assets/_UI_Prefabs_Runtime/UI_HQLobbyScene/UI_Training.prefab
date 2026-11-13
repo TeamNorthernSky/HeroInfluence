@@ -1592,7 +1592,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4036850890396373194
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4978,12 +4978,12 @@ MonoBehaviour:
   lockedButton: {fileID: 7235823541976643745}
   unlockedButton: {fileID: 6910883356381271342}
   facilityModal: {fileID: 7398358766025800464}
-  buildDesc: "\uC601\uC6C5\uC758 \uB2A5\uB825\uCE58\uB97C \uAC15\uD654\uD560 \uC218
-    \uC788\uC2B5\uB2C8\uB2E4."
+  buildDesc: "\uD6C8\uB828\uC744 \uC9C4\uD589\uD558\uC5EC\n\uC601\uC6C5\uC758 \uB2A5\uB825\uCE58\uB97C\n\uAC15\uD654\uD560
+    \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uC5F0\uAD6C\uC18C Lv.1 + \uACF5\uBC29
     Lv.1"
-  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \uC601\uC6C5 \n\uB2A5\uB825\uCE58
-    \uAC15\uD654\uAC00 \uAC00\uB2A5\uD569\uB2C8\uB2E4."
+  upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \n\uD6C8\uB828\uC744\n\uC9C4\uD589\uD560
+    \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 964745219396226795}
   - {fileID: 6724960381819999713}
@@ -5320,7 +5320,7 @@ PrefabInstance:
     - target: {fileID: 1765037485393827994, guid: b3b0a0955a57c2f45863f873dc1d007f,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 200
+      value: 235
       objectReference: {fileID: 0}
     - target: {fileID: 1765037485393827994, guid: b3b0a0955a57c2f45863f873dc1d007f,
         type: 3}
@@ -5365,7 +5365,7 @@ PrefabInstance:
     - target: {fileID: 1765037485393827994, guid: b3b0a0955a57c2f45863f873dc1d007f,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -345
+      value: -327.5
       objectReference: {fileID: 0}
     - target: {fileID: 1765037485393827994, guid: b3b0a0955a57c2f45863f873dc1d007f,
         type: 3}

@@ -1,0 +1,141 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+// JC | 2026-11-12 | 현재 IP 칭호는 성장 랭크 배지와 분리합니다. 기존 IP 행과 공용 툴팁을 재사용합니다.
+public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    // JC | 2026-11-13 | IP 최하위 칭호를 듣보로 변경하며 배지와 툴팁 안내에 같은 명칭을 표시합니다.
+    static readonly string[] Titles = { "듣보", "유망주", "베테랑", "국가권력" };
+    static readonly Color[] Surfaces = {
+        new Color(.33f,.36f,.40f), new Color(.15f,.38f,.24f),
+        new Color(.13f,.30f,.53f), new Color(.53f,.35f,.10f) };
+    static readonly Color[] Borders = {
+        new Color(.64f,.68f,.72f), new Color(.39f,.70f,.46f),
+        new Color(.38f,.65f,.90f), new Color(.95f,.76f,.34f) };
+    TMP_Text reference, label;
+    RectTransform rect;
+    JcInfluenceBadgeFace face;
+    Material lettering;
+    BattleCharactor unit;
+    Sprite ipIcon;
+    float current, maximum, sweepTime;
+    int tier = -1;
+    bool hovering;
+
+    public static int Tier(float ip) => ip < 50 ? 0 : ip < 100 ? 1 : ip < 140 ? 2 : 3;
+    public static string Title(float ip) => Titles[Tier(ip)];
+
+    public static JcHeroInfluenceBadge Create(TMP_Text ipText)
+    {
+        if (!ipText) return null;
+        var existing = ipText.transform.parent.Find("InfluenceBadge");
+        if (existing) return existing.GetComponent<JcHeroInfluenceBadge>();
+        var go = new GameObject("InfluenceBadge", typeof(RectTransform), typeof(JcInfluenceBadgeFace));
+        go.layer = ipText.gameObject.layer;
+        go.transform.SetParent(ipText.transform.parent, false);
+        var badge = go.AddComponent<JcHeroInfluenceBadge>();
+        badge.reference = ipText;
+        badge.rect = (RectTransform)go.transform;
+        badge.face = go.GetComponent<JcInfluenceBadgeFace>();
+        var text = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
+        text.layer = go.layer;
+        text.transform.SetParent(go.transform, false);
+        badge.label = text.GetComponent<TextMeshProUGUI>();
+        badge.label.font = ipText.font;
+        badge.label.fontStyle = ipText.fontStyle;
+        badge.label.color = Color.white;
+        badge.label.alignment = TextAlignmentOptions.Midline;
+        badge.label.enableWordWrapping = false;
+        badge.label.raycastTarget = false;
+        badge.label.margin = Vector4.zero;
+        var tr = badge.label.rectTransform;
+        tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
+        tr.offsetMin = new Vector2(8, 0); tr.offsetMax = new Vector2(-8, 0);
+        // 원본 폰트 재질을 바꾸지 않고 밝은 글자 위쪽에 미세한 어두운 음각 경계를 줍니다.
+        badge.lettering = new Material(ipText.fontSharedMaterial) { name = "JC IP 배지 음각 (임시)", hideFlags = HideFlags.DontSave };
+        badge.lettering.SetColor(ShaderUtilities.ID_FaceColor, Color.white);
+        badge.lettering.SetColor(ShaderUtilities.ID_OutlineColor, new Color(.04f,.05f,.07f,.9f));
+        badge.lettering.SetFloat(ShaderUtilities.ID_OutlineWidth, .10f);
+        badge.lettering.EnableKeyword("UNDERLAY_ON");
+        badge.lettering.SetColor(ShaderUtilities.ID_UnderlayColor, new Color(0,0,0,.65f));
+        badge.lettering.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, .35f);
+        badge.lettering.SetFloat(ShaderUtilities.ID_UnderlaySoftness, .15f);
+        badge.label.fontSharedMaterial = badge.lettering;
+        var icon = ipText.transform.parent.Find("IpIcon")?.GetComponent<Image>();
+        badge.ipIcon = icon ? icon.sprite : null;
+        if (icon) { icon.raycastTarget = true; icon.gameObject.AddComponent<JcInfluenceBadgeHover>().badge = badge; }
+        ipText.raycastTarget = true;
+        ipText.gameObject.AddComponent<JcInfluenceBadgeHover>().badge = badge;
+        badge.SetUnit(null);
+        return badge;
+    }
+
+    public void SetUnit(BattleCharactor value)
+    {
+        if (unit != value) EndHover();
+        unit = value;
+        gameObject.SetActive(unit && unit.IsPlayer);
+        if (unit && unit.IsPlayer) SetInfluence(unit.CurrentInfluence, unit.MaxInfluence);
+    }
+    public void SetInfluence(float value, float cap)
+    {
+        current = value; maximum = cap;
+        int next = Tier(value);
+        if (tier != next)
+        {
+            tier = next; sweepTime = 0;
+            label.text = Titles[tier];
+            face.SetStyle(Surfaces[tier], Borders[tier]);
+            face.SetSweep(-1);
+        }
+        Layout();
+        if (hovering) ShowTip();
+    }
+    void LateUpdate()
+    {
+        Layout();
+        // JC | 2026-11-12 | 스윕은 배지 표면만 밝히며, HUD를 숨겼을 때의 잔상은 유지하지 않습니다.
+        if (tier == 3)
+        {
+            sweepTime += Time.unscaledDeltaTime;
+            float phase = sweepTime % 5.5f;
+            face.SetSweep(phase >= 4.6f ? (phase - 4.6f) / .9f : -1);
+        }
+    }
+    void Layout()
+    {
+        if (!reference || !label || !rect) return;
+        float size = reference.fontSize;
+        label.fontSize = size;
+        label.enableAutoSizing = false;
+        float width = Mathf.Ceil(label.GetPreferredValues(label.text, float.PositiveInfinity, float.PositiveInfinity).x) + 20;
+        var source = reference.rectTransform;
+        rect.anchorMin = rect.anchorMax = new Vector2(1, 1);
+        rect.pivot = new Vector2(1, .5f);
+        rect.anchoredPosition = new Vector2(0, source.anchoredPosition.y - source.rect.height * .5f);
+        // JC | 2026-11-13 | 기존 측정 폭 기준으로 박스를 10% 확대하고 글자만 10% 줄입니다.
+        rect.sizeDelta = new Vector2(width, source.rect.height) * 1.1f;
+        label.fontSize = size * .9f;
+    }
+    public void OnPointerEnter(PointerEventData data)
+    {
+        if (!isActiveAndEnabled || !unit) return;
+        hovering = true; ShowTip();
+    }
+    public void OnPointerExit(PointerEventData data) => EndHover();
+    public void EndHover()
+    {
+        if (hovering && SkillTooltip.Instance) SkillTooltip.Instance.Hide();
+        hovering = false;
+    }
+    void ShowTip()
+    {
+        if (!SkillTooltip.Instance || !unit) return;
+        SkillTooltip.Instance.ShowInfo(ipIcon, "I.P · " + Titles[tier],
+            $"현재 IP: {current:0} / {maximum:0}\n\nIP가 높을수록 일반 스킬 공격의 피해량이 증가합니다.\n반격에는 이 배율이 적용되지 않습니다.\n\n듣보 0–49 · 유망주 50–99\n베테랑 100–139 · 국가권력 140 이상", rect);
+    }
+    void OnDisable() { EndHover(); sweepTime = 0; if (face) face.SetSweep(-1); }
+    void OnDestroy() { if (lettering) { if (Application.isPlaying) Destroy(lettering); else DestroyImmediate(lettering); } }
+}

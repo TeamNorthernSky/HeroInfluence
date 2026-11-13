@@ -146,6 +146,8 @@ Shader "JC/Environment/Contact Lit"
             #pragma multi_compile_fragment _ _LIGHT_COOKIES
             #pragma multi_compile _ _LIGHT_LAYERS
             #pragma multi_compile _ _FORWARD_PLUS
+            // JC | 2026-11-12 | 은행 소유 복제 재질만 IBL 수광 대상으로 지정하고 Player에서도 변형을 보존합니다.
+            #pragma multi_compile_local_fragment _ _JC_INDOOR_IBL_TARGET
             #include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
 
@@ -169,7 +171,8 @@ Shader "JC/Environment/Contact Lit"
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
             // JC | 2026-11-06 | PBR의 빛·반사·노멀·SSAO 계산 전 albedo만 보정합니다.
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            // JC | 2026-11-12 | 은행 표면의 기존 GI를 실내 IBL로 교체하고 직접광·SSAO는 유지합니다.
+            #include "../../BattleTesting/JcIndoorLighting.hlsl"
             #include "JcContactShading.hlsl"
             // JC | 2026-11-06 | 은행 PBR 툰을 함께 계산하며 토글이 꺼지면 기존 PBR 결과를 그대로 반환합니다.
             #include "../../BattleTesting/JcBankToonPbr.hlsl"

@@ -11,9 +11,10 @@ public sealed class BattleCellBorderWorkbench : MonoBehaviour
     [Tooltip("하단 전환 검수 표시의 현재 상태입니다.")] public BattleCellVisualState transitionState = BattleCellVisualState.Unavailable;
     [Tooltip("하단 표시를 빨강 확정 대상과 선택 불가 사이에서 자동 전환합니다.")] public bool autoSwitch;
     [Min(.5f), Tooltip("자동 전환 사이의 시간(초)입니다.")] public float switchInterval = 2f;
-    private readonly BattleCellBorderVisual[] views = new BattleCellBorderVisual[5];
-    private readonly BattleCellBorderMotion[] motion = new BattleCellBorderMotion[5];
-    private static readonly Vector3[] Positions = {new Vector3(-5.1f,0,2),new Vector3(-1.7f,0,2),new Vector3(1.7f,0,2),new Vector3(5.1f,0,2),new Vector3(0,0,-2)};
+    // JC | 2026-11-12 | 하단에 치료·부활 미리보기를 추가하고 기존 전환 검수도 유지합니다.
+    private readonly BattleCellBorderVisual[] views = new BattleCellBorderVisual[6];
+    private readonly BattleCellBorderMotion[] motion = new BattleCellBorderMotion[6];
+    private static readonly Vector3[] Positions = {new Vector3(-5.1f,0,2),new Vector3(-1.7f,0,2),new Vector3(1.7f,0,2),new Vector3(5.1f,0,2),new Vector3(-1.7f,0,-2),new Vector3(1.7f,0,-2)};
     private BattleCellBorderVisual builtPrefab;
 
     private void OnEnable()
@@ -44,10 +45,10 @@ public sealed class BattleCellBorderWorkbench : MonoBehaviour
             {
                 views[i]=Instantiate(previewPrefab,transform,false);
                 views[i].gameObject.hideFlags=HideFlags.DontSave;
-                views[i].name=i==4?"상태 전환 검수":"상태 미리보기 "+(BattleCellVisualState)(i+1);
+                views[i].name=i==5?"상태 전환 검수":"상태 미리보기 "+(BattleCellVisualState)(i+1);
                 views[i].SetDriven(true);motion[i]=new BattleCellBorderMotion();
             }
-            BattleCellVisualState state=i<4?(BattleCellVisualState)(i+1):autoSwitch && Application.isPlaying?
+            BattleCellVisualState state=i<5?(BattleCellVisualState)(i+1):autoSwitch && Application.isPlaying?
                 ((long)(clock/Mathf.Max(.5f,switchInterval))%2==0?BattleCellVisualState.ConfirmedArea:BattleCellVisualState.Unavailable):transitionState;
             if(state==BattleCellVisualState.Hidden)state=BattleCellVisualState.Unavailable;
             views[i].transform.localPosition=Positions[i]+Vector3.up*motion[i].Evaluate(state,draft,clock);

@@ -47,6 +47,9 @@ public sealed class JcBattleTooltipPlacement
             obstacles.Add(Expand(CanvasBounds(tutorialMessage), gap));
         float modelGap = Mathf.Max(gap, modelClearancePixels / Mathf.Max(.01f, canvas.scaleFactor));
         gap = Mathf.Max(gap, badgeClearance);
+        // JC | 2026-11-12 | 영웅 배지 정보창은 현재 턴 슬롯과의 간격을 65%로 줄여 오른쪽으로 당깁니다.
+        // 배지 오른편으로 넘기지 않으며 기존 화면 경계·모델 회피는 유지합니다.
+        if (slot != null && unit != null && unit.IsPlayer) gap *= .65f;
         bool hasTurn = false;
         Rect turn = default;
         if (turnOrders == null || turnOrders.Length == 0) turnOrders = canvas.GetComponentsInChildren<TurnOrderUI>(true);

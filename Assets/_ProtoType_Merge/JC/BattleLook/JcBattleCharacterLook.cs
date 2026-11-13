@@ -149,6 +149,8 @@ public sealed class JcBattleCharacterLook : MonoBehaviour
         // JC | 2026-11-05 | 보스 환경 수명 안에서만 자체 밝기를 끄며, 씬/모드 종료 시 다음 갱신에 기존 캐릭터 표현으로 돌아갑니다.
         // JC | 2026-11-09 | 공통 조절기의 선택을 따르며 플레이어 4종 제한을 복제 재질에만 기록합니다.
         m.SetFloat("_BossLocalOnly",JC.BattleTesting.JcIndoorEnvironment.UsesLocalCharacterLighting(renderer)?1:0);
+        // JC | 2026-11-12 | 기존 캐릭터 조명 모드 선택을 따르며 야외 복귀 시 IBL 변형도 해제합니다.
+        if(m.GetFloat("_BossLocalOnly")>.5f) m.EnableKeyword("_JC_INDOOR_IBL_TARGET"); else m.DisableKeyword("_JC_INDOOR_IBL_TARGET");
         m.SetFloat("_JcPlayerBackFillTarget",IsPlayerBackFillTarget(renderer)?1:0);
         var texture=m.GetTexture("_BaseMap");bool neko=texture!=null && texture.name.Contains("cutecatgirl");
         var direction=keyDirection.sqrMagnitude>.001f?keyDirection.normalized:Vector3.up;

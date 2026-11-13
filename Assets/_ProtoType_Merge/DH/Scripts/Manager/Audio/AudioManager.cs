@@ -19,6 +19,10 @@ public sealed class AudioManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float bgmVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 1f;
 
+    [Header("BGM Ducking")]
+    [Tooltip("덕킹 요청 중 적용할 BGM 배율. 0.75는 원래 볼륨의 75%입니다.")]
+    [SerializeField, Range(0f, 1f)] private float bgmDuckingMultiplier = 0.75f;
+
     [Header("Scene BGM")]
     [SerializeField] private bool playBgmOnSceneLoaded = true;
     [SerializeField] private bool stopBgmWhenSceneHasNoBinding;
@@ -572,7 +576,7 @@ public sealed class AudioManager : MonoBehaviour
     private void ApplyBgmSourceVolume()
     {
         float volume = (MasterMuted || BgmMuted ? 0f : masterVolume * bgmVolume) * currentBgmDefaultVolume * sceneBgmFadeVolume *
-            (bgmDuckRequests.Count > 0 ? 0.5f : 1f);
+            (bgmDuckRequests.Count > 0 ? Mathf.Clamp01(bgmDuckingMultiplier) : 1f);
         if (bgmSource != null)
             bgmSource.volume = volume;
         if (bgmLoopSource != null)

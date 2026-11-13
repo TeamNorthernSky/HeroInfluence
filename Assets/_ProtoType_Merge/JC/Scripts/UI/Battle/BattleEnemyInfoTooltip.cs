@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using ASBGridCell = ASB.Work.BattleGrid.GridCell;
 
-/// <summary>전투씬에 미리 배치한 빌런 정보창 하나를 필드·턴 초상화 호버에 공유합니다.</summary>
+/// <summary>JC | 2026-11-12 | 적 필드·턴 배지와 영웅 턴 배지가 하나의 정보창을 공유합니다.</summary>
 public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 {
     [Serializable]
@@ -34,16 +34,14 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     [SerializeField, Min(1f)] private float rayDistance = 1000f;
     [Tooltip("씬에 배치한 정보창입니다. 위치와 배경 높이만 실행 중 조절하며 자식 배치는 유지합니다.")]
     [SerializeField] private RectTransform panel;
-    [Tooltip("빌런 이름입니다. 등급은 확정 전까지 별도 공란으로 둡니다.")]
+    [Tooltip("적 또는 영웅의 이름입니다. 등급은 별도 공란으로 둡니다.")]
     [SerializeField] private TMP_Text unitName;
     [Tooltip("빌런 등급 공간입니다. 현재 기획 미확정으로 비워둡니다.")]
     [SerializeField] private TMP_Text rank;
-    [Tooltip("기존 초상화 라이브러리에서 읽는 빌런 초상화입니다.")]
+    [Tooltip("턴 슬롯과 동일한 기존 초상화 라이브러리에서 적·영웅 초상화를 읽습니다.")]
     [SerializeField] private Image portrait;
     [Tooltip("현재 HP / 최대 HP 숫자입니다.")]
     [SerializeField] private TMP_Text hp;
-    [Tooltip("기존 HP 게이지 자산을 재사용합니다. Filled 방식으로 현재 비율을 표시합니다.")]
-    [SerializeField] private Image hpFill;
     [Tooltip("전투 유닛의 FinalStats.Atk를 표시합니다.")]
     [SerializeField] private TMP_Text attack;
     [Tooltip("전투 유닛의 FinalStats.DEF를 표시합니다.")]
@@ -52,6 +50,11 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     [SerializeField] private SkillRow[] skills = new SkillRow[5];
     [Tooltip("스킬이 없는 빌런의 안내입니다.")]
     [SerializeField] private TMP_Text noSkills;
+    // JC | 2026-11-12 | 영웅은 스킬 섹션 전체를 숨겨 이름·초상화·세 능력치만 표시합니다.
+    [Tooltip("적 정보에만 표시하는 스킬 제목 영역입니다. 영웅 턴 배지에서는 제목과 목록을 모두 숨깁니다.")]
+    [SerializeField] private RectTransform skillHeader;
+    [Tooltip("영웅 툴팁의 배경 높이입니다. Canvas 단위이며 스킬 영역의 빈 공간을 남기지 않습니다.")]
+    [SerializeField, Min(1f)] private float heroHeight = 224f;
     [Tooltip("적 메시 호버 시 마우스에서 떨어질 기본 거리입니다. Canvas 단위이며 턴 프레임과 겹치면 자동 이동합니다. 배지 호버는 슬롯 기준으로 배치합니다.")]
     [SerializeField] private Vector2 pointerOffset = new Vector2(22f, -18f);
     [Tooltip("화면 경계와 확보할 간격입니다. Canvas 단위이며 0이면 여백이 없습니다.")]
@@ -63,6 +66,12 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 
     [Tooltip("툴팁과 턴 프레임·강조 모델 사이의 여백입니다. Canvas 단위이며 0이면 경계에 붙습니다.")]
     [SerializeField, Min(0f)] private float outlineClearance = 12f;
+
+    // JC | 2026-11-13 | 시각 조절은 JC_BattleUI_VFX 하위에서만 소유합니다. 툴팁은 실제 선택 결과와 설정을 읽습니다.
+    [SerializeField, Tooltip("JC_BattleUI_VFX/TurnSlotHover의 공용 배지·화살표 조절기입니다.")]
+    private JcBattleTurnSlotSettings turnSlotSettings;
+    [SerializeField, Tooltip("JC_BattleUI_VFX/CellBox의 그리드 외형과 선택 호버 윤곽선 설정입니다.")]
+    private BattleCellVisualSettings cellVisualSettings;
 
     private JcBattleHoverLink hoverLink;
     private readonly JcBattleTooltipPlacement tooltipPlacement = new JcBattleTooltipPlacement();
@@ -80,6 +89,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 
     private void OnEnable()
     {
+        // JC | 2026-11-12 | 모든 전투씬에서 저장된 동일 스타일로 시작합니다.
         hoverLink = GetComponent<JcBattleHoverLink>();
         if (hoverLink == null) hoverLink = gameObject.AddComponent<JcBattleHoverLink>();
         hoverLink.Initialize(battleCanvas);
@@ -102,7 +112,9 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
         if (battleEnded || panel == null || battleCanvas == null || flow == null || input == null) return true;
         if (Time.timeScale <= 0f || !flow.isActiveAndEnabled || flow.CurrentUnit == null ||
             flow.IsFlowBlocked || flow.IsActionInProgress) return true;
-        if (input.PendingAction != PendingActionType.None) return true;
+        // JC | 2026-11-13 | 대상 선택 중 배지·모델 안내만 허용합니다. 정보창과 실행·도주 중 호버 차단은 유지합니다.
+        if (input.PendingAction != PendingActionType.None &&
+            input.PendingAction != PendingActionType.ClassSkill && input.PendingAction != PendingActionType.WeaponSkill) return true;
         // 기존 연출 상태를 읽습니다. 전투 로직·공용 툴팁의 상태는 변경하지 않습니다.
         return flow.BattleManager != null && flow.BattleManager.Presentation.IsSequenceRunning;
     }
@@ -111,10 +123,27 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     {
         if (ShouldHide()) { Hide(); return; }
         var target = FindHoveredUnit();
-        if (target == null || target.IsPlayer || target.IsDead) { Hide(); return; }
+        bool selectingSkill = input.PendingAction != PendingActionType.None;
+        // ASB가 이미 계산한 필드 호버를 사용하여 부활/영역 선택까지 실제 선택 가능 대상과 일치시킵니다.
+        if (selectingSkill && !hoveredTurnUI) target = input.PreviewHoverTarget;
+        // JC | 2026-11-13 | 부활 분류만 보고 적까지 회복 대상으로 취급하지 않고 실제 호버 대상의 진영을 구분합니다.
+        bool healing = selectingSkill && target != null &&
+            ASB.Work.Battle.SkillExecution.SkillAreaPreviewHelper.IsHealingPreviewSide(input.PendingSkill, flow.CurrentUnit, target.IsPlayer);
+        if (target == null || (!healing && target.IsDead) || !target.gameObject.activeInHierarchy ||
+            (target.IsPlayer && !hoveredTurnUI && !healing) ||
+            (selectingSkill && !input.IsValidPreviewTarget(target))) { Hide(); return; }
         if (!JC.Tutorial.JcTutorialBattleGuide.AllowsHover(gameObject.scene, target, hoveredTurnUI)) { Hide(); return; }
-        hoverLink.Show(target, hoveredTurnUI, hoveredTurnSlot,
-            battlefieldCamera != null ? battlefieldCamera : Camera.main);
+        // JC | 2026-11-12 | 정보창과 선택 중 배지 표시를 분리합니다. ASB 입력·선택 대상에는 쓰지 않습니다.
+        var settings = turnSlotSettings != null ? turnSlotSettings.Draft : null;
+        var cells = cellVisualSettings != null ? cellVisualSettings.Draft : null;
+        if (target.IsPlayer && !healing) hoverLink.Clear();
+        else hoverLink.Show(target, hoveredTurnUI, hoveredTurnSlot,
+            battlefieldCamera != null ? battlefieldCamera : Camera.main, selectingSkill, false, settings, healing,
+            cells != null && cells.highlightTargetModel,
+            selectingSkill && cells != null ? (Color?)cells.For(healing ? BattleCellVisualState.HealingArea : BattleCellVisualState.ConfirmedArea).mainColor : null,
+            !healing || (settings != null && settings.showHealingTargets),
+            selectingSkill ? input.PendingSkill : null, selectingSkill ? flow.CurrentUnit : null);
+        if (selectingSkill) { HidePanel(); return; }
         if (target != shownUnit) Bind(target);
         RefreshStats();
         if (!JC.Tutorial.JcTutorialBattleGuide.TryPlaceTooltip(gameObject.scene, panel))
@@ -172,12 +201,24 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
         PresentationSfxPlayer.Play("Button_Hover");
         shownUnit = unit;
         panel.gameObject.SetActive(true);
-        if (unitName != null) unitName.text = unit.UnitName;
+        // JC | 2026-11-12 | 영웅은 스킬 매칭용 클래스명이 아니라 실제 영웅 표시명을 사용합니다.
+        if (unitName != null) unitName.text = unit.IsPlayer ? unit.DisplayName : unit.UnitName;
         if (rank != null) rank.text = string.Empty;
         if (portrait != null)
         {
-            portrait.sprite = Sprites.Portrait.EnemyByActor(unit);
+            // JC | 2026-11-12 | ASB 턴 슬롯과 같은 영웅 템플릿 키를 사용하여 테스트 임시 파티도 동일하게 표시합니다.
+            portrait.sprite = unit.IsPlayer
+                ? (unit.SourceData != null ? Sprites.Portrait.Hero(unit.SourceData.UnitTemplateKey) : null)
+                : Sprites.Portrait.EnemyByActor(unit);
             portrait.enabled = portrait.sprite != null;
+        }
+        if (skillHeader != null) skillHeader.gameObject.SetActive(!unit.IsPlayer);
+        if (unit.IsPlayer)
+        {
+            foreach (var row in skills) if (row?.root != null) row.root.gameObject.SetActive(false);
+            if (noSkills != null) noSkills.gameObject.SetActive(false);
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, heroHeight);
+            return;
         }
         string key = unit.SourceEnemyData?.UnitTemplateKey;
         var catalog = DHCsvTemplateCatalog.Instance;
@@ -233,7 +274,6 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     {
         if (shownUnit == null) return;
         if (hp != null) hp.text = $"{shownUnit.CurrentHp:0.##}/{shownUnit.MaxHp:0.##}";
-        if (hpFill != null) hpFill.fillAmount = shownUnit.MaxHp > 0 ? Mathf.Clamp01(shownUnit.CurrentHp / shownUnit.MaxHp) : 0;
         if (attack != null) attack.text = shownUnit.FinalStats.Atk.ToString("0.##");
         if (defense != null) defense.text = shownUnit.FinalStats.DEF.ToString("0.##");
     }
@@ -250,6 +290,12 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     private void Hide()
     {
         if (hoverLink != null) hoverLink.Clear();
+        HidePanel();
+    }
+
+    // JC | 2026-11-12 | 선택 중 턴 배지 표시를 지우지 않고 정보 패널만 닫습니다.
+    private void HidePanel()
+    {
         shownUnit = null;
         if (panel != null) panel.gameObject.SetActive(false);
     }

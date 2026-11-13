@@ -27,8 +27,9 @@ public sealed class BattleCellBorderStyle
     [Tooltip("이 상태의 테두리 형태입니다.")] public BattleCellBorderShape shape = BattleCellBorderShape.Default;
     [Tooltip("바깥 보조선을 표시합니다. 끄면 본체가 바깥 경계까지 확장됩니다.")] public bool showOuter = true;
     [Tooltip("안쪽 보조선을 표시합니다.")] public bool showInner = true;
-    [Tooltip("바깥·안쪽 보조선에 함께 적용할 색과 불투명도입니다.")] public Color outlineColor = new Color(.86f, .9f, .94f, 1);
-    [Tooltip("대상 구분색과 불투명도입니다.")] public Color mainColor = new Color(1f, .8f, .08f, 1);
+    // JC | 2026-11-12 | 치료·부활 흰색을 포함한 테두리의 밝기와 알파를 HDR 색상에서 독립 조절합니다. 기존 값은 보존합니다.
+    [ColorUsage(true, true), Tooltip("바깥·안쪽 보조선의 HDR 색상·밝기·불투명도입니다.")] public Color outlineColor = new Color(.86f, .9f, .94f, 1);
+    [ColorUsage(true, true), Tooltip("대상 구분색의 HDR 색상·밝기·불투명도입니다.")] public Color mainColor = new Color(1f, .8f, .08f, 1);
     [Tooltip("이 상태에서 스윕을 허용합니다.")] public bool allowSweep = true;
     [Tooltip("내부 채움을 표시합니다. 채움도 테두리와 함께 상하 이동합니다.")] public bool useFill;
     [Tooltip("내부 채움의 색과 알파입니다.")] public Color fillColor = Color.red;
@@ -43,6 +44,12 @@ public sealed class BattleCellBorderConfiguration
     [Tooltip("보라색 선택 가능 표시입니다.")] public BattleCellBorderStyle selectable = new BattleCellBorderStyle { mainColor = new Color(.68f,.2f,1,1) };
     [Tooltip("빨간 확정 대상 및 정보 호버 표시입니다. 다른 상태와 같은 주기·위상으로 움직입니다.")] public BattleCellBorderStyle confirmedArea = new BattleCellBorderStyle { mainColor = new Color(1,.12f,.1f,1) };
     [Tooltip("선택 불가 표시입니다.")] public BattleCellBorderStyle unavailable = new BattleCellBorderStyle { mainColor = new Color(.13f,.14f,.16f,1), outlineColor = new Color(.2f,.22f,.25f,1), allowSweep = false, useFill = true, fillOpacity = .25f };
+    // JC | 2026-11-12 | 공격 확정 범위와 별도로 저장하는 치료·부활 대상 외형입니다.
+    [Tooltip("치료·부활의 선택/적용 범위입니다. 후보 녹색과 공격 빨강은 유지합니다.")]
+    public BattleCellBorderStyle healingArea = new BattleCellBorderStyle {
+        mainColor = new Color(1, 1, 1, .4f), outlineColor = Color.white,
+        useFill = true, fillColor = Color.white, fillOpacity = .16f
+    };
     [Min(.1f), Tooltip("모든 표시 상태가 같은 위상으로 위아래 왕복하는 시간(초)입니다.")] public float bobPeriod = 2.4f;
     [Min(0), Tooltip("기본 부유 높이에서 위아래로 움직이는 한쪽 폭입니다. 0이면 정지합니다.")] public float bobAmplitude = .04f;
     [Min(0), Tooltip("상태 변경 시 새 공통 움직임에 부드럽게 합류하는 시간(초)입니다. 0이면 즉시 맞춥니다.")] public float resyncDuration = .3f;
@@ -56,11 +63,17 @@ public sealed class BattleCellBorderConfiguration
     [Min(0), Tooltip("스윕 반복 사이의 대기 시간(초)입니다.")] public float sweepInterval = 1.5f;
     [Tooltip("스윕 이동 방향을 반대로 바꿉니다.")] public bool reverseSweep;
 
+    // JC | 2026-11-13 | 선택 중 모델 윤곽선만 제어하며 ASB 대상 판정과 그리드 상태를 변경하지 않습니다.
+    [Tooltip("스킬 대상 호버 중 캐릭터에 대상 그리드와 같은 색의 윤곽선을 표시합니다.")]
+    public bool highlightTargetModel = true;
+
     public BattleCellBorderStyle For(BattleCellVisualState state)
     {
         switch (state) {
             case BattleCellVisualState.Selectable: return selectable;
             case BattleCellVisualState.ConfirmedArea: return confirmedArea;
+            // JC | 2026-11-12 | 흰색 대상도 같은 메시/왕복/스윕 경로를 사용합니다.
+            case BattleCellVisualState.HealingArea: return healingArea;
             case BattleCellVisualState.Unavailable: return unavailable;
             default: return currentTurn;
         }
@@ -69,6 +82,8 @@ public sealed class BattleCellBorderConfiguration
     {
         var shape = For(source).shape;
         currentTurn.shape = shape; selectable.shape = shape; confirmedArea.shape = shape; unavailable.shape = shape;
+        // JC | 2026-11-12 | 외형 통일 명령에 새 치료·부활 상태도 포함합니다.
+        healingArea.shape = shape;
     }
     public BattleCellBorderConfiguration Copy() => JsonUtility.FromJson<BattleCellBorderConfiguration>(JsonUtility.ToJson(this));
 }

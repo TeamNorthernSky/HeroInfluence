@@ -24,6 +24,8 @@ namespace JC.BattleTesting
         static readonly HashSet<JcIndoorEnvironment> instances = new HashSet<JcIndoorEnvironment>();
         static readonly string[] Globals = { "_JcIndoorMode", "_JcIndoorSsao", "_JcBankFillDirection", "_JcBankFillColor" };
         Vector4[] baseline;
+        // JC | 2026-11-12 | 실내 IBL 수명은 기존 조명 조절기와 같고 도시 RenderSettings와 독립적입니다.
+        readonly JcIndoorIblState iblState = new JcIndoorIblState();
         bool initialized, acquired;
         UniversalAdditionalCameraData cameraData;
         int originalRenderer;
@@ -81,6 +83,7 @@ namespace JC.BattleTesting
             if(!Draft || !isActiveAndEnabled || SceneManager.GetActiveScene()!=gameObject.scene) return;
             Acquire();
             // JC | 2026-11-09 | 은행 실제광 경로와 보스의 창문 전용광 경로를 명시적으로 구별합니다.
+            iblState.Apply(Draft.ibl, Bank);
             Shader.SetGlobalVector("_JcIndoorMode",new Vector4(Bank?2:1,0,0,0));
             Shader.SetGlobalVector("_JcIndoorSsao",new Vector4(Boss && Draft.ssaoEnabled ? Draft.ssaoIntensity : 0,
                 Draft.ssaoRadius,Draft.ssaoDirectLightingStrength,0));
@@ -118,6 +121,8 @@ namespace JC.BattleTesting
         {
             // JC | 2026-11-09 | 전문 적용기가 자기 변경을 먼저 복원하고 공통 전역값을 마지막에 되돌립니다.
             for(int i=owned.Count-1;i>=0;i--) if(owned[i]) owned[i].enabled=false;
+            // JC | 2026-11-12 | 다음 씬이나 외부 전투로 IBL이 남지 않도록 비활성 시 원래 GPU 값을 돌려놓습니다.
+            iblState.Restore();
             if(!acquired) return;
             for(int i=0;i<Globals.Length;i++) Shader.SetGlobalVector(Globals[i],baseline[i]);
             acquired=false;

@@ -44,9 +44,12 @@ Shader "JC/Battle/SoftCharacter"
    #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
    #pragma multi_compile_fragment _ _LIGHT_COOKIES
    #pragma multi_compile _ _FORWARD_PLUS
+   // JC | 2026-11-12 | 실내 실제광을 선택한 캐릭터 복제 재질만 IBL을 받습니다.
+   #pragma multi_compile_local_fragment _ _JC_INDOOR_IBL_TARGET
    #pragma multi_compile_fog
    #pragma shader_feature_local_fragment _ALPHATEST_ON
-   #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+   // JC | 2026-11-12 | 실제 실내광 모드의 캐릭터에도 환경광·반사를 연결합니다. 기존 부드러운 명암 모드는 보존합니다.
+   #include "Assets/_ProtoType_Merge/JC/BattleTesting/JcIndoorLighting.hlsl"
    #include "Assets/_ProtoType_Merge/JC/BattleTesting/JcBossLocalLighting.hlsl"
    TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
    TEXTURE2D(_EmissionMap); SAMPLER(sampler_EmissionMap);
