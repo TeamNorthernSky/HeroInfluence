@@ -58,13 +58,18 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
 
     private void OnEnable()
     {
+        selectedUnitIndex = -1;
         TrySubscribe();
         progressCount = 0;
         // [KJ 260728] 파티 패널을 선택 모드로 전환.
         var roster = LobbyUIRegistry.RosterView;
         if (roster != null) roster.BeginSelection(OnHeroSelected);
         else Debug.LogWarning("[PublicityModalController] LobbyUIRegistry.RosterView 없음 — 영웅 선택 불가.");
-        Refresh();
+        var explorationSelection = GetComponentInChildren<ExplorationPublicitySelection>(true);
+        int firstUnit = explorationSelection != null
+            ? ExplorationPublicitySelection.ResolveFirstPartyUnit()
+            : RosterOrdering.ResolveDefaultUnit(null);
+        OnHeroSelected(firstUnit);
     }
     private void Start()
     {

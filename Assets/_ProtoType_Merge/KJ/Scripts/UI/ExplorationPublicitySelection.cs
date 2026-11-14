@@ -39,7 +39,20 @@ public sealed class ExplorationPublicitySelection : MonoBehaviour
             card.BindForSelect(id, Select, unit, template, true);
             cards.Add(card);
         }
+        if (cards.Count > 0) Select(cards[0].UnitIndex);
     }
+    public static int ResolveFirstPartyUnit()
+    {
+        var parties = PartyPersistentRepository.Instance;
+        var units = PersistentUnitRepository.Instance;
+        if (parties == null || units == null || parties.Parties.Count == 0 || parties.Parties[0] == null)
+            return -1;
+        var party = parties.Parties[0];
+        foreach (int id in PartyFormation.OrderFrontFirst(party.UnitIndices, party.UnitSlots))
+            if (units.TryGetUnit(id, out var unit) && unit != null) return id;
+        return -1;
+    }
+
     private void Select(int unitIndex)
     {
         selectHero.Invoke(unitIndex);

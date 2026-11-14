@@ -23,6 +23,8 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private bool buttonsBound;
     private int inputFrame = -1;
     private Button resultClickArea;
+    private const float ChoiceHeightMultiplier = 1.5f;
+    private RectTransform resultRewardCard;
     private DHWorldEventPresentationRequest lastConfirmRequest;
     private int resultShownFrame = -1;
     private int choicesShownFrame = -1;
@@ -289,6 +291,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         if (rewardPanel != null) rewardPanel.SetActive(false);
         if (choicePanel != null) choicePanel.SetActive(false);
         if (resultClickArea != null) resultClickArea.gameObject.SetActive(false);
+        if (resultRewardCard != null) resultRewardCard.gameObject.SetActive(false);
         SetQuestListHidden(false);
     }
 
@@ -402,6 +405,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         SetQuestListHidden(!request.IsWaitingFinalConfirm && !choiceSubmitted);
         bool live = manager != null && ReferenceEquals(manager.CurrentRequest, request);
         bool confirm = request.IsWaitingFinalConfirm;
+        ShowResultRewards(request);
         bool waitForClick = confirm && request.EventType == DHWorldEventType.Choice;
         bool blockConsumeBackground = confirm && request.EventType == DHWorldEventType.Consume;
         if (confirm && !ReferenceEquals(lastConfirmRequest, request))
@@ -478,6 +482,55 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             }
             choiceDecline.gameObject.SetActive(cancelId != null);
         }
+    }
+
+    private void ShowResultRewards(DHWorldEventPresentationRequest request)
+    {
+        bool hasResult = request.EventType == DHWorldEventType.Choice &&
+            request.Step == DHWorldEventPresentationStep.Accept;
+        bool hasEntries = false;
+        if (hasResult)
+            foreach (var entry in request.PreviewEntries)
+                if (entry != null && entry.Amount != 0) { hasEntries = true; break; }
+        if (!hasEntries)
+        {
+            if (resultRewardCard != null) resultRewardCard.gameObject.SetActive(false);
+            return;
+        }
+        if (resultRewardCard == null)
+        {
+            var bubble = transform.Find("NpcDialogue") ?? transform.Find("DialogueBubble");
+            resultRewardCard = bubble != null ? bubble.Find("RewardResult") as RectTransform : null;
+        }
+        var rows = resultRewardCard != null ? resultRewardCard.Find("Rows") : null;
+        if (rows == null || rows.childCount == 0)
+        {
+            Debug.LogWarning("[WorldEventNpcPanelSelector] 프리팹의 RewardResult/Rows가 연결되지 않았습니다.", this);
+            return;
+        }
+        int count = 0;
+        foreach (var entry in request.PreviewEntries)
+        {
+            if (entry == null || entry.Amount == 0) continue;
+            if (count == rows.childCount)
+            {
+                var extra = Instantiate(rows.GetChild(0).gameObject, rows);
+                extra.name = "RewardEntry_" + count;
+            }
+            var row = rows.GetChild(count++);
+            var icon = row.Find("Icon").GetComponent<Image>();
+            var amount = row.Find("Amount").GetComponent<TMP_Text>();
+            icon.sprite = NpcPreview.Icon(entry);
+            icon.gameObject.SetActive(icon.sprite != null);
+            int value = entry.Group == DHWorldEventPreviewGroup.Cost ? -Mathf.Abs(entry.Amount) : entry.Amount;
+            string number = value > 0 ? "+" + value : value.ToString();
+            amount.text = icon.sprite != null ? number : NpcPreview.Name(entry.Label) + " " + number;
+            amount.color = value < 0 ? new Color32(185, 35, 45, 255) : new Color32(20, 70, 151, 255);
+            row.gameObject.SetActive(true);
+        }
+        for (int i = count; i < rows.childCount; i++) rows.GetChild(i).gameObject.SetActive(false);
+        resultRewardCard.gameObject.SetActive(true);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(resultRewardCard);
     }
 
     private void SetChoiceConfirmationStyle(bool confirm)
@@ -662,7 +715,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 PlaceButtonText(chance.rectTransform, 21f, bottom + 4f, width, chanceHeight);
                 bottom += chanceHeight + 4f;
             }
-            float height = Mathf.Max(110f, bottom + 10f);
+            float height = Mathf.Max(110f, bottom + 10f) * ChoiceHeightMultiplier;
             ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
         }
 
@@ -679,7 +732,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             lineStart = count;
         }
 
-        private static Sprite Icon(DHWorldEventPreviewEntry entry)
+        public static Sprite Icon(DHWorldEventPreviewEntry entry)
         {
             if (entry.Group == DHWorldEventPreviewGroup.Reward &&
                 DHWorldEventCodeMap.TryGetRewardType(entry.TypeCode, out DHWorldEventRewardType reward) &&
@@ -697,13 +750,14 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 case "CurrentIP": case "MaxIP":
                     if (licenseIpIcon == null) licenseIpIcon = Sprites.Load("NpcPreview/UI_icon_IP");
                     return licenseIpIcon;
-                case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP);
-                case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK);
+                case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP) ?? Sprites.Load("Status/UI_icon_HP");
+                case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK) ?? Sprites.Load("Status/UI_icon_ATK");
+                case "Def": return Sprites.UI.Status(UIStatusIconType.DEF) ?? Sprites.Load("Status/UI_icon_DEF");
                 default: return null;
             }
         }
 
-        private static string Name(string value)
+        public static string Name(string value)
         {
             switch (value)
             {
@@ -716,6 +770,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 case "CurrentHP": return "체력";
                 case "MaxHP": return "최대 체력";
                 case "Atk": return "공격력";
+                case "Def": return "방어력";
                 default: return value;
             }
         }
@@ -727,7 +782,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         label.text = string.IsNullOrWhiteSpace(text) ? "확인" : text;
         button.interactable = enabled;
         float bottom = LayoutButtonHeader(button, false);
-        ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(110f, bottom + 10f));
+        ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(110f, bottom + 10f) * ChoiceHeightMultiplier);
         if (button.transform.name == "DeclineButton")
         {
             var rect = label.rectTransform;

@@ -249,6 +249,6 @@ public class TutorialCutSceneManager : MonoBehaviour
         Time.timeScale = 1f;
         if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
         else DHGameProgressResetService.ResetDHProgress();
-        BeginCutSceneTransition("TitleScene");
+        BeginCutSceneTransition("Credit Scene");
     }
 }
