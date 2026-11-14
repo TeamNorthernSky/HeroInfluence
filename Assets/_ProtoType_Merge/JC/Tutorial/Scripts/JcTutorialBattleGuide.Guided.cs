@@ -12,6 +12,10 @@ namespace JC.Tutorial
     {
         // 기존 전투 안내 컴포넌트의 진행 확장입니다. 별도 러너나 씬 컴포넌트를 등록하지 않습니다.
         private static JcTutorialBattleGuide activeGuide;
+        private static JcTutorialBattleGuide gemPowerGuide;
+        private IDisposable gemPowerRestriction;
+        private bool coreSelectionStage;
+        private BattleCharactor gemPowerFeedbackActor;
         private bool guidedActive, detailed, formation, nextPending;
         private ASB.Work.BattleGrid.BattleGridManager formationGrid;
         private int guidedPhase, phaseFrame, clickDownFrame = -1;
@@ -71,6 +75,17 @@ namespace JC.Tutorial
             guidedInput = SceneComponent<InputHandler>();
             guidedSkills = SceneComponent<SkillButtonController>();
             if (guidedFlow == null || guidedInput == null || guidedSkills == null) return false;
+            // 영웅 소개창을 닫거나 스킬을 선택해도 코어 설명 전까지 젬 파워 제한을 유지합니다.
+            if (coreOnly) ReleaseGemPowerRestriction();
+            if (!showFormation && gemPowerRestriction == null)
+            {
+                coreSelectionStage = coreOnly;
+                gemPowerGuide = this;
+                gemPowerRestriction = guidedFlow.AddPlayerActionConstraint(this,
+                    (unit, action, target) => coreSelectionStage
+                        ? action == PendingActionType.WeaponSkill : action != PendingActionType.WeaponSkill,
+                    coreOnly ? "코어 스킬 사용 실습" : "젬 파워 사용 안내 전");
+            }
             guidedActor = actor; characterId = id; formation = showFormation; detailed = !formation && !coreOnly && id == "10003";
             if (formation) formationGrid = SceneComponent<ASB.Work.BattleGrid.BattleGridManager>();
             savedBody = guidedBody.text;
@@ -126,22 +141,67 @@ namespace JC.Tutorial
         }
         public static bool AllowsSkill(Scene scene, PendingActionType action, int skill)
         {
+            if (action == PendingActionType.WeaponSkill && GemPowerRestricted(scene)) return false;
+            if (action == PendingActionType.ClassSkill && CoreSkillRestricted(scene)) return false;
             var g = activeGuide;
             return g == null || !g.guidedActive || g.gameObject.scene != scene ||
                 (g.FreeGuide && action == PendingActionType.ClassSkill && skill == g.IntroSkill && !g.nextPending);
         }
-        // JC | 2026-11-09 | 젬파워 사용·선택은 그대로 차단하고 첫 턴 스킬 선택 안내의 올바른 버튼만 강조합니다.
-        // UI가 선택 취소/토글 갱신을 하기 전에 호출하므로 잘못 누른 클릭이 기존 선택을 변경하지 않습니다.
-        public static bool RedirectGemPowerClick(Scene scene)
+        // 단계에 맞지 않는 버튼은 현재 선택을 취소하고 올바른 스킬로 안내합니다.
+        public static bool RedirectSkillClick(Scene scene, PendingActionType action)
         {
-            var g = activeGuide;
-            if (g == null || !g.guidedActive || g.gameObject.scene != scene || !g.FreeGuide || g.nextPending) return false;
+            bool blocked = action == PendingActionType.WeaponSkill ? GemPowerRestricted(scene) :
+                action == PendingActionType.ClassSkill && CoreSkillRestricted(scene);
+            if (!blocked) return false;
+            var g = gemPowerGuide;
+            if (g == null || g.gameObject.scene != scene) return false;
+            if (g.guidedActive && (!g.FreeGuide || g.nextPending)) return false;
+            if (!g.guidedInput.TryCancelSkillSelection()) return true;
             var button = g.guidedSkills.FindSkillButton(g.IntroSkill);
-            if (button != null) g.view.RestartSkillRedirect((RectTransform)button.transform);
+            var target = g.coreSelectionStage ? g.guidedSkills.CoreSkillRect : button != null ? (RectTransform)button.transform : null;
+            if (target != null)
+            {
+                g.gemPowerFeedbackActor = g.guidedFlow.CurrentUnit;
+                g.view.RestartSkillRedirect(target, !g.guidedActive, g.coreSelectionStage);
+            }
             return true;
+        }
+        private static bool SkillStageRestricted(Scene scene) => gemPowerGuide != null &&
+            gemPowerGuide.isActiveAndEnabled && gemPowerGuide.gameObject.scene == scene &&
+            gemPowerGuide.guidedFlow != null && !gemPowerGuide.guidedFlow.IsBattleEnded;
+        private static bool GemPowerRestricted(Scene scene) => SkillStageRestricted(scene) && !gemPowerGuide.coreSelectionStage;
+        private static bool CoreSkillRestricted(Scene scene) => SkillStageRestricted(scene) && gemPowerGuide.coreSelectionStage;
+        private void UpdateGemPowerRestriction()
+        {
+            if (gemPowerGuide != this) return;
+            if (guidedFlow == null || guidedFlow.IsBattleEnded) { ReleaseGemPowerRestriction(); return; }
+            if (coreSelectionStage && (guidedFlow.CurrentUnit != guidedActor || guidedFlow.IsActionInProgress))
+            { ReleaseGemPowerRestriction(); return; }
+            if (gemPowerFeedbackActor != null &&
+                (guidedFlow.CurrentUnit != gemPowerFeedbackActor || guidedFlow.IsActionInProgress))
+            {
+                gemPowerFeedbackActor = null;
+                view.SetActionHint(JcTutorialGuideView.ActionHint.None);
+            }
+        }
+        private void ReleaseGemPowerRestriction()
+        {
+            gemPowerRestriction?.Dispose(); gemPowerRestriction = null;
+            if (gemPowerGuide == this) gemPowerGuide = null;
+            gemPowerFeedbackActor = null;
+            coreSelectionStage = false;
+            if (view != null) view.SetActionHint(JcTutorialGuideView.ActionHint.None);
         }
         public static void SkillSelected(Scene scene, BattleCharactor actor, SkillData skill)
         {
+            var lockedGuide = gemPowerGuide;
+            if (lockedGuide != null && !lockedGuide.guidedActive && lockedGuide.gameObject.scene == scene &&
+                actor == lockedGuide.guidedActor && skill != null &&
+                (lockedGuide.coreSelectionStage ? lockedGuide.guidedInput.PendingAction == PendingActionType.WeaponSkill : skill.skillIndex == lockedGuide.IntroSkill))
+            {
+                lockedGuide.gemPowerFeedbackActor = null;
+                lockedGuide.view.SetActionHint(JcTutorialGuideView.ActionHint.None);
+            }
             var g = activeGuide;
             if (g != null && g.guidedActive && g.gameObject.scene == scene && g.FreeGuide &&
                 actor == g.guidedActor && skill != null && skill.skillIndex == g.IntroSkill)
@@ -251,7 +311,7 @@ namespace JC.Tutorial
                     case "10001": title = JcTutorialText.Get("battleguide.guided.007", "저스티스의 차례입니다"); text = JcTutorialText.Get("battleguide.guided.008", "저스티스는 근거리에서 싸우며 아군을 보호하는 히어로입니다.\n‘저스티스 등장!’은 적 하나를 공격하고, 다음 자신의 차례까지 적의 단일 공격을 자신에게 유도합니다."); break;
                     case "10002": title = JcTutorialText.Get("battleguide.guided.009", "루미나의 차례입니다"); text = JcTutorialText.Get("battleguide.guided.010", "루미나는 마법을 이용한 원거리 공격에 특화된 캐릭터 입니다.\n지금 사용가능한 스킬 '플레어 봄'은 하나의 적에게 원거리 공격을 하는 스킬이며, 레벨업을 하면 광역 공격 기술을 습득할 수 있습니다."); break;
                     case "10004": title = JcTutorialText.Get("battleguide.guided.011", "네코밍의 차례입니다"); text = JcTutorialText.Get("battleguide.guided.012", "네코밍은 아군의 체력을 회복하는 지원형 히어로입니다.\n‘아픈 거 다 날아가라’로 체력이 줄어든 아군 한 명을 회복할 수 있습니다."); break;
-                    default: title = JcTutorialText.Get("battleguide.guided.013", "블랙 불릿의 차례입니다"); text = JcTutorialText.Get("battleguide.guided.014", "블랙 불릿은 적 하나를 집중 공격하는 원거리 히어로입니다.\n첫 공격에 앞서, 전투 화면과 조작 방법을 알아보겠습니다."); break;
+                    default: title = JcTutorialText.Get("battleguide.guided.013", "전투 안내"); text = JcTutorialText.Get("battleguide.guided.014", "전투 방법을 설명드리겠습니다.\n먼저 화면 구성입니다."); break;
                 }
             }
             else if (phase == FreeGuidePhase)
@@ -346,7 +406,7 @@ namespace JC.Tutorial
             RectTransform focus = guidedPhase == 0 ? null : guidedPhase == 1 ? profileFocus : guidedPhase == 2 ? turnFocus :
                 guidedPhase == 3 ? worldFocus : guidedPhase == 4 ? badge : currentTurnFocus;
             allowedPointer = guidedPhase == 3 ? worldFocus : guidedPhase == 4 ? badge : null;
-            view.SetVisible(true, guidedPhase == 4 ? null : focus, JcTutorialGuideView.FocusPresentation.BorderOnly);
+            view.SetVisible(true, guidedPhase == 4 ? worldFocus : focus, JcTutorialGuideView.FocusPresentation.BorderOnly);
             view.SetActionHint(guidedPhase == 3 ? JcTutorialGuideView.ActionHint.HoverEnemy : guidedPhase == 4 ? JcTutorialGuideView.ActionHint.HoverBadge : JcTutorialGuideView.ActionHint.None, focus);
             bool badgeLesson = guidedPhase == 3 || guidedPhase == 4;
             var badgeWindow = view.ShowBadgeOutline(badgeLesson ? guidedSlot : null, guidedPhase == 4);
@@ -439,6 +499,8 @@ namespace JC.Tutorial
             layoutPanel.anchorMin = originalAnchorMin; layoutPanel.anchorMax = originalAnchorMax;
             layoutPanel.sizeDelta = originalSize; layoutPanel.anchoredPosition = originalPosition;
             if (notify && continueButtons != null && continueButtons.Length > 0 && continueButtons[0] != null) continueButtons[0].onClick.Invoke();
+            if (notify && coreSelectionStage && guidedSkills.CoreSkillRect != null)
+                view.RestartSkillRedirect(guidedSkills.CoreSkillRect, true, true);
         }
     }
 }

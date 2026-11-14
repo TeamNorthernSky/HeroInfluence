@@ -140,8 +140,8 @@ public class SkillButtonController : MonoBehaviour
     private void Select(PendingActionType action, int skillId = 0, bool selected = true)
     {
         if (!IsPlayerTurn) return;
-        // JC | 2026-11-09 | 첫 턴 안내 중 젬파워 클릭은 선택을 취소하기 전에 올바른 스킬 강조로 돌립니다. 다른 전투 입력은 유지합니다.
-        if (action == PendingActionType.WeaponSkill && JC.Tutorial.JcTutorialBattleGuide.RedirectGemPowerClick(gameObject.scene))
+        // 튜토리얼 단계와 반대인 스킬은 기존 선택을 해제하고 올바른 버튼을 안내합니다.
+        if (JC.Tutorial.JcTutorialBattleGuide.RedirectSkillClick(gameObject.scene, action))
         {
             SyncSelection();
             return;
@@ -178,8 +178,9 @@ public class SkillButtonController : MonoBehaviour
         // 활성 버튼은 기존 ToggleButton 경로에서 선택합니다. 같은 클릭을 중복 처리하지 않습니다.
         if (button == null || button.IsInteractable()) return;
         // JC | 2026-11-09 | 기존 EventTrigger로 비활성 젬파워의 클릭도 감지하며 다른 잠금 스킬의 동작은 보존합니다.
-        if (toggle2 != null && button.gameObject == toggle2.gameObject &&
-            JC.Tutorial.JcTutorialBattleGuide.RedirectGemPowerClick(gameObject.scene))
+        var action = toggle2 != null && button.gameObject == toggle2.gameObject
+            ? PendingActionType.WeaponSkill : PendingActionType.ClassSkill;
+        if (JC.Tutorial.JcTutorialBattleGuide.RedirectSkillClick(gameObject.scene, action))
         {
             SyncSelection();
             return;

@@ -40081,7 +40081,8 @@ MonoBehaviour:
     - key: dim:full
       rect: {fileID: 1691445151}
   - panelIndex: 6
-    advance: 0
+    heroKey: 10002
+    advance: 6
     message: "\uB0A8\uC740 \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uB9CC\uD07C \uD64D\uBCF4\uAC00
       \uAC00\uB2A5\uD569\uB2C8\uB2E4.\n\uB0A8\uC740 \uD64D\uBCF4 \uD69F\uC218\uB294
       \uBAA8\uB4E0 \uCE90\uB9AD\uD130\uAC00 \uACF5\uC720\uD569\uB2C8\uB2E4.\n\uC774\uBC88\uC5D0\uB294
@@ -40181,6 +40182,7 @@ MonoBehaviour:
     - key: dim:full
       rect: {fileID: 1384674511}
   - panelIndex: 7
+    heroKey: 10002
     advance: 3
     message: "MAX \uBC84\uD2BC\uC744 \uB204\uB978 \uD6C4, \uC9C4\uD589 \uBC84\uD2BC\uC744
       \uB20C\uB7EC \uB0A8\uC740 \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uB97C \uBAA8\uB450
@@ -40290,6 +40292,7 @@ MonoBehaviour:
     - key: border:Exploration_HUD_Canvas/UI_Explore/Modals/Modal_Publicity/Panel/BTN_Max
       rect: {fileID: 1815556013}
   - panelIndex: 8
+    heroKey: 10002
     advance: 4
     message: "MAX \uBC84\uD2BC\uC744 \uB204\uB978 \uD6C4, \uC9C4\uD589 \uBC84\uD2BC\uC744
       \uB20C\uB7EC \uB0A8\uC740 \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\uB97C \uBAA8\uB450

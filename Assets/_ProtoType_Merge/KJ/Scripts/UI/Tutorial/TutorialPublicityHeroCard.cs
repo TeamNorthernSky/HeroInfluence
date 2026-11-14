@@ -18,6 +18,7 @@ public sealed class TutorialPublicityHeroCard : MonoBehaviour, IPointerEnterHand
     private TutorialPublicityController owner;
     private string key;
     private bool hovering;
+    private ExplorationCoreSelectController coreIconSource;
     public string HeroKey => key;
     public TutorialPublicityController Owner => owner;
 
@@ -42,8 +43,25 @@ public sealed class TutorialPublicityHeroCard : MonoBehaviour, IPointerEnterHand
         if (coreText != null) coreText.text = "—";
         if (influence != null) influence.text = state != null ? state.CurrentIp.ToString() : "—";
         if (maximum != null) maximum.SetActive(state != null && state.MaxIp > 0 && state.CurrentIp >= state.MaxIp);
-        // 실제 장착 데이터가 생기기 전까지 프리팹에 지정한 기본 코어를 표시한다.
-        if (core != null) core.enabled = core.sprite != null;
+        // 탐사 HUD와 동일하게 튜토리얼 전투의 기본 무기 규칙으로 코어 아이콘을 연결합니다.
+        if (core != null)
+        {
+            if (coreIconSource == null)
+                foreach (var source in FindObjectsByType<ExplorationCoreSelectController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    if (source.gameObject.scene == gameObject.scene) { coreIconSource = source; break; }
+            var catalog = TutorialCatalog.Instance;
+            Sprite icon = null;
+            if (catalog != null && template != null && coreIconSource != null)
+            {
+                TutorialCombatUnitFactory.ResolveDefaultWeapon(catalog, template, out var weapon);
+                if (weapon != null) icon = coreIconSource.GetCoreIcon(weapon.NumericWeaponId);
+            }
+            core.overrideSprite = null;
+            core.sprite = icon;
+            core.enabled = icon != null;
+            core.color = Color.white;
+            core.preserveAspect = true;
+        }
         if (partyMark != null) partyMark.SetActive(true);
         if (profileImage != null)
         {

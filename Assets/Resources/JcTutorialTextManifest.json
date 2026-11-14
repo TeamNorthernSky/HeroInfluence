@@ -331,12 +331,12 @@
     },
     {
       "id": "battleguide.guided.013",
-      "text": "블랙 불릿의 차례입니다",
+      "text": "전투 안내",
       "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:224"
     },
     {
       "id": "battleguide.guided.014",
-      "text": "블랙 불릿은 적 하나를 집중 공격하는 원거리 히어로입니다.\n첫 공격에 앞서, 전투 화면과 조작 방법을 알아보겠습니다.",
+      "text": "전투 방법을 설명드리겠습니다.\n먼저 화면 구성입니다.",
       "source": "Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialBattleGuide.Guided.cs:224"
     },
     {

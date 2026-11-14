@@ -25,6 +25,8 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
     {
         [Tooltip("기존 Panels 배열의 설명 패널 번호입니다. 1~10이 홍보 실습이며 0은 도입 안내입니다.")]
         public int panelIndex;
+        [Tooltip("이 단계에서 사용할 영웅 키입니다. 비어 있으면 기본 튜토리얼 영웅을 사용합니다.")]
+        public string heroKey;
         [Tooltip("클릭 또는 실제 홍보 조작 중 이 단계의 완료 조건입니다. 조작 단계는 조건 충족 전 넘어가지 않습니다.")]
         public AdvanceCondition advance = AdvanceCondition.Click;
         [HideInInspector] // 이전 편집 저장본 호환용. 표시 문구는 sceneMessage에서 편집합니다.
@@ -269,6 +271,8 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         public int sortingLayer, sortingOrder;
     }
     private readonly List<SortingState> sortingStates = new List<SortingState>();
+    private RectTransform additionalHeroBorder;
+    private string CurrentHeroKey => current != null && !string.IsNullOrEmpty(current.heroKey) ? current.heroKey : tutorialHeroKey;
     public bool IsTemporarilyPromotedTarget(UnityEngine.Object target)
     {
         var component = target as Component;
@@ -310,6 +314,13 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
             p.BeginExplanation(tutorialHeroKey);
             practicePrepared = true;
         }
+        if (current.advance == AdvanceCondition.HeroSelected && !string.IsNullOrEmpty(current.heroKey))
+            p.PreparePracticeHero(current.heroKey);
+        if (current.advance == AdvanceCondition.CountMax && p.SelectedKey != CurrentHeroKey)
+        {
+            p.SetPracticeInput(TutorialPublicityController.PracticeInput.HeroSelection);
+            p.SelectHero(CurrentHeroKey);
+        }
         currentPanel = current.explanationPanel != null ? current.explanationPanel : panel;
         confirmCountAtStart = p.ConfirmCount;
         maximizeCountAtStart = p.MaximizeCount;
@@ -324,6 +335,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
 
     public void Hide()
     {
+        if (additionalHeroBorder != null) additionalHeroBorder.gameObject.SetActive(false);
         current = null;
         RestoreSorting();
         generatedOverlays.Clear();
@@ -341,12 +353,199 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
     {
         Hide();
         if (target != null && explanation != null) Promote(target, explanation.transform);
+        if (explanation != null) RaiseResourceHud(explanation.transform);
     }
 
     private void LateUpdate()
     {
         foreach (var pair in backgroundTexts)
             if (pair.Key != null && pair.Value != null) pair.Value.text = pair.Key.text;
+        FitPracticeHighlights();
+        FitHeroSelectionMessage();
+    }
+
+    private void FitHeroSelectionMessage()
+    {
+        if (current == null || current.advance != AdvanceCondition.HeroSelected ||
+            string.IsNullOrEmpty(current.heroKey) || messageBackground == null || messageBackground.parent == null) return;
+        if (hintText != null) hintText.text = "안내한 영웅을 클릭하면 계속합니다.";
+        var target = sortingStates.Find(s => s.rect != null &&
+            s.rect.TryGetComponent<TutorialPublicityHeroCard>(out var card) && card.HeroKey == CurrentHeroKey);
+        if (target == null) return;
+        var parent = messageBackground.parent;
+        target.rect.GetWorldCorners(heroSlotCorners);
+        float left = float.PositiveInfinity;
+        foreach (var corner in heroSlotCorners) left = Mathf.Min(left, parent.InverseTransformPoint(corner).x);
+        messageBackground.GetWorldCorners(heroSlotCorners);
+        float right = float.NegativeInfinity;
+        foreach (var corner in heroSlotCorners) right = Mathf.Max(right, parent.InverseTransformPoint(corner).x);
+        messageBackground.localPosition += Vector3.right * (left - 24f - right);
+    }
+
+    private void RaiseResourceHud(Transform explanation)
+    {
+        ResolveResourceHud();
+        if (resourceHud != null) Promote(resourceHud.gameObject, explanation);
+    }
+
+    private void FitPracticeHighlights()
+    {
+        FitHeroSlotHighlight();
+        if (current == null || Publicity == null) return;
+        foreach (var pair in generatedOverlays)
+        {
+            if (pair.Value == null) continue;
+            if (pair.Key.StartsWith("dim:")) ShowPanelWithoutDimming(pair.Value);
+            RectTransform target = pair.Key.EndsWith("/BTN_Confirm") ? Publicity.ConfirmButton?.transform as RectTransform :
+                pair.Key.EndsWith("/BTN_Max") ? Publicity.MaxButton?.transform as RectTransform :
+                pair.Key.EndsWith("/BTN_Cancel") ? Publicity.CloseButton?.transform as RectTransform : null;
+            if (target != null) FitOverlay(pair.Value, new[] { target });
+            else if (pair.Key == "border:information") FitInformationHighlight(pair.Value);
+        }
+    }
+
+    private const float PracticeHighlightPadding = 16f;
+    private readonly Dictionary<RectTransform, float> informationTopEdges = new Dictionary<RectTransform, float>();
+    private readonly Dictionary<RectTransform, JC.Tutorial.JcTutorialSpotlight> panelDimming =
+        new Dictionary<RectTransform, JC.Tutorial.JcTutorialSpotlight>();
+    private ResourceHUDController resourceHud;
+    private RectTransform[] resourceHudBlocks;
+
+    private void ResolveResourceHud()
+    {
+        if (resourceHud != null && resourceHudBlocks != null) return;
+        foreach (var hud in FindObjectsByType<ResourceHUDController>(FindObjectsSortMode.None))
+            if (hud.gameObject.scene == gameObject.scene) { resourceHud = hud; break; }
+        if (resourceHud == null) return;
+        var blocks = new List<RectTransform>();
+        foreach (var type in new[] { ResourceType.Money, ResourceType.Chip, ResourceType.Crystal, ResourceType.Supply })
+        {
+            var label = resourceHud.GetResourceAnchor(type);
+            if (label != null && label.parent is RectTransform block) blocks.Add(block);
+        }
+        resourceHudBlocks = blocks.ToArray();
+    }
+
+    public void HighlightMoneySpent()
+    {
+        ResolveResourceHud();
+        var label = resourceHud != null ? resourceHud.GetResourceAnchor(ResourceType.Money) : null;
+        if (label == null) return;
+        var target = label.parent as RectTransform;
+        foreach (var guide in FindObjectsByType<JC.Tutorial.JcTutorialExploreGuide>(FindObjectsSortMode.None))
+            if (guide.gameObject.scene == gameObject.scene && guide.view != null)
+            {
+                // 재화 획득 안내와 동일한 수렴 강조를 자금 블록에 2초간 재생합니다.
+                guide.view.RestartSkillRedirect(target != null ? target : label, true);
+                break;
+            }
+    }
+
+    private void ShowPanelWithoutDimming(RectTransform dim)
+    {
+        if (Publicity.PanelRect == null) return;
+        if (!panelDimming.TryGetValue(dim, out var spotlight) || spotlight == null)
+        {
+            var image = dim.GetComponent<UnityEngine.UI.Image>();
+            if (image == null) return;
+            var go = new GameObject("PublicityPanelDimCutout", typeof(RectTransform));
+            go.layer = dim.gameObject.layer;
+            var rect = (RectTransform)go.transform;
+            rect.SetParent(dim, false);
+            rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            spotlight = go.AddComponent<JC.Tutorial.JcTutorialSpotlight>();
+            spotlight.color = image.color;
+            spotlight.raycastTarget = image.raycastTarget;
+            image.enabled = false;
+            panelDimming[dim] = spotlight;
+        }
+        // 홍보 창만 밝게 보이게 하고, 기존 차단막과 단계별 입력 제한은 유지합니다.
+        spotlight.SetTargets(null, Publicity.PanelRect);
+        ResolveResourceHud();
+        if (resourceHudBlocks != null) spotlight.SetExtraTargets(resourceHudBlocks);
+    }
+
+    private void FitInformationHighlight(RectTransform border)
+    {
+        if (!(border.parent is RectTransform parent) || Publicity.PreviousButton == null ||
+            Publicity.NextButton == null || Publicity.MaxButton == null) return;
+        // 정보 제목의 위쪽 경계는 유지하고, 텍스트 행의 여백 대신 실제 버튼 외곽에 맞춥니다.
+        Vector2 min = Vector2.positiveInfinity, max = Vector2.negativeInfinity;
+        if (!informationTopEdges.TryGetValue(border, out float top))
+        {
+            top = border.localPosition.y + border.rect.height * .5f;
+            informationTopEdges[border] = top;
+        }
+        foreach (var button in new[] { Publicity.PreviousButton, Publicity.NextButton, Publicity.MaxButton })
+        {
+            ((RectTransform)button.transform).GetWorldCorners(heroSlotCorners);
+            foreach (var corner in heroSlotCorners)
+            {
+                Vector2 local = parent.InverseTransformPoint(corner);
+                min = Vector2.Min(min, local); max = Vector2.Max(max, local);
+            }
+        }
+        max.y = Mathf.Max(top, max.y);
+        PlaceOverlay(border, min - Vector2.one * PracticeHighlightPadding, max + Vector2.one * PracticeHighlightPadding);
+        var bounds = parent.rect;
+        FitDim("dim:top", new Vector2(bounds.xMin, max.y), bounds.max);
+        FitDim("dim:bottom", bounds.min, new Vector2(bounds.xMax, min.y));
+        FitDim("dim:left", new Vector2(bounds.xMin, min.y), new Vector2(min.x, max.y));
+        FitDim("dim:right", new Vector2(max.x, min.y), new Vector2(bounds.xMax, max.y));
+    }
+
+    private void FitDim(string key, Vector2 min, Vector2 max)
+    {
+        if (generatedOverlays.TryGetValue(key, out var rect) && rect != null) PlaceOverlay(rect, min, max);
+    }
+
+    private void FitOverlay(RectTransform overlay, IEnumerable<RectTransform> targets)
+    {
+        if (overlay.parent == null) return;
+        Vector2 min = Vector2.positiveInfinity, max = Vector2.negativeInfinity;
+        foreach (var target in targets)
+        {
+            target.GetWorldCorners(heroSlotCorners);
+            foreach (var corner in heroSlotCorners)
+            {
+                Vector2 local = overlay.parent.InverseTransformPoint(corner);
+                min = Vector2.Min(min, local); max = Vector2.Max(max, local);
+            }
+        }
+        if (float.IsInfinity(min.x)) return;
+        PlaceOverlay(overlay, min, max);
+    }
+
+    private static void PlaceOverlay(RectTransform overlay, Vector2 min, Vector2 max)
+    {
+        overlay.anchorMin = overlay.anchorMax = overlay.pivot = new Vector2(.5f, .5f);
+        overlay.localScale = Vector3.one;
+        overlay.localRotation = Quaternion.identity;
+        overlay.sizeDelta = Vector2.Max(Vector2.zero, max - min);
+        overlay.localPosition = (min + max) * .5f;
+    }
+
+    private readonly Vector3[] heroSlotCorners = new Vector3[4];
+    private void FitHeroSlotHighlight()
+    {
+        if (current == null ||
+            !generatedOverlays.TryGetValue("border:hero:" + CurrentHeroKey, out var border) || border == null) return;
+        var target = sortingStates.Find(s => s.rect != null &&
+            s.rect.TryGetComponent<TutorialPublicityHeroCard>(out var card) && card.HeroKey == CurrentHeroKey);
+        if (target == null || border.parent == null) return;
+        target.rect.GetWorldCorners(heroSlotCorners);
+        Vector2 min = Vector2.positiveInfinity, max = Vector2.negativeInfinity;
+        foreach (var corner in heroSlotCorners)
+        {
+            Vector2 local = border.parent.InverseTransformPoint(corner);
+            min = Vector2.Min(min, local); max = Vector2.Max(max, local);
+        }
+        border.anchorMin = border.anchorMax = border.pivot = new Vector2(.5f, .5f);
+        border.localScale = Vector3.one;
+        border.localRotation = Quaternion.identity;
+        border.localPosition = (min + max) * .5f;
+        border.sizeDelta = max - min;
     }
 
     private void PrepareBackground(int panelIndex)
@@ -412,13 +611,13 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         {
             case AdvanceCondition.ModalOpened: return p.IsModalOpen;
             case AdvanceCondition.ModalClosed: return !p.IsModalOpen;
-            case AdvanceCondition.HeroSelected: return p.SelectedKey == tutorialHeroKey;
-            case AdvanceCondition.CountEquals: return p.SelectedKey == tutorialHeroKey && p.Count == step.targetCount;
-            case AdvanceCondition.CountMax: return p.SelectedKey == tutorialHeroKey &&
+            case AdvanceCondition.HeroSelected: return p.SelectedKey == CurrentHeroKey;
+            case AdvanceCondition.CountEquals: return p.SelectedKey == CurrentHeroKey && p.Count == step.targetCount;
+            case AdvanceCondition.CountMax: return p.SelectedKey == CurrentHeroKey &&
                 p.MaximizeCount > maximizeCountAtStart && p.Count > 0 && p.Count == p.MaxCount;
             case AdvanceCondition.Confirmed:
             case AdvanceCondition.CountAndConfirmed:
-                return p.SelectedKey == tutorialHeroKey && p.ConfirmCount > confirmCountAtStart;
+                return p.SelectedKey == CurrentHeroKey && p.ConfirmCount > confirmCountAtStart;
             default: return false;
         }
     }
@@ -458,11 +657,14 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         var targets = new List<GameObject>();
         var p = Publicity;
         if (p == null) return targets;
+        if (advance == AdvanceCondition.Click && current != null && !string.IsNullOrEmpty(current.heroKey))
+            foreach (var card in FindObjectsByType<TutorialPublicityHeroCard>(FindObjectsSortMode.None))
+                if (card.Owner == p && card.HeroKey == CurrentHeroKey) targets.Add(card.gameObject);
         switch (advance)
         {
             case AdvanceCondition.HeroSelected:
                 foreach (var card in FindObjectsByType<TutorialPublicityHeroCard>(FindObjectsSortMode.None))
-                    if (card.Owner == p && card.HeroKey == tutorialHeroKey) targets.Add(card.gameObject);
+                    if (card.Owner == p && card.HeroKey == CurrentHeroKey) targets.Add(card.gameObject);
                 break;
             case AdvanceCondition.CountEquals:
             case AdvanceCondition.CountMax:
@@ -511,7 +713,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         messageText.enableAutoSizing = false;
         messageText.fontSize = original.message.autoSize ? original.message.fontSizeMax : original.message.fontSize;
         JC.Tutorial.JcTutorialGuideView.ApplyBodyLineSpacing(messageText, 2f, 1f);
-        JC.Tutorial.JcTutorialGuideView.BindSentenceSpacing(messageText, false, 2f, 1.2f);
+        JC.Tutorial.JcTutorialGuideView.BindSentenceSpacing(messageText, true, 2f, 1.2f);
         float extra = Mathf.Max(0, Mathf.Ceil(messageText.preferredHeight) + 8 - original.message.size.y);
         messageText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, original.message.size.y + extra);
         messageBackground.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, original.background.size.y + extra);
@@ -584,6 +786,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
     {
         var dim = currentPanel != null ? currentPanel : dimPanel;
         if (dim == null) return;
+        RaiseResourceHud(dim.transform);
         var targets = PracticeTargets(step.advance);
         if (step.highlightIndices != null && highlightPools != null)
             foreach (int index in step.highlightIndices)
@@ -600,6 +803,22 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         if (step.sceneOverlays != null)
             foreach (var overlay in step.sceneOverlays)
                 if (overlay != null && overlay.rect != null) generatedOverlays[overlay.key] = overlay.rect;
+        if (step.advance == AdvanceCondition.HeroSelected && !string.IsNullOrEmpty(step.heroKey))
+        {
+            if (additionalHeroBorder == null)
+                foreach (var candidate in steps)
+                    foreach (var overlay in candidate.sceneOverlays)
+                        if (additionalHeroBorder == null && overlay != null && overlay.rect != null && overlay.key.StartsWith("border:hero:"))
+                        {
+                            additionalHeroBorder = Instantiate(overlay.rect, step.sceneOverlays[0].rect.parent);
+                            additionalHeroBorder.name = "PublicityHeroHighlight";
+                        }
+            if (additionalHeroBorder != null)
+            {
+                additionalHeroBorder.gameObject.SetActive(true);
+                generatedOverlays["border:hero:" + CurrentHeroKey] = additionalHeroBorder;
+            }
+        }
     }
 
     private bool IsNestedMessage(RectTransform rect) => rect != null && messageBackground != null &&
@@ -639,7 +858,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
             pivot = rect.pivot, sizeDelta = rect.sizeDelta, position = rect.anchoredPosition3D,
             scale = rect.localScale, rotation = rect.localRotation };
         sortingStates.Add(state);
-        if (rect.GetComponent<TutorialPublicityHeroCard>() != null)
+        if (rect.GetComponent<TutorialPublicityHeroCard>() != null || rect.GetComponent<ResourceHUDController>() != null)
         {
             // 목록에서 제거하지 않고 렌더 순서만 올려 네 슬롯의 자동 배치를 유지한다.
             state.keepParent = true;
@@ -686,7 +905,10 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
                 if (s.raycaster != null)
                 {
                     s.raycaster.enabled = s.raycasterEnabled;
-                    if (s.createdRaycaster) { s.raycaster.enabled = false; if (Application.isPlaying) Destroy(s.raycaster); else DestroyImmediate(s.raycaster); }
+                    if (s.createdRaycaster)
+                    {
+                        if (!Application.isPlaying) DestroyImmediate(s.raycaster);
+                    }
                 }
                 if (s.canvas != null)
                 {
@@ -694,7 +916,12 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
                     s.canvas.sortingLayerID = s.sortingLayer;
                     s.canvas.sortingOrder = s.sortingOrder;
                     s.canvas.enabled = s.canvasEnabled;
-                    if (s.createdCanvas) { if (Application.isPlaying) Destroy(s.canvas); else DestroyImmediate(s.canvas); }
+                    // 같은 프레임에 다시 강조할 수 있으므로 지연 삭제하지 않고 원래 정렬로 재사용합니다.
+                    // Canvas를 끄면 슬롯 Graphic도 사라지므로 새 Canvas 역시 활성 상태를 유지합니다.
+                    if (s.createdCanvas)
+                    {
+                        if (!Application.isPlaying) DestroyImmediate(s.canvas);
+                    }
                 }
                 continue;
             }

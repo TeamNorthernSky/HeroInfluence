@@ -18,6 +18,8 @@ namespace JC.Tutorial
         // 종료 시 원래 계층/Rect를 복구하므로 이동력 강조와 씬 참조는 바뀌지 않습니다.
         private RectTransform redirectedSkill;
         private float redirectStarted;
+        private bool redirectWhenHidden;
+        private bool redirectShowCard;
         private GlowPlacement[] redirectedPlacements;
         private sealed class GlowPlacement
         {
@@ -40,7 +42,7 @@ namespace JC.Tutorial
                 rect.localPosition=position; rect.localScale=scale; rect.localRotation=rotation;
             }
         }
-        public void RestartSkillRedirect(RectTransform target)
+        public void RestartSkillRedirect(RectTransform target, bool allowWhenHidden = false, bool showHintWhenHidden = false)
         {
             if(target==null || convergingOutlines==null)return;
             SetActionHint(ActionHint.ClickSkill,target);
@@ -57,10 +59,14 @@ namespace JC.Tutorial
                 }
             }
             redirectedSkill=target; redirectStarted=Time.unscaledTime;
+            redirectWhenHidden=allowWhenHidden;
+            redirectShowCard=showHintWhenHidden;
         }
         private void StopSkillRedirect()
         {
             redirectedSkill=null;
+            redirectWhenHidden=false;
+            redirectShowCard=false;
             if(redirectedPlacements!=null)foreach(var placement in redirectedPlacements)placement?.Restore();
             redirectedPlacements=null;
         }
@@ -92,16 +98,7 @@ namespace JC.Tutorial
             float diameter = Mathf.Max(bounds.width, bounds.height) * BadgeOuterScale;
             var size = Vector2.one * diameter;
             var center = bounds.center;
-            if (!circle)
-            {
-                // 화살표 이동 폭은 화면 픽셀, 배지와 9슬라이스 테두리는 Canvas 단위입니다.
-                float scale = Mathf.Max(.01f, badgeOutline.canvas.rootCanvas.scaleFactor);
-                float arrowReach = JcBattleHoverRing.ArrowClearancePixels / scale;
-                float padding = 6f + 4f / scale;
-                size.x += arrowReach + 2f * padding;
-                size.y = Mathf.Max(diameter, 62f / scale) + 2f * padding;
-                center.x -= arrowReach * .5f;
-            }
+            // 사각 강조도 원형 강조와 같은 초상화 경계에 맞추고, 왼쪽 호버 화살표 공간은 포함하지 않습니다.
             badgeOutline.enabled = true;
             badgeOutline.type = circle ? Image.Type.Simple : Image.Type.Sliced;
             badgeOutline.sprite = circle ? badgeCircle : badgeBox;
@@ -182,13 +179,16 @@ namespace JC.Tutorial
         private void RenderActionHint(float time)
         {
             if (actionHint==ActionHint.None || hintRoot==null) return;
-            bool valid=visible && (actionHint==ActionHint.ScrollRight || (hintTarget!=null && hintTarget.gameObject.activeInHierarchy));
+            if (redirectWhenHidden && !redirectShowCard && time-redirectStarted >= 2f) { SetActionHint(ActionHint.None); return; }
+            bool valid=(visible || redirectWhenHidden) && (actionHint==ActionHint.ScrollRight || (hintTarget!=null && hintTarget.gameObject.activeInHierarchy));
             hintRoot.gameObject.SetActive(valid); if(!valid)return;
             hintRoot.SetAsLastSibling();
             float phase=Mathf.Repeat((time-hintStarted)/HintPeriod,1);
             float pulse=.65f+.35f*(.5f-.5f*Mathf.Cos(phase*Mathf.PI*2));
             iconGraphic.phase=phase; iconGraphic.SetVerticesDirty();
             foreach(var line in hintLines)line.gameObject.SetActive(false);
+            // 스킬 선택을 마친 뒤의 젬 파워 차단은 강조 효과만 재생하고 안내 말풍선은 반복하지 않습니다.
+            hintCard.gameObject.SetActive(!redirectWhenHidden || redirectShowCard);
             hintFrame.gameObject.SetActive(actionHint==ActionHint.ClickSkill);
             var bounds=hintRoot.rect;
             bool scroll=actionHint==ActionHint.ScrollRight, click=actionHint==ActionHint.ClickSkill;
@@ -212,7 +212,7 @@ namespace JC.Tutorial
                     hintFrame.localPosition=target.center; hintFrame.sizeDelta=target.size+Vector2.one*8;
                     hintFrame.GetComponent<JcTutorialGraphic>().color=new Color(accent.r,accent.g,accent.b,pulse);
                     Vector2 from=new Vector2(target.xMax+4,target.center.y), end=new Vector2(pos.x-hintCard.rect.width*.5f,pos.y);
-                    HintLine(0,from,end,pulse);
+                    if (!redirectWhenHidden || redirectShowCard) HintLine(0,from,end,pulse);
                     // JC | 2026-11-09 | 이동력 강조와 동일 함수/설정으로 2초 수렴·1초 휴식을 반복합니다.
                     if(redirectedSkill==hintTarget)
                         RenderConvergingOutlines(hintRoot,target.min-Vector2.one*focusPadding,target.max+Vector2.one*focusPadding,time-redirectStarted,time);

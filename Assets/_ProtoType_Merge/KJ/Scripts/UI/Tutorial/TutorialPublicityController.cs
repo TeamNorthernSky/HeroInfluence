@@ -18,6 +18,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     public Button PreviousButton => btnPrev;
     public Button NextButton => btnNext;
     public Slider ProgressSlider => progressSlider;
+    public RectTransform PanelRect => modalPublicityRoot != null ? modalPublicityRoot.transform.Find("Panel") as RectTransform : null;
     public TMPro.TMP_Text CountCaption
     {
         get
@@ -181,6 +182,16 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     }
 
     public void ClearHeroSelection() { if (!Allows(PracticeInput.HeroSelection)) return; SelectedKey = null; count = 0; Refresh(); }
+    public void PreparePracticeHero(string key)
+    {
+        if (!TryGetHero(key, out var state, out _)) return;
+        Repository.SetUnitStats(key, state.CurrentHp, state.MaxHp, 0, TutorialMaxIp,
+            state.Atk, state.Level, state.Exp, state.MaxExp);
+        foreach (var unit in FindObjectsByType<TutorialUnitState>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (unit.gameObject.scene == gameObject.scene && unit.UnitTemplateKey == key)
+                unit.InitializeFromTutorialState();
+        Refresh();
+    }
     public void CloseModal() { if (Allows(PracticeInput.Close) && modalPublicityRoot != null) modalPublicityRoot.SetActive(false); }
     private void Decrease() => SetCountFromPlayer(count - 1);
     private void Increase() => SetCountFromPlayer(count + 1);
@@ -264,6 +275,12 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         {
             count = 0;
             ConfirmCount++;
+            foreach (var explanation in FindObjectsByType<TutorialPublicityExplanationView>(FindObjectsSortMode.None))
+                if (explanation.gameObject.scene == gameObject.scene)
+                {
+                    explanation.HighlightMoneySpent();
+                    break;
+                }
             // 탐사씬 안에서 홍보한 경우, 월드 영웅이 예전 IP를 다시 저장하지 않게 동기화한다.
             foreach (var unit in FindObjectsByType<TutorialUnitState>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (unit.gameObject.scene == gameObject.scene && unit.UnitTemplateKey == SelectedKey)

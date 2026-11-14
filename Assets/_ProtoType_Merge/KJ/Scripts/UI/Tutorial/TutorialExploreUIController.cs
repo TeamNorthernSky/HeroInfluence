@@ -41,10 +41,32 @@ public sealed class TutorialExploreUIController : MonoBehaviour
     private bool initialized;
     private const string PublicityIntroSeenKey = "KJ.Tutorial.Publicity.AfterFirstVictory";
     private CombatContext victoryReturnContext;
+    private bool publicityUnlocked, publicityButtonLocked;
+
+    private void RefreshPublicityButtonAccess()
+    {
+        // 메인 게임의 버튼 상태와 저장 데이터는 변경하지 않습니다.
+        if (gameObject.scene.name != "TutorialExploreScene" || publicityEntryButton == null) return;
+        bool unlocked = publicityUnlocked ||
+            (TutorialProgressRepository.Instance != null && TutorialProgressRepository.Instance.IsMessageSeen(PublicityIntroSeenKey));
+        if (!unlocked)
+        {
+            publicityEntryButton.interactable = false;
+            publicityButtonLocked = true;
+        }
+        else if (publicityButtonLocked)
+        {
+            publicityButtonLocked = false;
+            publicityEntryButton.interactable = true;
+        }
+    }
+
+    private void LateUpdate() => RefreshPublicityButtonAccess();
 
     private void Awake()
     {
         Initialize();
+        RefreshPublicityButtonAccess();
         // 결과 처리기가 복귀 후 컨텍스트를 비우기 전에 이번 전투의 승리를 기억한다.
         var context = CombatContext.Instance;
         if (gameObject.scene.name == "TutorialExploreScene" && context != null &&
@@ -121,6 +143,8 @@ public sealed class TutorialExploreUIController : MonoBehaviour
     public void BeginPublicityIntroduction()
     {
         Initialize();
+        publicityUnlocked = true;
+        RefreshPublicityButtonAccess();
         if (publicityEntryGuide == null || publicityEntryButton == null || publicityExplanation == null ||
             publicityEntryGuide.view == null || publicityEntryGuide.explanationShield == null)
         {
@@ -216,6 +240,8 @@ public sealed class TutorialExploreUIController : MonoBehaviour
             Debug.LogWarning($"설명 패널 번호 또는 연결을 확인해주세요: {index}", this);
             return;
         }
+        publicityUnlocked = true;
+        RefreshPublicityButtonAccess();
         HidePanels();
         CurrentPanelIndex = index;
         // 설명 패널이 버튼의 자식일 수 있으므로 오브젝트는 유지하고 클릭만 막는다.

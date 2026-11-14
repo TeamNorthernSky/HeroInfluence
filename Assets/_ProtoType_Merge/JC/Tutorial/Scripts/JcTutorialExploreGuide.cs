@@ -84,6 +84,18 @@ namespace JC.Tutorial
         private float nextGaugeSearch;
         private bool showingIntro, releaseShieldPending, turnStateCaptured, originalTurnControl, originalTurnButton;
         private Button nextTurnButton;
+        private ColorBlock originalRestColors;
+        private bool restColorsCaptured;
+        private void KeepRestButtonBright()
+        {
+            if (nextTurnButton == null) nextTurnButton = nextTurn != null ? nextTurn.GetComponent<Button>() : null;
+            if (nextTurnButton == null) return;
+            if (!restColorsCaptured) { originalRestColors = nextTurnButton.colors; restColorsCaptured = true; }
+            var colors = nextTurnButton.colors;
+            bool learnedFirstMove = movement != null && movement.CurrentOrder > 1;
+            colors.disabledColor = learnedFirstMove || explanationKey == "automatic-turn" ? colors.normalColor : originalRestColors.disabledColor;
+            nextTurnButton.colors = colors;
+        }
         private Coroutine initialCameraMove;
         private bool externalPresentation;
         public int PresentationOpenedFrame { get; private set; } = -1;
@@ -104,6 +116,7 @@ namespace JC.Tutorial
             if (turnManager != null) originalTurnControl = turnManager.TurnControlEnabled;
             if (nextTurnButton != null) originalTurnButton = nextTurnButton.interactable;
             turnStateCaptured = true;
+            if (movement != null && movement.CurrentOrder <= 1) SetTurnAvailable(false);
         }
         // 첫 승리 복귀의 상태 복원 직후 호출합니다. 홍보 안내를 열기 전에 구도를 확정합니다.
         public IEnumerator PrepareFirstVictoryCamera()
@@ -290,6 +303,8 @@ namespace JC.Tutorial
 
         public void RefreshPresentation(float time)
         {
+            KeepRestButtonBright();
+            if (view != null) view.SetSecondaryFocus(explanationKey == "automatic-turn" ? nextTurn : null);
             if (externalPresentation) return;
             if (exiting) { Hide(); return; }
             BindRepository();
@@ -319,7 +334,7 @@ namespace JC.Tutorial
                 if (repository.LastCombatResult == CombatResult.Victory) PlayMissionClear("first-combat");
                 RefreshPostBattleGuidance(party, time); return;
             }
-            bool learningMovement = repository.CurrentTurn == 1 && !Seen("exhausted") && !Seen("restored");
+            bool learningMovement = movement.CurrentOrder <= 1;
             SetTurnAvailable(!learningMovement);
             if (explanationKey != null)
             {
@@ -586,7 +601,8 @@ namespace JC.Tutorial
             view.blockPanelRaycasts = true;
             // JC | 2026-11-09 | 설명형 탐사 메시지의 문장 간격만 30% 늘립니다.
             CurrentGuideStep = key; view.SetContent(JcTutorialText.Get("exploreguide.042", "탐사 · ") + title, text, sentenceIncrease: 1.3f);
-            SetShield(true); SetContinue(true); view.SetVisible(true, focus, ExplanationStyle(key)); HideMarker();
+            SetShield(true); SetContinue(true); view.SetSecondaryFocus(key == "automatic-turn" ? nextTurn : null);
+            view.SetVisible(true, focus, ExplanationStyle(key)); HideMarker();
         }
         public void ContinueExplanation()
         {
@@ -747,6 +763,8 @@ namespace JC.Tutorial
             if (Application.isPlaying && repository != null && repository.PendingCombatSourceType == TutorialCombatSourceType.Enemy) Mark("first-combat");
             if (repository != null) repository.ProgressChanged -= ObserveCombat;
             repository = null; Hide();
+            if (restColorsCaptured && nextTurnButton != null) nextTurnButton.colors = originalRestColors;
+            restColorsCaptured = false;
         }
         public static string ResourceName(ResourceType type)
         { return type == ResourceType.Chip ? JcTutorialText.Get("exploreguide.046", "히어로 메달") : type == ResourceType.Crystal ? JcTutorialText.Get("exploreguide.047", "크리스탈") : type == ResourceType.Supply ? JcTutorialText.Get("exploreguide.048", "건설 자재") : JcTutorialText.Get("exploreguide.049", "자금"); }

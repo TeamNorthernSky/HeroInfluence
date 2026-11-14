@@ -207,6 +207,16 @@ namespace JC.Tutorial
         }
         public void SetContentEdits(string json) => contentEdits = JsonUtility.FromJson<ContentEdits>(json).edits ?? new System.Collections.Generic.List<ContentEdit>();
         private RectTransform focus;
+        private RectTransform secondaryFocus;
+        private JcTutorialGraphic secondaryFocusFrame;
+        private JcTutorialGraphic[] secondaryConvergingOutlines;
+        private RectTransform[] secondaryFocusTargets = System.Array.Empty<RectTransform>();
+        public void SetSecondaryFocus(RectTransform target)
+        {
+            if (secondaryFocus == target) return;
+            secondaryFocus = target;
+            secondaryFocusTargets = target != null ? new[] { target } : System.Array.Empty<RectTransform>();
+        }
         private readonly Vector3[] corners = new Vector3[4];
         public bool IsRequestedVisible => visible;
 
@@ -236,7 +246,7 @@ namespace JC.Tutorial
         {
             // JC | 2026-11-13 | 매 프레임 유지 호출은 제외하고 메시지 표시가 시작되는 순간만 통지합니다.
             if (value && !visible) JcTutorialBattleControlNotice.OnGuideTransition(gameObject.scene);
-            if (!value) SetActionHint(ActionHint.None);
+            if (!value && !redirectWhenHidden) SetActionHint(ActionHint.None);
             visible = value; focus = value ? target : null; focusPresentation = presentation;
             focusCornerRadius = Mathf.Max(0, cornerRadius);
             if (spotlight != null && (!value || (presentation != FocusPresentation.Spotlight && presentation != FocusPresentation.DimmedExplanation && presentation != FocusPresentation.BuildingExplanation))) spotlight.gameObject.SetActive(false);
@@ -303,9 +313,11 @@ namespace JC.Tutorial
             bool showFocus = visible && !building && focus != null && focus.gameObject.activeInHierarchy;
             bool dimmed = visible && (focusPresentation == FocusPresentation.DimmedExplanation || focusPresentation == FocusPresentation.BuildingExplanation ||
                 (showFocus && focusPresentation == FocusPresentation.Spotlight));
+            RenderSecondaryFocus();
             if (spotlight != null)
             {
                 spotlight.SetTargets(!suppressPanel && panel != null ? panel.transform as RectTransform : null, building ? null : focus);
+                spotlight.SetExtraTargets(dimmed ? secondaryFocusTargets : System.Array.Empty<RectTransform>());
                 spotlight.gameObject.SetActive(dimmed);
             }
             if (focusFrame == null || pointer == null) return;
@@ -386,14 +398,15 @@ namespace JC.Tutorial
         }
 
         // JC | 2026-11-09 | 기존 이동력 수렴식을 추출해 오클릭 교정에도 그대로 사용합니다. 폭·속도·밝기·주기는 동일합니다.
-        private void RenderConvergingOutlines(RectTransform parent, Vector2 min, Vector2 max, float elapsed, float time)
+        private void RenderConvergingOutlines(RectTransform parent, Vector2 min, Vector2 max, float elapsed, float time, JcTutorialGraphic[] customOutlines = null)
         {
-            if(convergingOutlines==null)return;
-            for(int i=0;i<convergingOutlines.Length;i++) {
-                var o=convergingOutlines[i];if(o==null)continue;
+            var outlines = customOutlines ?? convergingOutlines;
+            if(outlines==null)return;
+            for(int i=0;i<outlines.Length;i++) {
+                var o=outlines[i];if(o==null)continue;
                 float cycle=Mathf.Repeat(elapsed,3);
                 o.gameObject.SetActive(cycle<2);if(cycle>=2)continue;
-                float progress=Mathf.Repeat(cycle+i/(float)convergingOutlines.Length,1);
+                float progress=Mathf.Repeat(cycle+i/(float)outlines.Length,1);
                 float extra=ConvergenceExpansion*(1-Mathf.SmoothStep(0,1,progress));
                 Vector2 lo=Vector2.Max(min-Vector2.one*extra,parent.rect.min+Vector2.one*(o.GlowWidth+1));
                 Vector2 hi=Vector2.Min(max+Vector2.one*extra,parent.rect.max-Vector2.one*(o.GlowWidth+1));
@@ -401,8 +414,49 @@ namespace JC.Tutorial
                 o.color=new Color(accent.r,accent.g,accent.b,Mathf.Sin(progress*Mathf.PI)*.65f);o.AnimateSweep(time);
             }
         }
+        private void RenderSecondaryFocus()
+        {
+            bool show = visible && secondaryFocus != null && secondaryFocus.gameObject.activeInHierarchy;
+            if (!show)
+            {
+                if (secondaryFocusFrame != null) secondaryFocusFrame.gameObject.SetActive(false);
+                if (secondaryConvergingOutlines != null) foreach (var outline in secondaryConvergingOutlines)
+                    if (outline != null) outline.gameObject.SetActive(false);
+                return;
+            }
+            if (focusFrame == null || !(focusFrame.transform.parent is RectTransform parent)) return;
+            if (secondaryFocusFrame == null)
+            {
+                secondaryFocusFrame = Instantiate(focusFrame, parent);
+                secondaryFocusFrame.name = "SecondaryFocusFrame";
+                secondaryFocusFrame.raycastTarget = false;
+                if (convergingOutlines != null)
+                {
+                    secondaryConvergingOutlines = new JcTutorialGraphic[convergingOutlines.Length];
+                    for (int i = 0; i < convergingOutlines.Length; i++)
+                        if (convergingOutlines[i] != null)
+                        {
+                            secondaryConvergingOutlines[i] = Instantiate(convergingOutlines[i], parent);
+                            secondaryConvergingOutlines[i].name = "SecondaryConvergingOutline" + i;
+                            secondaryConvergingOutlines[i].raycastTarget = false;
+                        }
+                }
+            }
+            var bounds = LocalBounds(secondaryFocus, parent);
+            var rect = secondaryFocusFrame.rectTransform;
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+            rect.localPosition = bounds.center;
+            rect.sizeDelta = bounds.size;
+            secondaryFocusFrame.color = accent;
+            secondaryFocusFrame.gameObject.SetActive(true);
+            RenderConvergingOutlines(parent, bounds.min, bounds.max, convergenceElapsed, Time.unscaledTime, secondaryConvergingOutlines);
+        }
         private void OnDisable()
         {
+            SetSecondaryFocus(null);
+            if (secondaryFocusFrame != null) secondaryFocusFrame.gameObject.SetActive(false);
+            if (secondaryConvergingOutlines != null) foreach (var outline in secondaryConvergingOutlines)
+                if (outline != null) outline.gameObject.SetActive(false);
             SetActionHint(ActionHint.None);
             if (spotlight != null) spotlight.gameObject.SetActive(false);
             if (focusFrame != null) focusFrame.gameObject.SetActive(false);

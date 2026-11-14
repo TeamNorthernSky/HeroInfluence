@@ -56,7 +56,7 @@ namespace JC.Tutorial
             Resources.Load<JC.BattleTesting.JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(gameObject.scene);
         }
 
-        private void Update() { if (guidedActive) { UpdateGuided(); return; } RefreshPresentation(); AdvanceResultNotice(Time.unscaledDeltaTime); }
+        private void Update() { UpdateGemPowerRestriction(); if (guidedActive) { UpdateGuided(); return; } RefreshPresentation(); AdvanceResultNotice(Time.unscaledDeltaTime); }
         public void AdvanceResultNotice(float delta)
         {
             if (!noticeOpen || instructionStep >= 0) return;
@@ -219,6 +219,7 @@ namespace JC.Tutorial
         }
         private void OnDisable()
         {
+            ReleaseGemPowerRestriction();
             EndGuided(false);
             instructionStep = -1; instructionDismissPending = false; noticeOpen = releasePending = false;
             UnlockInput();

@@ -6,7 +6,14 @@ public static partial class JcTutorialText
 {
     public static string ReadSource(string path)
     {
-        var bytes = File.ReadAllBytes(path);
+        // Excel에서 대본을 열어 둔 상태에서도 저장된 내용을 읽을 수 있도록 쓰기 공유를 허용합니다.
+        byte[] bytes;
+        using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+        using (var buffer = new MemoryStream())
+        {
+            stream.CopyTo(buffer);
+            bytes = buffer.ToArray();
+        }
         if (bytes.Length < 3 || bytes[0] != 0xEF || bytes[1] != 0xBB || bytes[2] != 0xBF)
             throw new InvalidDataException("CSV를 UTF-8 BOM 형식으로 저장해 주세요.");
         return new UTF8Encoding(false, true).GetString(bytes, 3, bytes.Length - 3);
