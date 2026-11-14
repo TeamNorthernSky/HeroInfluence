@@ -256,7 +256,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
             if (!unlocked) msg = "홍보 기능이 활성화되지 않았습니다.";
             else if (!costKnown) msg = "비용 정보가 없거나 처리 가능한 금액을 초과했습니다.";
             else if (!hasSelection) msg = "영웅을 선택해 주세요.";
-            else if (pool <= 0) msg = "이번 주 진행 가능 횟수를 모두 사용했습니다.";
+            else if (pool <= 0) msg = "홍보 가능 횟수를 모두 사용했습니다.";
             else if (capacity <= 0) msg = $"이미 최대 I.P에 도달했습니다.";
             else if (!moneyOk) msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
