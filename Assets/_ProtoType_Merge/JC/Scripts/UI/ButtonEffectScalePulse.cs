@@ -21,6 +21,13 @@ public class ButtonEffectScalePulse : ButtonEffectModule
         baseScale = transform.localScale;
     }
 
+    private void OnDisable()
+    {
+        if (routine != null) StopCoroutine(routine);
+        routine = null;
+        transform.localScale = baseScale;
+    }
+
     public override void OnHoverEnter()
     {
         if (!pulseOnHover) return;

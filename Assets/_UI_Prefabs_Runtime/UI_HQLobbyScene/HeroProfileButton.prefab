@@ -300,6 +300,8 @@ GameObject:
   - component: {fileID: 4846896266976589752}
   - component: {fileID: 674436681141175789}
   - component: {fileID: 888458084246310134}
+  - component: {fileID: 4657679528995277865}
+  - component: {fileID: 7694711727324240535}
   m_Layer: 0
   m_Name: HeroProfileButton
   m_TagString: Untagged
@@ -496,6 +498,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de11f6c94c6b40e4b82fccc22fdce6c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4657679528995277865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2413360262914123970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88fa1ea4c19b74a438e727f7a9804879, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+--- !u!114 &7694711727324240535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2413360262914123970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 327a7baba5ed8234e8476d48acb1d51f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  moduleEnabled: 1
+  pulseOnHover: 1
+  pulseOnClick: 0
+  hoverScale: {x: 1.05, y: 1.05, z: 1}
+  clickScale: {x: 0.95, y: 0.95, z: 1}
+  duration: 0.12
 --- !u!1 &3432228438096448044
 GameObject:
   m_ObjectHideFlags: 0
