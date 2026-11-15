@@ -227,7 +227,7 @@ MonoBehaviour:
     note: 
   - choice_id: S_NPC_04_003_C2
     world_event_id: S_NPC_04_003
-    choice_text: "\uAC00\uC7A5 \uAE4A\uC740 \uACF3\uC758 \uAD11\uB9E5\uAE4C\uC9C0
+    choice_text: "\uAC00\uC7A5 \uAE4A\uC740 \uACF3\uC758 \n\uAD11\uB9E5\uAE4C\uC9C0
       \uB4E4\uC5B4\uAC04\uB2E4."
     enable_condition_unit: 0
     enable_condition_type: 0
@@ -242,7 +242,7 @@ MonoBehaviour:
     note: 
   - choice_id: S_NPC_04_004_C1
     world_event_id: S_NPC_04_004
-    choice_text: "\uB0A8\uC740 \uBCF4\uAE09\uD488\uC744 \uC548\uC804\uD55C \uACF3\uC73C\uB85C
+    choice_text: "\uB0A8\uC740 \uBCF4\uAE09\uD488\uC744 \n\uC548\uC804\uD55C \uACF3\uC73C\uB85C
       \uC62E\uAE34\uB2E4."
     enable_condition_unit: 0
     enable_condition_type: 0
@@ -257,7 +257,7 @@ MonoBehaviour:
     note: 
   - choice_id: S_NPC_04_004_C2
     world_event_id: S_NPC_04_004
-    choice_text: "\uB3C4\uC801\uC744 \uCD94\uACA9\uD574 \uBE7C\uC557\uAE34 \uBB3C\uC790\uB97C
+    choice_text: "\uB3C4\uC801\uC744 \uCD94\uACA9\uD574 \uBE7C\uC557\uAE34\n\uBB3C\uC790\uB97C
       \uB418\uCC3E\uB294\uB2E4."
     enable_condition_unit: 0
     enable_condition_type: 0
@@ -272,7 +272,7 @@ MonoBehaviour:
     note: 
   - choice_id: S_NPC_04_005_C1
     world_event_id: S_NPC_04_005
-    choice_text: "\uC815\uD574\uC9C4 \uBCF4\uC218\uB9CC \uBC1B\uACE0 \uAC70\uB798\uB97C
+    choice_text: "\uC815\uD574\uC9C4 \uBCF4\uC218\uB9CC \n\uBC1B\uACE0 \uAC70\uB798\uB97C
       \uB3D5\uB294\uB2E4."
     enable_condition_unit: 0
     enable_condition_type: 0
@@ -287,7 +287,7 @@ MonoBehaviour:
     note: 
   - choice_id: S_NPC_04_005_C2
     world_event_id: S_NPC_04_005
-    choice_text: "\uBCF4\uC218 \uB300\uC2E0 \uBA54\uB2EC\uC744 \uAC78\uACE0 \uCD94\uAC00
+    choice_text: "\uBCF4\uC218 \uB300\uC2E0 \uBA54\uB2EC\uC744 \uAC78\uACE0\n\uCD94\uAC00
       \uD611\uC0C1\uD55C\uB2E4."
     enable_condition_unit: 0
     enable_condition_type: 0
