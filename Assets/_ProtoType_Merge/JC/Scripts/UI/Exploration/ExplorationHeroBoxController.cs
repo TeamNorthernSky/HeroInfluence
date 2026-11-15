@@ -59,6 +59,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
             {
                 selectionFrames[i] = slots[i].root.transform.Find("ProfileHoverBorder")?.gameObject;
                 licenseClickThrough[i] = slots[i].root.transform as RectTransform;
+                foreach (var tooltip in slots[i].root.GetComponentsInChildren<WorldInfluenceBadgeTooltip>(true))
+                    tooltip.BindOwner(this);
             }
             if (slots[i]?.root != null && slots[i].influenceBadge == null)
                 slots[i].influenceBadge = slots[i].root.GetComponentInChildren<JcInfluenceBadgeView>(true);
@@ -188,6 +190,16 @@ public class ExplorationHeroBoxController : MonoBehaviour
                 slot.ipText.text = $"{ip:F0}";
             }
         }
+    }
+
+    public RectTransform GetInfluenceTooltipAnchor(string heroKey, RectTransform fallback)
+    {
+        // 저스티스/루미나는 첫 슬롯 높이, 네코밍/블랙 불릿은 두 번째 슬롯 높이를 공유합니다.
+        int index = heroKey == "10001" || heroKey == "10002" ? 0 :
+            heroKey == "10003" || heroKey == "10004" ? 1 : -1;
+        if (index < 0 || slots == null || index >= slots.Length || slots[index]?.root == null) return fallback;
+        var anchor = slots[index].root.transform.Find("InfluenceTooltipAnchor") as RectTransform;
+        return anchor != null ? anchor : fallback;
     }
 
     private static bool IsIpAtMax(float current, float maximum)

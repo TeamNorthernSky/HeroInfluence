@@ -676,6 +676,18 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 5641236960989709903}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1958585821404191662 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6154160428968664545, guid: 2e5c0d9e1b45cf24f99a92785091f6dc,
+    type: 3}
+  m_PrefabInstance: {fileID: 5641236960989709903}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b982ed4f3210b204f97766b52e8d2644, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!114 &2426306681583062127 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8062087865824365088, guid: 2e5c0d9e1b45cf24f99a92785091f6dc,
@@ -857,6 +869,7 @@ MonoBehaviour:
   countValueText: {fileID: 7230298642330904291}
   totalCostValueText: {fileID: 5714561983914605808}
   stateInfoText: {fileID: 5995472743193139396}
+  influenceBadge: {fileID: 1958585821404191662}
   progressSlider: {fileID: 7497474878554283565}
 --- !u!224 &8519127147157628678 stripped
 RectTransform:
