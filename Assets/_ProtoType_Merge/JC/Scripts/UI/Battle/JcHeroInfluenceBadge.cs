@@ -12,6 +12,8 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
     static readonly JcInfluenceBadgeConfiguration DefaultColors = new JcInfluenceBadgeConfiguration();
     TMP_Text reference, label;
     RectTransform rect;
+    JcInfluenceBadgeArtwork artwork;
+    UnityEngine.UI.Image frame;
     JcInfluenceBadgeFace face;
     Material lettering;
     BattleCharactor unit;
@@ -34,6 +36,22 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
         badge.reference = ipText;
         badge.rect = (RectTransform)go.transform;
         badge.face = go.GetComponent<JcInfluenceBadgeFace>();
+        badge.artwork = JcInfluenceBadgeArtwork.Load();
+        if (badge.artwork)
+        {
+            var frameObject = new GameObject("Frame", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+            frameObject.layer = go.layer;
+            frameObject.transform.SetParent(go.transform, false);
+            badge.frame = frameObject.GetComponent<UnityEngine.UI.Image>();
+            badge.frame.type = UnityEngine.UI.Image.Type.Simple;
+            badge.frame.preserveAspect = false;
+            badge.frame.raycastTarget = false;
+            var frameRect = (RectTransform)frameObject.transform;
+            frameRect.anchorMin = Vector2.zero; frameRect.anchorMax = Vector2.one;
+            frameRect.offsetMin = frameRect.offsetMax = Vector2.zero;
+            // 보이지 않는 기존 Graphic은 호버 감지만 유지합니다.
+            badge.face.color = Color.clear;
+        }
         var text = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
         text.layer = go.layer;
         text.transform.SetParent(go.transform, false);
@@ -49,15 +67,19 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
         tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
         tr.offsetMin = new Vector2(8, 0); tr.offsetMax = new Vector2(-8, 0);
         // 원본 폰트 재질을 바꾸지 않고 밝은 글자 위쪽에 미세한 어두운 음각 경계를 줍니다.
-        badge.lettering = new Material(ipText.fontSharedMaterial) { name = "JC IP 배지 음각 (임시)", hideFlags = HideFlags.DontSave };
-        badge.lettering.SetColor(ShaderUtilities.ID_FaceColor, Color.white);
-        badge.lettering.SetColor(ShaderUtilities.ID_OutlineColor, new Color(.04f,.05f,.07f,.9f));
-        badge.lettering.SetFloat(ShaderUtilities.ID_OutlineWidth, .10f);
-        badge.lettering.EnableKeyword("UNDERLAY_ON");
-        badge.lettering.SetColor(ShaderUtilities.ID_UnderlayColor, new Color(0,0,0,.65f));
-        badge.lettering.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, .35f);
-        badge.lettering.SetFloat(ShaderUtilities.ID_UnderlaySoftness, .15f);
-        badge.label.fontSharedMaterial = badge.lettering;
+        if (badge.artwork) badge.artwork.Style(badge.label);
+        else
+        {
+            badge.lettering = new Material(ipText.fontSharedMaterial) { name = "JC IP 배지 음각 (임시)", hideFlags = HideFlags.DontSave };
+            badge.lettering.SetColor(ShaderUtilities.ID_FaceColor, Color.white);
+            badge.lettering.SetColor(ShaderUtilities.ID_OutlineColor, new Color(.04f,.05f,.07f,.9f));
+            badge.lettering.SetFloat(ShaderUtilities.ID_OutlineWidth, .10f);
+            badge.lettering.EnableKeyword("UNDERLAY_ON");
+            badge.lettering.SetColor(ShaderUtilities.ID_UnderlayColor, new Color(0,0,0,.65f));
+            badge.lettering.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, .35f);
+            badge.lettering.SetFloat(ShaderUtilities.ID_UnderlaySoftness, .15f);
+            badge.label.fontSharedMaterial = badge.lettering;
+        }
         var icon = ipText.transform.parent.Find("IpIcon")?.GetComponent<Image>();
         if (icon) { icon.raycastTarget = true; icon.gameObject.AddComponent<JcInfluenceBadgeHover>().badge = badge; }
         ipText.raycastTarget = true;
@@ -103,6 +125,12 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
     void ApplyColors()
     {
         if (tier < 0 || !face || !label) return;
+        if (artwork && frame)
+        {
+            var sprite = artwork.Frame(tier);
+            if (frame.sprite != sprite) frame.sprite = sprite;
+            return;
+        }
         var settings = JcInfluenceBadgeSettings.ForScene(gameObject.scene.handle);
         var colors = (settings ? settings.Draft : DefaultColors).Get(tier);
         face.SetStyle(colors.surface, colors.border);
@@ -120,8 +148,18 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
         rect.pivot = new Vector2(1, .5f);
         rect.anchoredPosition = new Vector2(0, source.anchoredPosition.y - source.rect.height * .5f);
         // JC | 2026-11-13 | 기존 측정 폭 기준으로 박스를 10% 확대하고 글자만 10% 줄입니다.
-        rect.sizeDelta = new Vector2(width, source.rect.height) * 1.1f;
-        label.fontSize = size * .9f;
+        if (artwork)
+        {
+            // JC | 2026-11-15 | 기존 가로 폭과 글자 크기를 유지하고 배지 세로만 25% 늘립니다.
+            float baseHeight = source.rect.height * 1.2f;
+            rect.sizeDelta = new Vector2(Mathf.Max(width, baseHeight * 3f), baseHeight * 1.25f);
+            label.fontSize = size * .8f;
+        }
+        else
+        {
+            rect.sizeDelta = new Vector2(width, source.rect.height) * 1.1f;
+            label.fontSize = size * .9f;
+        }
     }
     public void OnPointerEnter(PointerEventData data)
     {

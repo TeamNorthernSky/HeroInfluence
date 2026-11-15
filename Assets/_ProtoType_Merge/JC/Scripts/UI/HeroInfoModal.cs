@@ -49,6 +49,7 @@ public class HeroInfoModal : MonoBehaviour
     [SerializeField] private TMP_Text gradeText;        // GradeBox/Label — 레벨 기반 랭크(N..A,S)
 
     private int currentUnitIndex = -1;
+    public int CurrentUnitIndex => currentUnitIndex;
     private bool buttonsResolved;
 
     // 호버 툴팁용 슬롯 캐시
@@ -58,7 +59,11 @@ public class HeroInfoModal : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
-    public void Open(int unitIndex)
+    public void Open(int unitIndex) => Open(unitIndex, true);
+
+    public void Open(int unitIndex, bool dimBackground) => Open(unitIndex, dimBackground, null);
+
+    public void Open(int unitIndex, bool dimBackground, RectTransform[] clickThrough)
     {
         if (!TryResolve(unitIndex, out UnitPersistentData unit, out DHPlayerUnitTemplate template))
         {
@@ -68,6 +73,8 @@ public class HeroInfoModal : MonoBehaviour
 
         currentUnitIndex = unitIndex;
         Apply(unit, template);
+        var modal = GetRoot().GetComponent<Modal>();
+        if (modal != null) modal.SetDimSuppressed(!dimBackground, clickThrough);
         GetRoot().SetActive(true);
     }
 

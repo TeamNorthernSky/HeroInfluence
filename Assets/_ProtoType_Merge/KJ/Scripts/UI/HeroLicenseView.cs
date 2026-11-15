@@ -21,6 +21,9 @@ public sealed class HeroLicenseView : MonoBehaviour
     [SerializeField] private Image equippedCoreSkill;
     [SerializeField] private Sprite[] coreSprites;
     [SerializeField] private Sprite[] coreSkillSprites;
+    [SerializeField] private JcInfluenceBadgeView influenceBadge;
+    [SerializeField] private LicenseHoverTooltip influenceHover;
+    [SerializeField] private RectTransform influenceTooltipAnchor;
     private int lastCore = -1;
     private int lastCoreLevel = -1;
     private static readonly FieldInfo UnitIndexField = typeof(HeroInfoModal).GetField("currentUnitIndex", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -28,13 +31,23 @@ public sealed class HeroLicenseView : MonoBehaviour
     private TMP_Text damageReductionValue;
     private int lastUnit = -1;
     private int lastLevel = -1;
-    private void OnEnable() { lastUnit = -1; lastLevel = -1; lastCore = -1; lastCoreLevel = -1; BindStatHovers(); }
+    private void OnEnable()
+    {
+        lastUnit = -1; lastLevel = -1; lastCore = -1; lastCoreLevel = -1;
+        BindStatHovers();
+        if (influenceHover != null) influenceHover.BindInfluence(owner, influenceTooltipAnchor, hpValue.font);
+    }
     private void LateUpdate()
     {
         if (owner == null || UnitIndexField == null) return;
         int index = (int)UnitIndexField.GetValue(owner);
         var repo = PersistentUnitRepository.Instance;
-        if (repo == null || !repo.TryGetUnit(index, out var unit) || unit == null) return;
+        if (repo == null || !repo.TryGetUnit(index, out var unit) || unit == null)
+        {
+            if (influenceBadge != null) influenceBadge.SetUnit(null);
+            return;
+        }
+        if (influenceBadge != null) influenceBadge.SetUnit(unit);
         if (damageReductionValue == null && DamageReductionField != null)
             damageReductionValue = DamageReductionField.GetValue(owner) as TMP_Text;
         if (damageReductionValue != null)
@@ -129,6 +142,14 @@ public sealed class HeroLicenseView : MonoBehaviour
             var t = tooltips.Find("Info_" + stat);
             var image = tooltips.Find("VF_Info_" + (stat == "EXP" ? "EXE" : stat));
             if (!t || !image) continue;
+            if (stat == "IP" && influenceHover != null)
+            {
+                // 배지부터 숫자까지 하나의 호버 영역으로 안내합니다. 구형 숫자 전용 툴팁은 해제합니다.
+                foreach (var legacy in t.GetComponentsInChildren<LicenseHoverTooltip>(true)) legacy.enabled = false;
+                foreach (var valueGraphic in t.GetComponentsInChildren<Graphic>(true)) valueGraphic.raycastTarget = false;
+                image.gameObject.SetActive(false);
+                continue;
+            }
             var hoverArea = t.Find("HoverCheckArea");
             var target = hoverArea ? hoverArea : t;
             if (hoverArea)

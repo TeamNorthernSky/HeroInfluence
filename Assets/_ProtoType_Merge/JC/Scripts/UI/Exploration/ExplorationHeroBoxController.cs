@@ -24,6 +24,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
         public Image hpFill;         // [KJ 260909] HP 게이지(Image Type=Filled). 미연결이면 무시
         public TMP_Text ipText;
         public GameObject ipMaxIcon;
+        public JcInfluenceBadgeView influenceBadge;
     }
 
     [Header("멤버 슬롯 (BTN_Explor_HeroBtn 1~4)")]
@@ -38,6 +39,10 @@ public class ExplorationHeroBoxController : MonoBehaviour
     private int[] boundUnits = System.Array.Empty<int>();
     private GameObject[] ipMaxIcons = System.Array.Empty<GameObject>();
     private Image[] defeatedOverlays = System.Array.Empty<Image>();
+    private GameObject[] selectionFrames = System.Array.Empty<GameObject>();
+    private RectTransform[] licenseClickThrough = System.Array.Empty<RectTransform>();
+    private HeroInfoModal selectedLicense;
+    private int selectedHero = -1;
     private EconomyManager subEco; // 갱신 트리거(자원/IP 변동) 용
     private float nextRefresh;     // [JC 260616] 스탯/HP/IP 변동 주기적 재반영 타이머
 
@@ -46,8 +51,17 @@ public class ExplorationHeroBoxController : MonoBehaviour
         boundUnits = new int[slots != null ? slots.Length : 0];
         ipMaxIcons = new GameObject[boundUnits.Length];
         defeatedOverlays = new Image[boundUnits.Length];
+        selectionFrames = new GameObject[boundUnits.Length];
+        licenseClickThrough = new RectTransform[boundUnits.Length];
         for (int i = 0; i < slots.Length; i++)
         {
+            if (slots[i]?.root != null)
+            {
+                selectionFrames[i] = slots[i].root.transform.Find("ProfileHoverBorder")?.gameObject;
+                licenseClickThrough[i] = slots[i].root.transform as RectTransform;
+            }
+            if (slots[i]?.root != null && slots[i].influenceBadge == null)
+                slots[i].influenceBadge = slots[i].root.GetComponentInChildren<JcInfluenceBadgeView>(true);
             if (slots[i]?.root != null)
                 foreach (var child in slots[i].root.GetComponentsInChildren<Transform>(true))
                     if (child.name == "UI_icon_max")
@@ -87,6 +101,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
 
     private void Update()
     {
+        RefreshSelection();
         if (GameManager.Instance == null) return;
         if (boundUnits.Length == 0) return;
         // 영속 매니저가 늦게 준비되면 즉시 보강
@@ -136,6 +151,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
             UnitPersistentData unit = null;
             DHPlayerUnitTemplate template = null;
             if (unitRepo != null) unitRepo.TryGetUnit(unitIndex, out unit);
+            if (slot.influenceBadge != null) slot.influenceBadge.SetUnit(unit);
             ApplySlotAvailability(i, unit);
             if (unit != null && catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey))
                 catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out template);
@@ -198,6 +214,35 @@ public class ExplorationHeroBoxController : MonoBehaviour
         if (cui == null) return;
         // [JC 260619] 탐사 멤버 클릭 → 로비와 동일 레이아웃(Modal_HeroInfo)으로 통일. HeroStatusModal 우선선택 폐기.
         var modal = cui.HeroInfoModal;
-        if (modal != null) modal.Open(boundUnits[i]);
+        if (modal != null)
+        {
+            modal.Open(boundUnits[i], dimBackground: false, clickThrough: licenseClickThrough);
+            selectedLicense = modal;
+            selectedHero = boundUnits[i];
+            RefreshSelection();
+        }
+    }
+
+    private void RefreshSelection()
+    {
+        if (selectedLicense == null || !selectedLicense.gameObject.activeInHierarchy ||
+            selectedLicense.CurrentUnitIndex != selectedHero)
+        {
+            selectedLicense = null;
+            selectedHero = -1;
+        }
+        for (int i = 0; i < selectionFrames.Length; i++)
+        {
+            bool selected = selectedHero > 0 && boundUnits[i] == selectedHero;
+            if (selectionFrames[i] != null && selectionFrames[i].activeSelf != selected)
+                selectionFrames[i].SetActive(selected);
+        }
+    }
+
+    private void OnDisable()
+    {
+        selectedLicense = null;
+        selectedHero = -1;
+        RefreshSelection();
     }
 }
