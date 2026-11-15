@@ -29,9 +29,34 @@ public class Modal : MonoBehaviour
     [SerializeField] private float dimAlpha = 0.75f;
 
     public bool PausesGame => pausesGame;
-    public bool WantsDim => wantsDim;
+    private bool dimSuppressed;
+    private RectTransform[] dimClickThrough;
+    public bool WantsDim => wantsDim || dimSuppressed;
     public bool DimClosesModal => dimClosesModal;
-    public float DimAlpha => dimAlpha;
+    public float DimAlpha => dimSuppressed ? 0f : dimAlpha;
+
+    public void SetDimSuppressed(bool suppressed, RectTransform[] clickThrough = null)
+    {
+        bool changed = dimSuppressed != suppressed;
+        dimSuppressed = suppressed;
+        dimClickThrough = suppressed ? clickThrough : null;
+        if (changed && isActiveAndEnabled) ModalManager.Register(gameObject);
+    }
+
+    public bool AllowsDimClickThrough(Vector2 screenPoint)
+    {
+        if (!dimSuppressed || dimClickThrough == null) return false;
+        foreach (var target in dimClickThrough)
+        {
+            if (target == null || !target.gameObject.activeInHierarchy) continue;
+            var selectable = target.GetComponent<UnityEngine.UI.Selectable>();
+            if (selectable == null || !selectable.IsActive() || !selectable.IsInteractable()) continue;
+            var canvas = target.GetComponentInParent<Canvas>();
+            var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+            if (RectTransformUtility.RectangleContainsScreenPoint(target, screenPoint, camera)) return true;
+        }
+        return false;
+    }
 
     private void OnEnable()
     {
