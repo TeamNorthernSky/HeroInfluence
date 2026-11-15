@@ -72,7 +72,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             yield return null;
         // Give SpeechView a LateUpdate to activate the bubble after camera completion.
         yield return null;
-        var bubble = transform.Find("NpcDialogue");
+        var bubble = transform.Find("DialogueBubble");
         var pop = bubble != null ? bubble.GetComponent<DialogueBubblePopEffect>() : null;
         var typewriter = bubble != null ? bubble.GetComponent<DialogueTypewriterEffect>() : null;
         while ((pop != null && pop.isActiveAndEnabled && pop.IsPlaying) ||
