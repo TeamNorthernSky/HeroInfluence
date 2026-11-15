@@ -12,6 +12,11 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
     private RectTransform panel;
     private GameObject imagePanel;
     private bool imageOnly;
+    private bool influenceMode;
+    private HeroInfoModal influenceOwner;
+    private RectTransform influenceAnchor;
+    private float lastInfluence = -1, lastMaximum = -1;
+    private int lastInfluenceUnit = -1;
     private static LicenseHoverTooltip visible;
     public void Bind(string title, string description, Sprite sprite, TMP_FontAsset textFont, bool speechBubble, string badges = "")
     {
@@ -19,6 +24,7 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
         Hide();
         imagePanel = null;
         imageOnly = false;
+        influenceMode = false;
         if (panel) { Destroy(panel.gameObject); panel = null; }
     }
     public void BindImage(GameObject image)
@@ -26,6 +32,7 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
         Hide();
         if (panel) { Destroy(panel.gameObject); panel = null; }
         imageOnly = true;
+        influenceMode = false;
         imagePanel = image;
         if (!imagePanel) return;
         foreach (var graphic in imagePanel.GetComponentsInChildren<Graphic>(true))
@@ -35,6 +42,13 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
     public void OnPointerEnter(PointerEventData e)
     {
         if (visible && visible != this) visible.Hide();
+        if (influenceMode)
+        {
+            visible = this;
+            lastInfluenceUnit = -1;
+            ShowInfluence();
+            return;
+        }
         if (imageOnly)
         {
             if (!imagePanel) return;
@@ -49,8 +63,26 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
     public void OnPointerExit(PointerEventData e) => Hide();
     private void OnDisable() => Hide();
     private void OnDestroy() { Hide(); if (panel) Destroy(panel.gameObject); }
-    private void Hide() { if (imagePanel) imagePanel.SetActive(false); if (panel) panel.gameObject.SetActive(false); if (visible == this) visible = null; }
-    private void LateUpdate() { if (panel && panel.gameObject.activeSelf) Place(); }
+    private void Hide() { if (influenceMode && visible == this && SkillTooltip.Instance) SkillTooltip.Instance.Hide(); if (imagePanel) imagePanel.SetActive(false); if (panel) panel.gameObject.SetActive(false); if (visible == this) visible = null; }
+    private void LateUpdate() { if (influenceMode && visible == this) ShowInfluence(); else if (panel && panel.gameObject.activeSelf) Place(); }
+
+    public void BindInfluence(HeroInfoModal owner, RectTransform anchor, TMP_FontAsset textFont)
+    {
+        Hide();
+        influenceMode = true; imageOnly = false; imagePanel = null;
+        influenceOwner = owner; influenceAnchor = anchor; font = textFont;
+    }
+
+    private void ShowInfluence()
+    {
+        var repo = PersistentUnitRepository.Instance;
+        if (!influenceOwner || !influenceAnchor || !SkillTooltip.Instance || repo == null ||
+            !repo.TryGetUnit(influenceOwner.CurrentUnitIndex, out var unit) || unit == null) return;
+        float current = unit.CurrentInfluence, maximum = unit.IngameStats.Influence;
+        if (lastInfluenceUnit == unit.UnitIndex && lastInfluence == current && lastMaximum == maximum) return;
+        lastInfluenceUnit = unit.UnitIndex; lastInfluence = current; lastMaximum = maximum;
+        SkillTooltip.Instance.ShowInfluenceAt(current, maximum, JcHeroInfluenceBadge.Title(current), influenceAnchor, font);
+    }
     private RectTransform Rect(string name, float x, float y, float w, float h)
     {
         var r = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>(); r.SetParent(panel, false);

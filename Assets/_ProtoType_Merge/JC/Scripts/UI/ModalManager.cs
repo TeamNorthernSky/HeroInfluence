@@ -109,6 +109,7 @@ public class ModalManager : MonoBehaviour
         dimImage.color = new Color(0f, 0f, 0f, DefaultDimAlpha);
         dimImage.raycastTarget = true;
         dimGo.AddComponent<ModalDimClickCloser>();
+        dimGo.AddComponent<ModalDimRaycastFilter>();
         dimGo.transform.SetParent(transform, false);
         dimGo.SetActive(false);
     }

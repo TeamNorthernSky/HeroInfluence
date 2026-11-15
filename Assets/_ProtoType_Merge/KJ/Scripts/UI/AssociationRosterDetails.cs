@@ -11,6 +11,7 @@ public sealed class AssociationRosterDetails : MonoBehaviour
     [SerializeField] private GameObject maximum;
     [SerializeField] private Image core;
     [SerializeField] private Sprite[] coreSprites;
+    [SerializeField] private JcInfluenceBadgeView influenceBadge;
 
     private void LateUpdate()
     {
@@ -20,9 +21,11 @@ public sealed class AssociationRosterDetails : MonoBehaviour
             influence.text = "—";
             maximum.SetActive(false);
             core.enabled = false;
+            if (influenceBadge != null) influenceBadge.SetUnit(null);
             return;
         }
         influence.text = Mathf.FloorToInt(unit.CurrentInfluence).ToString();
+        if (influenceBadge != null) influenceBadge.SetUnit(unit);
         maximum.SetActive(unit.IngameStats.Influence > 0 && unit.CurrentInfluence >= unit.IngameStats.Influence);
         var workshop = GameManager.Instance != null ? GameManager.Instance.Workshop : null;
         int id = workshop != null ? workshop.GetEquippedWeaponIndex(owner.UnitIndex) : 0;

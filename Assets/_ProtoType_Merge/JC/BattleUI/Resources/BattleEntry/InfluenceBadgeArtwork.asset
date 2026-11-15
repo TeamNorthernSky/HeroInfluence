@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74732b015cde423449d73df00071afad, type: 3}
+  m_Name: InfluenceBadgeArtwork
+  m_EditorClassIdentifier: 
+  font: {fileID: 11400000, guid: 53dd59ef54e18694497db82ee254f327, type: 2}
+  frames:
+  - {fileID: 21300000, guid: 0a98e74325d4bad4fa985654bdd6e342, type: 3}
+  - {fileID: 21300000, guid: 3405094c910d9f249bb30e74facafd5e, type: 3}
+  - {fileID: 21300000, guid: 5f84a2033b3a0b440ab41f0aed7ecb92, type: 3}
+  - {fileID: 21300000, guid: 6a5c1feef16ac5f4b96a39a30a9c6367, type: 3}
