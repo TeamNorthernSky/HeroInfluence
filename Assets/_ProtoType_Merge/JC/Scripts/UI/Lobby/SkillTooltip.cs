@@ -46,12 +46,42 @@ public partial class SkillTooltip : MonoBehaviour
     [SerializeField] private Vector2 compareOffset = new Vector2(0f, -70f);
 
     private RectTransform tipBRect, tipCRect;
+    private RectTransform temporaryRoot;
+    private Vector2 savedAnchorMin, savedAnchorMax, savedPivot, savedSize;
+    private Vector3 savedPosition, savedScale;
+
+    private void RememberTemporaryLayout(RectTransform rect)
+    {
+        if (rect == null) return;
+        temporaryRoot = rect;
+        savedAnchorMin = rect.anchorMin;
+        savedAnchorMax = rect.anchorMax;
+        savedPivot = rect.pivot;
+        savedSize = rect.sizeDelta;
+        savedPosition = rect.anchoredPosition3D;
+        savedScale = rect.localScale;
+    }
+
+    private void RestoreTemporaryLayout()
+    {
+        if (temporaryRoot == null) return;
+        temporaryRoot.anchorMin = savedAnchorMin;
+        temporaryRoot.anchorMax = savedAnchorMax;
+        temporaryRoot.pivot = savedPivot;
+        temporaryRoot.sizeDelta = savedSize;
+        temporaryRoot.anchoredPosition3D = savedPosition;
+        temporaryRoot.localScale = savedScale;
+        temporaryRoot = null;
+    }
     // [JC 260617] 9-slice 패널 원본(디자인) 높이 — 동적 사이즈가 이보다 작아지지 않도록 최소 캡으로 사용.
     private float tipBDescBaseH, tipCDescBaseH;
     // [JC 260619] TipB 배경/본문 원본 너비 — ShowInfo의 extraWidth로 호출처별 가감(기본 0).
     private float tipBRootBaseW, tipBDescPanelBaseW, tipBDescBaseW;
 
     private bool promoted;
+    private RectTransform panelOverlayRoot;
+    private Vector3 panelOverlayScale;
+    private Vector2 panelOverlaySize;
 
     private void Awake()
     {
@@ -120,10 +150,11 @@ public partial class SkillTooltip : MonoBehaviour
         panel.sizeDelta = new Vector2(sd.x, Mathf.Max(floor, maxH * descHeightScale + descPadding * 2f));
     }
 
-    public void ShowInfo(Sprite icon, string skillName, string desc, RectTransform target, float extraY = 0f, float extraWidth = 0f, float iconDeltaX = 0f, float extraX = 0f)
+    public void ShowInfo(Sprite icon, string skillName, string desc, RectTransform target, float extraY = 0f, float extraWidth = 0f, float iconDeltaX = 0f, float extraX = 0f, bool usePrefabLayout = false)
     {
         Hide();
         if (tipBRoot == null || target == null) return;
+        if (!usePrefabLayout) RememberTemporaryLayout(tipBRect);
         if (tipBIcon != null)
         {
             tipBIcon.sprite = icon; tipBIcon.enabled = icon != null;
@@ -132,12 +163,16 @@ public partial class SkillTooltip : MonoBehaviour
         if (tipBName != null) tipBName.text = skillName;
         if (tipBDesc != null) { tipBDesc.gameObject.SetActive(true); tipBDesc.text = desc; }
         // [JC 260619] 호출처별 너비 가감(기본 0). 배경 프레임(TipB) + 본문 패널 + 텍스트 모두 적용. SizeDescPanel(높이)보다 먼저.
-        if (tipBRect != null) tipBRect.sizeDelta = new Vector2(tipBRootBaseW + extraWidth, tipBRect.sizeDelta.y);
-        if (tipBDescPanel != null) tipBDescPanel.sizeDelta = new Vector2(tipBDescPanelBaseW + extraWidth, tipBDescPanel.sizeDelta.y);
-        if (tipBDesc != null) tipBDesc.rectTransform.sizeDelta = new Vector2(tipBDescBaseW + extraWidth, tipBDesc.rectTransform.sizeDelta.y);
-        SkillTooltipCardLayout.Info(tipBRect, tipBIcon, tipBName, tipBDesc, tipBDescPanel, extraWidth, iconDeltaX);
+        if (!usePrefabLayout)
+        {
+            if (tipBRect != null) tipBRect.sizeDelta = new Vector2(tipBRootBaseW + extraWidth, tipBRect.sizeDelta.y);
+            if (tipBDescPanel != null) tipBDescPanel.sizeDelta = new Vector2(tipBDescPanelBaseW + extraWidth, tipBDescPanel.sizeDelta.y);
+            if (tipBDesc != null) tipBDesc.rectTransform.sizeDelta = new Vector2(tipBDescBaseW + extraWidth, tipBDesc.rectTransform.sizeDelta.y);
+        }
+        SkillTooltipCardLayout.Info(tipBRect, tipBIcon, tipBName, tipBDesc, tipBDescPanel, extraWidth, iconDeltaX, usePrefabLayout);
         tipBRoot.SetActive(true);
         transform.SetAsLastSibling();
+        if (usePrefabLayout) return;
         var ctr = Center(target);
         tipBRect.pivot = new Vector2(0f, 1f); // 좌상단 모서리
         // [JC 260619] extraY: 호출처별 추가 Y 오프셋(HeroInfo 모달은 +250로 위로 올림).
@@ -148,10 +183,11 @@ public partial class SkillTooltip : MonoBehaviour
 
     public void ShowCompare(Sprite curIcon, string curName, string curEffect,
                             Sprite nextIcon, string nextName, string nextEffect, RectTransform target,
-                            float curRatio, float nextRatio)
+                            float curRatio, float nextRatio, bool usesMaxHp = false, bool usePrefabLayout = false)
     {
         Hide();
         if (tipCRoot == null || target == null) return;
+        if (!usePrefabLayout) RememberTemporaryLayout(tipCRect);
         if (tipCCurIcon != null) { tipCCurIcon.sprite = curIcon; tipCCurIcon.enabled = curIcon != null; }
         if (tipCNextIcon != null) { tipCNextIcon.sprite = nextIcon; tipCNextIcon.enabled = nextIcon != null; }
         if (tipCCurName != null) tipCCurName.text = curName;
@@ -159,24 +195,45 @@ public partial class SkillTooltip : MonoBehaviour
         if (tipCCurEffect != null) tipCCurEffect.text = curEffect;
         if (tipCNextEffect != null) tipCNextEffect.text = nextEffect;
         SkillTooltipCardLayout.Compare(tipCRect, tipCCurIcon, tipCCurName, tipCCurEffect,
-            tipCNextIcon, tipCNextName, tipCNextEffect, tipCDescPanel, curRatio, nextRatio, tipCLevel);
+            tipCNextIcon, tipCNextName, tipCNextEffect, tipCDescPanel, curRatio, nextRatio, tipCLevel, usesMaxHp);
         tipCRoot.SetActive(true);
         transform.SetAsLastSibling();
+        if (usePrefabLayout) return;
         var ctr = Center(target);
         tipCRect.pivot = new Vector2(0.5f, 1f); // 상단-중앙
         tipCRect.position = new Vector3(ctr.x + compareOffset.x, ctr.y + compareOffset.y, tipCRect.position.z);
         SkillTooltipCardLayout.KeepOnScreen(tipCRect);
     }
 
-    public void PlaceBeside(RectTransform target, bool left)
+    public void PlaceOverPanel(RectTransform panel, bool matchHeight)
     {
+        RestorePanelOverlay();
         var rect = tipCRoot != null && tipCRoot.activeSelf ? tipCRect
             : tipBRoot != null && tipBRoot.activeSelf ? tipBRect : null;
-        SkillTooltipCardLayout.PlaceBeside(rect, target, left);
+        if (rect == null || panel == null) return;
+        if (rect == tipCRect)
+        {
+            SkillTooltipCardLayout.AlignPanelTopLeft(rect, panel);
+            return;
+        }
+        panelOverlayRoot = rect;
+        panelOverlayScale = rect.localScale;
+        panelOverlaySize = rect.sizeDelta;
+        SkillTooltipCardLayout.PlaceOverPanel(rect, panel, matchHeight);
+    }
+
+    private void RestorePanelOverlay()
+    {
+        if (panelOverlayRoot == null) return;
+        panelOverlayRoot.localScale = panelOverlayScale;
+        panelOverlayRoot.sizeDelta = panelOverlaySize;
+        panelOverlayRoot = null;
     }
 
     public void Hide()
     {
+        RestorePanelOverlay();
+        RestoreTemporaryLayout();
         // JC | 2026-11-13 | IP 전용 패널도 기존 공용 툴팁의 표시/해제 수명에 맞춥니다.
         if (influenceRoot != null) influenceRoot.gameObject.SetActive(false);
         if (tipBRoot != null) tipBRoot.SetActive(false);

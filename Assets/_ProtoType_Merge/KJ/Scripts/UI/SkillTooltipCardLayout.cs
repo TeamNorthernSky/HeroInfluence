@@ -68,8 +68,13 @@ public static class SkillTooltipCardLayout
     }
 
     public static void Info(RectTransform root, Image icon, TMP_Text name, TMP_Text description,
-        RectTransform oldPanel, float extraWidth, float iconDeltaX)
+        RectTransform oldPanel, float extraWidth, float iconDeltaX, bool usePrefabLayout = false)
     {
+        if (usePrefabLayout)
+        {
+            IgnoreInput(root);
+            return;
+        }
         float width = Mathf.Max(400f, 500f + extraWidth);
         root.sizeDelta = new Vector2(width, width * (2f / 3f));
         HidePanelImage(oldPanel);
@@ -91,9 +96,8 @@ public static class SkillTooltipCardLayout
 
     public static void Compare(RectTransform root, Image icon, TMP_Text name, TMP_Text current,
         Image nextIcon, TMP_Text nextName, TMP_Text next, RectTransform oldPanel,
-        float curRatio, float nextRatio, TMP_Text level = null)
+        float curRatio, float nextRatio, TMP_Text level = null, bool usesMaxHp = false)
     {
-        root.sizeDelta = new Vector2(500f, 646f);
         HidePanelImage(oldPanel);
         if (nextIcon != null) nextIcon.gameObject.SetActive(false);
         if (nextName != null) nextName.gameObject.SetActive(false);
@@ -128,7 +132,9 @@ public static class SkillTooltipCardLayout
                 bool isCurrent = label.name == "CurRatio";
                 string percent = ((isCurrent ? curRatio : nextRatio) * 100f)
                     .ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-                label.text = (isCurrent ? "현재 레벨 : " : "다음 레벨 : ") + "공격력의 " + percent + "%의 피해";
+                label.text = (isCurrent ? "현재 레벨 : " : "다음 레벨 : ")
+                    + (usesMaxHp ? "네코밍 최대체력의 " : "공격력의 ") + percent
+                    + (usesMaxHp ? "%만큼 회복" : "%의 피해");
                 label.gameObject.SetActive(true);
                 label.enabled = true;
             }
@@ -141,18 +147,32 @@ public static class SkillTooltipCardLayout
         foreach (var graphic in root.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget = false;
     }
 
-    public static void PlaceBeside(RectTransform root, RectTransform target, bool left)
+    public static void PlaceOverPanel(RectTransform root, RectTransform panel, bool matchHeight)
     {
-        if (root == null || target == null) return;
+        if (root == null || panel == null || root.rect.width <= 0f) return;
         Canvas.ForceUpdateCanvases();
         var corners = new Vector3[4];
-        target.GetWorldCorners(corners);
-        float gap = 12f * Mathf.Abs(root.lossyScale.x);
-        float x = left ? corners[0].x - gap : corners[2].x + gap;
-        float y = (corners[0].y + corners[2].y) * 0.5f;
-        root.pivot = new Vector2(left ? 1f : 0f, 0.5f);
-        root.position = new Vector3(x, y, root.position.z);
-        KeepOnScreen(root);
+        panel.GetWorldCorners(corners);
+        float width = corners[2].x - corners[0].x;
+        float currentWidth = root.rect.width * Mathf.Abs(root.lossyScale.x);
+        if (width <= 0f || currentWidth <= 0f) return;
+        // Preserve text proportions while matching the panel across canvas scales.
+        root.localScale *= width / currentWidth;
+        if (matchHeight && Mathf.Abs(root.lossyScale.y) > 0f)
+            root.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                (corners[1].y - corners[0].y) / Mathf.Abs(root.lossyScale.y));
+        root.pivot = new Vector2(0f, 1f);
+        root.position = new Vector3(corners[1].x, corners[1].y, root.position.z);
+    }
+
+    public static void AlignPanelTopLeft(RectTransform root, RectTransform panel)
+    {
+        if (root == null || panel == null) return;
+        Canvas.ForceUpdateCanvases();
+        var corners = new Vector3[4];
+        panel.GetWorldCorners(corners);
+        root.pivot = new Vector2(0f, 1f);
+        root.position = new Vector3(corners[1].x, corners[1].y, root.position.z);
     }
 
     public static void KeepOnScreen(RectTransform root)
