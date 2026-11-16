@@ -97,9 +97,11 @@ public class InfirmaryModalController : MonoBehaviour
         if (repo == null || !repo.TryGetUnit(unitIndex, out UnitPersistentData unit) || unit == null) return;
 
         bool downed = unit.CurrentHp <= 0f;
-        if (downed) TryReviveOne(unitIndex);
+        bool revived = false;
+        if (downed) revived = TryReviveOne(unitIndex);
         else TryHealOne(unitIndex);
         Refresh();
+        if (revived) ShowReviveNotice();
     }
 
     private bool TryHealOne(int unitIndex)
@@ -152,16 +154,24 @@ public class InfirmaryModalController : MonoBehaviour
         noticeView.Hide();
 
         bool reviveThisClick = reviveAllMode;
+        bool revived = false;
         List<int> units = ResolveVisitingUnits();
         foreach (int idx in units)
         {
             if (reviveThisClick)
             {
-                if (gm.Infirmary.CanRevive(idx)) gm.Infirmary.TryRevive(idx);
+                if (gm.Infirmary.CanRevive(idx) && gm.Infirmary.TryRevive(idx)) revived = true;
             }
             else if (gm.Infirmary.CanHeal(idx)) TryHealOne(idx);
         }
         Refresh();
+        if (revived) ShowReviveNotice();
+    }
+
+    private void ShowReviveNotice()
+    {
+        if (stateInfoText != null) stateInfoText.text = "부활했습니다.";
+        noticeView.Show();
     }
 
     // ─── Refresh ────────────────────────────────────────────────

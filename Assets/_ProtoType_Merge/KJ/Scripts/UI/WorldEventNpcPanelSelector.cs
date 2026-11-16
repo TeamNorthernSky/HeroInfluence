@@ -23,6 +23,11 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private bool buttonsBound;
     private int inputFrame = -1;
     private Button resultClickArea;
+    private const float ChoiceButtonHeight = 200f;
+    private const float ChoiceLabelFontSize = 32f;
+    private const float ChoicePreviewFontSize = 24f;
+    private const float ChoiceChanceFontSize = 26f;
+    private RectTransform resultRewardCard;
     private DHWorldEventPresentationRequest lastConfirmRequest;
     private int resultShownFrame = -1;
     private int choicesShownFrame = -1;
@@ -289,6 +294,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         if (rewardPanel != null) rewardPanel.SetActive(false);
         if (choicePanel != null) choicePanel.SetActive(false);
         if (resultClickArea != null) resultClickArea.gameObject.SetActive(false);
+        if (resultRewardCard != null) resultRewardCard.gameObject.SetActive(false);
         SetQuestListHidden(false);
     }
 
@@ -402,6 +408,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         SetQuestListHidden(!request.IsWaitingFinalConfirm && !choiceSubmitted);
         bool live = manager != null && ReferenceEquals(manager.CurrentRequest, request);
         bool confirm = request.IsWaitingFinalConfirm;
+        ShowResultRewards(request);
         bool waitForClick = confirm && request.EventType == DHWorldEventType.Choice;
         bool blockConsumeBackground = confirm && request.EventType == DHWorldEventType.Consume;
         if (confirm && !ReferenceEquals(lastConfirmRequest, request))
@@ -480,6 +487,56 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         }
     }
 
+    private void ShowResultRewards(DHWorldEventPresentationRequest request)
+    {
+        bool hasResult = (request.EventType == DHWorldEventType.Choice ||
+            request.EventType == DHWorldEventType.Consume) &&
+            request.Step == DHWorldEventPresentationStep.Accept;
+        bool hasEntries = false;
+        if (hasResult)
+            foreach (var entry in request.PreviewEntries)
+                if (entry != null && entry.Amount != 0) { hasEntries = true; break; }
+        if (!hasEntries)
+        {
+            if (resultRewardCard != null) resultRewardCard.gameObject.SetActive(false);
+            return;
+        }
+        if (resultRewardCard == null)
+        {
+            var bubble = transform.Find("NpcDialogue") ?? transform.Find("DialogueBubble");
+            resultRewardCard = bubble != null ? bubble.Find("RewardResult") as RectTransform : null;
+        }
+        var rows = resultRewardCard != null ? resultRewardCard.Find("Rows") : null;
+        if (rows == null || rows.childCount == 0)
+        {
+            Debug.LogWarning("[WorldEventNpcPanelSelector] 프리팹의 RewardResult/Rows가 연결되지 않았습니다.", this);
+            return;
+        }
+        int count = 0;
+        foreach (var entry in request.PreviewEntries)
+        {
+            if (entry == null || entry.Amount == 0) continue;
+            if (count == rows.childCount)
+            {
+                var extra = Instantiate(rows.GetChild(0).gameObject, rows);
+                extra.name = "RewardEntry_" + count;
+            }
+            var row = rows.GetChild(count++);
+            var icon = row.Find("Icon").GetComponent<Image>();
+            var amount = row.Find("Amount").GetComponent<TMP_Text>();
+            icon.sprite = NpcPreview.Icon(entry);
+            icon.gameObject.SetActive(icon.sprite != null);
+            int value = entry.Group == DHWorldEventPreviewGroup.Cost ? -Mathf.Abs(entry.Amount) : entry.Amount;
+            string number = value > 0 ? "+" + value : value.ToString();
+            amount.text = icon.sprite != null ? number : NpcPreview.Name(entry.Label) + " " + number;
+            amount.color = value < 0 ? new Color32(185, 35, 45, 255) : new Color32(20, 70, 151, 255);
+            row.gameObject.SetActive(true);
+        }
+        for (int i = count; i < rows.childCount; i++) rows.GetChild(i).gameObject.SetActive(false);
+        resultRewardCard.gameObject.SetActive(true);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(resultRewardCard);
+    }
+
     private void SetChoiceConfirmationStyle(bool confirm)
     {
         var image = choiceDecline.targetGraphic as Image;
@@ -509,11 +566,16 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
 
     private static float LayoutButtonHeader(Button button, bool includeChance)
     {
-        float width = Mathf.Max(1f, ((RectTransform)button.transform).rect.width - 42f);
+        var buttonRect = (RectTransform)button.transform;
+        float width = Mathf.Max(1f, buttonRect.rect.width - 42f);
         var label = button.transform.Find("Label").GetComponent<TMP_Text>();
-        float height = MeasureText(label, width, 24f, 44f);
-        PlaceButtonText(label.rectTransform, 21f, 10f, width, height);
-        float bottom = 10f + height + 8f;
+        float height = MeasureText(label, width, ChoiceLabelFontSize, 44f);
+        // Keep the main text's authored position; previews start below its measured bounds.
+        label.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+        label.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        var corners = new Vector3[4];
+        label.rectTransform.GetWorldCorners(corners);
+        float bottom = buttonRect.rect.yMax - buttonRect.InverseTransformPoint(corners[0]).y + 4f;
         var chanceTransform = button.transform.Find("SuccessChance");
         var chance = chanceTransform != null ? chanceTransform.GetComponent<TMP_Text>() : null;
         if (chance != null)
@@ -522,7 +584,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             chance.gameObject.SetActive(show);
             if (show)
             {
-                float chanceHeight = MeasureText(chance, width, 20f, 32f);
+                float chanceHeight = MeasureText(chance, width, ChoiceChanceFontSize, 32f);
                 PlaceButtonText(chance.rectTransform, 21f, bottom, width, chanceHeight);
                 bottom += chanceHeight + 8f;
             }
@@ -596,8 +658,8 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                     text.name = "PreviewText_" + count;
                     text.raycastTarget = false;
                     text.enableAutoSizing = true;
-                    text.fontSizeMin = 14;
-                    text.fontSizeMax = 19;
+                    text.fontSizeMin = 18;
+                    text.fontSizeMax = ChoicePreviewFontSize;
                     text.alignment = TextAlignmentOptions.MidlineLeft;
                     texts.Add(text);
                 }
@@ -614,7 +676,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                     if (rowLeft > 21f)
                     {
                         CenterCurrentLine();
-                        rowTop += lineHeight + 4f;
+                        rowTop += lineHeight + 2f;
                         rowLeft = 21f;
                         lineHeight = 0f;
                     }
@@ -627,12 +689,12 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 float iconWidth = iconView.sprite != null ? 34 : 0;
                 float textWidth = Mathf.Min(textView.GetPreferredValues(textView.text).x + 2f,
                     Mathf.Max(1, buttonWidth - 42f - iconWidth));
-                float rowHeight = MeasureText(textView, textWidth, 19f, 28f);
+                float rowHeight = MeasureText(textView, textWidth, ChoicePreviewFontSize, 32f);
                 float itemWidth = iconWidth + textWidth;
                 if (rowLeft > 21f && rowLeft + itemWidth > buttonWidth - 21f)
                 {
                     CenterCurrentLine();
-                    rowTop += lineHeight + 4f;
+                    rowTop += lineHeight + 2f;
                     rowLeft = 21f;
                     lineHeight = 0f;
                 }
@@ -658,12 +720,23 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             {
                 chance.gameObject.SetActive(true);
                 float width = Mathf.Max(1f, ((RectTransform)button.transform).rect.width - 42f);
-                float chanceHeight = MeasureText(chance, width, 20f, 32f);
-                PlaceButtonText(chance.rectTransform, 21f, bottom + 4f, width, chanceHeight);
-                bottom += chanceHeight + 4f;
+                float chanceHeight = MeasureText(chance, width, ChoiceChanceFontSize, 32f);
+                PlaceButtonText(chance.rectTransform, 21f, bottom + 2f, width, chanceHeight);
+                bottom += chanceHeight + 2f;
             }
-            float height = Mathf.Max(110f, bottom + 10f);
-            ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            var rect = (RectTransform)button.transform;
+            float previousHeight = rect.rect.height;
+            float height = Mathf.Max(ChoiceButtonHeight, 2f * (bottom + 10f) - previousHeight);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            // Keep previews attached below the centered label when the button grows or shrinks.
+            float shift = (height - previousHeight) * 0.5f;
+            for (int i = 0; i < count; i++)
+            {
+                icons[i].rectTransform.anchoredPosition -= Vector2.up * shift;
+                texts[i].rectTransform.anchoredPosition -= Vector2.up * shift;
+            }
+            if (chance != null && chance.gameObject.activeSelf)
+                chance.rectTransform.anchoredPosition -= Vector2.up * shift;
         }
 
         private void CenterCurrentLine()
@@ -679,8 +752,15 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             lineStart = count;
         }
 
-        private static Sprite Icon(DHWorldEventPreviewEntry entry)
+        public static Sprite Icon(DHWorldEventPreviewEntry entry)
         {
+            if (entry.Label == "CurrentHP" && entry.Amount > 0)
+            {
+                // Share the icon configured for exploration first-aid kits (NPC type 5).
+                var registry = UnityEngine.Object.FindFirstObjectByType<LevelPrefabRegistry>();
+                if (registry != null && registry.TryGetWorldEventNpcQuestionIcon(5, out Sprite recoveryIcon) && recoveryIcon != null)
+                    return recoveryIcon;
+            }
             if (entry.Group == DHWorldEventPreviewGroup.Reward &&
                 DHWorldEventCodeMap.TryGetRewardType(entry.TypeCode, out DHWorldEventRewardType reward) &&
                 DHWorldEventCodeMap.TryGetRewardResourceType(reward, out ResourceType resource))
@@ -697,13 +777,14 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 case "CurrentIP": case "MaxIP":
                     if (licenseIpIcon == null) licenseIpIcon = Sprites.Load("NpcPreview/UI_icon_IP");
                     return licenseIpIcon;
-                case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP);
-                case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK);
+                case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP) ?? Sprites.Load("Status/UI_icon_HP");
+                case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK) ?? Sprites.Load("Status/UI_icon_ATK");
+                case "Def": return Sprites.UI.Status(UIStatusIconType.DEF) ?? Sprites.Load("Status/UI_icon_DEF");
                 default: return null;
             }
         }
 
-        private static string Name(string value)
+        public static string Name(string value)
         {
             switch (value)
             {
@@ -716,6 +797,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 case "CurrentHP": return "체력";
                 case "MaxHP": return "최대 체력";
                 case "Atk": return "공격력";
+                case "Def": return "방어력";
                 default: return value;
             }
         }
@@ -726,8 +808,8 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         var label = button.transform.Find("Label").GetComponent<TMP_Text>();
         label.text = string.IsNullOrWhiteSpace(text) ? "확인" : text;
         button.interactable = enabled;
-        float bottom = LayoutButtonHeader(button, false);
-        ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(110f, bottom + 10f));
+        LayoutButtonHeader(button, false);
+        ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ChoiceButtonHeight);
         if (button.transform.name == "DeclineButton")
         {
             var rect = label.rectTransform;
