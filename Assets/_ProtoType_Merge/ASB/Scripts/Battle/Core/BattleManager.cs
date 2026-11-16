@@ -97,6 +97,38 @@ public class BattleManager : MonoBehaviour
     private int _currentFollowUpDepth;
     private const int MaxFollowUpDepth = 8;
 
+    // [2026-11-16] 최상위 행동(ExecuteGridSkill·ExecuteHostageSkill)이 반격·카메라 복귀까지 다 끝났는지 세는 값.
+    // 아군이 자기 행동 중 반격으로 죽으면 사망 처리가 '행동 끝' 신호를 먼저 켜므로,
+    // BattleFlowManager는 다음 턴으로 넘어가기 전에 이 값이 0이 될 때까지 기다린다.
+    private int _runningActionCount;
+
+    /// <summary>최상위 행동(반격 등 연쇄 처리 포함)이 아직 진행 중이면 true.</summary>
+    public bool IsActionRunning => _runningActionCount > 0;
+
+    /// <summary>
+    /// 행동 코루틴이 강제 중단(StopAllCoroutines 등)되면 finally가 돌지 않아 값이 남는다.
+    /// 대기 상한을 넘긴 BattleFlowManager가 이후 턴까지 묶이지 않도록 되돌릴 때만 쓴다.
+    /// </summary>
+    public void ClearStaleRunningActions()
+    {
+        _runningActionCount = 0;
+    }
+
+    // 감싼 코루틴의 yield 값을 그대로 넘겨 기존 타이밍을 바꾸지 않고, 끝나면(중간 yield break 포함) 표시를 끈다.
+    private IEnumerator TrackRunningAction(IEnumerator body)
+    {
+        _runningActionCount++;
+        try
+        {
+            while (body.MoveNext())
+                yield return body.Current;
+        }
+        finally
+        {
+            if (_runningActionCount > 0) _runningActionCount--;
+        }
+    }
+
     public float CurrentBattleSpeed => _currentBattleSpeed;
 
     // 연출 소유자(SkillPresentationDirector)가 읽는 참조.
@@ -1087,6 +1119,15 @@ public class BattleManager : MonoBehaviour
         SkillData skillData,
         Action<bool> onCompleted = null)
     {
+        return TrackRunningAction(ExecuteHostageSkillCore(actor, target, skillData, onCompleted));
+    }
+
+    private IEnumerator ExecuteHostageSkillCore(
+        BattleCharactor actor,
+        HostageBattleActor target,
+        SkillData skillData,
+        Action<bool> onCompleted)
+    {
         if (!HostageFriendlyFireResolver.CanTargetHostages(actor, skillData) || target == null || !target.IsSafe)
         {
             onCompleted?.Invoke(false);
@@ -1164,6 +1205,12 @@ public class BattleManager : MonoBehaviour
     }
 
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null)
+    {
+        // 반격(DrainFollowUps)·카메라 복귀·완료 처리까지 이 안에서 끝나므로 전체를 '행동 진행 중'으로 센다.
+        return TrackRunningAction(ExecuteGridSkillCore(actor, target, classSkillRow, onCompleted));
+    }
+
+    private IEnumerator ExecuteGridSkillCore(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted)
     {
         // 코루틴이 강제 중단(StopAllCoroutines, 씬 전환 등)되면 DrainFollowUps의 finally가 실행되지 않아
         // 드레인 플래그가 남고 이후 모든 연쇄가 조용히 멈춘다. 최상위 진입 시 큐가 비어 있으면 안전하게 되돌린다.

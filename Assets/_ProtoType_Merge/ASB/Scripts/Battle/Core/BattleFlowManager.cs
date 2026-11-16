@@ -557,6 +557,33 @@ public class BattleFlowManager : MonoBehaviour
         yield return new WaitUntil(() => !IsFlowBlocked || ShouldEndBattle());
     }
 
+    // 행동 코루틴이 강제 중단돼 BattleManager의 '진행 중' 표시가 남았을 때를 위한 상한(게임 시간 초, 일시정지 중엔 멈춤).
+    private const float RunningActionWaitTimeoutSeconds = 15f;
+
+    /// <summary>BattleManager의 최상위 행동(반격 등 연쇄 포함)이 끝나거나 전투가 끝날 때까지 기다린다.</summary>
+    private IEnumerator WaitForRunningActionOrBattleEnd()
+    {
+        if (battleManager == null || !battleManager.IsActionRunning) yield break;
+
+        Debug.Log("[BattleFlow] 행동 처리(반격 등)가 아직 진행 중이라 다음 턴을 미룬다.");
+        float waited = 0f;
+        while (battleManager != null && battleManager.IsActionRunning && !ShouldEndBattle())
+        {
+            if (waited >= RunningActionWaitTimeoutSeconds)
+            {
+                Debug.LogWarning($"[BattleFlow] 행동 처리 대기가 {RunningActionWaitTimeoutSeconds:0}초를 넘었다. " +
+                                 "행동 코루틴이 강제 중단돼 표시가 남은 것으로 보고 초기화한 뒤 진행한다.");
+                battleManager.ClearStaleRunningActions();
+                yield break;
+            }
+
+            yield return null;
+            waited += Time.deltaTime;
+        }
+
+        Debug.Log($"[BattleFlow] 행동 처리 종료 확인({waited:0.00}초 대기). 턴 진행을 이어간다.");
+    }
+
     private IEnumerator BattleLoop()
     {
         if (turnBanner != null)
@@ -651,6 +678,12 @@ public class BattleFlowManager : MonoBehaviour
                     || ShouldEndBattle());
 
                 Debug.Log($"[BattleFlow] 플레이어 턴 종료: resolved={playerActionResolved}, currentUnit={CurrentUnit?.UnitName ?? "null"}, isDead={CurrentUnit?.IsDead}, battleOver={IsBattleOver}");
+
+                // [2026-11-16] 아군이 자기 행동 중 반격으로 죽으면 사망 처리가 위 대기를 먼저 푼다.
+                // 반격 연출·복귀·카메라 복귀가 끝날 때까지 기다린 뒤 다음 턴으로 넘어간다.
+                // 평소 턴은 행동이 끝난 뒤에 완료 신호가 오므로 여기서 바로 통과한다.
+                if (!ShouldEndBattle())
+                    yield return WaitForRunningActionOrBattleEnd();
 
                 if (ShouldEndBattle())
                 {
