@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -71,8 +70,6 @@ public class ExplorationHUDController : MonoBehaviour
         bool cameraBlocked = IsCameraPresentationBlocking();
         RefreshPublicityCameraState(cameraBlocked);
         RefreshNextTurnInteractable();
-        if (Input.GetKeyDown(KeyCode.R) && CanUseRestShortcut())
-            nextTurnButton.onClick.Invoke();
     }
 
     public bool CanUseExplorationActions()
@@ -80,55 +77,6 @@ public class ExplorationHUDController : MonoBehaviour
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
         return turnManager != null && turnManager.IsPlayerTurn && !turnManager.IsEnemyTurnRunning &&
             !IsCameraPresentationBlocking();
-    }
-
-    private bool CanUseRestShortcut()
-    {
-        if (gameObject.scene != SceneManager.GetActiveScene() ||
-            nextTurnButton == null || !nextTurnButton.isActiveAndEnabled || !nextTurnButton.IsInteractable() ||
-            !CanUseExplorationActions() ||
-            DHGameEndState.IsEnding || DHGameStateRestoreService.IsRestoring ||
-            ModalManager.HasAny || WorldInputGate.IsTurnResolving || GateCameraFocusController.IsBusy ||
-            JC.Environment.JcDayNightController.IsTransitioning ||
-            ChatModalController.IsOpen || (ChatManager.Instance != null && ChatManager.Instance.IsRunning) ||
-            (DHWorldEventRuntimeManager.Instance != null && DHWorldEventRuntimeManager.Instance.IsRunning) ||
-            (DHWorldEventConditionRuntimeManager.Instance != null && DHWorldEventConditionRuntimeManager.Instance.IsCheckPending) ||
-            (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning))
-            return false;
-
-        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) ||
-            Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) return false;
-
-        EventSystem events = EventSystem.current;
-        if (events == null) return false;
-        GameObject selected = events.currentSelectedGameObject;
-        if (selected != null)
-        {
-            TMP_InputField input = selected.GetComponentInParent<TMP_InputField>();
-            InputField legacyInput = selected.GetComponentInParent<InputField>();
-            if ((input != null && input.isFocused) || (legacyInput != null && legacyInput.isFocused)) return false;
-        }
-
-        // These panels can be shown without registering a Modal.
-        if (FindFirstObjectByType<BattleResultPanel>() != null ||
-            FindFirstObjectByType<SkillSelectionPanel>() != null) return false;
-
-        foreach (Canvas parentCanvas in nextTurnButton.GetComponentsInParent<Canvas>())
-            if (!parentCanvas.isActiveAndEnabled) return false;
-
-        // Respect UI shields and hidden/non-raycastable buttons just like a pointer click.
-        Canvas buttonCanvas = nextTurnButton.GetComponentInParent<Canvas>();
-        if (buttonCanvas == null) return false;
-        buttonCanvas = buttonCanvas.rootCanvas;
-        Camera eventCamera = buttonCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : buttonCanvas.worldCamera;
-        var pointer = new PointerEventData(events)
-        {
-            position = RectTransformUtility.WorldToScreenPoint(eventCamera,
-                nextTurnButton.transform.TransformPoint(((RectTransform)nextTurnButton.transform).rect.center))
-        };
-        var hits = new System.Collections.Generic.List<RaycastResult>();
-        events.RaycastAll(pointer, hits);
-        return hits.Count > 0 && hits[0].gameObject.transform.IsChildOf(nextTurnButton.transform);
     }
 
     private void RefreshPublicityCameraState(bool blocked)
