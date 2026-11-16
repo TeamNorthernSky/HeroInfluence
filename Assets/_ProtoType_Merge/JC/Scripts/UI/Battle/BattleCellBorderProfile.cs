@@ -40,6 +40,20 @@ public sealed class BattleCellBorderStyle
 [Serializable]
 public sealed class BattleCellBorderConfiguration
 {
+    // JC | 2026-11-16 | 씬별로 남아 있던 테두리 알파도 프리셋에 저장해 본게임과 테스트의 조절 결과를 공유합니다.
+    [Range(0, 1)] public float currentTurnAlpha = 1f;
+    [Range(0, 1)] public float selectableAlpha = 1f;
+    [Range(0, 1)] public float confirmedAreaAlpha = 1f;
+    [Range(0, 1)] public float unavailableAlpha = 1f;
+    public float AlphaFor(BattleCellVisualState state)
+    {
+        switch (state) {
+            case BattleCellVisualState.CurrentTurn: return currentTurnAlpha;
+            case BattleCellVisualState.Selectable: return selectableAlpha;
+            case BattleCellVisualState.Unavailable: return unavailableAlpha;
+            default: return confirmedAreaAlpha;
+        }
+    }
     [Tooltip("노란 현재 턴 표시입니다.")] public BattleCellBorderStyle currentTurn = new BattleCellBorderStyle();
     [Tooltip("보라색 선택 가능 표시입니다.")] public BattleCellBorderStyle selectable = new BattleCellBorderStyle { mainColor = new Color(.68f,.2f,1,1) };
     [Tooltip("빨간 확정 대상 및 정보 호버 표시입니다. 다른 상태와 같은 주기·위상으로 움직입니다.")] public BattleCellBorderStyle confirmedArea = new BattleCellBorderStyle { mainColor = new Color(1,.12f,.1f,1) };

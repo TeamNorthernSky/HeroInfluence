@@ -51,6 +51,9 @@ public sealed class BattleCellBorderWorkbenchEditor : Editor
         string[] shapeLabels={"기준 셀 크기","셀 안쪽 여백","모서리 반지름","모서리 곡선 분할 수","바깥 보조선 폭","대상색 본체 폭","안쪽 보조선 폭","메시 세로 두께","기본 부유 높이"};
         for(int i=0;i<shapeFields.Length;i++)Draw(shape,shapeFields[i],shapeLabels[i]);
         EditorGUILayout.LabelField("색상과 표시",EditorStyles.boldLabel);
+        // JC | 2026-11-16 | CellBox와 기존 설정 씬 모두 선택한 프리셋의 상태별 알파를 편집합니다. 회복은 확정 대상과 공유합니다.
+        string[] alphaFields={"currentTurnAlpha","selectableAlpha","confirmedAreaAlpha","unavailableAlpha","confirmedAreaAlpha"};
+        Draw(draft,alphaFields[index],"테두리 전체 불투명도");
         string[] styleFields={"showOuter","showInner","outlineColor","mainColor","allowSweep","useFill","fillColor","fillOpacity","fillTexture"};
         string[] styleLabels={"바깥 보조선 표시","안쪽 보조선 표시","보조선 공통 색상","대상색 본체 색상","스윕 허용","내부 채움 표시","내부 채움 색상","내부 채움 불투명도","내부 채움 문양"};
         for(int i=0;i<styleFields.Length;i++)Draw(style,styleFields[i],styleLabels[i]);

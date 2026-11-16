@@ -16,6 +16,28 @@ namespace ASB.Work.BattleGrid
         private readonly Dictionary<BattleCharactor, GridCell> cellByUnit = new Dictionary<BattleCharactor, GridCell>();
         private readonly List<GridCell> _previewHighlightedCells = new List<GridCell>();
         private GridCell _previewMainTargetCell;
+        // JC | 2026-11-16 | 본게임과 동일한 아군 회복/적 공격 색 구분 및 정보 호버 표시 문맥입니다.
+        private SkillData previewSkill;
+        private BattleCharactor previewCaster;
+        private UnityEngine.Object infoHoverOwner;
+        private BattleCharactor infoHoverTarget;
+        public void SetInfoHover(UnityEngine.Object owner, BattleCharactor target)
+        {
+            if (owner == null) return;
+            if (target != null && (target.IsPlayer || target.IsDead || target.gameObject.scene != gameObject.scene)) target = null;
+            if (target == null && infoHoverOwner != owner) return;
+            if (infoHoverOwner == owner && infoHoverTarget == target) return;
+            infoHoverOwner = target != null ? owner : null;
+            infoHoverTarget = target;
+            RefreshTilePresentation();
+        }
+        private GridCell InfoHoverCell()
+        {
+            if (infoHoverOwner == null || infoHoverTarget == null || infoHoverTarget.IsDead ||
+                !infoHoverTarget.gameObject.activeInHierarchy || selectingTargets ||
+                (flowManager != null && (flowManager.IsEndingBattle || flowManager.IsActionInProgress))) return null;
+            return FindCellByUnit(infoHoverTarget);
+        }
         [Tooltip("직접 선택 가능한 셀의 보라색 재질입니다.")]
         [SerializeField] private Material TargetMaterial;
         [Tooltip("기존 범위 미리보기의 추가 대상 셀 재질입니다.")]
@@ -155,10 +177,13 @@ namespace ASB.Work.BattleGrid
         }
 
 
-        public void ShowPreviewHighlight(SkillData skill, GridCell mainCell, List<GridCell> splashCells)
+        public void ShowPreviewHighlight(SkillData skill, GridCell mainCell, List<GridCell> splashCells, BattleCharactor caster = null)
         {
-            ClearPreviewHighlight();
-            if (mainCell == null) return;
+            // JC | 2026-11-16 | 본게임처럼 범위 변경 도중 빈 상태를 그리지 않고 시전자/스킬을 함께 유지합니다.
+            ClearPreviewHighlight(false);
+            if (mainCell == null) { RefreshTilePresentation(); return; }
+            previewSkill = skill;
+            previewCaster = caster != null ? caster : (flowManager != null ? flowManager.CurrentUnit : null);
 
             bool allConfirmed = useBattleTilePresentation || (skill != null && skill.classSkillTarget == 2);
             mainCell.SetMainTargetHighlight();
@@ -180,6 +205,13 @@ namespace ASB.Work.BattleGrid
 
         public void ClearPreviewHighlight()
         {
+            ClearPreviewHighlight(true);
+        }
+        private void ClearPreviewHighlight(bool refresh)
+        {
+            // JC | 2026-11-16 | 이전 복합 스킬의 회복 색상이 다음 선택에 남지 않도록 함께 해제합니다.
+            previewSkill = null;
+            previewCaster = null;
             for (int i = 0; i < _previewHighlightedCells.Count; i++)
             {
                 if (_previewHighlightedCells[i] != null)
@@ -192,7 +224,7 @@ namespace ASB.Work.BattleGrid
                 _previewMainTargetCell.ClearHighlight();
                 _previewMainTargetCell = null;
             }
-            RefreshTilePresentation();
+            if (refresh) RefreshTilePresentation();
         }
 
         /// <summary>기존 입력이 계산한 직접 선택 대상을 셀 표시로 전달합니다.</summary>
@@ -251,8 +283,11 @@ namespace ASB.Work.BattleGrid
         {
             if (!useBattleTilePresentation) return;
             bool ended = flowManager != null && flowManager.IsEndingBattle;
-            var current = !ended && flowManager != null ? FindCellByUnit(flowManager.CurrentUnit) : null;
+            // JC | 2026-11-16 | 본게임 표시 우선순위와 사망 시 해제 규칙을 테스트 전투에도 적용합니다.
+            var actor = !ended && flowManager != null ? flowManager.CurrentUnit : null;
+            var current = actor != null && !actor.IsDead ? FindCellByUnit(actor) : null;
             bool choosing = !ended && selectingTargets && (flowManager == null || !flowManager.IsActionInProgress);
+            var infoCell = !ended ? InfoHoverCell() : null;
             foreach (var cell in cellsByCoords.Values)
             {
                 if (cell == null) continue;
@@ -260,9 +295,10 @@ namespace ASB.Work.BattleGrid
                 if (!ended)
                 {
                     if (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)) material = MainTargetHighlightMaterial;
-                    else if (choosing) material = selectableCells.Contains(cell) ? TargetMaterial :
-                        selectableSides.Contains(cell.Coords.x >= 2) ? unavailableMaterial : ClearMaterial;
+                    else if (choosing && selectableCells.Contains(cell)) material = TargetMaterial;
+                    else if (cell == infoCell) material = MainTargetHighlightMaterial;
                     else if (cell == current) material = currentTurnMaterial;
+                    else if (choosing && selectableSides.Contains(cell.Coords.x >= 2)) material = unavailableMaterial;
                 }
                 cell.SetMaterial(material);
                 if (cellVisualSettings != null)
@@ -276,6 +312,11 @@ namespace ASB.Work.BattleGrid
                         material == TargetMaterial ? BattleCellVisualState.Selectable :
                         material == MainTargetHighlightMaterial ? BattleCellVisualState.ConfirmedArea :
                         material == unavailableMaterial ? BattleCellVisualState.Unavailable : BattleCellVisualState.Hidden;
+                    // JC | 2026-11-16 | 부활+전체 공격도 본게임의 동일 판정 함수를 사용해 아군만 흰색으로 표시합니다.
+                    if (visualState == BattleCellVisualState.ConfirmedArea &&
+                        SkillAreaPreviewHelper.IsHealingPreviewSide(previewSkill, previewCaster, cell.Coords.x < 2) &&
+                        (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)))
+                        visualState = BattleCellVisualState.HealingArea;
                     cellVisualSettings.Apply(cell, alpha, visualState);
                 }
             }

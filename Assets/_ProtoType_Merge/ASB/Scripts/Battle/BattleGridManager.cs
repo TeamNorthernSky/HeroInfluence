@@ -51,8 +51,9 @@ namespace ASB.Work.BattleGrid
             tutorialRowsOwner = visible ? owner : null;
             if (visible && tutorialRowStyle == null)
             {
-                tutorialRowStyle = cellVisualSettings != null && cellVisualSettings.profile != null
-                    ? cellVisualSettings.profile.settings.Copy() : new BattleCellBorderConfiguration();
+                // JC | 2026-11-16 | ASB 안내 흐름은 유지하고 표시값만 현재 전투 프리셋에서 복사합니다.
+                tutorialRowStyle = cellVisualSettings != null && cellVisualSettings.ActiveProfile != null
+                    ? cellVisualSettings.Draft.Copy() : new BattleCellBorderConfiguration();
                 tutorialRowStyle.bobAmplitude = 0;
                 tutorialRowStyle.useSweep = false;
                 var lit = tutorialRowStyle.currentTurn;

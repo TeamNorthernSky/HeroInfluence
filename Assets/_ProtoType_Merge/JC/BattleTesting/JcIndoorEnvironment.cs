@@ -30,6 +30,15 @@ namespace JC.BattleTesting
         UniversalAdditionalCameraData cameraData;
         int originalRenderer;
         JcBankBattleBackground bankSettings;
+        bool cellPresetIsBoss;
+        // JC | 2026-11-16 | 이미 등록된 실내 환경만 조회합니다. 프레임마다 씬을 검색하지 않고 조명 토글과도 독립적으로 종류를 유지합니다.
+        public static bool TryGetCellPreset(Scene scene, out bool boss)
+        {
+            foreach (var item in instances)
+                if (item && item.initialized && item.gameObject.scene == scene)
+                { boss = item.cellPresetIsBoss; return true; }
+            boss = false; return false;
+        }
         [System.Serializable] sealed class CameraSettings { public int m_RendererIndex = -1; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -42,6 +51,7 @@ namespace JC.BattleTesting
         public void Initialize(GameObject stage, Camera camera, JcBankBattleBackground bank, JcBossBattleBackground boss)
         {
             if(initialized || !stage || (bank == null) == (boss == null)) return;
+            cellPresetIsBoss = boss != null;
             initialized = true; instances.Add(this); Acquire();
             // JC | 2026-11-09 | 은행 전용 렌더러 선택도 이 조절기 수명에 묶고 중지 시 원래 선택을 복원합니다.
             bankSettings=bank;

@@ -54,26 +54,32 @@ public sealed class BattleCellVisualSettingsEditor : Editor
             _ = controls.Draft;
             serializedObject.Update();
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("profile"));
+            // JC | 2026-11-16 | 실내별 초안을 일반 전투에 덮어쓰지 않도록 적용·저장 대상을 표시합니다.
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("profile"),new GUIContent("일반 전투 프로필"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("bankProfile"),new GUIContent("은행 전투 프로필"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("bossProfile"),new GUIContent("보스 전투 프로필"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("scenePreset"),new GUIContent("기본 전투 종류"));
             if(EditorGUI.EndChangeCheck()){serializedObject.ApplyModifiedProperties();controls.LoadProfile();serializedObject.Update();}
+            using(new EditorGUI.DisabledScope(true))
+                EditorGUILayout.ObjectField("현재 적용·저장 대상",controls.ActiveProfile,typeof(BattleCellBorderProfile),false);
             state=EditorGUILayout.Popup(new GUIContent("편집 상태","해당 상태의 형태·색·채움을 조절합니다. 실제 타겟 선택 상태를 바꾸지는 않습니다."),state,States);
             BattleCellBorderWorkbenchEditor.DrawConfiguration(serializedObject.FindProperty("draft"),state);
             serializedObject.ApplyModifiedProperties();
             if(GUILayout.Button(new GUIContent("현재 형태를 모든 상태에 적용","현재 상태의 모양만 다른 상태에 복사합니다. 색상과 채움은 유지합니다.")))
             { Undo.RecordObject(controls,"셀 외형 통일");controls.Draft.UnifyShape((BattleCellVisualState)(state+1)); }
-            EditorGUILayout.HelpBox("플레이 중 초안이 즉시 반영됩니다. 종료 전 저장 버튼을 누르면 기존 BattleCellBorderSettings와 모든 연결 전투씬이 같은 값을 사용합니다.",MessageType.Info);
-            using(new EditorGUI.DisabledScope(controls.profile==null))
+            EditorGUILayout.HelpBox("플레이 중 초안이 즉시 반영됩니다. 종료 전 저장하면 같은 전투 종류의 본게임·테스트씬에 함께 적용됩니다. 일반·은행·보스는 서로 독립적으로 저장합니다.",MessageType.Info);
+            using(new EditorGUI.DisabledScope(controls.ActiveProfile==null))
             {
-                if(GUILayout.Button(new GUIContent("현재 값을 공용 프로필에 저장","형태·색·스윕·운동·대상 모델 윤곽선 토글을 기존 프로필에 저장합니다. 씬은 저장하지 않습니다.")))
-                { Undo.RecordObject(controls.profile,"전투 셀 프로필 저장");controls.profile.settings=controls.Draft.Copy();EditorUtility.SetDirty(controls.profile);AssetDatabase.SaveAssetIfDirty(controls.profile); }
+                if(GUILayout.Button(new GUIContent("현재 값을 적용 중인 프리셋에 저장","형태·색·채움·불투명도·움직임을 위에 표시된 대상에만 저장합니다. 씬은 저장하지 않습니다.")))
+                { var source=controls.ActiveProfile; Undo.RecordObject(source,"전투 셀 프로필 저장");source.settings=controls.Draft.Copy();EditorUtility.SetDirty(source);AssetDatabase.SaveAssetIfDirty(source); }
                 if(GUILayout.Button(new GUIContent("저장값 다시 적용","임시 초안을 버리고 기존 프로필을 다시 불러옵니다.")))
                 { Undo.RecordObject(controls,"셀 초안 복원");controls.LoadProfile(); }
             }
             EditorGUILayout.Space();
-            // 기존 연결/상태별 불투명도도 계속 제공하며 프로필과 별개인 씬 값임을 명시합니다.
-            EditorGUILayout.LabelField("씬 연결·표시 불투명도",EditorStyles.boldLabel);
+            // JC | 2026-11-16 | 알파는 위의 프리셋 초안에서 편집하고 아래에는 메시 연결만 남깁니다.
+            EditorGUILayout.LabelField("씬 표시 연결",EditorStyles.boldLabel);
             serializedObject.Update();
-            foreach(var name in new[]{"currentTurnAlpha","selectableAlpha","confirmedAreaAlpha","unavailableAlpha","currentTurnPrefab","selectablePrefab","confirmedAreaPrefab","unavailablePrefab","cellRenderers"})
+            foreach(var name in new[]{"currentTurnPrefab","selectablePrefab","confirmedAreaPrefab","unavailablePrefab","cellRenderers"})
                 EditorGUILayout.PropertyField(serializedObject.FindProperty(name),true);
             serializedObject.ApplyModifiedProperties();
         }
