@@ -64,12 +64,13 @@ namespace JC.DebugTools
                 if (!MapProgressRepository.Instance.TryGetZoneEnemyLevel(zoneNumber.ToString(), out zoneLevel))
                 {
                     int sum = 0;
-                    foreach (int index in partyData.UnitIndices)
+                    // JC | 2026-11-16 | 구역 평균 레벨과 경험치 분배의 분모는 빈 슬롯을 제외한 실멤버 수입니다.
+                    foreach (int index in partyMembers)
                     {
                         if (!PersistentUnitRepository.Instance.TryGetUnit(index, out var data)) throw new InvalidOperationException("파티 유닛 누락");
                         sum += data.Level;
                     }
-                    zoneLevel = Mathf.Max(1, sum / partyData.UnitIndices.Count);
+                    zoneLevel = Mathf.Max(1, sum / partyMembers.Count);
                 }
                 int enemyLevel = Mathf.Max(1, zoneLevel);
                 plannedZoneEnemyLevel = enemyLevel;
@@ -79,7 +80,8 @@ namespace JC.DebugTools
                     throw new InvalidOperationException(error);
                 float total = 0;
                 foreach (var enemy in spawn.Entries) total += Mathf.Max(0, enemy.Data.ExperiencePoint);
-                step.ExperiencePerUnit = JcZone1WarpRoute.ExpPerUnit(battleKey, total, partyData.UnitIndices.Count);
+                // JC | 2026-11-16 | 4명+빈칸 2개인 진형을 6명으로 나누지 않도록 검증한 실인원을 사용합니다.
+                step.ExperiencePerUnit = JcZone1WarpRoute.ExpPerUnit(battleKey, total, partyMembers.Count);
                 foreach (var reward in step.Rewards) step.ExperiencePerUnit = checked(step.ExperiencePerUnit + Mathf.Max(0, reward.Exp));
                 steps.Add(step);
             }
@@ -97,6 +99,20 @@ namespace JC.DebugTools
             if (party == null || party.IsMoving || party.GetCurrentGrid() != originalGrid || DHGameEndState.IsEnding ||
                 ModalManager.Top != ui.gameObject || SceneFadeController.HideCursorDuringTransition)
                 throw new InvalidOperationException("탐사 상태가 변경되었습니다. 취소 후 다시 열어 주세요.");
+            // JC | 2026-11-16 | 선택창을 연 뒤 파티가 교체되었다면 이전 멤버에게 보상을 적용하지 않습니다.
+            var identity = party.GetComponent<PartyIdentity>();
+            if (identity == null || !PartyPersistentRepository.Instance.TryGetParty(identity.PartyId, out var currentParty) ||
+                !ReferenceEquals(currentParty, partyData))
+                throw new InvalidOperationException("파티 구성이 변경되었습니다. 취소 후 다시 열어 주세요.");
+            int memberIndex = 0;
+            foreach (int id in currentParty.UnitIndices)
+            {
+                if (id == 0) continue;
+                if (memberIndex >= partyMembers.Count || partyMembers[memberIndex++] != id)
+                    throw new InvalidOperationException("파티 구성이 변경되었습니다. 취소 후 다시 열어 주세요.");
+            }
+            if (memberIndex != partyMembers.Count)
+                throw new InvalidOperationException("파티 구성이 변경되었습니다. 취소 후 다시 열어 주세요.");
             foreach (var f in DHEventStateRepository.Instance.Flags)
             {
                 bool old = originalFlags.TryGetValue(f.flagName, out var value) && value;
@@ -119,14 +135,15 @@ namespace JC.DebugTools
                 if (step.Route.ChoiceFlag != null) DHEventStateRepository.Instance.SetFlag(step.Route.ChoiceFlag, true);
                 DHEventStateRepository.Instance.SetNumericValue("Flag_BattleResult", 1f);
                 // 전체 전투 종료 루틴은 대화/씬 전환을 시작하므로 호출하지 않습니다.
-                foreach (int index in partyData.UnitIndices)
+                // JC | 2026-11-16 | 검증·평균·분배와 같은 멤버에게만 승리 IP/EXP 및 분기 보상을 지급합니다.
+                foreach (int index in partyMembers)
                 {
                     repository.ApplyEventRewardStats(index, 0, 0, 0, 5, 0);
                     repository.AddExp(index, step.ExperiencePerUnit);
                 }
                 foreach (var reward in step.Rewards)
                     foreach (var entry in reward.CharacterRewards)
-                        foreach (int index in partyData.UnitIndices)
+                        foreach (int index in partyMembers)
                             if (repository.TryGetUnit(index, out var unit) && unit.UnitTemplateKey == entry.UnitTemplateKey)
                                 repository.ApplyEventRewardStats(index, 0, 0, 0, entry.Influence, 0);
                 foreach (var token in step.Effects)
@@ -147,7 +164,8 @@ namespace JC.DebugTools
             foreach (var step in steps) exp += step.ExperiencePerUnit;
             text.AppendLine($"\n캐릭터별 추가 EXP {exp} · 승리 IP +{steps.Count * 5}");
             text.AppendLine("분기 보상 IP 증감도 적용 · 아놀드 EXP 제외");
-            foreach (int index in partyData.UnitIndices)
+            // JC | 2026-11-16 | 표시 대상도 실제 적용 대상과 일치시킵니다.
+            foreach (int index in partyMembers)
             {
                 if (!PersistentUnitRepository.Instance.TryGetUnit(index, out var data)) continue;
                 int next = PersistentUnitRepository.SimulateFinalLevel(data, exp);

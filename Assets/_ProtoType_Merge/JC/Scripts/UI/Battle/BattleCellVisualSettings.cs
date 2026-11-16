@@ -9,6 +9,17 @@ public class BattleCellVisualSettings : MonoBehaviour
 {
     [Tooltip("설정 씬에서 저장한 외형·스윕·상하 운동 프로필입니다. 연결된 경우 아래 구형 스윕 값 대신 프로필을 사용합니다.")]
     public BattleCellBorderProfile profile;
+    // JC | 2026-11-16 | 같은 표시기를 사용하되 실내별 저장 자산은 분리합니다. 씬 이름으로 본게임의 전투 종류를 추측하지 않습니다.
+    public enum EnvironmentPreset { General, Bank, Boss }
+    public BattleCellBorderProfile bankProfile;
+    public BattleCellBorderProfile bossProfile;
+    [Tooltip("편집 모드와 전투 시작 전의 프리셋입니다. 실행 중에는 실제 실내 환경의 종류를 우선합니다.")]
+    public EnvironmentPreset scenePreset;
+    public EnvironmentPreset ActivePreset => JC.BattleTesting.JcIndoorEnvironment.TryGetCellPreset(gameObject.scene, out bool boss)
+        ? (boss ? EnvironmentPreset.Boss : EnvironmentPreset.Bank) : scenePreset;
+    public BattleCellBorderProfile ActiveProfile => ActivePreset == EnvironmentPreset.Bank ? bankProfile :
+        ActivePreset == EnvironmentPreset.Boss ? bossProfile : profile;
+    private BattleCellBorderProfile draftSource;
     [Tooltip("현재 턴의 노란 테두리 불투명도입니다. 내부 채움은 프리팹에서 별도로 조절합니다.")]
     [Range(0, 1)] public float currentTurnAlpha = .65f;
     [Tooltip("직접 선택 가능한 보라 테두리 불투명도입니다. 내부 채움은 프리팹에서 별도로 조절합니다.")]
@@ -64,8 +75,13 @@ public class BattleCellVisualSettings : MonoBehaviour
 
     // JC | 2026-11-13 | 저장 자산은 보존하고 CellBox의 임시 초안만 즉시 표시합니다.
     [SerializeField, HideInInspector] private BattleCellBorderConfiguration draft;
-    public BattleCellBorderConfiguration Draft { get { if (draft == null) LoadProfile(); return draft; } }
-    public void LoadProfile() => draft = profile != null ? profile.settings.Copy() : new BattleCellBorderConfiguration();
+    public BattleCellBorderConfiguration Draft { get { if (draft == null || draftSource != ActiveProfile) LoadProfile(); return draft; } }
+    // JC | 2026-11-16 | 배경 교체 시 이전 프리셋의 초안이 새 저장 자산에 덮어써지지 않도록 출처를 함께 바꿉니다.
+    public void LoadProfile()
+    {
+        draftSource = ActiveProfile;
+        draft = draftSource != null ? draftSource.settings.Copy() : new BattleCellBorderConfiguration();
+    }
     private void OnEnable() => LoadProfile();
 
     public void Apply(Cell cell, float alpha, BattleCellVisualState state = BattleCellVisualState.Hidden, BattleCellBorderConfiguration presentationOverride = null)
@@ -142,7 +158,9 @@ public class BattleCellVisualSettings : MonoBehaviour
         }
         source.enabled = false;
         if (state == BattleCellVisualState.Hidden) presentation.motion.Reset();
-        var configuration = presentationOverride ?? (profile != null ? Draft : null);
+        var configuration = presentationOverride ?? (ActiveProfile != null ? Draft : null);
+        // JC | 2026-11-16 | 일반 표시의 구형 씬 알파는 프리셋으로 통일하되 튜토리얼 안내가 명시한 알파는 유지합니다.
+        if (configuration != null && presentationOverride == null) alpha = configuration.AlphaFor(state);
         float lift = configuration != null && state != BattleCellVisualState.Hidden ? presentation.motion.Evaluate(state, configuration, Time.unscaledTimeAsDouble) : 0f;
         var prefab = PrefabFor(state);
         if (prefab != null)

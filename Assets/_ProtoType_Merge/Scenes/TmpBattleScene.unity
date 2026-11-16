@@ -21662,6 +21662,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   profile: {fileID: 11400000, guid: 0a5f67c2e4abeaf4c981a714a00a9a3b, type: 2}
+  bankProfile: {fileID: 11400000, guid: d0bfa2f38a7e475e9c8ce095af5b0e2a, type: 2}
+  bossProfile: {fileID: 11400000, guid: b4761fd565e440a589d9394ae18e46fc, type: 2}
+  scenePreset: 0
   currentTurnAlpha: 1
   selectableAlpha: 1
   confirmedAreaAlpha: 1

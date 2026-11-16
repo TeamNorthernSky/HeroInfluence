@@ -71,7 +71,8 @@ public sealed partial class BattleCellBorderVisual : MonoBehaviour
     }
     public void Render(BattleCellVisualSettings settings, float borderAlpha, float clock)
     {
-        var config = settings != null && settings.profile != null ? settings.profile.settings : profile != null ? profile.settings : null;
+        // JC | 2026-11-16 | 직접 미리보기 경로도 CellBox의 현재 실내 프리셋 초안을 사용합니다.
+        var config = settings != null && settings.ActiveProfile != null ? settings.Draft : profile != null ? profile.settings : null;
         if (config == null)
         {
             if (fallback == null) fallback = new BattleCellBorderConfiguration();

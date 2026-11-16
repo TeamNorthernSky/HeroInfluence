@@ -108,6 +108,8 @@ public sealed class JcBattleEnemyInfoTooltip : MonoBehaviour
         if (ShouldHide()) { Hide(); return; }
         var target = FindHoveredUnit();
         if (target == null || target.IsPlayer || target.IsDead) { Hide(); return; }
+        // JC | 2026-11-16 | 구형 테스트 툴팁도 본게임처럼 정보 호버 대상의 셀 표시를 연결합니다.
+        ASB.Work.BattleGrid.JcBattleGridManager.Instance?.SetInfoHover(this,target);
         if (target != shownUnit) Bind(target);
         RefreshStats();
         PlaceAtPointer(Input.mousePosition);
@@ -237,6 +239,8 @@ public sealed class JcBattleEnemyInfoTooltip : MonoBehaviour
 
     private void Hide()
     {
+        // JC | 2026-11-16 | 툴팁 해제 시 이 툴팁이 소유한 정보 호버만 해제합니다.
+        ASB.Work.BattleGrid.JcBattleGridManager.Instance?.SetInfoHover(this,null);
         shownUnit = null;
         if (panel != null) panel.gameObject.SetActive(false);
     }
