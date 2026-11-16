@@ -19,7 +19,9 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
     private DHWorldEventTemplate runningTemplate;
     private string runningProgressKey;
     private Action runningClosedCallback;
-    private bool awaitingChoiceResultConfirmation;
+    private bool awaitingResultConfirmation;
+    private IReadOnlyList<DHWorldEventResultTemplate> pendingChoiceResults;
+    private bool applyingPendingResult;
     private DHWorldEventPresentationRequest currentRequest;
 
     public bool IsRunning => isRunning;
@@ -146,7 +148,11 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             return false;
         }
 
-        if (!DHWorldEventResultApplier.TryApplyChoiceResults(results, runningParty, out string reason))
+        if (runningTemplate.SourceType == DHWorldEventSourceType.Npc)
+        {
+            pendingChoiceResults = new List<DHWorldEventResultTemplate>(results);
+        }
+        else if (!DHWorldEventResultApplier.TryApplyChoiceResults(results, runningParty, out string reason))
         {
             currentRequest = BuildChoiceRequest(reason);
             PresentationChanged?.Invoke(currentRequest);
@@ -160,7 +166,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
                 runningSource);
         }
 
-        awaitingChoiceResultConfirmation = true;
+        awaitingResultConfirmation = true;
         currentRequest = BuildChoiceResultRequest(results);
         PresentationChanged?.Invoke(currentRequest);
         return true;
@@ -223,6 +229,14 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
 
     private bool ConfirmRewardProceed()
     {
+        if (runningTemplate.SourceType == DHWorldEventSourceType.Npc)
+        {
+            awaitingResultConfirmation = true;
+            currentRequest = BuildRequest(DHWorldEventPresentationStep.Accept, runningTemplate.AcceptText, true, string.Empty);
+            PresentationChanged?.Invoke(currentRequest);
+            return true;
+        }
+
         if (!DHWorldEventResultApplier.TryApplyRewards(runningTemplate, runningParty, out string reason))
         {
             currentRequest = BuildRequest(DHWorldEventPresentationStep.Description, runningTemplate.Description, false, reason);
@@ -240,9 +254,16 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         if (!CanHandleInput(DHWorldEventPresentationStep.Accept))
             return false;
 
-        if (awaitingChoiceResultConfirmation)
+        if (awaitingResultConfirmation)
         {
-            awaitingChoiceResultConfirmation = false;
+            if (!TryApplyPendingResult(out string pendingReason))
+            {
+                currentRequest = BuildRequest(DHWorldEventPresentationStep.Accept, currentRequest.MessageText, true, pendingReason);
+                PresentationChanged?.Invoke(currentRequest);
+                return false;
+            }
+            pendingChoiceResults = null;
+            awaitingResultConfirmation = false;
             CompleteRunningEvent();
             EndCurrentEvent(true);
             return true;
@@ -258,6 +279,34 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         CompleteRunningEvent();
         EndCurrentEvent(true);
         return true;
+    }
+
+    private bool TryApplyPendingResult(out string reason)
+    {
+        reason = string.Empty;
+        applyingPendingResult = true;
+        try
+        {
+            if (pendingChoiceResults != null)
+                return DHWorldEventResultApplier.TryApplyChoiceResults(pendingChoiceResults, runningParty, out reason);
+            if (runningTemplate.EventType == DHWorldEventType.Reward &&
+                runningTemplate.SourceType == DHWorldEventSourceType.Npc)
+            {
+                // Validate every code before any grant, so invalid rows cannot partially pay on retry.
+                foreach (var reward in runningTemplate.Rewards)
+                    if (!DHWorldEventCodeMap.TryGetRewardType(reward.RewardType, out _))
+                    {
+                        reason = $"Unknown reward code: {reward.RewardType}";
+                        return false;
+                    }
+                return DHWorldEventResultApplier.TryApplyRewards(runningTemplate, runningParty, out reason);
+            }
+            return true; // Condition choices already applied their result at selection time.
+        }
+        finally
+        {
+            applyingPendingResult = false;
+        }
     }
 
     public bool ConfirmCancel()
@@ -532,7 +581,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
 
     private bool CanHandleInput(DHWorldEventPresentationStep expectedStep)
     {
-        return isRunning &&
+        return isRunning && !applyingPendingResult &&
                runningTemplate != null &&
                (runningTemplate.SourceType != DHWorldEventSourceType.Condition || !ConditionEventsBlocked) &&
                currentRequest != null &&
@@ -571,7 +620,8 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         runningTemplate = null;
         runningProgressKey = string.Empty;
         runningClosedCallback = null;
-        awaitingChoiceResultConfirmation = false;
+        awaitingResultConfirmation = false;
+        pendingChoiceResults = null;
         currentRequest = null;
 
         if (logEvents && closedRequest != null)
