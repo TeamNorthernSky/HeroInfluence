@@ -168,6 +168,13 @@ public partial class SkillTooltip : MonoBehaviour
         SkillTooltipCardLayout.KeepOnScreen(tipCRect);
     }
 
+    public void PlaceBeside(RectTransform target, bool left)
+    {
+        var rect = tipCRoot != null && tipCRoot.activeSelf ? tipCRect
+            : tipBRoot != null && tipBRoot.activeSelf ? tipBRect : null;
+        SkillTooltipCardLayout.PlaceBeside(rect, target, left);
+    }
+
     public void Hide()
     {
         // JC | 2026-11-13 | IP 전용 패널도 기존 공용 툴팁의 표시/해제 수명에 맞춥니다.

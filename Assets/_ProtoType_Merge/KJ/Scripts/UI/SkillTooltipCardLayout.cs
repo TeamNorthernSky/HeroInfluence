@@ -141,6 +141,20 @@ public static class SkillTooltipCardLayout
         foreach (var graphic in root.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget = false;
     }
 
+    public static void PlaceBeside(RectTransform root, RectTransform target, bool left)
+    {
+        if (root == null || target == null) return;
+        Canvas.ForceUpdateCanvases();
+        var corners = new Vector3[4];
+        target.GetWorldCorners(corners);
+        float gap = 12f * Mathf.Abs(root.lossyScale.x);
+        float x = left ? corners[0].x - gap : corners[2].x + gap;
+        float y = (corners[0].y + corners[2].y) * 0.5f;
+        root.pivot = new Vector2(left ? 1f : 0f, 0.5f);
+        root.position = new Vector3(x, y, root.position.z);
+        KeepOnScreen(root);
+    }
+
     public static void KeepOnScreen(RectTransform root)
     {
         var canvas = root.GetComponentInParent<Canvas>();

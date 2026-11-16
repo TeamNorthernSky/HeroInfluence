@@ -77,6 +77,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     [SerializeField] private GameObject heroSilhouette, selectPromptGo, disabledOverlay;
     [SerializeField] private TextMeshProUGUI currentIPText, cost1ValueText, availableValueText,
         countValueText, totalCostValueText, stateInfoText;
+    [SerializeField] private JcInfluenceBadgeView influenceBadge;
     [SerializeField] private Slider progressSlider;
     public string SelectedKey { get; private set; }
     public System.Collections.Generic.IReadOnlyList<string> HeroKeys => heroKeys;
@@ -308,10 +309,12 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
             heroProfileImage.enabled = true;
             heroProfileImage.sprite = selected ? Sprites.Portrait.Hero(SelectedKey) : Sprites.Portrait.Unselected;
         }
-        if (currentIPText != null)
-            currentIPText.text = selected
-                ? JcTutorialText.Format("publicity.current-ip", "현재 IP : {0}", state.CurrentIp)
-                : JcTutorialText.Get("publicity.no-ip", "현재 IP : -");
+        if (currentIPText != null) currentIPText.text = selected ? $"{state.CurrentIp}" : "—";
+        if (influenceBadge != null)
+        {
+            influenceBadge.gameObject.SetActive(selected);
+            if (selected) influenceBadge.SetInfluence(state.CurrentIp);
+        }
         if (selectPromptGo != null) selectPromptGo.SetActive(!selected);
         if (cost1ValueText != null) cost1ValueText.text = $"{TutorialPublicityState.CostPerProgress:N0}";
         if (availableValueText != null) availableValueText.text = $"{budget.Pool}";

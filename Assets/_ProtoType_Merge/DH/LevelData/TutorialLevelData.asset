@@ -8111,33 +8111,43 @@ MonoBehaviour:
   decorativeObjectPlacements:
   - gridPosition: {x: 15, y: 9}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 21, y: 9}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 27, y: 9}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 33, y: 9}
     prefabKey: BGHouse001
+    rotation: 0
   - gridPosition: {x: 18, y: 9}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 24, y: 9}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 30, y: 9}
     prefabKey: BGHouse002
+    rotation: 0
   - gridPosition: {x: 36, y: 9}
     prefabKey: BGHouse002
+    rotation: 0
   tutorialObjectPlacements:
   - gridPosition: {x: 9, y: 8}
     prefabKey: HeroUnion
   - gridPosition: {x: 38, y: 8}
     prefabKey: Outpost
-  - gridPosition: {x: 27, y: 7}
-    prefabKey: ChipItem
-  - gridPosition: {x: 26, y: 6}
-    prefabKey: CrystalItem
   - gridPosition: {x: 28, y: 6}
     prefabKey: SupplyItem
   - gridPosition: {x: 32, y: 7}
     prefabKey: TutorialEnemy
+  - gridPosition: {x: 26, y: 6}
+    prefabKey: MoneyItem
+  - gridPosition: {x: 27, y: 6}
+    prefabKey: ChipItem
+  - gridPosition: {x: 27, y: 7}
+    prefabKey: CrystalItem
   mainEventPlacements: []
   subEventPlacements: []
   worldEventPlacements: []

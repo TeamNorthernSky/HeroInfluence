@@ -17,13 +17,13 @@ MonoBehaviour:
     zone_no: 1
     npc_type: 2
     world_event_description: "\uC6B0\uB9AC \uB098\uBE44\uAC00 \uB098\uBB34\uC5D0\uC11C
-      \uB0B4\uB824\uC624\uC9C0 \uBABB\uD558\uACE0 \uC788\uC5B4\u2026 \uB3C4\uC640\uC8FC\uAC8C\uB098\u2026"
+      \uB0B4\uB824\uC624\uC9C0 \n\uBABB\uD558\uACE0 \uC788\uC5B4\u2026 \uB3C4\uC640\uC8FC\uAC8C\uB098\u2026"
     world_event_proceed: "\uBB3C\uB860\uC774\uC8E0~!"
     world_event_decline: "\uC9C0\uAE08\uC740 \uBC14\uBE60\uC11C;;;"
     world_event_accept: "\uACE0\uB9C8\uC6CC~ \uB098\uB294 \uC6B0\uB9AC \uB098\uBE44
       \uC5C6\uC73C\uBA74 \uBABB\uC0B4\uC544"
     world_event_cancel: "\uC5B4\uB51C \uADF8\uB9AC \uAE09\uD788 \uAC00\uB098\u2026
-      \uB098\uBCF4\uB2E4 \uBA3C\uC800 \uAC00\uACA0\uB124"
+      \n\uB098\uBCF4\uB2E4 \uBA3C\uC800 \uAC00\uACA0\uB124"
     result_id: C_NPC_01_001_Result
     note: 
   - world_event_id: C_NPC_01_002
@@ -42,13 +42,13 @@ MonoBehaviour:
     zone_no: 1
     npc_type: 0
     world_event_description: "\uC774\uB7F0 \uB0B4 \uBE4C\uB7F0 \uBC84\uAC70\uAC00
-      \uC2F8\uC545 \uC2DD\uC5B4\uBC84\uB838\uC796\uC544! \uB3C4\uC640\uC918\uC694
+      \uC2F8\uC545 \uC2DD\uC5B4\uBC84\uB838\uC796\uC544!\n\uB3C4\uC640\uC918\uC694
       \uD788\uC5B4\uB85C!"
-    world_event_proceed: "\uC624\uD638\uC6B0! \uC544\uC384\uC774! \uADF8\uB7FC \uB0B4
+    world_event_proceed: "\uD638\uC6B0! \uC544\uC384\uC774!\n\uADF8\uB7FC \uB0B4
       \uD788\uC5B4\uB85C \uBC84\uAC70\uB97C \uBA39\uC5B4\uBCF4\uAC8C!"
     world_event_decline: "\uADF8\uB7EC\uBA74 \uB3C4\uC640\uC904 \uC218 \uC5C6\uC5B4"
     world_event_accept: "\uC546! \uB450\uD23C\uD55C \uD788\uC5B4\uB85C \uBC84\uAC70
-      \uC18D\uC5D0 37\uAC00\uC9C0 \uC601\uC591\uBD84\uC774!"
+      \uC18D\uC5D0\n37\uAC00\uC9C0 \uC601\uC591\uBD84\uC774!"
     world_event_cancel: "\uAD1C\uCC2E\uC73C\uC2ED\uB2C8\uAE4C!"
     result_id: C_NPC_01_003_Result
     note: 
@@ -82,7 +82,7 @@ MonoBehaviour:
     world_event_description: "\uB2E8 \uB3C8 500\uC6D0\uC73C\uB85C \uCE58\uC720\uD560
       \uC218 \uC788\uB2E4!"
     world_event_proceed: "\uC77C\uB2E8 \uC774\uAC70\uB77C\uB3C4 \uC368\uC57C\uC9C0"
-    world_event_decline: "\uC544\uB2C8 \uAD6C\uAE09\uC0C1\uC790\uAC00 \uBB34\uC2A8
+    world_event_decline: "\uC544\uB2C8 \uAD6C\uAE09\uC0C1\uC790\uAC00 \n\uBB34\uC2A8
       500\uC6D0\uC774\uC57C"
     world_event_accept: "(\uB3C8\uC744 \uB123\uC73C\uB2C8\uAE50 \uB35C\uCEE5 \uC18C\uB9AC\uC640
       \uD568\uAED8 \uC5F4\uB838\uB2E4)"
@@ -92,12 +92,12 @@ MonoBehaviour:
   - world_event_id: C_NPC_04_001
     zone_no: 4
     npc_type: 0
-    world_event_description: "\uD788\uC5B4\uB85C \uC774\uAC83\uC744\u2026 \uAD49\uC7A5\uD55C
+    world_event_description: "\uD788\uC5B4\uB85C \uC774\uAC83\uC744\u2026 \n\uAD49\uC7A5\uD55C
       \uBB3C\uAC74\uC774 \uC788\uC2B5\uB2C8\uB2E4."
     world_event_proceed: "\uADF8\uB798\uBD24\uC790 \uD788\uC5B4\uB85C \uC7BC\uC5D0
       10~11\uBC30!"
     world_event_decline: "\uADF8\uB7F0 \uBB3C\uAC74\uC740 \uBC1B\uC744 \uC218 \uC5C6\uB2E4"
-    world_event_accept: "\uC544\uC544\uC544\uC544\uC557! \uD788\uC5B4\uB85C! \uB108\uBB34
+    world_event_accept: "\uC544\uC544\uC544\uC544\uC557! \uD788\uC5B4\uB85C! \n\uB108\uBB34
       \uAC15\uD558\uB2E4\uC544\uC544\uC544\uC544\uC557!"
     world_event_cancel: "\uC774\uB7F4 \uC218\uAC00!"
     result_id: C_NPC_04_001_Result
@@ -129,7 +129,7 @@ MonoBehaviour:
     world_event_description: "\uC720\uD29C\uBE0C \uCC0D\uACE0 \uC788\uB294\uB370
       \uD64D\uBCF4\uD574\uB4DC\uB9B4\uAED8\uC694"
     world_event_proceed: "\uC548\uB155\uD558\uC138\uC5EC! \uC800\uD76C\uB294 ~~"
-    world_event_decline: "\uC6B0\uB9AC\uB294 \uAC1C\uC778 \uBC29\uC1A1\uC744 \uD560
+    world_event_decline: "\uC6B0\uB9AC\uB294 \uAC1C\uC778 \uBC29\uC1A1\uC744 \n\uD560
       \uC218\uAC00 \uC5C6\uC5B4\uC694"
     world_event_accept: "\uD64D\uBCF4\uD574\uB4DC\uB838\uC73C\uB2C8 \uB3C8 \uBC1B\uC744\uAED8\uC694"
     world_event_cancel: "\uC5BC\uAD74 \uC548\uB098\uC624\uAC8C \uCC0D\uC5B4\uB4E4\uB9B4\uAED8\uC694"
@@ -140,7 +140,7 @@ MonoBehaviour:
     npc_type: 0
     world_event_description: "1100\uC6D0\uB9CC \uBE4C\uB824\uC8FC\uC138\uC694"
     world_event_proceed: "1100\uC6D0\uC774\uBA74 \uB418\uB098\uC694?"
-    world_event_decline: "1100\uC6D0\uC774\uC694? \uC9C0\uAE08 \uB3C8\uC774 \uC5C6\uC5B4\uC11C.."
+    world_event_decline: "1100\uC6D0\uC774\uC694? \n\uC9C0\uAE08 \uB3C8\uC774 \uC5C6\uC5B4\uC11C.."
     world_event_accept: "\uB124 \uADF8 \uC815\uB3C4\uBA74 \uCDA9\uBD84\uD574\uC694.
       \uAC10\uC0AC\uD569\uB2C8\uB2E4"
     world_event_cancel: "\uD788\uC5B4\uB85C\uAC00 \uB3C8\uB3C4 \uC5C6\uACE0.."

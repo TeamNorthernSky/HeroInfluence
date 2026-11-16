@@ -17,6 +17,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
     [SerializeField] private Image heroProfileImage;
     [SerializeField] private GameObject heroSilhouette; // 미선택 시 활성
     [SerializeField] private TextMeshProUGUI currentIPText; // Txt_CurrentIP
+    [SerializeField] private JcInfluenceBadgeView influenceBadge;
     [SerializeField] private GameObject selectPromptGo;     // Txt_SelectPrompt — 미선택 시 활성
 
     [Header("Info — Value TMP 결합")]
@@ -224,7 +225,8 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
                 : HeroProfileCatalog.Default;
         }
         if (currentIPText != null)
-            currentIPText.text = hasSelection ? $"현재 IP : {gm.Publicity.GetIP(unit.UnitIndex)}" : "현재 IP : -"; // [KJ 260911] 목업 표기
+            currentIPText.text = hasSelection ? $"{gm.Publicity.GetIP(unit.UnitIndex)}" : "—";
+        if (influenceBadge != null) influenceBadge.SetUnit(hasSelection ? unit : null);
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);
 
         // Info Value 4종

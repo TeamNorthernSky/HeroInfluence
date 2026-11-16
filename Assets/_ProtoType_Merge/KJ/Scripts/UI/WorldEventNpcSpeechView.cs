@@ -40,7 +40,7 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
     {
         if (screenDialogue != null) return screenMessage != null;
         if (answerPanel == null) return false;
-        var dialogue = answerPanel.transform.Find("NpcDialogue");
+        var dialogue = answerPanel.transform.Find("DialogueBubble");
         if (dialogue == null) return false;
         screenDialogue = dialogue.gameObject;
         screenPop = screenDialogue.GetComponent<DialogueBubblePopEffect>();

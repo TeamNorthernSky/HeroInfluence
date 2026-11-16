@@ -360,6 +360,23 @@ public class LabModalController : MonoBehaviour
                 GetSkillIcon(rowIndex, next), $"{SkillName(skill)} Lv {next}", EffectText(skill, next), rt,
                 SkillValueAt(skill.NumericSkillId, cur), SkillValueAt(skill.NumericSkillId, next));
         }
+        SkillTooltip.Instance.PlaceBeside(rt, IsLeftSkillColumn(rt));
+    }
+
+    private bool IsLeftSkillColumn(RectTransform target)
+    {
+        if (target == null) return true;
+        float targetX = target.TransformPoint(target.rect.center).x;
+        float minX = targetX, maxX = targetX;
+        foreach (var row in rows)
+        {
+            var rect = row != null && row.rowRoot != null ? row.rowRoot.transform as RectTransform : null;
+            if (rect == null) continue;
+            float x = rect.TransformPoint(rect.rect.center).x;
+            minX = Mathf.Min(minX, x);
+            maxX = Mathf.Max(maxX, x);
+        }
+        return targetX <= (minX + maxX) * 0.5f;
     }
 
     private void ShowCompletion(string msg)

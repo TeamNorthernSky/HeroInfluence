@@ -316,6 +316,16 @@ namespace JC.Tutorial
             if (party == null) { Hide(); return; }
             var entry = party.GetComponent<TutorialPartyRuntime>();
             if (entry != null && !entry.SceneEntryReady) { Hide(); return; }
+            // 시작 목표의 표시 시간은 로딩·페이드와 씬 진입 복원이 모두 끝난 뒤부터 셉니다.
+            var fade = SceneFadeController.Instance;
+            if (!Seen("intro") && movement.CurrentOrder == 1 && repository.CurrentTurn == 1 &&
+                fade != null && !fade.IsSceneEntryCompleted(gameObject.scene))
+            {
+                introElapsed = 0; lastTime = -1;
+                SetIntroVisible(false); view.SetVisible(false);
+                SetShield(false); SetContinue(false); HideMarker();
+                return;
+            }
             movement.SetGuidanceTarget(this, null);
             JcBuildingSilhouetteFeature.ClearTutorialHighlight(this);
             bool otherModal = ModalManager.HasAny && ModalManager.Top != explanationShield;
@@ -458,7 +468,15 @@ namespace JC.Tutorial
                 SetTurnAvailable(true);
                 if (Application.isPlaying && !Seen("new-turn-camera-view") && initialCameraMove == null)
                     initialCameraMove = StartCoroutine(AdjustCameraView(true, "new-turn-camera-view", 3f, false, false, -1.5f));
-                ShowAction("new-turn", JcTutorialText.Get("exploreguide.025", "새로운 턴"), JcTutorialText.Get("exploreguide.026", "이동력이 다시 채워졌습니다.\n턴이 바뀌면 시간이 흐르고, 낮과 밤도 달라집니다.\n표시된 목표로 계속 이동해 보세요."), movementGauge);
+                if (!Seen("new-turn-gauge"))
+                {
+                    Explain("new-turn-gauge", JcTutorialText.Get("exploreguide.025", "새로운 턴"),
+                        JcTutorialText.Get("exploreguide.026", "이동력이 다시 채워졌습니다.\n턴이 바뀌면 시간이 흐르고, 낮과 밤도 달라집니다."), movementGauge, time);
+                    return true;
+                }
+                if (movementGaugePulse != null) movementGaugePulse.Stop();
+                ShowAction("new-turn-target", JcTutorialText.Get("exploreguide.054", "자원 수집"),
+                    JcTutorialText.Get("exploreguide.055", "표시된 목표로 계속 이동해 보세요."));
                 if (movement.CurrentTargetCells.Count > 0) ShowMarker(movement.CurrentTargetCells[0], time);
                 else
                 {
@@ -591,7 +609,7 @@ namespace JC.Tutorial
             // JC | 2026-11-09 | 삭제된 앞쪽 카메라 단계의 표시 설정만 제거합니다.
             if (key == "mouse-move-explanation" || key == "resources" ||
                 key == "camera-scroll-explanation" || key == "association-entry-explanation") return JcTutorialGuideView.FocusPresentation.DimmedExplanation;
-            if (key == "automatic-turn" || key == "exhausted" || key == "move-gauge-pulse") return JcTutorialGuideView.FocusPresentation.Spotlight;
+            if (key == "automatic-turn" || key == "exhausted" || key == "move-gauge-pulse" || key == "new-turn-gauge") return JcTutorialGuideView.FocusPresentation.Spotlight;
             return key != null && key.StartsWith("resource-") ? JcTutorialGuideView.FocusPresentation.ResourceBlock : JcTutorialGuideView.FocusPresentation.PointerAbove;
         }
         private void Explain(string key, string title, string text, RectTransform focus, float time)

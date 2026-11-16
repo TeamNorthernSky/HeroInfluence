@@ -13,6 +13,9 @@ public sealed class WorldInfluenceBadgeTooltip : MonoBehaviour, IPointerEnterHan
     private int lastUnit = -1;
     private float lastIp, lastMaximum;
     private Vector3 lastPosition, lastScale;
+    private ExplorationHeroBoxController owner;
+
+    public void BindOwner(ExplorationHeroBoxController controller) => owner = controller;
 
     public void OnPointerEnter(PointerEventData data)
     {
@@ -31,12 +34,13 @@ public sealed class WorldInfluenceBadgeTooltip : MonoBehaviour, IPointerEnterHan
         if (unit == null) { Hide(); return; }
         var tooltip = SkillTooltip.Instance;
         if (!tooltip || !positionAnchor || !font) return;
+        var anchor = owner ? owner.GetInfluenceTooltipAnchor(unit.UnitTemplateKey, positionAnchor) : positionAnchor;
         float current = unit.CurrentInfluence, maximum = unit.IngameStats.Influence;
         if (lastUnit == unit.UnitIndex && lastIp == current && lastMaximum == maximum &&
-            lastPosition == positionAnchor.position && lastScale == positionAnchor.lossyScale) return;
+            lastPosition == anchor.position && lastScale == anchor.lossyScale) return;
         lastUnit = unit.UnitIndex; lastIp = current; lastMaximum = maximum;
-        lastPosition = positionAnchor.position; lastScale = positionAnchor.lossyScale;
-        tooltip.ShowInfluence(current, maximum, JcHeroInfluenceBadge.Title(current), positionAnchor, font);
+        lastPosition = anchor.position; lastScale = anchor.lossyScale;
+        tooltip.ShowInfluence(current, maximum, JcHeroInfluenceBadge.Title(current), anchor, font);
     }
 
     private void Hide()

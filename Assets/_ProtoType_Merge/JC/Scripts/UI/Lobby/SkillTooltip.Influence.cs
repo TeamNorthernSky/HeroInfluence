@@ -61,7 +61,7 @@ public partial class SkillTooltip
             }
         }
         influenceValue.text = $"현재 I.P: {current:0}";
-        influenceBody.text = "I.P가 높을수록 피해량이 증가합니다.";
+        influenceBody.text = "I.P가 높을수록 피해량이 증가합니다.\n레벨업 시 최대 I.P가 10씩 증가합니다.";
         influenceValue.font = influenceBody.font = influenceNote.font = font;
         float columnWidth = 0f, titleHeight = 0f, rangeHeight = 0f, badgeWidth = 0f;
         for (int i = 0; i < 4; i++)
