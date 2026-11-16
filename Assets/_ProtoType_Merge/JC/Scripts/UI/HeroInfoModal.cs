@@ -50,6 +50,7 @@ public class HeroInfoModal : MonoBehaviour
 
     private int currentUnitIndex = -1;
     public int CurrentUnitIndex => currentUnitIndex;
+    public bool IsOpen => GetRoot().activeInHierarchy;
     private bool buttonsResolved;
 
     // 호버 툴팁용 슬롯 캐시

@@ -91,6 +91,8 @@ public class ExplorationCoreSelectLauncher : MonoBehaviour
     public void OpenSlot(int slotIndex)
     {
         if (gameObject.scene.name == "TutorialExploreScene" || modal == null || slotIndex < 0) return;
+        var license = CommonUIManager.Instance != null ? CommonUIManager.Instance.HeroInfoModal : null;
+        if (license != null && license.IsOpen) return;
         PartyPersistentData party = ResolveParty();
         if (party == null) return;
 

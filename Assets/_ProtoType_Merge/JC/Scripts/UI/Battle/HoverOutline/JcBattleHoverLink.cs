@@ -74,9 +74,14 @@ public sealed class JcBattleHoverLink : MonoBehaviour
     private static RectTransform FindBadge(TurnSlotUI slot)
     {
         // 기존 흰색 링은 초상화 마스크 밖에 있으므로 빨간 링도 잘리지 않습니다.
+        RectTransform fallback = null;
         foreach (var image in slot.GetComponentsInChildren<Image>(true))
+        {
             if (image.name == "PortraitWhiteOutline") return image.rectTransform;
-        return null;
+            if (image.name == "PortraitCircle") fallback = image.rectTransform;
+            else if (image.name == "Portrait" && fallback == null) fallback = image.rectTransform;
+        }
+        return fallback;
     }
 
     public bool IsBadgeHit(TurnSlotUI slot, Vector2 pointer, Camera eventCamera)
