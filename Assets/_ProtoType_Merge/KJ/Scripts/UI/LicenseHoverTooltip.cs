@@ -12,6 +12,14 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
     private RectTransform panel;
     private GameObject imagePanel;
     private bool imageOnly;
+    private HeroInfoModal formationOwner;
+    private bool criticalFormation;
+    private Image formationImage;
+    private Sprite formationSprite, originalSprite;
+    private RectTransform formationRect;
+    private Vector2 originalSize, originalPosition;
+    private bool originalPreserveAspect;
+    private TMP_Text formationText;
     private bool influenceMode;
     private HeroInfoModal influenceOwner;
     private RectTransform influenceAnchor;
@@ -20,6 +28,7 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
     private static LicenseHoverTooltip visible;
     public void Bind(string title, string description, Sprite sprite, TMP_FontAsset textFont, bool speechBubble, string badges = "")
     {
+        ClearFormationImage();
         heading = title; body = description; icon = sprite; font = textFont; bubble = speechBubble; tags = badges;
         Hide();
         imagePanel = null;
@@ -29,6 +38,7 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
     }
     public void BindImage(GameObject image)
     {
+        ClearFormationImage();
         Hide();
         if (panel) { Destroy(panel.gameObject); panel = null; }
         imageOnly = true;
@@ -38,6 +48,64 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
         foreach (var graphic in imagePanel.GetComponentsInChildren<Graphic>(true))
             graphic.raycastTarget = false;
         imagePanel.SetActive(false);
+    }
+
+    public void BindFormationImage(GameObject image, HeroInfoModal owner, bool critical, Sprite expanded, TMP_FontAsset lightFont)
+    {
+        BindImage(image);
+        if (!imagePanel || !expanded || !lightFont) return;
+        formationImage = imagePanel.GetComponent<Image>();
+        if (!formationImage) return;
+        formationOwner = owner; criticalFormation = critical; formationSprite = expanded;
+        formationRect = formationImage.rectTransform;
+        originalSprite = formationImage.sprite;
+        originalSize = formationRect.sizeDelta; originalPosition = formationRect.anchoredPosition;
+        originalPreserveAspect = formationImage.preserveAspect;
+        var go = new GameObject("FormationBreakdown", typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.layer = imagePanel.layer; go.transform.SetParent(imagePanel.transform, false);
+        formationText = go.GetComponent<TextMeshProUGUI>();
+        formationText.font = lightFont; formationText.fontStyle = FontStyles.Normal;
+        formationText.color = new Color32(85, 85, 85, 255);
+        formationText.alignment = TextAlignmentOptions.Center;
+        formationText.enableWordWrapping = false; formationText.raycastTarget = false;
+        formationText.enableAutoSizing = true; formationText.fontSizeMin = 12f;
+        formationText.fontSize = formationText.fontSizeMax = formationRect.rect.width * .04f;
+        var rect = formationText.rectTransform;
+        rect.anchorMin = new Vector2(.07f, .255f); rect.anchorMax = new Vector2(.93f, .435f);
+        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        go.SetActive(false);
+    }
+
+    private void RefreshFormationImage()
+    {
+        if (!formationImage || !formationOwner || !formationText) return;
+        if (!formationOwner.TryGetFormationBonus(criticalFormation, out float baseline, out float bonus))
+        {
+            RestoreFormationImage();
+            return;
+        }
+        formationImage.sprite = formationSprite;
+        formationImage.preserveAspect = false;
+        float height = formationRect.rect.width * formationSprite.rect.height / formationSprite.rect.width;
+        formationRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        // 말풍선 꼬리 끝은 유지하고, 추가 설명 공간만 위로 넓힙니다.
+        formationRect.anchoredPosition = originalPosition + Vector2.up * (formationRect.sizeDelta.y - originalSize.y) * formationRect.pivot.y;
+        formationText.text = $"기본 {baseline * 100f:0.#}% + 진형 효과 {bonus * 100f:0.#}%";
+        formationText.gameObject.SetActive(true);
+    }
+
+    private void RestoreFormationImage()
+    {
+        if (formationImage) { formationImage.sprite = originalSprite; formationImage.preserveAspect = originalPreserveAspect; }
+        if (formationRect) { formationRect.sizeDelta = originalSize; formationRect.anchoredPosition = originalPosition; }
+        if (formationText) formationText.gameObject.SetActive(false);
+    }
+
+    private void ClearFormationImage()
+    {
+        RestoreFormationImage();
+        if (formationText) Destroy(formationText.gameObject);
+        formationText = null; formationImage = null; formationRect = null; formationOwner = null;
     }
     public void OnPointerEnter(PointerEventData e)
     {
@@ -52,6 +120,7 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
         if (imageOnly)
         {
             if (!imagePanel) return;
+            RefreshFormationImage();
             visible = this;
             imagePanel.SetActive(true);
             return;
@@ -62,15 +131,27 @@ public sealed class LicenseHoverTooltip : MonoBehaviour, IPointerEnterHandler, I
     }
     public void OnPointerExit(PointerEventData e) => Hide();
     private void OnDisable() => Hide();
-    private void OnDestroy() { Hide(); if (panel) Destroy(panel.gameObject); }
+    private void OnDestroy() { Hide(); ClearFormationImage(); if (panel) Destroy(panel.gameObject); }
     private void Hide() { if (influenceMode && visible == this && SkillTooltip.Instance) SkillTooltip.Instance.Hide(); if (imagePanel) imagePanel.SetActive(false); if (panel) panel.gameObject.SetActive(false); if (visible == this) visible = null; }
-    private void LateUpdate() { if (influenceMode && visible == this) ShowInfluence(); else if (panel && panel.gameObject.activeSelf) Place(); }
+    private void LateUpdate() { if (influenceMode && visible == this) ShowInfluence(); else if (imageOnly && visible == this) RefreshFormationImage(); else if (panel && panel.gameObject.activeSelf) Place(); }
 
     public void BindInfluence(HeroInfoModal owner, RectTransform anchor, TMP_FontAsset textFont)
     {
+        ClearFormationImage();
         Hide();
         influenceMode = true; imageOnly = false; imagePanel = null;
         influenceOwner = owner; influenceAnchor = anchor; font = textFont;
+    }
+
+    public bool CanShowInfluenceTooltip
+    {
+        get
+        {
+            var repo = PersistentUnitRepository.Instance;
+            return isActiveAndEnabled && influenceMode && influenceOwner && influenceAnchor && font &&
+                SkillTooltip.Instance && repo != null &&
+                repo.TryGetUnit(influenceOwner.CurrentUnitIndex, out var unit) && unit != null;
+        }
     }
 
     private void ShowInfluence()

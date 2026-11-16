@@ -14,7 +14,7 @@ public sealed class JcInfluenceBadgeColors
 [Serializable]
 public sealed class JcInfluenceBadgeConfiguration
 {
-    [InspectorName("듣보")] public JcInfluenceBadgeColors unknown = new JcInfluenceBadgeColors(new Color(.33f,.36f,.40f), new Color(.64f,.68f,.72f));
+    [InspectorName("듣  보")] public JcInfluenceBadgeColors unknown = new JcInfluenceBadgeColors(new Color(.33f,.36f,.40f), new Color(.64f,.68f,.72f));
     [InspectorName("유망주")] public JcInfluenceBadgeColors promising = new JcInfluenceBadgeColors(new Color(.15f,.38f,.24f), new Color(.39f,.70f,.46f));
     [InspectorName("베테랑")] public JcInfluenceBadgeColors veteran = new JcInfluenceBadgeColors(new Color(.13f,.30f,.53f), new Color(.38f,.65f,.90f));
     [InspectorName("국가권력")] public JcInfluenceBadgeColors national = new JcInfluenceBadgeColors(new Color(.53f,.35f,.10f), new Color(.95f,.76f,.34f));

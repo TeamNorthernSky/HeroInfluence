@@ -3440,7 +3440,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB4E3\uBCF4"
+  m_text: "\uB4E3  \uBCF4"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 53dd59ef54e18694497db82ee254f327, type: 2}
   m_sharedMaterial: {fileID: -4000274576345021352, guid: 53dd59ef54e18694497db82ee254f327,

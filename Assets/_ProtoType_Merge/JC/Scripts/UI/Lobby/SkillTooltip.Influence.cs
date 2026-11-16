@@ -35,7 +35,7 @@ public partial class SkillTooltip
             influenceNote.text = "IP 0 대비 일반 스킬 피해 배율 · 반격 제외";
             // CombatCalculator.CalculateDamage: baseDamage * (100 + CurrentInfluence) / 100.
             // JcHeroInfluenceBadge.Tier: <50, <100, <140, 그 이상. 정수 IP 기준 구간입니다.
-            string[] titles = { "듣보", "유망주", "베테랑", "국가권력" };
+            string[] titles = { JcHeroInfluenceBadge.Title(0), "유망주", "베테랑", "국가권력" };
             string[] multipliers = { "1 ~ 1.49배", "1.5 ~ 1.99배", "2 ~ 2.39배", "2.4 ~ 3배" };
             string[] ranges = { "0 ~ 49", "50 ~ 99", "100 ~ 139", "140 ~ 200" };
             for (int i = 0; i < 4; i++)
@@ -60,8 +60,10 @@ public partial class SkillTooltip
                 influenceRanges[i].color = new Color(.45f, .45f, .45f);
             }
         }
-        influenceValue.text = $"현재 I.P: {current:0}";
-        influenceBody.text = "I.P가 높을수록 피해량이 증가합니다.\n레벨업 시 최대 I.P가 10씩 증가합니다.";
+        // CombatCalculator와 같은 IP 피해 배율입니다. 최대 IP는 선택 영웅의 실제 상한을 사용합니다.
+        float multiplier = (100f + Mathf.Max(0f, current)) / 100f;
+        influenceValue.text = $"I.P : {current:0.##} / {maximum:0.##} || 현재 배율 : {multiplier:0.##}배";
+        influenceBody.text = "I.P가 높을수록 피해량이 증가합니다.\n랭크업 시 최대 I.P가 10~20씩 증가합니다.";
         influenceValue.font = influenceBody.font = influenceNote.font = font;
         float columnWidth = 0f, titleHeight = 0f, rangeHeight = 0f, badgeWidth = 0f;
         for (int i = 0; i < 4; i++)
@@ -120,9 +122,12 @@ public partial class SkillTooltip
     }
 
     void PositionInfluenceTooltip(RectTransform target, bool atAnchor = false)
+        => PositionBadgeTooltip(influenceRoot, target, atAnchor);
+
+    void PositionBadgeTooltip(RectTransform root, RectTransform target, bool atAnchor = false)
     {
         // IP 전용: 공용 스킬 툴팁 오프셋 대신 실제로 가리킨 아이콘/배지 가장자리에 붙입니다.
-        var canvas = influenceRoot.GetComponentInParent<Canvas>();
+        var canvas = root.GetComponentInParent<Canvas>();
         var area = canvas ? canvas.transform as RectTransform : transform as RectTransform;
         if (!area) return;
         var sourceCanvas = target.GetComponentInParent<Canvas>();
@@ -141,10 +146,10 @@ public partial class SkillTooltip
         }
         const float gap = 40f;
         float x = atAnchor ? min.x : max.x + gap;
-        if (!atAnchor && x + influenceRoot.rect.width > area.rect.xMax)
-            x = min.x - gap - influenceRoot.rect.width;
-        influenceRoot.position = area.TransformPoint(new Vector3(x, max.y, 0));
-        SkillTooltipCardLayout.KeepOnScreen(influenceRoot);
+        if (!atAnchor && x + root.rect.width > area.rect.xMax)
+            x = min.x - gap - root.rect.width;
+        root.position = area.TransformPoint(new Vector3(x, max.y, 0));
+        SkillTooltipCardLayout.KeepOnScreen(root);
     }
     TMP_Text CreateInfluenceText(string name, float size)
     {

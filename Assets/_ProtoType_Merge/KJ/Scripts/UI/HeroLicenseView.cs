@@ -24,11 +24,10 @@ public sealed class HeroLicenseView : MonoBehaviour
     [SerializeField] private JcInfluenceBadgeView influenceBadge;
     [SerializeField] private LicenseHoverTooltip influenceHover;
     [SerializeField] private RectTransform influenceTooltipAnchor;
+    [SerializeField] private TMP_FontAsset formationTooltipFont;
     private int lastCore = -1;
     private int lastCoreLevel = -1;
     private static readonly FieldInfo UnitIndexField = typeof(HeroInfoModal).GetField("currentUnitIndex", BindingFlags.Instance | BindingFlags.NonPublic);
-    private static readonly FieldInfo DamageReductionField = typeof(HeroInfoModal).GetField("damageReductionText", BindingFlags.Instance | BindingFlags.NonPublic);
-    private TMP_Text damageReductionValue;
     private int lastUnit = -1;
     private int lastLevel = -1;
     private void OnEnable()
@@ -36,6 +35,12 @@ public sealed class HeroLicenseView : MonoBehaviour
         lastUnit = -1; lastLevel = -1; lastCore = -1; lastCoreLevel = -1;
         BindStatHovers();
         if (influenceHover != null) influenceHover.BindInfluence(owner, influenceTooltipAnchor, hpValue.font);
+        if (rankBadge != null)
+        {
+            var rankHover = rankBadge.GetComponent<HeroRankBadge>();
+            if (rankHover == null) rankHover = rankBadge.gameObject.AddComponent<HeroRankBadge>();
+            rankHover.ConfigureTooltip(rankSprites, hpValue.font, influenceHover);
+        }
     }
     private void LateUpdate()
     {
@@ -48,10 +53,7 @@ public sealed class HeroLicenseView : MonoBehaviour
             return;
         }
         if (influenceBadge != null) influenceBadge.SetUnit(unit);
-        if (damageReductionValue == null && DamageReductionField != null)
-            damageReductionValue = DamageReductionField.GetValue(owner) as TMP_Text;
-        if (damageReductionValue != null)
-            damageReductionValue.text = $"{Mathf.Clamp01(unit.IngameStats.AvoidRate) * 100f:F0}%";
+        owner.RefreshDisplayedStats(unit);
         float maximum = Mathf.Max(0f, unit.IngameStats.HP);
         hpValue.text = $"{unit.CurrentHp:F0}/{maximum:F0}";
         hpFill.fillAmount = maximum > 0f ? Mathf.Clamp01(unit.CurrentHp / maximum) : 0f;
@@ -62,6 +64,7 @@ public sealed class HeroLicenseView : MonoBehaviour
         if (lab == null || (lastUnit == index && lastLevel == unit.Level)) return;
         lastUnit = index; lastLevel = unit.Level;
         string rank = UnitRankLookup.GetRank(unit.Level);
+        rankBadge.GetComponent<HeroRankBadge>()?.SetRank(rank);
         var badge = System.Array.Find(rankSprites, sprite => sprite != null && sprite.name == "UI_icon_rank" + rank);
         rankBadge.sprite = badge;
         rankBadge.color = badge != null ? Color.white : new Color32(15, 96, 224, 255);
@@ -170,7 +173,13 @@ public sealed class HeroLicenseView : MonoBehaviour
             var tip=target.GetComponent<LicenseHoverTooltip>();
             if (!tip) tip=target.gameObject.AddComponent<LicenseHoverTooltip>();
             tip.enabled = true;
-            tip.BindImage(image.gameObject);
+            if (stat == "CritRate" || stat == "CounterRate")
+            {
+                bool critical = stat == "CritRate";
+                var sprite = Resources.Load<Sprite>("HeroLicenceTooltip/UI_tooltip_" + (critical ? "CRI" : "RVG") + "_Formation");
+                tip.BindFormationImage(image.gameObject, owner, critical, sprite, formationTooltipFont);
+            }
+            else tip.BindImage(image.gameObject);
         }
     }
     private void OnDisable() { if (SkillTooltip.Instance != null) SkillTooltip.Instance.Hide(); }

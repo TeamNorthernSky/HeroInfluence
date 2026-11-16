@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     // JC | 2026-11-13 | IP 최하위 칭호를 듣보로 변경하며 배지와 툴팁 안내에 같은 명칭을 표시합니다.
-    static readonly string[] Titles = { "듣보", "유망주", "베테랑", "국가권력" };
+    static readonly string[] Titles = { "듣  보", "유망주", "베테랑", "국가권력" };
     // JC | 2026-11-13 | 구형 미리보기의 기본 색도 공용 설정과 같은 정의를 사용합니다.
     static readonly JcInfluenceBadgeConfiguration DefaultColors = new JcInfluenceBadgeConfiguration();
     TMP_Text reference, label;
@@ -166,6 +166,7 @@ public sealed class JcHeroInfluenceBadge : MonoBehaviour, IPointerEnterHandler, 
         if (!isActiveAndEnabled || !unit) return;
         hovering = true; ShowTip();
     }
+    public bool CanShowTooltip => isActiveAndEnabled && unit && SkillTooltip.Instance;
     public void OnPointerExit(PointerEventData data) => EndHover();
     public void EndHover()
     {

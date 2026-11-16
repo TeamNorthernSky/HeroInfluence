@@ -17,6 +17,16 @@ public sealed class WorldInfluenceBadgeTooltip : MonoBehaviour, IPointerEnterHan
 
     public void BindOwner(ExplorationHeroBoxController controller) => owner = controller;
 
+    public bool CanShowTooltip
+    {
+        get
+        {
+            var license = CommonUIManager.Instance != null ? CommonUIManager.Instance.HeroInfoModal : null;
+            return isActiveAndEnabled && (license == null || !license.IsOpen) &&
+                badge != null && badge.Unit != null && SkillTooltip.Instance && positionAnchor && font;
+        }
+    }
+
     public void OnPointerEnter(PointerEventData data)
     {
         hovering = true;

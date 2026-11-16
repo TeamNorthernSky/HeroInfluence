@@ -29,7 +29,7 @@ public class HeroInfoModal : MonoBehaviour
     [SerializeField] private TMP_Text defText;
     [SerializeField] private TMP_Text critRateText;
     [SerializeField] private TMP_Text counterRateText;
-    // [JC 260520] StatBlock에 피해경감률 필드 없음 — 데이터 모델 합의 후 연결. 현재는 "—" 출력
+    // 후열 피격 시 피해 경감이 발동할 확률(AvoidRate)입니다.
     [SerializeField] private TMP_Text damageReductionText;
     [SerializeField] private TMP_Text speedText;
 
@@ -114,8 +114,6 @@ public class HeroInfoModal : MonoBehaviour
         string displayClass = template != null && !string.IsNullOrWhiteSpace(template.ClassName)
             ? template.ClassName : "-";
 
-        StatBlock s = unit.IngameStats; // [JC 260616] 표시는 인게임 스탯(베이스는 내부 연산용·비공개)
-
         SetText(nameText, displayName);
         SetText(classText, displayClass);
         SetText(rankText, $"RANK : {unit.Level}");
@@ -123,13 +121,7 @@ public class HeroInfoModal : MonoBehaviour
         float ipValue = unit != null ? unit.CurrentInfluence : 0f;
         // 명칭은 씬의 고정 라벨로 분리됨. 값 텍스트는 값만 출력(값필드 박스 안).
         SetText(ipText, $"{ipValue:F0}");
-        SetText(hpText, $"{s.HP:F0}");
-        SetText(atkText, $"{s.Atk:F0}");
-        SetText(defText, $"{s.DEF:F0}");
-        SetText(critRateText, $"{s.CriticalRate * 100f:F0}%");
-        SetText(counterRateText, $"{s.CounterRate * 100f:F0}%");
-        SetText(damageReductionText, "—");
-        SetText(speedText, $"{s.Speed:F0}");
+        RefreshDisplayedStats(unit);
 
         if (portraitImage != null)
         {
@@ -145,6 +137,55 @@ public class HeroInfoModal : MonoBehaviour
         // [JC 260619] 랭크 알파벳 = 레벨 파생(성장 시스템 V6.0). 매 Open 시 현재 레벨로 계산(시작/레벨업 자동 반영).
         SetText(gradeText, UnitRankLookup.GetRank(unit != null ? unit.Level : 1));
         ResolveSkillWeaponIcons(unit != null ? unit.UnitIndex : currentUnitIndex);
+    }
+
+    public void RefreshDisplayedStats(UnitPersistentData unit)
+    {
+        if (unit == null) return;
+        // 영속 스탯은 변경하지 않고 전투와 같은 고정 진형 보정만 표시값에 더합니다.
+        StatBlock stats = FormationDisplayStats(unit.IngameStats, FindFormationSlot(unit.UnitIndex));
+        SetText(hpText, $"{stats.HP:F0}");
+        SetText(atkText, $"{stats.Atk:F0}");
+        SetText(defText, $"{stats.DEF:F0}");
+        SetText(critRateText, $"{Mathf.Clamp(stats.CriticalRate, 0f, 0.7f) * 100f:F0}%");
+        SetText(counterRateText, $"{Mathf.Clamp01(stats.CounterRate) * 100f:F0}%");
+        SetText(damageReductionText, $"{Mathf.Clamp01(stats.AvoidRate) * 100f:F0}%");
+        SetText(speedText, $"{stats.Speed:F0}");
+    }
+
+    private static StatBlock FormationDisplayStats(StatBlock stats, int slot)
+    {
+        // PartyFormation: 슬롯 4~6은 전열, 1~3은 후열.
+        // BattleCharactor.ApplyFormationPassiveModifiers와 동일한 가산입니다.
+        if (slot >= 4 && slot <= PartyFormation.SlotCount) stats.CounterRate += 0.3f;
+        else if (slot >= 1 && slot <= 3) stats.CriticalRate += 0.15f;
+        return stats;
+    }
+
+    public bool TryGetFormationBonus(bool critical, out float baseline, out float bonus)
+    {
+        baseline = bonus = 0f;
+        var repository = PersistentUnitRepository.Instance;
+        if (repository == null || !repository.TryGetUnit(currentUnitIndex, out var unit) || unit == null) return false;
+        baseline = critical ? unit.IngameStats.CriticalRate : unit.IngameStats.CounterRate;
+        int slot = FindFormationSlot(currentUnitIndex);
+        if (critical && slot >= 1 && slot <= 3) bonus = 0.15f;
+        else if (!critical && slot >= 4 && slot <= PartyFormation.SlotCount) bonus = 0.3f;
+        return bonus > 0f;
+    }
+
+    private static int FindFormationSlot(int unitIndex)
+    {
+        var parties = PartyPersistentRepository.Instance;
+        if (parties == null) return 0;
+        foreach (var party in parties.Parties)
+        {
+            if (party == null) continue;
+            for (int i = 0; i < party.UnitIndices.Count; i++)
+                if (party.UnitIndices[i] == unitIndex)
+                    return party.UnitSlots != null && i < party.UnitSlots.Count ? party.UnitSlots[i] : i + 1;
+        }
+        return 0; // 미편성 영웅에는 진형 보정이 없습니다.
     }
 
     // ── 스킬/무기 버튼 결선 (이름 자동 탐색 + 호버 부착) ───────────
