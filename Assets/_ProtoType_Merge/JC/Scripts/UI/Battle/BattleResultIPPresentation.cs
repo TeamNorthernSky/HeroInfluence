@@ -13,6 +13,9 @@ public sealed class BattleResultIPPresentation : IDisposable
     private readonly GameObject root;
     private readonly RollingNumberText currentRow, gainRow;
     private readonly TextMeshProUGUI echo;
+    private readonly TextMeshProUGUI plus;
+    private readonly bool currentOnlyWhenComplete;
+    private readonly Vector2 finalCurrentPosition;
     private readonly long start, target, gain;
     private readonly float height;
     private float elapsed, progress, echoElapsed, delayElapsed;
@@ -25,8 +28,9 @@ public sealed class BattleResultIPPresentation : IDisposable
     public long DisplayedCurrent { get; private set; }
     public long DisplayedRemaining { get; private set; }
 
-    public BattleResultIPPresentation(TMP_Text template, float before, float after, BattleResultIPGainSettings config)
+    public BattleResultIPPresentation(TMP_Text template, float before, float after, BattleResultIPGainSettings config, bool currentOnlyWhenComplete = false)
     {
+        this.currentOnlyWhenComplete = currentOnlyWhenComplete;
         source = template; sourceEnabled = template.enabled; settings = config;
         start = (long)Math.Round(before, MidpointRounding.ToEven);
         target = (long)Math.Round(after, MidpointRounding.ToEven);
@@ -46,17 +50,23 @@ public sealed class BattleResultIPPresentation : IDisposable
         float gainGap = fontSize * Mathf.Max(0, config.plusToGainGap);
         float plusWidth = Mathf.Max(1, source.GetPreferredValues("+", Mathf.Infinity, Mathf.Infinity).x);
         float required = digitWidth * (leftCount + rightCount) + plusWidth + currentGap + gainGap;
-        float fit = Mathf.Min(1f, width / required, height / Mathf.Max(1f, fontSize * 1.3f));
+        float availableWidth = currentOnlyWhenComplete ? Mathf.Max(1f, width - source.margin.x - source.margin.z) : width;
+        float fit = Mathf.Min(1f, availableWidth / required, height / Mathf.Max(1f, fontSize * 1.3f));
         digitWidth *= fit; currentGap *= fit; gainGap *= fit; plusWidth *= fit; fontSize *= fit;
-        float left = -required * fit * .5f;
-        currentRow = CreateRow(rect, "Current", leftCount, left, digitWidth, fontSize, config.currentColor, RollingNumberText.HorizontalAlignment.Right);
+        float left = AlignedLeft(required * fit, width);
+        float currentWidth = digitWidth * leftCount;
+        finalCurrentPosition = new Vector2(AlignedLeft(currentWidth, width) + currentWidth * .5f, 0);
+        var currentColor = currentOnlyWhenComplete ? source.color : config.currentColor;
+        var currentAlignment = currentOnlyWhenComplete && source.horizontalAlignment == HorizontalAlignmentOptions.Left
+            ? RollingNumberText.HorizontalAlignment.Left : RollingNumberText.HorizontalAlignment.Right;
+        currentRow = CreateRow(rect, "Current", leftCount, left, digitWidth, fontSize, currentColor, currentAlignment);
         float plusLeft = left + digitWidth * leftCount + currentGap;
-        var plus = CreateText(rect, "Plus", plusWidth, fontSize, config.gainColor);
+        plus = CreateText(rect, "Plus", plusWidth, fontSize, config.gainColor);
         plus.rectTransform.anchoredPosition = new Vector2(plusLeft + plusWidth * .5f, 0); plus.text = "+";
         gainRow = CreateRow(rect, "Remaining", rightCount, plusLeft + plusWidth + gainGap, digitWidth, fontSize, config.gainColor, RollingNumberText.HorizontalAlignment.Left);
         currentRow.BeginManual(start, target);
         gainRow.BeginManual(gain, 0);
-        echo = CreateText(rect, "CompletionEcho", digitWidth * leftCount, fontSize, config.currentColor);
+        echo = CreateText(rect, "CompletionEcho", digitWidth * leftCount, fontSize, currentColor);
         echo.rectTransform.anchoredPosition = new Vector2(left + digitWidth * leftCount * .5f, 0);
         // 같은 자릿수 폭으로 최종 숫자를 복제합니다. 원래 숫자는 확대하지 않습니다.
         echo.text = "<mspace=" + digitWidth.ToString(CultureInfo.InvariantCulture) + ">" + target.ToString(CultureInfo.InvariantCulture) + "</mspace>";
@@ -103,7 +113,7 @@ public sealed class BattleResultIPPresentation : IDisposable
             echoElapsed += delta;
             float t = settings.echoDuration > 0 ? Mathf.Clamp01(echoElapsed / settings.echoDuration) : 1;
             echo.rectTransform.localScale = Vector3.one * Mathf.Lerp(1, Mathf.Max(1, settings.echoScale), t);
-            var c = settings.currentColor; c.a *= Mathf.Clamp01(settings.echoAlpha) * (1 - t); echo.color = c;
+            var c = currentOnlyWhenComplete ? source.color : settings.currentColor; c.a *= Mathf.Clamp01(settings.echoAlpha) * (1 - t); echo.color = c;
             if (t >= 1) { echo.gameObject.SetActive(false); completed = true; }
             return;
         }
@@ -143,10 +153,30 @@ public sealed class BattleResultIPPresentation : IDisposable
 
     private void BeginCompletionEcho()
     {
+        ShowCurrentOnly();
         if (gain == 0 || !settings || settings.echoDuration <= 0) { completed = true; return; }
         echoActive = true; echoElapsed = 0; echo.gameObject.SetActive(true);
         echo.rectTransform.localScale = Vector3.one;
-        var c = settings.currentColor; c.a *= Mathf.Clamp01(settings.echoAlpha); echo.color = c;
+        var c = currentOnlyWhenComplete ? source.color : settings.currentColor; c.a *= Mathf.Clamp01(settings.echoAlpha); echo.color = c;
+    }
+
+    private void ShowCurrentOnly()
+    {
+        if (!currentOnlyWhenComplete) return;
+        plus.gameObject.SetActive(false);
+        gainRow.gameObject.SetActive(false);
+        ((RectTransform)currentRow.transform).anchoredPosition = finalCurrentPosition;
+        echo.rectTransform.anchoredPosition = finalCurrentPosition;
+    }
+
+    private float AlignedLeft(float contentWidth, float areaWidth)
+    {
+        if (!currentOnlyWhenComplete) return -contentWidth * .5f;
+        if (source.horizontalAlignment == HorizontalAlignmentOptions.Left)
+            return -areaWidth * .5f + source.margin.x;
+        if (source.horizontalAlignment == HorizontalAlignmentOptions.Right)
+            return areaWidth * .5f - source.margin.z - contentWidth;
+        return -contentWidth * .5f + (source.margin.x - source.margin.z) * .5f;
     }
 
     private void Draw(double transfer)
@@ -160,7 +190,7 @@ public sealed class BattleResultIPPresentation : IDisposable
 
     public void CompleteImmediately()
     {
-        Draw(gain); echo.gameObject.SetActive(false); completed = true; pending = false;
+        Draw(gain); ShowCurrentOnly(); echo.gameObject.SetActive(false); completed = true; pending = false;
     }
 
     public void Dispose()

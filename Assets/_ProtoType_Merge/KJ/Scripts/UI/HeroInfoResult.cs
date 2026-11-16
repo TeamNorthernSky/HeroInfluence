@@ -24,6 +24,7 @@ public class HeroInfoResult : MonoBehaviour
     [SerializeField] private Image rankImage;
     [Tooltip("UI_icon_rankF 등 이름으로 랭크와 연결하는 기존 아이콘 목록입니다.")]
     [SerializeField] private Sprite[] rankSprites;
+    [SerializeField] private JcInfluenceBadgeView influenceBadge;
 
     private const string ProfileFolder = "UI_Sprite/UI_Icon/CharacterProfile_temp/";
     //private const string fileName = "character icon sample";
@@ -78,6 +79,8 @@ public class HeroInfoResult : MonoBehaviour
     {
         AdvanceRewardPresentation(delta);
         if (IsExpRankComplete && ipStageReleased) ipPresentation?.Tick(delta);
+        if (influenceBadge != null && ipPresentation != null)
+            influenceBadge.SetInfluence(ipPresentation.DisplayedCurrent);
     }
 
     private void AdvanceRewardPresentation(float delta)
@@ -216,6 +219,8 @@ public class HeroInfoResult : MonoBehaviour
     {
         CompleteExpRankPresentation();
         ipPresentation?.CompleteImmediately();
+        if (influenceBadge != null && rewardPreview != null)
+            influenceBadge.SetInfluence(rewardPreview.NewInfluence);
     }
 
     private void CompleteExpRankPresentation()
@@ -306,6 +311,7 @@ public class HeroInfoResult : MonoBehaviour
         phase = RewardPhase.Idle; rewardPreview = null; expSteps.Clear();
         ReleaseRewardMaterials();
         if (portraitImage != null) { portraitImage.sprite = null; portraitImage.enabled = false; }
+        if (influenceBadge != null) influenceBadge.gameObject.SetActive(false);
         if (rankImage != null) { rankImage.sprite = null; rankImage.enabled = false; }
         if (unitNameText != null) unitNameText.text = "";
         if (expValueText != null) expValueText.text = "-";
@@ -325,6 +331,9 @@ public class HeroInfoResult : MonoBehaviour
         if (portraitImage == null) return;
         portraitImage.sprite = Sprites.Portrait.HeroByUnit(unitIndex);
         portraitImage.enabled = portraitImage.sprite != null;
+        if (influenceBadge != null && PersistentUnitRepository.Instance != null &&
+            PersistentUnitRepository.Instance.TryGetUnit(unitIndex, out var unit))
+            influenceBadge.SetUnit(unit);
     }
 
     private void ApplySceneCard(UnitRewardPreview preview)
@@ -337,11 +346,19 @@ public class HeroInfoResult : MonoBehaviour
         } else SetPortrait(preview.UnitIndex);
         if (unitNameText != null) unitNameText.text = preview.UnitName ?? "";
         if (expValueText != null) expValueText.text = $"+{preview.GainedExp}";
-        if (ipValueText != null) ipValueText.text = $"{preview.OldInfluence:F0} → {preview.NewInfluence:F0}";
+        if (ipValueText != null) ipValueText.text = influenceBadge != null
+            ? $"{preview.NewInfluence:F0}" : $"{preview.OldInfluence:F0} → {preview.NewInfluence:F0}";
+        if (influenceBadge != null)
+        {
+            influenceBadge.gameObject.SetActive(true);
+            influenceBadge.SetInfluence(preview.OldInfluence);
+        }
         rewardPreview = preview;
         var ipSettings = BattleResultIPGainSettings.ForScene(gameObject.scene);
         if (ipValueText != null && ipSettings != null && preview.InfluenceDelta >= 0)
-            ipPresentation = new BattleResultIPPresentation(ipValueText, preview.OldInfluence, preview.NewInfluence, ipSettings);
+            ipPresentation = new BattleResultIPPresentation(ipValueText, preview.OldInfluence, preview.NewInfluence, ipSettings, influenceBadge != null);
+        else if (influenceBadge != null)
+            influenceBadge.SetInfluence(preview.NewInfluence);
         oldRank = FindRank(preview.OldLevel); newRank = FindRank(preview.NewLevel);
         rewardSettings = BattleResultRewardVisualSettings.ForScene(gameObject.scene);
         if (rewardSettings == null || rewardSettings.tintMaterial == null || expGainFill == null || expFill == null || !BuildExpSteps(preview))
