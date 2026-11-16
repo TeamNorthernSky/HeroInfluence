@@ -5,51 +5,17 @@
 /// </summary>
 public static class ClassSkillTooltipText
 {
-    // JC | 2026-11-12 | IP 정성 문구 대신 이번 시전에 적용된 강화 계수를 백분율로 표시합니다.
-    // 원본 테이블·피해 계산은 수정하지 않으며 본게임/튜토리얼/테스트의 설명 경로를 공유합니다.
+    // JC | 2026-11-16 | Excel Data Viewer 정본에서 전달된 설명을 그대로 사용합니다. 스킬 번호별 문장 사본은
+    // 원본 수정(가로줄/공격력의 등)을 가렸으므로 제거하고, 이번 시전의 강화 계수 자리표시자만 %로 치환합니다.
+    // 일반/튜토리얼/테스트가 이 경로를 공유하며 신규 ID와 +형도 각자의 원본문장을 사용합니다.
     public static string BuildBattleDesc(SkillData skill, bool weapon = false)
     {
         if (skill == null) return string.Empty;
-        int skillIndex = skill.skillIndex;
-        string v = BattlePercent(skill.skillValue);
-        string sub = BattlePercent(skill.skillSubValue);
-        if (weapon)
-        {
-            switch (skillIndex)
-            {
-                case 1: return $"적 1명에게 {v}의 대미지를 준다.";
-                case 2: return $"모든 적에게 {v}의 대미지를 준다.";
-                case 3: return $"히어로젬의 힘으로 보호막을 생성하여, 다음 자신의 차례 전까지 자신이 받는 대미지를 {v} 감소시킨다.";
-                case 4: return $"히어로젬의 힘으로 아군 1명의 체력을 시전자의 최대 체력의 {v}만큼 회복한다.";
-                case 5: return $"히어로젬의 힘으로 모든 적의 방어력을 1턴 동안 {v} 감소시킨다.";
-                default: throw new System.ArgumentOutOfRangeException(nameof(skillIndex), skillIndex, "전투용 코어 스킬 설명이 확정되지 않았습니다.");
-            }
-        }
-        // 조건부 추가 계수와 회복 기준은 기존 실행 방식대로 구분하여 총합/1회당 수치를 혼동하지 않게 합니다.
-        switch (HeroSkillRules.FamilyId(skillIndex))
-        {
-            case 1010: return $"적 1명에게 {v}의 대미지를 주고, 다음 자신의 차례 전까지 모든 적의 단일 공격 대상을 자신으로 변경한다.";
-            case 1020: return $"적 1명에게 {v}의 대미지를 주며, 대상이 전열에 있을 경우 {sub}의 추가 대미지를 준다.";
-            case 1030: return $"적을 관통해 해당 가로줄의 적들에게 대미지를 준다. 전열에는 {v}, 후열에는 {sub}의 대미지를 준다.";
-            case 1040: return $"모든 적에게 {v}의 대미지를 주고, 다음 자신의 차례 전까지 모든 적의 단일 공격 대상을 자신으로 변경한다.";
-            case 2010: return $"적 1명에게 {v}의 대미지를 준다.";
-            case 2020: return $"선택한 적 1명에게 {v}의 대미지를 주고, 인접한 적 1명에게도 {sub}의 대미지를 준다.";
-            case 2030: return $"선택한 세로줄에 있는 모든 적에게 {v}의 대미지를 준다.";
-            case 2040: return $"모든 적에게 {v}의 대미지를 주며, 현재 체력이 최대 체력의 50% 미만인 대상에게는 {sub}의 추가 대미지를 준다.";
-            case 3010: return $"적 1명에게 {v}의 대미지를 준다.";
-            case 3020: return $"적 1명에게 {v}의 대미지를 주며, 대상이 전열에 있을 경우 {sub}의 추가 대미지를 준다.";
-            case 3030: return $"적 1명을 1회당 {v}의 대미지로 2회 공격한다. 치명타와 피해 경감 판정은 각 공격마다 별도로 적용된다.";
-            case 3040: return $"적 1명에게 {v}의 대미지를 준다. 대상의 잃은 체력 10%마다 {sub}의 추가 대미지를 준다(최대 9회).";
-            case 4010: return $"아군 1명의 체력을 시전자의 최대 체력의 {v}만큼 회복한다.";
-            case 4020: return $"적 1명에게 {v}의 대미지를 주고, 실제 입힌 대미지만큼 무작위 아군 1명의 체력을 회복한다.";
-            case 4030: return $"모든 아군의 체력을 시전자의 최대 체력의 {v}만큼 회복한다.";
-            case 4040: return $"리타이어한 아군 1명을 대상 최대 체력의 {sub}로 부활시키고, 모든 적에게 {v}의 대미지를 준다. 부활 효과는 전투당 1회만 적용되며, 이후 사용 시에는 적 전체 공격 효과만 적용된다.";
-            default: throw new System.ArgumentOutOfRangeException(nameof(skillIndex), skillIndex, "전투용 히어로 스킬 설명이 확정되지 않았습니다.");
-        }
+        string prefix = weapon ? "WeaponSkill" : "ClassSkill";
+        string text = ReplacePercentage(skill.description ?? string.Empty, "{" + prefix + "Value}", skill.skillValue);
+        // JC | 2026-11-16 | 문장 재작성/수식 해석 없이 계수만 치환하여 기획 표현·조건·횟수를 보존합니다.
+        return ReplacePercentage(text, "{" + prefix + "SubValue}", skill.skillSubValue);
     }
-
-    private static string BattlePercent(float value) =>
-        (value * 100f).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%";
 
     public static string BuildDesc(DHClassSkillTemplate s, int level, bool percentageValues = false, int unitIndex = 0, BattleCharactor caster = null)
     {

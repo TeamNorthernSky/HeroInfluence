@@ -27,6 +27,8 @@ namespace JC.DebugTools
         bool active, choosingCell, applying;
         PartyGridMover party;
         PartyPersistentData partyData;
+        // JC | 2026-11-16 | 진형의 빈 슬롯(0)은 인원이 아닙니다. 치트를 열 때마다 실멤버를 검증하고 계산·적용에 함께 사용합니다.
+        readonly List<int> partyMembers = new List<int>();
         GridManager grid;
         LevelData level;
         Vector2Int anchor, originalGrid;
@@ -113,13 +115,15 @@ namespace JC.DebugTools
             var id = party.GetComponent<PartyIdentity>();
             if (id == null || !PartyPersistentRepository.Instance.TryGetParty(id.PartyId, out partyData) || partyData.UnitIndices.Count == 0)
                 throw new InvalidOperationException("전투 파티 데이터를 찾을 수 없습니다.");
+            CollectPartyMembers(partyData, PersistentUnitRepository.Instance, partyMembers);
             if (raiseRank)
             {
                 RaisePartyRank();
                 return;
             }
             bool warpOnly = DHEventStateRepository.Instance.GetFlag($"Flag_MainQuestBoss{zoneNumber}Complete");
-            foreach (int unit in partyData.UnitIndices)
+            // JC | 2026-11-16 | 빈 진형 칸 때문에 정상 파티를 회복 필요 상태로 오인하지 않습니다.
+            foreach (int unit in partyMembers)
                 if (!PersistentUnitRepository.Instance.TryGetUnit(unit, out var data) || data == null || (!warpOnly && (data.IsIncapacitated || data.CurrentHp <= 0)))
                     throw new InvalidOperationException("파티 전원을 회복시킨 후 사용해 주세요. 생략 전투는 전원 생존 승리 기준입니다.");
             viewCamera = Camera.main;
@@ -153,11 +157,38 @@ namespace JC.DebugTools
                     if (row != null && row.Rank == "SSS") target = Mathf.Min(target, row.Level);
             if (target == int.MaxValue) throw new InvalidOperationException("최고 랭크 성장 데이터를 찾을 수 없습니다.");
             var repo = PersistentUnitRepository.Instance;
-            foreach (int id in partyData.UnitIndices)
-                if (!repo.TryGetUnit(id, out var unit) || unit == null)
-                    throw new InvalidOperationException("파티원 성장 데이터를 찾을 수 없습니다.");
+            // JC | 2026-11-16 | 워프와 같은 실멤버 목록으로 성장시킵니다. 재사용 시 이미 최고 랭크인 경우도 결과를 알립니다.
+            if (!ApplyPartyRank(repo, partyMembers, target))
+            {
+                Debug.Log($"[JC 탐사 치트] 현재 파티는 이미 최고 랭크입니다 (Lv.{target}).");
+                return;
+            }
+            PartyRepositorySync.ApplyUnitsToScene(partyMembers);
+            foreach (var hud in FindObjectsByType<ExplorationHeroBoxController>(FindObjectsSortMode.None)) hud.Refresh();
+            DHTurnStartSnapshotStore.CaptureTurnStartSnapshot();
+            Debug.Log($"[JC 탐사 치트] 현재 파티 최고 랭크 적용 (Lv.{target}).");
+        }
+
+        // JC | 2026-11-16 | 0만 정상 빈 슬롯으로 제외합니다. 실제 유닛 누락·중복은 숨기지 않고 적용 전에 중단합니다.
+        static void CollectPartyMembers(PartyPersistentData data, PersistentUnitRepository repository, List<int> members)
+        {
+            members.Clear();
+            foreach (int id in data.UnitIndices)
+            {
+                if (id == 0) continue;
+                if (id < 0 || !repository.TryGetUnit(id, out var unit) || unit == null)
+                    throw new InvalidOperationException($"파티원 데이터를 찾을 수 없습니다: 유닛 {id}");
+                if (members.Contains(id)) throw new InvalidOperationException($"파티에 같은 유닛이 중복 배치되어 있습니다: {id}");
+                members.Add(id);
+            }
+            if (members.Count == 0) throw new InvalidOperationException("전투 파티에 배치된 파티원이 없습니다.");
+        }
+
+        // JC | 2026-11-16 | 성장 적용과 화면/저장 갱신을 분리하여 빈 슬롯·반복 실행을 실제 저장소 API로 비플레이 검증합니다.
+        static bool ApplyPartyRank(PersistentUnitRepository repo, IReadOnlyList<int> members, int target)
+        {
             bool changed = false;
-            foreach (int id in partyData.UnitIndices)
+            foreach (int id in members)
             {
                 repo.TryGetUnit(id, out var unit);
                 if (unit.Level >= target) continue;
@@ -169,11 +200,7 @@ namespace JC.DebugTools
                 if (damage > 0f) repo.ApplyEventRewardStats(id, 0, 0, 0, 0, -damage);
                 changed = true;
             }
-            if (!changed) return;
-            PartyRepositorySync.ApplyUnitsToScene(partyData.UnitIndices);
-            foreach (var hud in FindObjectsByType<ExplorationHeroBoxController>(FindObjectsSortMode.None)) hud.Refresh();
-            DHTurnStartSnapshotStore.CaptureTurnStartSnapshot();
-            Debug.Log($"[JC 탐사 치트] 현재 파티 최고 랭크 적용 (Lv.{target}).");
+            return changed;
         }
 
         void ResolveZone()
@@ -237,7 +264,8 @@ namespace JC.DebugTools
                 // 선택 시점부터 반대 분기 대체 적의 1셀 조우 범위를 예약하므로 적용 후에도 착지가 안전합니다.
                 if (!IsSafe(cell)) throw new InvalidOperationException("맵 상태가 변경되었습니다. 진행은 적용되었고 이동은 취소했습니다.");
                 party.SnapToGridPosition(cell, false);
-                PartyRepositorySync.ApplyUnitsToScene(partyData.UnitIndices);
+                // JC | 2026-11-16 | 보상 계산과 동일한 실멤버만 씬에 반영합니다. 진형의 슬롯 배열은 보존합니다.
+                PartyRepositorySync.ApplyUnitsToScene(partyMembers);
                 // 기존 저장은 턴 시작 스냅샷을 사용합니다. 치트 결과를 새 테스트 재개점으로 함께 캡처합니다.
                 // 치트로 만든 테스트 재개점에만 허용된 저장 기준 변경입니다. 일반 이동/전투의 저장 타이밍으로 재사용하지 마세요.
                 DHTurnStartSnapshotStore.CaptureTurnStartSnapshot();
