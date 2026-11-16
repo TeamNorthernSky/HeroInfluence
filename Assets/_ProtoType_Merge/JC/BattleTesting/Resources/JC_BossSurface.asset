@@ -67,6 +67,30 @@ MonoBehaviour:
     smoothness: 0.18
     specular: 0.04
     variation: 0
+  - source: {fileID: 2100000, guid: c303682e12157a446acc6900c65e3159, type: 2}
+    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
+    floorTiles: 0
+    smoothness: 0.18
+    specular: 0.012
+    variation: 0
+  - source: {fileID: 2100000, guid: a092bd8f7a947384086e28d806d56211, type: 2}
+    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
+    floorTiles: 0
+    smoothness: 0.22
+    specular: 0.018
+    variation: 0
+  - source: {fileID: 2100000, guid: b29b5c0c2e0c3504daf7d6299a78e8a0, type: 2}
+    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
+    floorTiles: 0
+    smoothness: 0.28
+    specular: 0.028
+    variation: 0.025
+  - source: {fileID: 2100000, guid: b6adee6250809034eb6516459fb2e634, type: 2}
+    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
+    floorTiles: 0
+    smoothness: 0.12
+    specular: 0.008
+    variation: 0
   exportedMaterials:
   - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
     exported: {fileID: 2100000, guid: a4f6e8cd8afb14747b966b92c45b529e, type: 2}

@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 
 namespace JC.BattleTesting.Editor
@@ -6,7 +6,6 @@ namespace JC.BattleTesting.Editor
     [CustomEditor(typeof(JcBossCamera))]
     public sealed class JcBossCameraEditor : UnityEditor.Editor
     {
-        const string WarningPref = "HeroInfluence.JC.BossCamera.ShowStageWarning";
 
         public override void OnInspectorGUI()
         {
@@ -18,26 +17,16 @@ namespace JC.BattleTesting.Editor
             draft.Update();
             EditorGUILayout.HelpBox("수정값은 현재 전투에 바로 반영됩니다. 플레이 종료 후에도 유지하려면 프로필에 저장하세요.",MessageType.Info);
             EditorGUILayout.PropertyField(draft.FindProperty("viewA"),new GUIContent("보스전 기본 카메라"),true);
-            // JC | 2026-11-11 | 스킬 설정은 전전투 공통 오브젝트에서만 편집해 중복 제어를 없앱니다.
-            EditorGUILayout.HelpBox("블랙불릿 정본 선택·구도는 JC_BlackBulletCamera에서 조절합니다. 이곳은 보스 기본뷰와 무대 경계 전용입니다. 블랙불릿 공격은 선택한 정본을 우선하여 무대 밖 노출을 허용합니다.", MessageType.Info);
-            EditorGUILayout.LabelField("실내 무대 경계", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(draft.FindProperty("rightWallX"));
-            EditorGUILayout.PropertyField(draft.FindProperty("rightMargin"));
-            if (draft.ApplyModifiedProperties()) settings.PreviewEditorDraft();
-            bool show = EditorPrefs.GetBool(WarningPref,true);
-            bool toggle = EditorGUILayout.Toggle("무대 밖 노출 경고 표시",show);
-            if (toggle != show) EditorPrefs.SetBool(WarningPref,toggle);
-            if (toggle && settings.IsBasePreview && settings.PreviewOutsideStage)
-                EditorGUILayout.HelpBox("이 기본 구도에서는 무대 밖이 보입니다. 편집값은 그대로 미리보기 중입니다.",MessageType.Warning);
-            if (settings.IsBasePreview)
+            // JC | 2026-11-16 | 경계와 편집 미리보기 분기를 없애 저장값과 실제 기본뷰가 일치하도록 합니다.
+            EditorGUILayout.HelpBox("보스 스킬 연출은 이 기본뷰를 기준으로 계산합니다. 무대 경계에 의한 자동 보정은 없습니다. 스킬 중 기본뷰 수정은 복귀 후 적용됩니다.", MessageType.Info);
+            // JC | 2026-11-16 | 저장 기준을 읽기 전용으로 안내합니다. 배치 저장/카메라 저장이 기준을 자동 재설정하지 않도록 보존합니다.
+            using (new EditorGUI.DisabledScope(true))
             {
-                if (GUILayout.Button("편집 미리보기 종료 · 실제 전투 구도 보기")) settings.EndBasePreview();
+                EditorGUILayout.Vector2Field("카메라 기준 배치 (타일)", settings.Draft.layoutReference);
+                EditorGUILayout.Vector3Field("기본·스킬 공통 이동량", settings.LayoutOffset);
             }
-            else if (settings.CanCaptureBase && GUILayout.Button("기본 구도 편집 미리보기")) settings.PreviewEditorDraft();
-            if (toggle && !settings.IsBasePreview && settings.BoundaryChangePending)
-                EditorGUILayout.HelpBox("현재 구도가 새 벽 범위에 들어오면 좁힌 경계가 적용됩니다.",MessageType.Info);
-            if (toggle && !settings.IsBasePreview && settings.AtBoundary)
-                EditorGUILayout.HelpBox("요청한 이동이 무대 경계에 닿았습니다. 카메라는 이동 가능한 마지막 구도에 있습니다.",MessageType.Info);
+            EditorGUILayout.HelpBox("JC_BossLayout의 전체+캐릭터 이동 차이만큼 기본 카메라가 먼저 이동하고, 스킬 연출은 그 기본뷰를 사용합니다. 오브젝트 전용 이동은 제외합니다. 배치 저장 후 재실행해도 같은 구도를 유지합니다.", MessageType.Info);
+            if (draft.ApplyModifiedProperties()) settings.ApplyDraft();
             using (new EditorGUI.DisabledScope(!settings.CanCaptureBase))
                 if (GUILayout.Button("현재 화면에서 기본 구도 가져오기")) settings.CaptureBase();
             if (GUILayout.Button("현재 값을 프로필에 저장"))
@@ -50,14 +39,15 @@ namespace JC.BattleTesting.Editor
             if (GUILayout.Button("프로필 불러오기 · 즉시 적용"))
             {
                 Copy(settings.Source,settings.Draft);
-                settings.PreviewEditorDraft();
+                settings.ApplyDraft();
             }
         }
 
         static void Copy(JcBossCameraProfile from, JcBossCameraProfile to)
         {
-            to.rightWallX = from.rightWallX; to.rightMargin = from.rightMargin;
             to.viewA = from.viewA.Copy(); to.viewB = from.viewB.Copy();
+            // JC | 2026-11-16 | 프로필 저장/불러오기에서 고정된 배치 기준을 함께 보존합니다.
+            to.layoutReference = from.layoutReference;
         }
     }
 }
