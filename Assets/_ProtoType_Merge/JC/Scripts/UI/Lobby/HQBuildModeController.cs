@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// [JC 260628] 본부(HQ) 건설/업그레이드 빌드 모드 중앙 코디네이터. 구 HQFacilityButtonController 대체.
 /// 시설 목록을 SerializedField 대신 LobbyUIRegistry.Facilities에서 해석(번들 분리 대응).
 /// 흐름: 본부 버튼 클릭 → 빌드 모드(가능 시설 강조+상호작용 ON) → 가능 placeholder 클릭 → ShowProgress → 모드 종료.
-/// 노멀 모드에서 잠금 placeholder는 FacilityModule이 비상호작용으로 유지.
+/// 노멀 모드에서도 미건설 시설 클릭으로 해당 부서의 건설 패널에 바로 진입.
 /// </summary>
 [DisallowMultipleComponent]
 public class HQBuildModeController : MonoBehaviour
@@ -90,8 +90,9 @@ public class HQBuildModeController : MonoBehaviour
     /// <summary>FacilityModule이 잠금 placeholder 클릭 시 호출.</summary>
     public void NotifyLockedClicked(FacilityModule f)
     {
-        if (f == null || !IsBuildMode) return;
-        bool eligible = IsBuildable(f.Department);
+        if (f == null || GetLevel(f.Department) >= 1) return;
+        // 일반 진입은 조건을 패널에서 확인하고, 빌드 모드는 기존 선행조건 제한을 유지한다.
+        bool eligible = !IsBuildMode || IsBuildable(f.Department);
         ExitBuildMode();
         var flow = ResolveFlow();
         if (eligible && flow != null) flow.ShowProgress(f.Department);
@@ -120,6 +121,7 @@ public class HQBuildModeController : MonoBehaviour
         foreach (var f in LobbyUIRegistry.Facilities)
         {
             if (f == null) continue;
+            f.SetBuildModeVisual(true);
             bool unlocked = GetLevel(f.Department) >= 1;
             bool eligible = unlocked ? IsUpgradeable(f.Department) : IsBuildable(f.Department);
             if (!unlocked) f.SetLockedInteractive(eligible); // 가능한 잠금 시설만 상호작용 ON
@@ -133,7 +135,12 @@ public class HQBuildModeController : MonoBehaviour
         if (!IsBuildMode) return;
         IsBuildMode = false;
         if (buildModePrompt != null) buildModePrompt.SetActive(false);
-        foreach (var f in LobbyUIRegistry.Facilities) if (f != null) f.SetLockedInteractive(false);
+        foreach (var f in LobbyUIRegistry.Facilities)
+        {
+            if (f == null) continue;
+            f.SetBuildModeVisual(false);
+            f.SetLockedInteractive(true);
+        }
         RestoreHighlights();
         ClearInfos();
     }

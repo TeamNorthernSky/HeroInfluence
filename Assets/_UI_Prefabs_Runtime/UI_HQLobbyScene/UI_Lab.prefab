@@ -8294,6 +8294,8 @@ MonoBehaviour:
   lockedButton: {fileID: 4470837229798074837}
   unlockedButton: {fileID: 4632744738017986816}
   facilityModal: {fileID: 1920546220820987810}
+  lockedBuildModeSprite: {fileID: 21300000, guid: 630545b79c8dea144b805ce96c6e1673,
+    type: 3}
   buildDesc: "\uD788\uC5B4\uB85C \uBA54\uB2EC\uC744 \uC0AC\uC6A9\uD574\n\uD788\uC5B4\uB85C\uC758
     \uC2A4\uD0AC\uC744\n\uAC15\uD654\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uD64D\uBCF4\uBD80 Lv.1"

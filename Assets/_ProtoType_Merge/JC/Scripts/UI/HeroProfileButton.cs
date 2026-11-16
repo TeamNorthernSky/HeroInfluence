@@ -41,10 +41,49 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
     private Action<int> selectCallback;
     private bool selected;
     private bool hovering;
+    private Image defeatedOverlay;
     private HeroRankBadge rankBadge; // [KJ 260910] 파티 카드 랭크 배지(자식에서 캐시, SerializeField 추가 안 함)
 
     /// <summary>바인딩된 영웅 인덱스(출전 드래그 등 외부 결합용).</summary>
     public int UnitIndex => unitIndex;
+
+    private void LateUpdate()
+    {
+        var repo = PersistentUnitRepository.Instance;
+        if (repo != null && repo.TryGetUnit(unitIndex, out var unit)) RefreshDefeatedDisplay(unit);
+    }
+
+    private void RefreshDefeatedDisplay(UnitPersistentData unit)
+    {
+        bool defeated = unit != null && (unit.IsIncapacitated || unit.CurrentHp <= 0f);
+        if (defeated && defeatedOverlay == null && background != null)
+        {
+            var cover = new GameObject("DefeatedOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var rect = (RectTransform)cover.transform;
+            var source = background.rectTransform;
+            rect.SetParent(source.parent, false);
+            rect.anchorMin = source.anchorMin;
+            rect.anchorMax = source.anchorMax;
+            rect.pivot = source.pivot;
+            rect.sizeDelta = source.sizeDelta;
+            rect.anchoredPosition3D = source.anchoredPosition3D;
+            rect.localRotation = source.localRotation;
+            rect.localScale = source.localScale;
+            defeatedOverlay = cover.GetComponent<Image>();
+            defeatedOverlay.type = background.type;
+            defeatedOverlay.preserveAspect = background.preserveAspect;
+            defeatedOverlay.material = Resources.Load<Material>("UI/DefeatedCardOverlay");
+            defeatedOverlay.color = new Color(.5f, .5f, .5f, .65f);
+            defeatedOverlay.raycastTarget = false;
+        }
+        if (defeatedOverlay == null) return;
+        defeatedOverlay.gameObject.SetActive(defeated);
+        if (defeated)
+        {
+            defeatedOverlay.sprite = background.sprite;
+            defeatedOverlay.transform.SetAsLastSibling();
+        }
+    }
 
     private void Awake()
     {
@@ -108,6 +147,7 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         selected = false;
         hovering = false;
         ApplyFrame();
+        RefreshDefeatedDisplay(unit);
     }
 
     /// <summary>[KJ 260729] 장착 코어명. 공방/카탈로그가 없거나 미장착이면 '—'.

@@ -30,6 +30,8 @@ public sealed class WorldInfluenceBadgeTooltip : MonoBehaviour, IPointerEnterHan
 
     private void Show()
     {
+        var license = CommonUIManager.Instance != null ? CommonUIManager.Instance.HeroInfoModal : null;
+        if (license != null && license.IsOpen) { Hide(); return; }
         var unit = badge != null ? badge.Unit : null;
         if (unit == null) { Hide(); return; }
         var tooltip = SkillTooltip.Instance;

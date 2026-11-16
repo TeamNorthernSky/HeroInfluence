@@ -13,6 +13,7 @@ public sealed class PublicityLayoutView : MonoBehaviour
     private bool addedTopBarCanvas;
     private bool originalOverrideSorting;
     private int originalSortingLayer, originalSortingOrder;
+    private AdditionalCanvasShaderChannels originalShaderChannels;
 
     private void OnEnable()
     {
@@ -55,10 +56,14 @@ public sealed class PublicityLayoutView : MonoBehaviour
                 originalOverrideSorting = raisedTopBar.overrideSorting;
                 originalSortingLayer = raisedTopBar.sortingLayerID;
                 originalSortingOrder = raisedTopBar.sortingOrder;
+                originalShaderChannels = raisedTopBar.additionalShaderChannels;
                 break;
             }
         }
         if (raisedTopBar == null) return;
+        // 독립 Canvas에서도 TMP의 SDF/볼드 렌더링용 UV 채널을 유지한다.
+        raisedTopBar.additionalShaderChannels = originalShaderChannels |
+            modalCanvas.rootCanvas.additionalShaderChannels | AdditionalCanvasShaderChannels.TexCoord1;
         raisedTopBar.overrideSorting = true;
         raisedTopBar.sortingLayerID = modalCanvas.sortingLayerID;
         raisedTopBar.sortingOrder = modalCanvas.sortingOrder + 1;
@@ -70,6 +75,7 @@ public sealed class PublicityLayoutView : MonoBehaviour
         raisedTopBar.sortingLayerID = originalSortingLayer;
         raisedTopBar.sortingOrder = originalSortingOrder;
         raisedTopBar.overrideSorting = originalOverrideSorting;
+        raisedTopBar.additionalShaderChannels = originalShaderChannels;
         if (addedTopBarCanvas) Destroy(raisedTopBar);
         raisedTopBar = null;
     }
