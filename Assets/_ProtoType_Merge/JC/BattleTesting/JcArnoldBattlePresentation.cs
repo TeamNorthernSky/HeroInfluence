@@ -21,6 +21,8 @@ namespace JC.BattleTesting
         JcBankBattleBackground bankSettings;
         bool bossBackground;
         JcBossCamera bossCamera;
+        // JC | 2026-11-16 | 배치가 바뀌면 이전 배치의 F6/F7 이동 목적지가 새 카메라를 덮어쓰지 않게 합니다.
+        int cameraLayoutRevision;
         bool clearTutorialArenaTrees;
         double lightingHour;
         JC.Environment.JcDayNightProfile lightingProfile;
@@ -285,6 +287,18 @@ namespace JC.BattleTesting
                     SceneManager.MoveGameObjectToScene(bossEnvironmentRoot, scene);
                 }
             }
+            // JC | 2026-11-16 | 보스 전용 배치만 공통 진입에서 설치합니다. 위에서 잡은 원근 기준은 고정하고 카메라 조절기가 배치 이동량을 한 번만 더합니다.
+            // 스폰 전에 진형과 생성 좌표를 함께 옮기고, 플레이 중 초안은 JC_Environment/JC_BossLayout에서 조절합니다.
+            // JC | 2026-11-16 | 본게임/테스트 모두 같은 배치 조절기를 스킬 카메라에 직접 연결합니다.
+            JcBossLayoutController bossLayout = null;
+            if (bossSettings && bossSettings.layoutProfile && background && player && enemies)
+            {
+                var layout = new GameObject("JC_BossLayout");
+                layout.transform.SetParent(bossEnvironmentRoot.transform, false);
+                bossLayout = layout.AddComponent<JcBossLayoutController>();
+                bossLayout.Initialize(bossSettings.layoutProfile, background.transform,
+                    player.transform, enemies.transform, bossSettings.surfaceProfile.tileSize);
+            }
             // JC | 2026-11-05 | 기존 실내 조절기가 기준 환경을 잡기 전에 도시 태양과 시간대를 설정합니다.
             if(bossSettings && background){
                 var cityObject=new GameObject("JC_BossCityLighting");cityObject.transform.SetParent(bossEnvironmentRoot.transform,false);
@@ -304,7 +318,8 @@ namespace JC.BattleTesting
                 var controls = new GameObject("JC_BossCamera");
                 SceneManager.MoveGameObjectToScene(controls, scene);
                 bossCamera = controls.AddComponent<JcBossCamera>();
-                bossCamera.Initialize(bossCameraProfile, battleCamera, center, background.transform);
+                // JC | 2026-11-16 | 무대 경계 없이 저장한 보스 구도를 적용합니다.
+                bossCamera.Initialize(bossCameraProfile, battleCamera, center, bossLayout);
                 profile = bossCamera.Draft;
             }
             else if (profile != null) SelectView(0);
@@ -314,10 +329,13 @@ namespace JC.BattleTesting
         public void SelectView(int view)
         {
             if (battleCamera == null || (view != 2 && profile == null) || (bossCamera && !bossCamera.CanCaptureBase)) return;
-            if (bossCamera) bossCamera.EndBasePreview();
             startPosition = battleCamera.transform.position; startRotation = battleCamera.transform.rotation; startFov = battleCamera.fieldOfView;
             if (view == 2) { endPosition = originalPosition; endRotation = originalRotation; endFov = originalFov; }
+            else if (bossCamera) bossCamera.ResolveView(view, out endPosition, out endRotation, out endFov);
             else (view == 0 ? profile.viewA : profile.viewB).Resolve(center, out endPosition, out endRotation, out endFov);
+            // JC | 2026-11-16 | 원래 뷰 복원도 보스에서는 같은 배치 이동량만 더합니다.
+            if (view == 2 && bossCamera) endPosition += bossCamera.LayoutOffset;
+            cameraLayoutRevision = bossCamera ? bossCamera.LayoutRevision : 0;
             // JC | 2026-11-06 | 은행 기본 구도만 요청한 수평 이동을 적용합니다. 스킬 카메라를 강제 제어하거나 원근감으로 Y/Z를 재계산하지 않습니다.
             if (view == 0 && bankSettings) endPosition.x += bankSettings.viewAHorizontalOffset;
             elapsed = 0; moving = true;
@@ -349,6 +367,7 @@ namespace JC.BattleTesting
             if (Input.GetKeyDown(KeyCode.F7)) SelectView(1);
             if (Input.GetKeyDown(KeyCode.F8)) SelectView(2);
             if (!moving || battleCamera == null) return;
+            if (bossCamera && cameraLayoutRevision != bossCamera.LayoutRevision) { moving = false; return; }
             elapsed += Time.unscaledDeltaTime; float t = Mathf.Clamp01(elapsed / .65f);
             var pos = Vector3.Lerp(startPosition,endPosition,t);
             var rot = Quaternion.Lerp(startRotation,endRotation,t);

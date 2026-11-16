@@ -14,6 +14,7 @@ public sealed class BattleMenuButton : MonoBehaviour
     private void Awake()
     {
         if (button == null) button = GetComponent<Button>();
+        SystemMenuController.ConfigureOptionButtonSorting(button);
     }
 
     private void OnEnable()

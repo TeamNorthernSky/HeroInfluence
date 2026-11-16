@@ -11,6 +11,7 @@ public class TopBarButtons : MonoBehaviour
 
     private void Awake()
     {
+        SystemMenuController.ConfigureOptionButtonSorting(optionButton);
         if (optionButton != null) optionButton.onClick.AddListener(OnOption);
         if (tooltipButton != null) tooltipButton.onClick.AddListener(OnTooltip);
     }

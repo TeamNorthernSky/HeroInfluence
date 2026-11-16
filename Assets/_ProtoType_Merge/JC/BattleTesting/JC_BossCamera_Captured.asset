@@ -13,14 +13,13 @@ MonoBehaviour:
   m_Name: JC_BossCamera_Captured
   m_EditorClassIdentifier: 
   viewA:
-    position: {x: 6.1, y: 8.18, z: -20.47}
-    rotation: {x: 20.69, y: 333, z: 0.00000046327375}
-    fieldOfView: 36
-    perspectiveStrength: 0.648
+    position: {x: 1.5, y: 6.68, z: -14.1}
+    rotation: {x: 25.66, y: 328.2, z: 0.0000019807433}
+    fieldOfView: 60.000004
+    perspectiveStrength: 0.4
   viewB:
     position: {x: 7.981912, y: 6.8285604, z: 6.1162143}
     rotation: {x: 30.150019, y: 218.19978, z: 0}
     fieldOfView: 60.000004
     perspectiveStrength: 0.5
-  rightWallX: 19
-  rightMargin: 3
+  layoutReference: {x: -0.63, y: 0.18}
