@@ -118,7 +118,9 @@ public sealed class JcBattleHoverLink : MonoBehaviour
         float pulse = 0.5f + 0.5f * Mathf.Cos(Time.unscaledTime * Mathf.PI * 2f / Mathf.Max(0.2f, pulseSeconds));
         var baseColor = settings != null ? (healing ? settings.healingColor : settings.enemyColor) : outlineColor;
         var color = selectedColor ?? baseColor;
-        color.a *= Mathf.Lerp(0.9f, 1f, pulse);
+        // JC | 2026-11-16 | 대상 그리드의 RGB만 공유합니다. 반투명 그리드 알파를 가져오면 선택 중에만 윤곽선이 흐려집니다.
+        // 선택 여부와 무관하게 같은 호버 불투명도·두께·글로우를 사용하며 광역도 이 target 한 명만 그립니다.
+        color.a = baseColor.a * Mathf.Lerp(0.9f, 1f, pulse);
         float badgePhase = Mathf.Repeat((Time.unscaledTime - hoverStart) / Mathf.Max(.2f, settings != null ? settings.cycleSeconds : badgeCycleSeconds), 1f);
         float badgeBlend = JcBattleHoverArrow.Blend(badgePhase);
         foreach (var pair in rings)
@@ -157,7 +159,9 @@ public sealed class JcBattleHoverLink : MonoBehaviour
             }
             modelRenderers = renderers.ToArray();
         }
-        JcBattleHoverOutlineFeature.Publish(this, camera, target, modelRenderers, color, modelWidth, modelGlowRange * convergence, modelGlowRange > 0 ? glowAlpha : 0);
+        // JC | 2026-11-16 | 유효한 부활 대상도 흰색 호버를 허용합니다. 일반 공격의 죽은 적 표시 차단은 유지합니다.
+        JcBattleHoverOutlineFeature.Publish(this, camera, target, modelRenderers, color, modelWidth, modelGlowRange * convergence, modelGlowRange > 0 ? glowAlpha : 0,
+            allowDeadTarget: healing && target.IsDead);
     }
 
     private void SetGround(BattleCharactor target)
