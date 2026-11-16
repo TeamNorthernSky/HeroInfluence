@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -71,6 +72,29 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
     private bool wasAvailable;
     private bool wasSelected;
     private float selectedStarted;
+    private bool battleControl;
+    private float controlOrbitPeriod;
+    private static readonly HashSet<BattleSkillButtonVisual> activeControlOrbits = new HashSet<BattleSkillButtonVisual>();
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetControlOrbits() => activeControlOrbits.Clear();
+
+    private void StartControlOrbit()
+    {
+        controlOrbitPeriod = sharedSettings != null && sharedSettings.isActiveAndEnabled
+            ? Mathf.Max(.1f, sharedSettings.orbitPeriod)
+            : selectedInstance != null ? Mathf.Max(.1f, selectedInstance.GetFloat("_OrbitPeriod")) : 2.4f;
+        foreach (var other in activeControlOrbits)
+        {
+            if (other == null || other == this || !other.isActiveAndEnabled || !other.wasSelected ||
+                other.gameObject.scene != gameObject.scene) continue;
+            selectedStarted = other.selectedStarted;
+            controlOrbitPeriod = other.controlOrbitPeriod;
+            break;
+        }
+        activeControlOrbits.Add(this);
+    }
+
     // JC | 2026-11-04 | 버튼 면과 강조 효과에 같은 종횡비와 윤곽을 적용해 확대하거나 선택해도 테두리가 어긋나지 않게 합니다.
     private bool systemButtonStyle;
     private readonly Vector3[] selectedCorners = new Vector3[4];
@@ -78,6 +102,7 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
     private void Awake()
     {
         restingScale = transform.localScale;
+        battleControl = GetComponent<AutoBattleToggleButton>() != null || GetComponent<BattleSpeedToggleButton>() != null;
         // JC | 2026-11-12 | 테스트씬 직접 시작은 공통 HUD 재배치 없이 실행되므로 저장된 코어 텍스트도 여기서 연결합니다.
         // 공통 재배치가 실행되는 경로는 해당 코드에서 새 기본 위치를 다시 연결하며, 기존 형제 계층은 그대로 유지합니다.
         if (sharedSettings != null && sharedSettings.SupportsMotionControls && name == "Button_Skill_2" &&
@@ -128,7 +153,12 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
             available = false;
             selected = false;
         }
-        if (selected && !wasSelected) selectedStarted = Time.unscaledTime;
+        if (selected && !wasSelected)
+        {
+            selectedStarted = Time.unscaledTime;
+            if (battleControl) StartControlOrbit();
+        }
+        if (battleControl && !selected) activeControlOrbits.Remove(this);
         wasSelected = selected;
         if (selectedInstance != null) selectedInstance.SetFloat("_SelectedTime", Time.unscaledTime - selectedStarted);
         if (available && !wasAvailable) started = Time.unscaledTime;
@@ -139,6 +169,8 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
         if (useShared)
         {
             sharedSettings.Apply(availableInstance, selectedInstance);
+            if (battleControl && selected && selectedInstance != null)
+                selectedInstance.SetFloat("_OrbitPeriod", controlOrbitPeriod);
             if (systemButtonStyle && selectedInstance != null)
             {
                 selectedInstance.SetFloat("_SystemButtonFit", 1f);
@@ -161,6 +193,7 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
         }
         if (selectedInstance != null)
         {
+            if (battleControl && selected) selectedInstance.SetFloat("_OrbitPeriod", controlOrbitPeriod);
             selectedInstance.SetColor("_GlowColor", selectedColor);
             selectedInstance.SetFloat("_GlowWidth", selectedWidth);
             selectedInstance.SetFloat("_GlowIntensity", selectedIntensity);
@@ -307,6 +340,7 @@ public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPoi
 
     private void OnDestroy()
     {
+        activeControlOrbits.Remove(this);
         // JC | 2026-11-12 | 시각 컴포넌트만 제거되는 경우에도 형제 텍스트에 확대값을 남기지 않습니다.
         RestoreScaleCompanion();
         if (inset != null)
