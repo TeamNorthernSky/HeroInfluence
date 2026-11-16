@@ -145,9 +145,9 @@ namespace JC.Tutorial
             foreach (var root in gameObject.scene.GetRootGameObjects())
                 foreach (var canvas in root.GetComponentsInChildren<Canvas>(true))
                     if (canvas != hintCanvas && canvas.sortingLayerID == parentCanvas.sortingLayerID &&
-                        canvas.sortingOrder < SystemMenuController.OptionButtonSortingOrder)
+                        canvas.sortingOrder < SystemMenuController.TutorialSortingOrderLimit)
                         topOrder = Mathf.Max(topOrder, canvas.sortingOrder);
-            hintCanvas.sortingOrder = Mathf.Min(topOrder + 1, SystemMenuController.OptionButtonSortingOrder - 1);
+            hintCanvas.sortingOrder = Mathf.Min(topOrder + 1, SystemMenuController.TutorialSortingOrderLimit - 1);
             hintCanvas.worldCamera = parentCanvas.worldCamera;
             hintGroup = hintRoot.gameObject.AddComponent<CanvasGroup>(); hintGroup.blocksRaycasts = false; hintGroup.interactable = false;
             hintLines = new RectTransform[3];

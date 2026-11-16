@@ -97,6 +97,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     private void OnEnable()
     {
         TutorialProgressRepository.EnsureInstance();
+        if (influenceBadge == null) influenceBadge = GetComponentInChildren<JcInfluenceBadgeView>(true);
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null && btnCancel != btnClose) btnCancel.onClick.AddListener(ClearHeroSelection);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(Confirm);
@@ -345,7 +346,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (stateInfoText != null)
         {
             string message = !selected ? JcTutorialText.Get("publicity.select-hero", "영웅을 선택해 주세요.") :
-                (budget.Pool <= 0 ? JcTutorialText.Get("publicity.no-remaining", "이번 주 진행 가능 횟수를 모두 사용했습니다.") :
+                (budget.Pool <= 0 ? JcTutorialText.Get("publicity.no-remaining", "홍보 가능 횟수를 모두 사용했습니다.") :
                 (state.CurrentIp >= state.MaxIp ? JcTutorialText.Format("publicity.max-ip", "이미 최대 I.P({0})에 도달했습니다.", state.MaxIp) :
                 (!affordable ? JcTutorialText.Get("publicity.insufficient-resource", "자원이 부족합니다.") : "")));
             stateInfoText.text = message;

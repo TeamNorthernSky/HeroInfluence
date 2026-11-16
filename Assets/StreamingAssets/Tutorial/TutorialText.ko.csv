@@ -172,7 +172,7 @@ scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_11.Tutori
 빌런들을 강력하게 소탕하세요",위치: TutorialExploreUI/TutorialSteps/Explanation_11/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 11단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_11.TutorialGuideBackground.TutorialContinueHint,홍보,126,홍보 실습 11단계,힌트,닫기 버튼을 클릭해 탐사 화면으로 돌아가세요.,위치: TutorialExploreUI/TutorialSteps/Explanation_11/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 11단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_11.TutorialGuideBackground.TutorialPreviewLabel,홍보,127,홍보 실습 11단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_11/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 11단계
-publicity.no-remaining,홍보,128,첫 전투 후 홍보 실습,본문,이번 주 진행 가능 횟수를 모두 사용했습니다., / 정렬 안내: 홍보 실습 도중 조건에 따라 표시되는 상태 안내입니다.
+publicity.no-remaining,홍보,128,첫 전투 후 홍보 실습,본문,홍보 가능 횟수를 모두 사용했습니다., / 정렬 안내: 홍보 실습 도중 조건에 따라 표시되는 상태 안내입니다.
 publicity.max-ip,홍보,129,첫 전투 후 홍보 실습,본문,이미 최대 I.P({0})에 도달했습니다.,치환 자리 유지: {0} / {0}=현재 또는 최대 IP / 정렬 안내: 홍보 실습 도중 조건에 따라 표시되는 상태 안내입니다.
 publicity.insufficient-resource,홍보,130,첫 전투 후 홍보 실습,본문,자원이 부족합니다., / 정렬 안내: 홍보 실습 도중 조건에 따라 표시되는 상태 안내입니다.
 exploreguide.032,점령,131,홍보 이후 화면 이동·점령전 진입,목표,W A S D 키로 화면을 이동하는 방법을 확인하세요,
@@ -204,9 +204,10 @@ battleguide.guided.004,전투,145,전열·후열 설명,본문,"전장에는 적
 
 전열과 후열은 각각의 위치에 따른 특징을 지닙니다.","치환 자리 유지: {0} {1} / {0}=전열 색상, {1}=후열 색상 / 정렬 안내: 점령전 첫 아군 행동 시: 전열·후열 → 반격·경감 → 공격 대상 → 전투 시작. 결과 안내는 첫 전투와 공통입니다."
 battleguide.guided.002,전투,146,전열·후열 설명,제목,반격과 피해경감, / 정렬 안내: 점령전 첫 아군 행동 시: 전열·후열 → 반격·경감 → 공격 대상 → 전투 시작. 결과 안내는 첫 전투와 공통입니다.
-battleguide.guided.005,전투,147,전열·후열 설명,본문,"<color=#{0}><b>전열</b></color>에서는 근거리 공격을 받으면 반격 확률에 따라 반격합니다. 충전·휴식 중이거나 반격용 공격 스킬이 없으면 반격할 수 없습니다.
+battleguide.guided.005,전투,147,전열·후열 설명,본문,"<color=#{0}><b>전열</b></color>에서는 근거리 공격을 받으면 반격 확률에 따라 반격합니다. 
 <line-height=50%>
-</line-height><color=#{1}><b>후열</b></color>에서는 경감 확률에 따라 피해량이 50%로 줄고, 해당 피해는 치명타가 발동되지 않습니다. 반격 피해에는 경감이 적용되지 않습니다.","치환 자리 유지: {0} {1} / {0}=전열 색상, {1}=후열 색상 / 정렬 안내: 점령전 첫 아군 행동 시: 전열·후열 → 반격·경감 → 공격 대상 → 전투 시작. 결과 안내는 첫 전투와 공통입니다."
+</line-height><color=#{1}><b>후열</b></color>에서는 경감 확률에 따라 피해량이 50%로 줄고, 
+해당 피해는 치명타가 발동되지 않습니다. 반격 피해에는 경감이 적용되지 않습니다.","치환 자리 유지: {0} {1} / {0}=전열 색상, {1}=후열 색상 / 정렬 안내: 점령전 첫 아군 행동 시: 전열·후열 → 반격·경감 → 공격 대상 → 전투 시작. 결과 안내는 첫 전투와 공통입니다."
 battleguide.guided.003,전투,148,전열·후열 설명,제목,자유 전투, / 정렬 안내: 점령전 첫 아군 행동 시: 전열·후열 → 반격·경감 → 공격 대상 → 전투 시작. 결과 안내는 첫 전투와 공통입니다.
 battleguide.guided.006,전투,149,전열·후열 설명,본문,이번에는 자유롭게 스킬을 사용하여 전투에서 승리하세요., / 정렬 안내: 점령전 첫 아군 행동 시: 전열·후열 → 반격·경감 → 공격 대상 → 전투 시작. 결과 안내는 첫 전투와 공통입니다.
 battleguide.guided.025,전투,150,전투 안내 진행 버튼,버튼,전투 시작, / 정렬 안내: 점령전 첫 아군 행동 시: 전열·후열 → 반격·경감 → 공격 대상 → 전투 시작. 결과 안내는 첫 전투와 공통입니다.

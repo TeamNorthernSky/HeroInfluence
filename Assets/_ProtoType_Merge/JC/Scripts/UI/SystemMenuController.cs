@@ -4,12 +4,70 @@ using UnityEngine.UI;
 
 public class SystemMenuController : MonoBehaviour
 {
-    // 튜토리얼 안내보다 위, 공용 모달(30000)과 씬 전환(9999)보다 아래에 둔다.
-    public const int OptionButtonSortingOrder = 1000;
+    // 튜토리얼 < 메뉴(1100) < 설정(1200) < 옵션 버튼 < 씬 전환(9999).
+    public const int TutorialSortingOrderLimit = 1000;
+    public const int OptionButtonSortingOrder = 1300;
+    private static SystemMenuController activeController;
+    private static int menuInputFrame = -1;
+    private static readonly System.Collections.Generic.List<UnityEngine.UI.Button> optionButtons =
+        new System.Collections.Generic.List<UnityEngine.UI.Button>();
+    public static bool BlocksTutorialInput =>
+        (activeController != null && activeController.IsOpen) || menuInputFrame == Time.frameCount ||
+        IsPressingOptionButton();
+    private bool IsOpen => _modal != null && _modal.activeInHierarchy;
+    private bool IsMenuInputBlocked => returningToTitle ||
+        SceneManager.GetActiveScene().name == TitleScene ||
+        (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) ||
+        JC.Environment.JcDayNightController.IsTransitioning;
+
+    // ESC가 다른 UI를 처리하거나 입력을 막는 동안 옵션 클릭으로 메뉴를 우회해서 열지 않는다.
+    private bool CanOpenMenu()
+    {
+        if (_modal == null || IsMenuInputBlocked || ModalManager.HasAny ||
+            JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls ||
+            WorldEventNpcPanelSelector.BlocksSystemMenuEscape ||
+            TutorialExploreUIController.BlocksSystemMenuEscape ||
+            JC.Tutorial.JcTutorialExploreGuide.BlocksSystemMenuEscape ||
+            DHGameEndState.IsEnding || ChatModalController.IsOpen ||
+            ExplorationChatCameraFocus.BlocksSystemMenuEscape ||
+            (LobbyUIRegistry.BuildMode != null && LobbyUIRegistry.BuildMode.IsBuildMode)) return false;
+
+        var cutscene = FindFirstObjectByType<TutorialCutSceneManager>();
+        return cutscene == null || !cutscene.isActiveAndEnabled ||
+            cutscene.gameObject.scene != SceneManager.GetActiveScene() ||
+            (cutscene.currentCutSceneState != TutorialCutSceneManager.CutScene.Opening &&
+             cutscene.currentCutSceneState != TutorialCutSceneManager.CutScene.Ending);
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetMenuInput()
+    {
+        activeController = null;
+        menuInputFrame = -1;
+        optionButtons.Clear();
+    }
+
+    private static bool IsPressingOptionButton()
+    {
+        // Button.onClick은 마우스를 놓을 때 실행되므로 누르기 시작한 프레임도 제외한다.
+        if (!Input.GetMouseButton(0) && !Input.GetMouseButtonUp(0)) return false;
+        foreach (var button in optionButtons)
+        {
+            if (button == null || !button.isActiveAndEnabled || !button.IsInteractable()) continue;
+            var canvas = button.GetComponentInParent<Canvas>();
+            if (canvas == null || !canvas.isActiveAndEnabled) continue;
+            var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            if (RectTransformUtility.RectangleContainsScreenPoint((RectTransform)button.transform, Input.mousePosition, camera))
+                return true;
+        }
+        return false;
+    }
 
     public static void ConfigureOptionButtonSorting(UnityEngine.UI.Button button)
     {
         if (button == null) return;
+        optionButtons.RemoveAll(value => value == null);
+        if (!optionButtons.Contains(button)) optionButtons.Add(button);
         var parentCanvas = button.GetComponentInParent<Canvas>();
         if (parentCanvas == null) return;
         var canvas = button.GetComponent<Canvas>();
@@ -45,6 +103,8 @@ public class SystemMenuController : MonoBehaviour
 
     private void Awake()
     {
+        activeController = this;
+        menuInputFrame = -1;
         if (_btnResume != null) _btnResume.onClick.AddListener(OnClickResume);
         if (_btnToTitle != null) _btnToTitle.onClick.AddListener(OnClickToTitle);
         if (_btnQuit != null) _btnQuit.onClick.AddListener(OnClickQuit);
@@ -54,13 +114,23 @@ public class SystemMenuController : MonoBehaviour
 
     private void Update()
     {
-        if (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning) return;
-        if (JC.Environment.JcDayNightController.IsTransitioning) return;
-        if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
+        if (IsMenuInputBlocked) return;
         var sceneName = SceneManager.GetActiveScene().name;
-        if (sceneName == TitleScene) return;
 
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
+
+        // 메뉴를 닫는 입력은 튜토리얼의 진행·전투 입력 제한과 분리한다.
+        if (IsOpen)
+        {
+            var settings = CommonUIManager.Instance != null ? CommonUIManager.Instance.SettingsModal : null;
+            if (settings != null && settings.gameObject.activeInHierarchy)
+                settings.Close();
+            else
+                OnClickResume();
+            menuInputFrame = Time.frameCount;
+            return;
+        }
+        if (JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
 
         if (TutorialCutSceneManager.HandleEscape()) return;
 
@@ -98,29 +168,23 @@ public class SystemMenuController : MonoBehaviour
 
     private void OpenModal()
     {
-        if (JC.Environment.JcDayNightController.IsTransitioning || _modal == null) return;
+        if (!CanOpenMenu()) return;
         transform.SetAsLastSibling();
+        menuInputFrame = Time.frameCount;
         _modal.SetActive(true);
     }
 
-    /// <summary>[JC 260617] 외부(로비 옵션 버튼 등)에서 시스템 메뉴 모달을 연다.</summary>
-    public void OpenMenu() => OpenModal();
+    /// <summary>옵션 버튼으로 메뉴를 토글한다. 열기 조건은 ESC와 공유한다.</summary>
+    public void OpenMenu()
+    {
+        if (IsMenuInputBlocked) return;
+        if (IsOpen) OnClickResume();
+        else OpenModal();
+    }
 
     private void TogglePause()
     {
-        if (JC.Environment.JcDayNightController.IsTransitioning || _modal == null) return;
-
-        if (_modal.activeSelf)
-        {
-            _modal.SetActive(false);
-            Time.timeScale = 1f;
-        }
-        else
-        {
-            transform.SetAsLastSibling();
-            _modal.SetActive(true);
-            Time.timeScale = 0f;
-        }
+        OpenMenu();
     }
 
     // [KJ 260708] SystemMenu는 닫지 않고 Settings를 그 위에 스택으로 연다(ModalManager 재사용).
@@ -133,9 +197,12 @@ public class SystemMenuController : MonoBehaviour
     public void OnClickResume()
     {
         if (JC.Environment.JcDayNightController.IsTransitioning) return;
-        if (returningToTitle || JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
+        if (returningToTitle) return;
+        menuInputFrame = Time.frameCount;
+        var settings = CommonUIManager.Instance != null ? CommonUIManager.Instance.SettingsModal : null;
+        if (settings != null && settings.gameObject.activeInHierarchy) settings.gameObject.SetActive(false);
         if (_modal != null) _modal.SetActive(false);
-        Time.timeScale = 1f;
+        ModalPauseGate.Refresh();
     }
 
     // [KJ 260715] B 수동 저장 — 현재 슬롯에 현재 진행(마지막 턴 시작 스냅샷)을 기록.
@@ -186,6 +253,7 @@ public class SystemMenuController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (activeController == this) activeController = null;
         SceneManager.sceneLoaded -= HandleTitleSceneLoaded;
         if (returningToTitle) Time.timeScale = 1f;
     }

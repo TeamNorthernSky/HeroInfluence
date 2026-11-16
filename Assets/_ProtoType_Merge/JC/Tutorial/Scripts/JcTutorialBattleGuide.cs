@@ -56,7 +56,7 @@ namespace JC.Tutorial
             Resources.Load<JC.BattleTesting.JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(gameObject.scene);
         }
 
-        private void Update() { UpdateGemPowerRestriction(); if (guidedActive) { UpdateGuided(); return; } RefreshPresentation(); AdvanceResultNotice(Time.unscaledDeltaTime); }
+        private void Update() { if (SystemMenuController.BlocksTutorialInput) return; UpdateGemPowerRestriction(); if (guidedActive) { UpdateGuided(); return; } RefreshPresentation(); AdvanceResultNotice(Time.unscaledDeltaTime); }
         public void AdvanceResultNotice(float delta)
         {
             if (!noticeOpen || instructionStep >= 0) return;
@@ -74,7 +74,7 @@ namespace JC.Tutorial
             if (dim != null) dim.gameObject.SetActive(false);
             view.SetPanelSuppressed(true); view.SetVisible(false);
         }
-        private void LateUpdate() { if (guidedActive) { LateGuided(); return; } ReleaseResultInput(Input.GetMouseButton(0)); }
+        private void LateUpdate() { if (SystemMenuController.BlocksTutorialInput) { clickDownFrame = -1; return; } if (guidedActive) { LateGuided(); return; } ReleaseResultInput(Input.GetMouseButton(0)); }
         public void ReleaseResultInput(bool held)
         {
             if (!releasePending || held) return;

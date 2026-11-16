@@ -496,8 +496,12 @@ namespace JC.Tutorial
             }
             if (dim != null) { dim.SetExtraTargets(Array.Empty<RectTransform>()); dim.gameObject.SetActive(false); }
             noticeOpen = releasePending = false; UnlockInput(); view.SetVisible(false);
-            layoutPanel.anchorMin = originalAnchorMin; layoutPanel.anchorMax = originalAnchorMax;
-            layoutPanel.sizeDelta = originalSize; layoutPanel.anchoredPosition = originalPosition;
+            // 씬을 나갈 때 안내 패널이 먼저 파괴되어도 입력 제한 해제는 끝까지 수행한다.
+            if (layoutPanel != null)
+            {
+                layoutPanel.anchorMin = originalAnchorMin; layoutPanel.anchorMax = originalAnchorMax;
+                layoutPanel.sizeDelta = originalSize; layoutPanel.anchoredPosition = originalPosition;
+            }
             if (notify && continueButtons != null && continueButtons.Length > 0 && continueButtons[0] != null) continueButtons[0].onClick.Invoke();
             if (notify && coreSelectionStage && guidedSkills.CoreSkillRect != null)
                 view.RestartSkillRedirect(guidedSkills.CoreSkillRect, true, true);

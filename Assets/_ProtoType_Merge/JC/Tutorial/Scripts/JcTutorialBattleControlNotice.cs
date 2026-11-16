@@ -37,9 +37,9 @@ namespace JC.Tutorial
                 foreach (var sceneRoot in button.gameObject.scene.GetRootGameObjects())
                     foreach (var candidate in sceneRoot.GetComponentsInChildren<Canvas>(true))
                         if (candidate != overlay && candidate.sortingLayerID == root.sortingLayerID &&
-                            candidate.sortingOrder < SystemMenuController.OptionButtonSortingOrder)
+                            candidate.sortingOrder < SystemMenuController.TutorialSortingOrderLimit)
                             order = Mathf.Max(order, candidate.sortingOrder);
-                overlay.sortingOrder = Mathf.Min(order + 2, SystemMenuController.OptionButtonSortingOrder - 1);
+                overlay.sortingOrder = Mathf.Min(order + 2, SystemMenuController.TutorialSortingOrderLimit - 1);
                 var bg = go.AddComponent<JcTutorialGraphic>();
                 bg.Configure(JcTutorialGraphic.Shape.Panel, new Color(.035f, .09f, .12f, 1), 8, 2.5f); bg.SetOpaqueFill(true);
                 var labelGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));

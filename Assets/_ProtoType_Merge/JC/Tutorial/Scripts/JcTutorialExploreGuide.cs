@@ -303,6 +303,7 @@ namespace JC.Tutorial
 
         public void RefreshPresentation(float time)
         {
+            if (SystemMenuController.BlocksTutorialInput) { lastTime = time; return; }
             KeepRestButtonBright();
             if (view != null) view.SetSecondaryFocus(explanationKey == "automatic-turn" ? nextTurn : null);
             if (externalPresentation) return;

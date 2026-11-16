@@ -215,7 +215,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
 
     [SerializeField] private GameObject dimPanel;
     [SerializeField] private TutorialPublicityController publicity;
-    [Tooltip("홍보 실습에서 직접 선택할 영웅 키입니다. 시작 시 이 영웅의 IP를 0/40으로 준비하며 자동 선택하지 않습니다.")]
+    [Tooltip("홍보 실습을 시작할 때 자동 선택할 영웅 키입니다. 이 영웅의 IP를 0/40으로 준비합니다.")]
     [SerializeField] private string tutorialHeroKey = "10001";
     [Tooltip("기존 설명 패널별 완료 조건과 씬 UI 참조입니다. 배치는 씬에서, 문구는 JC > 튜토리얼 > 외부 대본 열기에서 편집합니다.")]
     [SerializeField] private Step[] steps = Array.Empty<Step>();
@@ -312,6 +312,8 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         if (!practicePrepared)
         {
             p.BeginExplanation(tutorialHeroKey);
+            p.SetPracticeInput(TutorialPublicityController.PracticeInput.HeroSelection);
+            p.SelectHero(tutorialHeroKey);
             practicePrepared = true;
         }
         if (current.advance == AdvanceCondition.HeroSelected && !string.IsNullOrEmpty(current.heroKey))
@@ -583,6 +585,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
 
     private void Update()
     {
+        if (SystemMenuController.BlocksTutorialInput) return;
         if (TutorialExploreSceneSkip.IsConfirmationOpen) return;
         if (current == null) return;
         if (awaitingRelease)

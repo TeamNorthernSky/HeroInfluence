@@ -4,6 +4,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class TutorialExploreUIController : MonoBehaviour
 {
+    // 외부 대본 103번: 홍보 비용과 I.P 증가 설명(Explanation_04).
+    public const int FirstPublicityPanelIndex = 3;
     [Tooltip("설명 패널을 표시할 순서대로 등록합니다. 번호는 0부터 시작합니다.")]
     [SerializeField] private GameObject[] panels = System.Array.Empty<GameObject>();
     [SerializeField] private UnityEngine.UI.Button nextButton;
@@ -105,6 +107,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
 
     private void Update()
     {
+        if (SystemMenuController.BlocksTutorialInput) return;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         // 디버그 재실행: 홍보 안내의 시작 상태를 준비하고 첫 안내부터 표시한다.
         if (Input.GetKeyDown(KeyCode.F6)) BeginPublicityIntroduction();
@@ -136,7 +139,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         {
             // 버튼의 기존 이벤트가 실제 홍보 창을 연 뒤에만 기존 설명으로 넘긴다.
             if (!publicityExplanation.IsPublicityModalOpen) return;
-            ShowPanel(1); // 기존 0번은 예시 홍보 버튼 안내이므로 실제 버튼 안내로 대체한다.
+            ShowPanel(FirstPublicityPanelIndex);
         }
     }
 
@@ -148,7 +151,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         if (publicityEntryGuide == null || publicityEntryButton == null || publicityExplanation == null ||
             publicityEntryGuide.view == null || publicityEntryGuide.explanationShield == null)
         {
-            ShowPanel(0);
+            ShowPanel(FirstPublicityPanelIndex);
             return;
         }
         HideTutorial();
@@ -235,6 +238,8 @@ public sealed class TutorialExploreUIController : MonoBehaviour
     public void ShowPanel(int index)
     {
         Initialize();
+        // 기존 버튼/이벤트가 삭제된 도입·저스티스 선택 단계를 요청해도 103번부터 시작한다.
+        if (index >= 0 && index < FirstPublicityPanelIndex) index = FirstPublicityPanelIndex;
         if (index < 0 || index >= panels.Length || !IsValidPanel(panels[index]))
         {
             Debug.LogWarning($"설명 패널 번호 또는 연결을 확인해주세요: {index}", this);
