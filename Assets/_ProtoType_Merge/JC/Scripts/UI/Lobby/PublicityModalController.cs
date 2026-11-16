@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,11 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
     [SerializeField] private TextMeshProUGUI currentIPText; // Txt_CurrentIP
     [SerializeField] private JcInfluenceBadgeView influenceBadge;
     [SerializeField] private GameObject selectPromptGo;     // Txt_SelectPrompt — 미선택 시 활성
+
+    [Header("I.P 증가 연출")]
+    [SerializeField, Min(0.001f)] private float ipStepInterval = 0.02f;
+    [SerializeField, Min(1f)] private float ipEmphasisScale = 1.12f;
+    [SerializeField, Min(0.01f)] private float ipEmphasisDuration = 0.22f;
 
     [Header("Info — Value TMP 결합")]
     [SerializeField] private TextMeshProUGUI cost1ValueText;
@@ -42,9 +48,12 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
     private int progressCount;
     private PublicityManager subscribedBC;
     private EconomyManager subscribedEco;
+    private Coroutine ipAnimation;
+    private Vector3 ipTextBaseScale;
 
     private void Awake()
     {
+        if (currentIPText != null) ipTextBaseScale = currentIPText.transform.localScale;
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         // [KJ 260729] 취소 = 영웅 선택 해제(HeroSlot 우클릭과 동일). 모달 닫기는 btnClose가 담당한다.
         if (btnCancel != null) btnCancel.onClick.AddListener(ClearHeroSelection);
@@ -78,6 +87,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
     }
     private void OnDisable()
     {
+        StopIPAnimation();
         if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.EndSelection();
         Unsubscribe();
     }
@@ -127,6 +137,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
     // ─── 영웅 선택 ──────────────────────────────────────────
     private void OnHeroSelected(int unitIndex)
     {
+        StopIPAnimation();
         selectedUnitIndex = unitIndex;
         progressCount = 0;
         // [KJ 260728] 파티 패널 하이라이트 동기화. 서브모달 폐기로 CloseHeroSelect 호출 제거.
@@ -137,6 +148,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
     /// <summary>[KJ 260728] HeroSlot 우클릭 → 선택 해제(IHeroSelectionOwner).</summary>
     public void ClearHeroSelection()
     {
+        StopIPAnimation();
         selectedUnitIndex = -1;
         if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.SetSelected(-1);
         Refresh();
@@ -186,6 +198,9 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         int total = (int)totalAmount;
         if (!gm.Publicity.CanProgress(selectedUnitIndex, count)) return;
         if (!gm.Economy.Has(ResourceType.Money, total)) return;
+        int displayedIP = gm.Publicity.GetIP(selectedUnitIndex);
+        if (currentIPText != null && int.TryParse(currentIPText.text, out int visibleIP))
+            displayedIP = visibleIP;
         if (total > 0 && !gm.Economy.Spend(ResourceType.Money, total))
         {
             Debug.LogError($"[Publicity] Spend 실패: Money {total}");
@@ -198,6 +213,42 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
             return;
         }
         progressCount = 0;
+        int targetIP = gm.Publicity.GetIP(selectedUnitIndex);
+        StopIPAnimation();
+        if (currentIPText != null && isActiveAndEnabled && targetIP > displayedIP)
+            ipAnimation = StartCoroutine(AnimateIP(displayedIP, targetIP));
+        Refresh();
+    }
+
+    private void StopIPAnimation()
+    {
+        if (ipAnimation != null) StopCoroutine(ipAnimation);
+        ipAnimation = null;
+        if (currentIPText != null) currentIPText.transform.localScale = ipTextBaseScale;
+    }
+
+    private IEnumerator AnimateIP(int from, int target)
+    {
+        currentIPText.text = from.ToString();
+        var wait = new WaitForSecondsRealtime(Mathf.Max(0.001f, ipStepInterval));
+        while (from < target)
+        {
+            yield return wait;
+            currentIPText.text = (++from).ToString();
+        }
+
+        float duration = Mathf.Max(0.01f, ipEmphasisDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            float emphasis = Mathf.Sin(Mathf.PI * elapsed / duration);
+            currentIPText.transform.localScale = ipTextBaseScale *
+                Mathf.Lerp(1f, Mathf.Max(1f, ipEmphasisScale), emphasis);
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        currentIPText.transform.localScale = ipTextBaseScale;
+        ipAnimation = null;
         Refresh();
     }
 
@@ -224,14 +275,15 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
                 ? HeroProfileCatalog.GetByUnitIndex(selectedUnitIndex)
                 : HeroProfileCatalog.Default;
         }
-        if (currentIPText != null)
+        if (currentIPText != null && ipAnimation == null)
             currentIPText.text = hasSelection ? $"{gm.Publicity.GetIP(unit.UnitIndex)}" : "—";
         if (influenceBadge != null) influenceBadge.SetUnit(hasSelection ? unit : null);
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);
 
         // Info Value 4종
         if (cost1ValueText != null) cost1ValueText.text = costPer >= 0 ? $"{costPer:N0}" : "—";
-        if (availableValueText != null) availableValueText.text = $"{pool}";
+        // 선택한 진행 횟수를 제외한 예상 잔여 횟수. 실제 풀은 진행 확정 시 차감한다.
+        if (availableValueText != null) availableValueText.text = $"{Mathf.Max(0, pool - progressCount)}";
         if (countValueText != null) countValueText.text = $"{progressCount}";
         if (totalCostValueText != null) totalCostValueText.text = costKnown ? $"{total:N0}" : "—";
 

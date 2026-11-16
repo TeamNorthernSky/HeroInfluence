@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>UI 스테이터스 아이콘 종류(키). 파일명 규약 UI_icon_{ATK|DEF|EXE|HP|IP}.</summary>
-public enum UIStatusIconType { ATK, DEF, EXE, HP, IP }
+public enum UIStatusIconType { ATK, DEF, EXE, HP, IP, Critical, Counter, DamageReduction }
 
 /// <summary>UI 특수 건물(거점) 아이콘 종류(키). 파일명 규약 UI_icon_{bank|blockStore|jewelryStore|library}.</summary>
 public enum UIBuildingIconType { Bank, BlockStore, JewelryStore, Library }
@@ -409,6 +409,9 @@ public class SpriteLibrary : ScriptableObject
     [SerializeField] private Sprite statEXE;
     [SerializeField] private Sprite statHP;
     [SerializeField] private Sprite statIP;
+    [SerializeField] private Sprite statCritical;
+    [SerializeField] private Sprite statCounter;
+    [SerializeField] private Sprite statDamageReduction;
 
     [Header("특수 건물 아이콘 (키=UIBuildingIconType) — 비우면 폴백")]
     [SerializeField] private Sprite bldgBank;
@@ -447,6 +450,9 @@ public class SpriteLibrary : ScriptableObject
             case UIStatusIconType.EXE: return Resolve(statEXE, statusFolder, "UI_icon_EXE");
             case UIStatusIconType.HP:  return Resolve(statHP,  statusFolder, "UI_icon_HP");
             case UIStatusIconType.IP:  return Resolve(statIP,  statusFolder, "UI_icon_IP");
+            case UIStatusIconType.Critical: return Resolve(statCritical, statusFolder, "UI_icon_critical");
+            case UIStatusIconType.Counter: return Resolve(statCounter, statusFolder, "UI_icon_revenge");
+            case UIStatusIconType.DamageReduction: return Resolve(statDamageReduction, statusFolder, "UI_icon_reduceDamage");
             default: return null;
         }
     }

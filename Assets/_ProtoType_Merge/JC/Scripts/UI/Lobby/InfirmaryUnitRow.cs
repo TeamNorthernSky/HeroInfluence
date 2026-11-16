@@ -24,10 +24,27 @@ public class InfirmaryUnitRow : MonoBehaviour
     public int UnitIndex { get; private set; } = -1;
 
     private Action<int> onAction;
+    private Color normalProfileColor;
 
     private void Awake()
     {
+        if (profileImage != null) normalProfileColor = profileImage.color;
         if (actionButton != null) actionButton.onClick.AddListener(RaiseAction);
+    }
+
+    private void LateUpdate()
+    {
+        var repo = PersistentUnitRepository.Instance;
+        if (repo != null && repo.TryGetUnit(UnitIndex, out var unit)) RefreshProfileColor(unit);
+    }
+
+    private void RefreshProfileColor(UnitPersistentData unit)
+    {
+        if (profileImage == null) return;
+        bool defeated = unit != null && (unit.IsIncapacitated || unit.CurrentHp <= 0f);
+        profileImage.color = defeated
+            ? new Color(normalProfileColor.r * .4f, normalProfileColor.g * .4f, normalProfileColor.b * .4f, normalProfileColor.a)
+            : normalProfileColor;
     }
 
     private void RaiseAction() => onAction?.Invoke(UnitIndex);
@@ -43,6 +60,7 @@ public class InfirmaryUnitRow : MonoBehaviour
             profileImage.enabled = true;
             profileImage.sprite = HeroProfileCatalog.GetByUnitIndex(unitIndex);
         }
+        RefreshProfileColor(unit);
 
         float cur = unit != null ? unit.CurrentHp : 0f;
         float max = unit != null ? Mathf.Max(0f, unit.IngameStats.HP) : 0f;

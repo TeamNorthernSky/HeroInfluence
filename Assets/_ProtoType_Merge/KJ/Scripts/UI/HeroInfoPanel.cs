@@ -26,6 +26,9 @@ public class HeroInfoPanel : MonoBehaviour
 
     [SerializeField, Tooltip("HP 레이블과 수치를 한 줄로 표시합니다.")] private bool inlineHp;
     private BattleCharactor currentUnit;
+    public BattleCharactor DisplayedUnit => currentUnit;
+    public bool IsPortraitHit(Transform hit) => portraitImage != null && hit != null &&
+        (hit == portraitImage.transform || hit.IsChildOf(portraitImage.transform));
     // JC | 2026-11-12 | 이름 옆 성장 랭크와 별도로 IP 행에 현재 영향력 칭호를 표시합니다.
     private JcHeroInfluenceBadge influenceBadge;
     [Tooltip("씬에 미리 배치한 초상화 Image입니다. 연결하면 실행 중 초상화 오브젝트를 생성하거나 배치를 변경하지 않습니다.")]
@@ -37,7 +40,11 @@ public class HeroInfoPanel : MonoBehaviour
     {
         Resources.Load<JC.BattleTesting.JcBattleHudLayout>("JC_BattleHud_Layout")?.ApplyBattlePanel(gameObject.scene);
         influenceBadge = JcHeroInfluenceBadge.Create(ipText);
-        if (portraitImage != null) return;
+        if (portraitImage != null)
+        {
+            portraitImage.raycastTarget = true;
+            return;
+        }
 
         if (portrait != null)
         {

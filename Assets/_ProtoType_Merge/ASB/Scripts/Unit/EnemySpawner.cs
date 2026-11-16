@@ -372,13 +372,6 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        if (!gridSlots.TryGetValue(gridNumber, out Vector3 worldPos) ||
-            !gridRotations.TryGetValue(gridNumber, out Quaternion worldRot))
-        {
-            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: {gridNumber}번 그리드를 찾지 못했습니다. ({gameObject.name})");
-            return false;
-        }
-
         if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef resolvedCell) || resolvedCell == null)
         {
             Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: GridCell을 찾지 못했습니다. grid={gridNumber} ({gameObject.name})");
@@ -400,8 +393,10 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
-        GameObject go = Instantiate(prefab, worldPos, facingPlayerRot, resolvedCell.transform);
+        // JC | 2026-11-16 | 은행처럼 초기화 뒤 진형이 이동해도 모든 테스트씬의 추가 적을 현재 셀에 배치합니다.
+        // Awake의 월드 좌표 캐시 대신 생성 순간의 셀 위치·회전을 읽으며, 기존 점유 검사와 전투 초기화는 유지합니다.
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(resolvedCell.transform.rotation);
+        GameObject go = Instantiate(prefab, resolvedCell.transform.position, facingPlayerRot, resolvedCell.transform);
         InitializeSpawnedEntry(go, entry, resolvedCell, gridNumber);
         spawned = go;
         Debug.Log(

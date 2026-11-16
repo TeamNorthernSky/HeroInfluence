@@ -18,6 +18,8 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
         public Renderer[] renderers;
         public Color color;
         public float width, glowOffset, glowAlpha;
+        // JC | 2026-11-16 | 입력에서 유효하다고 확인한 부활 호버에만 죽은 아군의 모델 표시를 허용합니다.
+        public bool allowDeadTarget;
         public int frame;
     }
 
@@ -32,7 +34,8 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetState() => current = null;
 
-    public static void Publish(Object owner, Camera camera, BattleCharactor target, Renderer[] renderers, Color color, float width, float glowOffset = 0, float glowAlpha = 0)
+    // JC | 2026-11-16 | 부활 표시 허용 여부만 전달받고 기존 단일 대상 마스크·합성 패스를 재사용합니다.
+    public static void Publish(Object owner, Camera camera, BattleCharactor target, Renderer[] renderers, Color color, float width, float glowOffset = 0, float glowAlpha = 0, bool allowDeadTarget = false)
     {
         if (current == null) current = new HoverState();
         current.owner = owner;
@@ -42,6 +45,7 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
         current.color = color;
         current.width = width;
         current.glowOffset = glowOffset; current.glowAlpha = glowAlpha;
+        current.allowDeadTarget = allowDeadTarget;
         current.frame = Time.frameCount;
     }
 
@@ -60,6 +64,8 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
     {
         mask?.Dispose();
         skillMask?.Dispose();
+        // JC | 2026-11-16 | 호버 거리 임시 텍스처는 기능 재생성·해제 시 함께 반환합니다.
+        composite?.Dispose();
         CoreUtils.Destroy(material);
         if (outlineShader == null) return;
         material = CoreUtils.CreateEngineMaterial(outlineShader);
@@ -82,12 +88,14 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
             renderer.EnqueuePass(skillMask);
         }
         if (!Application.isPlaying || material == null || current == null || current.owner == null ||
-            current.target == null || current.target.IsDead || !current.target.gameObject.activeInHierarchy ||
+            // JC | 2026-11-16 | 부활 대상으로 전달된 경우에만 사망 차단을 해제하고 비활성·오래된 프레임은 계속 제외합니다.
+            current.target == null || (current.target.IsDead && !current.allowDeadTarget) || !current.target.gameObject.activeInHierarchy ||
             current.frame != Time.frameCount || current.width <= 0) return;
         if (renderingData.cameraData.camera != current.camera || renderingData.cameraData.cameraType != CameraType.Game ||
             renderingData.cameraData.renderType == CameraRenderType.Overlay) return;
         mask.SetRenderers(current.renderers);
-        composite.SetAppearance(current.color, current.width, current.camera, current.glowOffset, current.glowAlpha);
+        // JC | 2026-11-16 | 이미 캐시한 호버 렌더러로 화면 계산 범위를 정합니다. 씬 전체 검색은 추가하지 않습니다.
+        composite.SetAppearance(current.color, current.width, current.camera, current.glowOffset, current.glowAlpha, current.renderers);
         renderer.EnqueuePass(mask);
         renderer.EnqueuePass(composite);
     }
@@ -96,6 +104,7 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
     {
         mask?.Dispose();
         skillMask?.Dispose();
+        composite?.Dispose();
         CoreUtils.Destroy(material);
         material = null;
     }
@@ -230,6 +239,12 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
     {
         private readonly MaskPass mask;
         private readonly Material material;
+        // JC | 2026-11-16 | 가로 거리만 R16에 저장하고 세로 거리와 최종 합성을 묶어 중간 패스는 하나만 추가합니다.
+        private RTHandle horizontalDistance;
+        private Camera camera;
+        private Renderer[] renderers;
+        private float width, glowOffset, glowAlpha;
+        private static readonly int SourceMaskId = Shader.PropertyToID("_JcHoverSourceMask");
         public CompositePass(MaskPass mask, Material material)
         {
             this.mask = mask;
@@ -238,27 +253,76 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
             profilingSampler = new ProfilingSampler("JC Battle Hover Outline");
         }
 
-        public void SetAppearance(Color color, float width, Camera camera, float glowOffset, float glowAlpha)
+        public void SetAppearance(Color color, float width, Camera camera, float glowOffset, float glowAlpha, Renderer[] renderers)
         {
-            material.SetVector("_Convergence", new Vector4(glowOffset / Mathf.Max(.1f,width), 2f / Mathf.Max(.1f,width), glowAlpha, 0));
+            // JC | 2026-11-16 | 색·선명도는 보존하고 픽셀 크기는 실제 렌더 타깃이 준비된 뒤 계산합니다.
+            this.width = width; this.camera = camera; this.glowOffset = glowOffset; this.glowAlpha = glowAlpha;
+            this.renderers = renderers;
             material.SetColor("_OutlineColor", QualitySettings.activeColorSpace == ColorSpace.Linear ? color.linear : color);
-            material.SetVector("_OutlineStep", new Vector4(width / Mathf.Max(1, camera.pixelWidth), width / Mathf.Max(1, camera.pixelHeight), 0, 0));
         }
 
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
         {
+            // JC | 2026-11-16 | 회복 기둥의 원본 마스크와 분리된 호버 전용 거리 버퍼입니다. 크기가 같으면 재사용합니다.
+            var descriptor = renderingData.cameraData.cameraTargetDescriptor;
+            descriptor.depthBufferBits = 0; descriptor.msaaSamples = 1; descriptor.bindMS = false;
+            descriptor.graphicsFormat = GraphicsFormat.R16_SFloat;
+            descriptor.useMipMap = false; descriptor.autoGenerateMips = false;
+            RenderingUtils.ReAllocateIfNeeded(ref horizontalDistance, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_JcHoverHorizontalDistance");
+            float scale = descriptor.height / (float)Mathf.Max(1, camera.pixelHeight);
+            float lineWidth = width * scale;
+            float waveOffset = glowAlpha > .001f ? glowOffset * scale : 0;
+            float waveWidth = 2 * scale;
+            int radius = Mathf.CeilToInt(lineWidth + (glowAlpha > .001f ? waveOffset + waveWidth : 0) + 1);
+            material.SetVector("_HoverMetrics", new Vector4(lineWidth, waveOffset, glowAlpha, radius));
+            // JC | 2026-11-16 | 렌더 배율이 달라도 수렴선·후광 폭은 기존 화면 2픽셀 기준을 유지합니다.
+            material.SetVector("_HoverTexel", new Vector4(1f / descriptor.width, 1f / descriptor.height, waveWidth, 0));
+            var matrix = renderingData.cameraData.GetGPUProjectionMatrix() * renderingData.cameraData.GetViewMatrix();
+            material.SetVector("_HoverRect", CalculatePixelBounds(renderers, matrix, descriptor.width, descriptor.height, radius + 2));
             ConfigureTarget(renderingData.cameraData.renderer.cameraColorTargetHandle);
             ConfigureClear(ClearFlag.None, Color.clear);
         }
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            if (mask.Texture == null) return;
+            if (mask.Texture == null || horizontalDistance == null) return;
             var cmd = CommandBufferPool.Get("JC Battle Hover Outline");
-            Blitter.BlitCameraTexture(cmd, mask.Texture, renderingData.cameraData.renderer.cameraColorTargetHandle,
-                RenderBufferLoadAction.Load, RenderBufferStoreAction.Store, material, 1);
+            // JC | 2026-11-16 | 캐릭터는 마스크에 한 번만 그립니다. 거리 계산은 캐릭터 주변에서만 하고 원본을 다시 드로우하지 않습니다.
+            cmd.SetGlobalTexture(SourceMaskId, mask.Texture.nameID);
+            Blitter.BlitCameraTexture(cmd, mask.Texture, horizontalDistance, material, 1);
+            Blitter.BlitCameraTexture(cmd, horizontalDistance, renderingData.cameraData.renderer.cameraColorTargetHandle,
+                RenderBufferLoadAction.Load, RenderBufferStoreAction.Store, material, 2);
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
         }
+
+        // JC | 2026-11-16 | 애니메이션 Bounds를 합쳐 8점만 투영합니다. GPU 투영과 SV_POSITION의 원점으로 영역을 맞춥니다.
+        private static Vector4 CalculatePixelBounds(Renderer[] renderers, Matrix4x4 matrix, int width, int height, float padding)
+        {
+            bool found = false;
+            Bounds bounds = default;
+            foreach (var renderer in renderers ?? System.Array.Empty<Renderer>())
+            {
+                if (!renderer || !renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer.forceRenderingOff) continue;
+                if (!found) { bounds = renderer.bounds; found = true; } else bounds.Encapsulate(renderer.bounds);
+            }
+            if (!found) return new Vector4(1, 1, 0, 0);
+            var min = bounds.min; var max = bounds.max;
+            float left = width, bottom = height, right = 0, top = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                var clip = matrix * new Vector4((i & 1) == 0 ? min.x : max.x, (i & 2) == 0 ? min.y : max.y, (i & 4) == 0 ? min.z : max.z, 1);
+                // 시점에 걸친 Bounds는 투영 상한이 없으므로 화면 전체를 포함해야 윤곽이 잘리지 않습니다.
+                if (clip.w <= .0001f) return new Vector4(0, 0, width, height);
+                float x = (clip.x / clip.w * .5f + .5f) * width;
+                float y = (clip.y / clip.w * (SystemInfo.graphicsUVStartsAtTop ? -.5f : .5f) + .5f) * height;
+                left = Mathf.Min(left, x); right = Mathf.Max(right, x);
+                bottom = Mathf.Min(bottom, y); top = Mathf.Max(top, y);
+            }
+            return new Vector4(Mathf.Max(0, left - padding), Mathf.Max(0, bottom - padding),
+                Mathf.Min(width, right + padding), Mathf.Min(height, top + padding));
+        }
+
+        public void Dispose() => horizontalDistance?.Release();
     }
 }
