@@ -1772,7 +1772,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AspectMode: 0
-  m_AspectRatio: 1.5000865
+  m_AspectRatio: 1.4995952
 --- !u!1 &1156429489
 GameObject:
   m_ObjectHideFlags: 0
@@ -2092,7 +2092,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 4.083233, y: 87.570625}
+  m_AnchoredPosition: {x: 13.183264, y: -78.42939}
   m_SizeDelta: {x: 292.7131, y: 106.1085}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1365354892
@@ -2478,7 +2478,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 64, y: -5}
+  m_AnchoredPosition: {x: 73.1, y: -171}
   m_SizeDelta: {x: 136.8434, y: 79.0325}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1571324347
