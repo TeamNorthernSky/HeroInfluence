@@ -140,6 +140,8 @@ namespace JC.DebugTools.Editor
                     Check(UnitRankLookup.ResolveRank(csv.GetUnitGrowthTemplates(), unit.Level) == "SSS", "최고 랭크 미도달");
                     Check(csv.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out var hero) && csv.GetCurrentClassSkills(hero.ClassIndex, unit.Level).Count == 4, "4개 스킬 해금 실패");
                 }
+                // JC | 2026-11-16 | 제보된 6칸/4명 진형과 재사용을 실제 치트 멤버 수집·성장 함수로 회귀 검증합니다.
+                VerifySparseParty(csv, units, lookup, highest, Check);
                 var shader = Resources.Load<Shader>("JcZone1WarpCells");
                 Check(shader != null && !ShaderUtil.ShaderHasError(shader), "착지 셀 셰이더 오류");
                 report.AppendLine($"PASS: {checks} checks. Play/디스크 저장 없이 임시 프리뷰 객체에서 검증.");
@@ -151,6 +153,52 @@ namespace JC.DebugTools.Editor
                 SetInstance(typeof(DHCsvTemplateCatalog), savedCsv);
                 EditorSceneManager.ClosePreviewScene(preview);
             }
+        }
+
+        // JC | 2026-11-16 | 프리뷰 저장소만 변경합니다. Play, 실제 파티·저장·모달·카메라에는 접근하지 않습니다.
+        static void VerifySparseParty(DHCsvTemplateCatalog csv, PersistentUnitRepository units,
+            Dictionary<int, UnitPersistentData> lookup, int highest, Action<bool, string> check)
+        {
+            var collect = typeof(JcZone1WarpCheat).GetMethod("CollectPartyMembers", BindingFlags.Static | BindingFlags.NonPublic);
+            var rank = typeof(JcZone1WarpCheat).GetMethod("ApplyPartyRank", BindingFlags.Static | BindingFlags.NonPublic);
+            var members = new List<int>();
+            var party = new PartyPersistentData("cheat-validation", new[] { 0, 1, 0, 2, 4, 3 }, new[] { 4, 5, 6, 1, 2, 3 });
+            string originalFormation = JsonUtility.ToJson(party);
+            for (int i = 1; i <= 4; i++)
+            {
+                check(csv.TryGetPlayerUnitTemplate((10000 + i).ToString(), out var template), "빈 슬롯 검사 템플릿 누락");
+                var stats = UnitStatCalculator.CalculateIngameStats(template.BaseStats, template.LevelupStats, 1, default, default, csv.GetUnitGrowthTemplates());
+                lookup[i] = new UnitPersistentData(i, template.UnitKey, 1, template.BaseStats, template.LevelupStats,
+                    0, 0, default, stats, i == 4 ? 0 : stats.HP - 2, isIncapacitated: i == 4);
+            }
+            for (int run = 0; run < 5; run++)
+            {
+                // 저장/복원으로 새 파티 인스턴스가 되어도 빈 슬롯 규칙은 같고, 이전 실행의 멤버는 누적되지 않아야 합니다.
+                var restored = JsonUtility.FromJson<PartyPersistentData>(originalFormation);
+                collect.Invoke(null, new object[] { restored, units, members });
+                check(members.SequenceEqual(new[] { 1, 2, 4, 3 }), "빈 슬롯 제외 또는 반복 사용 멤버 초기화 실패");
+                check(JcZone1WarpRoute.ExpPerUnit("BE005", 100, members.Count) == 25, "실제 4명 경험치를 6칸으로 분배함");
+                bool changed = (bool)rank.Invoke(null, new object[] { units, members, highest });
+                check(changed == (run == 0), "최고 랭크 반복 사용의 중복 성장/부작용");
+                foreach (int id in members)
+                {
+                    var unit = lookup[id];
+                    check(unit.Level == highest, "빈 슬롯 포함 파티의 만렙 적용 실패");
+                    check(id == 4 ? unit.CurrentHp == 0 && unit.IsIncapacitated : unit.IngameStats.HP - unit.CurrentHp == 2,
+                        "만렙 치트가 기존 부상/행동불능을 변경함");
+                }
+                check(JsonUtility.ToJson(restored) == originalFormation, "치트가 원본 진형을 변경함");
+            }
+            collect.Invoke(null, new object[] { new PartyPersistentData("changed", new[] { 0, 4 }), units, members });
+            check(members.SequenceEqual(new[] { 4 }), "다른 파티 재사용 시 이전 멤버 잔존");
+            foreach (int[] invalid in new[] { new[] { 0, 0 }, new[] { 1, 999 }, new[] { 1, 1 }, new[] { -1, 2 } })
+            {
+                bool rejected = false;
+                try { collect.Invoke(null, new object[] { new PartyPersistentData("invalid", invalid), units, members }); }
+                catch (TargetInvocationException e) when (e.InnerException is InvalidOperationException) { rejected = true; }
+                check(rejected, "빈 파티·누락·중복·음수 유닛을 정상 파티로 처리함");
+            }
+            check(JsonUtility.ToJson(party) == originalFormation, "실패 경로에서 원본 진형 변경");
         }
 
         static void Set(object target, string name, object value) => target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
