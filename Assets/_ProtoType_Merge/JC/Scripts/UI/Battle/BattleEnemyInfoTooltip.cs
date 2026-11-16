@@ -124,8 +124,6 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
         if (ShouldHide()) { Hide(); return; }
         var target = FindHoveredUnit();
         bool selectingSkill = input.PendingAction != PendingActionType.None;
-        // ASB가 이미 계산한 필드 호버를 사용하여 부활/영역 선택까지 실제 선택 가능 대상과 일치시킵니다.
-        if (selectingSkill && !hoveredTurnUI) target = input.PreviewHoverTarget;
         // JC | 2026-11-13 | 부활 분류만 보고 적까지 회복 대상으로 취급하지 않고 실제 호버 대상의 진영을 구분합니다.
         bool healing = selectingSkill && target != null &&
             ASB.Work.Battle.SkillExecution.SkillAreaPreviewHelper.IsHealingPreviewSide(input.PendingSkill, flow.CurrentUnit, target.IsPlayer);
@@ -181,6 +179,10 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
                 return hoveredTurnSlot != null ? hoveredTurnSlot.DisplayedUnit : null;
             }
         }
+
+        // JC | 2026-11-16 | UI 가림 검사 뒤 입력 시스템의 실제 호버를 재사용합니다. 선택 중 중복 필드 레이캐스트는 하지 않습니다.
+        // 광역 실행 앵커와 분리된 유닛만 표시하며, 화면에 없는 턴 슬롯을 새로 만들지는 않습니다.
+        if (input.PendingAction != PendingActionType.None) return input.PreviewHoverTarget;
 
         var camera = battlefieldCamera != null ? battlefieldCamera : Camera.main;
         if (camera == null) return null;

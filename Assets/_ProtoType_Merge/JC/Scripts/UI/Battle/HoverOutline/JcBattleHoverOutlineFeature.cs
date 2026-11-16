@@ -18,6 +18,8 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
         public Renderer[] renderers;
         public Color color;
         public float width, glowOffset, glowAlpha;
+        // JC | 2026-11-16 | 입력에서 유효하다고 확인한 부활 호버에만 죽은 아군의 모델 표시를 허용합니다.
+        public bool allowDeadTarget;
         public int frame;
     }
 
@@ -32,7 +34,8 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetState() => current = null;
 
-    public static void Publish(Object owner, Camera camera, BattleCharactor target, Renderer[] renderers, Color color, float width, float glowOffset = 0, float glowAlpha = 0)
+    // JC | 2026-11-16 | 부활 표시 허용 여부만 전달받고 기존 단일 대상 마스크·합성 패스를 재사용합니다.
+    public static void Publish(Object owner, Camera camera, BattleCharactor target, Renderer[] renderers, Color color, float width, float glowOffset = 0, float glowAlpha = 0, bool allowDeadTarget = false)
     {
         if (current == null) current = new HoverState();
         current.owner = owner;
@@ -42,6 +45,7 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
         current.color = color;
         current.width = width;
         current.glowOffset = glowOffset; current.glowAlpha = glowAlpha;
+        current.allowDeadTarget = allowDeadTarget;
         current.frame = Time.frameCount;
     }
 
@@ -82,7 +86,8 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
             renderer.EnqueuePass(skillMask);
         }
         if (!Application.isPlaying || material == null || current == null || current.owner == null ||
-            current.target == null || current.target.IsDead || !current.target.gameObject.activeInHierarchy ||
+            // JC | 2026-11-16 | 부활 대상으로 전달된 경우에만 사망 차단을 해제하고 비활성·오래된 프레임은 계속 제외합니다.
+            current.target == null || (current.target.IsDead && !current.allowDeadTarget) || !current.target.gameObject.activeInHierarchy ||
             current.frame != Time.frameCount || current.width <= 0) return;
         if (renderingData.cameraData.camera != current.camera || renderingData.cameraData.cameraType != CameraType.Game ||
             renderingData.cameraData.renderType == CameraRenderType.Overlay) return;

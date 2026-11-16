@@ -77,8 +77,9 @@ public sealed class BattleCellBorderConfiguration
     [Min(0), Tooltip("스윕 반복 사이의 대기 시간(초)입니다.")] public float sweepInterval = 1.5f;
     [Tooltip("스윕 이동 방향을 반대로 바꿉니다.")] public bool reverseSweep;
 
-    // JC | 2026-11-13 | 선택 중 모델 윤곽선만 제어하며 ASB 대상 판정과 그리드 상태를 변경하지 않습니다.
-    [Tooltip("스킬 대상 호버 중 캐릭터에 대상 그리드와 같은 색의 윤곽선을 표시합니다.")]
+    // JC | 2026-11-16 | 일반·은행·보스 저장 프로필도 기본 ON. 광역 범위 전체가 아닌 실제 호버 한 명만 표시합니다.
+    // 대상 판정·그리드는 유지하고 색상만 그리드와 공유하며, 선명도는 비선택 호버와 같은 설정을 사용합니다.
+    [Tooltip("스킬 선택 중 실제 호버한 캐릭터 한 명에 대상 그리드와 같은 색의 윤곽선을 표시합니다. 공격은 공격색, 회복·부활은 회복색이며 그리드 알파는 따르지 않습니다.")]
     public bool highlightTargetModel = true;
 
     public BattleCellBorderStyle For(BattleCellVisualState state)

@@ -33,8 +33,8 @@ public class InputHandler : MonoBehaviour
     public event Action SelectionChanged;
     public PendingActionType PendingAction => pendingAction;
     public SkillData PendingSkill { get; private set; }
-    // JC | 2026-11-13 | UI는 ASB가 이미 판정한 대상만 읽습니다. 호버 알림이 선택 목록을 다시 계산하거나 쓰지 않습니다.
-    public BattleCharactor PreviewHoverTarget => hoverTarget;
+    // JC | 2026-11-16 | UI에는 범위 실행 앵커가 아닌 실제 마우스 호버를 전달합니다. 전투 판정은 hoverTarget을 유지합니다.
+    public BattleCharactor PreviewHoverTarget => previewHoverTarget;
     public bool IsValidPreviewTarget(BattleCharactor target) => target != null && validTargets.Contains(target) &&
         TryGetCurrentActor(out BattleCharactor actor) && TargetingHelper.IsStillValidTarget(actor, pendingAction, target);
     private BattleCharactor selectionActor;
@@ -62,6 +62,8 @@ public class InputHandler : MonoBehaviour
     private HashSet<BattleCharactor> validTargets = new HashSet<BattleCharactor>();
     private readonly HashSet<HostageBattleActor> validHostageTargets = new HashSet<HostageBattleActor>();
     private BattleCharactor hoverTarget = null;
+    // JC | 2026-11-16 | 기존 입력 레이캐스트 결과를 보존하여 광역스킬에서도 호버한 한 명의 턴 슬롯만 표시합니다.
+    private BattleCharactor previewHoverTarget;
     private HostageBattleActor hoverHostageTarget = null;
     private readonly HashSet<BattleCharactor> deathSubscribedUnits = new HashSet<BattleCharactor>();
     private bool isProcessingAction;
@@ -491,6 +493,8 @@ public class InputHandler : MonoBehaviour
         }
 
         BattleCharactor hitUnit = RaycastUnitUnderCursor();
+        // JC | 2026-11-16 | 열/전체 스킬이 대표 유닛으로 바꾸기 전에 표시 대상을 보존합니다. 빈 셀은 표시하지 않습니다.
+        previewHoverTarget = hitUnit;
         SkillActivationRules.TryResolveClick(actor, PendingSkill, hitUnit, RaycastCellUnderCursor(), out hitUnit);
         if (hitUnit == null || !validTargets.Contains(hitUnit))
         {
@@ -833,6 +837,8 @@ public class InputHandler : MonoBehaviour
 
     private void SetHoverTarget(BattleCharactor newTarget)
     {
+        // JC | 2026-11-16 | 취소·턴 변경·유효 대상 이탈 시 표시용 호버도 함께 비워 이전 배지가 남지 않게 합니다.
+        if (newTarget == null) previewHoverTarget = null;
         if (hoverTarget != newTarget && newTarget != null)
             PresentationSfxPlayer.Play("Button_Hover");
         hoverTarget = newTarget;
