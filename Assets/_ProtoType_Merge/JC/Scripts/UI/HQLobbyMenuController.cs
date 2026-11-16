@@ -52,6 +52,7 @@ public class HQLobbyMenuController : MonoBehaviour
     private void Awake()
     {
         ResolveMissingReferences();
+        SystemMenuController.ConfigureOptionButtonSorting(optionButton);
 
         if (exitButton != null) exitButton.onClick.AddListener(OnClickExit);
         if (nextTurnButton != null) nextTurnButton.onClick.AddListener(OnClickNextTurn);

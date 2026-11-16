@@ -4,6 +4,30 @@ using UnityEngine.UI;
 
 public class SystemMenuController : MonoBehaviour
 {
+    // 튜토리얼 안내보다 위, 공용 모달(30000)과 씬 전환(9999)보다 아래에 둔다.
+    public const int OptionButtonSortingOrder = 1000;
+
+    public static void ConfigureOptionButtonSorting(UnityEngine.UI.Button button)
+    {
+        if (button == null) return;
+        var parentCanvas = button.GetComponentInParent<Canvas>();
+        if (parentCanvas == null) return;
+        var canvas = button.GetComponent<Canvas>();
+        if (canvas == null) canvas = button.gameObject.AddComponent<Canvas>();
+        canvas.overrideSorting = true;
+        canvas.sortingLayerID = parentCanvas.sortingLayerID;
+        canvas.sortingOrder = OptionButtonSortingOrder;
+
+        // 독립 Canvas의 버튼도 입력을 받을 수 있도록 부모 Raycaster 설정을 유지한다.
+        if (button.GetComponent<UnityEngine.UI.GraphicRaycaster>() != null) return;
+        var source = parentCanvas.GetComponent<UnityEngine.UI.GraphicRaycaster>();
+        var raycaster = button.gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+        if (source == null) return;
+        raycaster.ignoreReversedGraphics = source.ignoreReversedGraphics;
+        raycaster.blockingObjects = source.blockingObjects;
+        raycaster.blockingMask = source.blockingMask;
+    }
+
     private const string TitleScene = "TitleScene";
     // [JC 260610] 중앙값(GameSceneManager.LobbyScene) 참조. ESC가 로비에서 메뉴 모달을 열도록 분기.
     private static string LobbyScene => GameSceneManager.Instance != null
