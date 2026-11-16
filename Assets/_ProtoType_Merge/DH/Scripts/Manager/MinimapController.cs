@@ -72,18 +72,16 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private ViewSourceType viewSource = ViewSourceType.ZoneLayout;
 
     [Header("Single Level View Cropping")]
-    [Tooltip("Single Level 모드에서 적용. 양수는 잘라내기, 음수는 검은 여백 추가.")]
+    [Tooltip("Single Level 모드에서 적용. 양수는 잘라내기, 음수는 Obstacle Color 여백 추가.")]
     [SerializeField] private ViewCrop singleLevelViewCrop = new ViewCrop();
 
     [Header("Zone View Cropping")]
-    [Tooltip("Positive: crop cells. Negative: add black padding. Top: +Y, Bottom: -Y, Left: -X, Right: +X. First matching Zone ID wins.")]
+    [Tooltip("Positive: crop cells. Negative: add padding using Obstacle Color. Top: +Y, Bottom: -Y, Left: -X, Right: +X. First matching Zone ID wins.")]
     [SerializeField] private List<ZoneViewCrop> zoneViewCrops = new List<ZoneViewCrop>();
 
     [Header("Strategic Objects")]
+    [Tooltip("건물 점유 영역을 Obstacle Color로 표시합니다.")]
     [SerializeField] private bool showStrategicObjects = true;
-    [SerializeField] private Color playerBuildingColor = new Color(0f, 0.35f, 1f, 1f);
-    [SerializeField] private Color enemyBuildingColor = new Color(1f, 0f, 0f, 1f);
-    [SerializeField] private Color neutralOutpostColor = new Color(1f, 0.85f, 0f, 1f);
 
     [Header("Strategic Object Icons")]
     [SerializeField] private bool showStrategicObjectIcons = true;
@@ -269,10 +267,11 @@ public class MinimapController : MonoBehaviour
             for (int x = 0; x < gridSize.x; x++)
             {
                 Vector2Int grid = viewOrigin + new Vector2Int(x, y);
-                minimapTexture.SetPixel(x, y, currentContentBounds.Contains(grid) ? GetCellColor(grid) : Color.black);
+                minimapTexture.SetPixel(x, y, currentContentBounds.Contains(grid) ? GetCellColor(grid) : obstacleColor);
             }
         }
     }
+
 
     private void DrawStrategicObjects(Vector2Int gridSize)
     {
@@ -305,7 +304,7 @@ public class MinimapController : MonoBehaviour
 
             DrawComponentFootprint(
                 outpost,
-                GetOutpostMinimapColor(outpost.outpostState),
+                obstacleColor,
                 gridSize,
                 outpost.GetAnchorGrid(gridManager));
         }
@@ -330,7 +329,7 @@ public class MinimapController : MonoBehaviour
             if (heroUnion == null || !heroUnion.isActiveAndEnabled)
                 continue;
 
-            DrawComponentFootprint(heroUnion, GetHeroUnionMinimapColor(heroUnion), gridSize, heroUnion.GetCurrentGrid());
+            DrawComponentFootprint(heroUnion, obstacleColor, gridSize, heroUnion.GetCurrentGrid());
         }
     }
 
@@ -355,7 +354,7 @@ public class MinimapController : MonoBehaviour
 
             DrawComponentFootprint(
                 villainUnionBase,
-                enemyBuildingColor,
+                obstacleColor,
                 gridSize,
                 villainUnionBase.GetAnchorGrid());
         }
@@ -429,7 +428,7 @@ public class MinimapController : MonoBehaviour
             if (!ComponentContainsGrid(outpost, grid, outpost.GetAnchorGrid(gridManager)))
                 continue;
 
-            color = GetOutpostMinimapColor(outpost.outpostState);
+            color = obstacleColor;
             return true;
         }
 
@@ -459,17 +458,12 @@ public class MinimapController : MonoBehaviour
             if (!ComponentContainsGrid(heroUnion, grid, heroUnion.GetCurrentGrid()))
                 continue;
 
-            color = GetHeroUnionMinimapColor(heroUnion);
+            color = obstacleColor;
             return true;
         }
 
         color = default;
         return false;
-    }
-
-    private Color GetHeroUnionMinimapColor(HeroUnionUnit heroUnion)
-    {
-        return heroUnion != null && heroUnion.IsClaimedByHero ? playerBuildingColor : neutralOutpostColor;
     }
 
     private bool TryGetVillainUnionColorAtGrid(Vector2Int grid, out Color color)
@@ -496,7 +490,7 @@ public class MinimapController : MonoBehaviour
             if (!ComponentContainsGrid(villainUnionBase, grid, villainUnionBase.GetAnchorGrid()))
                 continue;
 
-            color = enemyBuildingColor;
+            color = obstacleColor;
             return true;
         }
 
@@ -521,16 +515,6 @@ public class MinimapController : MonoBehaviour
         }
 
         return false;
-    }
-
-    private Color GetOutpostMinimapColor(OutpostState state)
-    {
-        return state switch
-        {
-            OutpostState.Claimed => playerBuildingColor,
-            OutpostState.EnemyClaimed => enemyBuildingColor,
-            _ => neutralOutpostColor
-        };
     }
 
     private void DrawStrategicObjectIcons(Vector2Int gridSize)
