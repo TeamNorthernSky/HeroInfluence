@@ -52,7 +52,8 @@ public sealed class BattleCellBorderWorkbench : MonoBehaviour
                 ((long)(clock/Mathf.Max(.5f,switchInterval))%2==0?BattleCellVisualState.ConfirmedArea:BattleCellVisualState.Unavailable):transitionState;
             if(state==BattleCellVisualState.Hidden)state=BattleCellVisualState.Unavailable;
             views[i].transform.localPosition=Positions[i]+Vector3.up*motion[i].Evaluate(state,draft,clock);
-            views[i].RenderProfile(draft,state,1,(float)clock,transform.TransformPoint(Positions[i]).y);
+            // JC | 2026-11-16 | 설정 씬 미리보기도 본게임과 같은 프리셋 알파를 사용합니다.
+            views[i].RenderProfile(draft,state,draft.AlphaFor(state),(float)clock,transform.TransformPoint(Positions[i]).y);
         }
     }
     private void OnDisable() => Clear();

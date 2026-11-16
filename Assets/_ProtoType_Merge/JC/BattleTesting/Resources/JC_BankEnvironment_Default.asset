@@ -20,12 +20,13 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     rotation: 0
     bankProbeBlend: 0.25
+  characterLighting: 0
   ssaoFeature: {fileID: -1878332245247344467, guid: ae0cc4904269f6c45906c992c0d617c2,
     type: 2}
   ssaoEnabled: 1
   ssaoIntensity: 1.58
-  ssaoRadius: 0.9
-  ssaoDirectLightingStrength: 0.272
+  ssaoRadius: 0.54
+  ssaoDirectLightingStrength: 0.752
   ssaoDownsample: 0
   localAttachmentShadowMaterial: {fileID: 2100000, guid: b751423f1d72ddc47933c78bad91c88c,
     type: 2}
@@ -223,14 +224,14 @@ MonoBehaviour:
     enabled: 1
     type: 2
     position: {x: 6, y: 14, z: 6}
-    rotation: {x: 50.19443, y: 212.7968, z: 0}
+    rotation: {x: 49.1, y: 207.2, z: 0}
     color: {r: 1, g: 0.9686275, b: 0.85098046, a: 1}
     intensity: 1
     range: 47.1
     spotAngle: 135
     innerSpotRatio: 0.7
-    shadows: 1
-    shadowStrength: 0.716
+    shadows: 2
+    shadowStrength: 1
     shadowBias: 0
     shadowNormalBias: 0
   - playerBackFill: 1

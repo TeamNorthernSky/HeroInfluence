@@ -13,6 +13,10 @@ MonoBehaviour:
   m_Name: BattleCellBorderProfile
   m_EditorClassIdentifier: 
   settings:
+    currentTurnAlpha: 1
+    selectableAlpha: 1
+    confirmedAreaAlpha: 1
+    unavailableAlpha: 1
     currentTurn:
       shape:
         size: {x: 3.3, y: 3.3}

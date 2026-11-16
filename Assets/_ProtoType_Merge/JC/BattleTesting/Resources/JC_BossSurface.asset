@@ -56,7 +56,7 @@ MonoBehaviour:
     specular: 0.022
     variation: 0.045
   - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    rendererPath: FinalStage/Desk
+    rendererPath: FinalStage/Desk/Rebuilt/01_Carpet
     floorTiles: 0
     smoothness: 0.28
     specular: 0.028
@@ -82,3 +82,27 @@ MonoBehaviour:
     exported: {fileID: 2100000, guid: fbeedfd5476598349915ca1f8618322f, type: 2}
   - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
     exported: {fileID: 2100000, guid: c8c564801c2633b4f87b1111c7af07a3, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: 0f36c3ac1ca13c74198f6afbc72a6279, type: 2}
+  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
+    exported: {fileID: 2100000, guid: dbd120aa44f2e1946a337ddfe612242b, type: 2}
+  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
+    exported: {fileID: 2100000, guid: 7b73c42e88f9ad2479f2ff556fd8e2ed, type: 2}
+  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
+    exported: {fileID: 2100000, guid: c09dc630d6baa314f94e6f7922d0acce, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: 8ffb07c4824aa9544a4ee17bbf13450b, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: fb8ecade4d509f545beedcab66a9a3ea, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: 2570d5bb5657452498d56dcbf9baa8cf, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: ef54925a9569fd5458f1c708997c6bb9, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: c9a0e38041fb04b42b26e020fabebfb6, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: cddf890957469ec4f8ded92f3b5d2e3e, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: afc0536a0b01a9e4ebe35c7146206a46, type: 2}
+  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
+    exported: {fileID: 2100000, guid: f68c16cd114daa24f9731ecec50880a7, type: 2}
