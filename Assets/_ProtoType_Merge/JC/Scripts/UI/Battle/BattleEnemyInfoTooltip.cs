@@ -127,13 +127,26 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
         // JC | 2026-11-13 | 부활 분류만 보고 적까지 회복 대상으로 취급하지 않고 실제 호버 대상의 진영을 구분합니다.
         bool healing = selectingSkill && target != null &&
             ASB.Work.Battle.SkillExecution.SkillAreaPreviewHelper.IsHealingPreviewSide(input.PendingSkill, flow.CurrentUnit, target.IsPlayer);
+        // JC | 2026-11-16 | 아군 턴의 스킬 미선택 필드 호버는 회복색 메시만 표시합니다. 턴 슬롯 호버 규칙은 유지합니다.
+        bool idleAllyHover = !selectingSkill && !hoveredTurnUI && target != null && target.IsPlayer && flow.CurrentUnit.IsPlayer;
         if (target == null || (!healing && target.IsDead) || !target.gameObject.activeInHierarchy ||
-            (target.IsPlayer && !hoveredTurnUI && !healing) ||
+            (target.IsPlayer && !hoveredTurnUI && !healing && !idleAllyHover) ||
             (selectingSkill && !input.IsValidPreviewTarget(target))) { Hide(); return; }
         if (!JC.Tutorial.JcTutorialBattleGuide.AllowsHover(gameObject.scene, target, hoveredTurnUI)) { Hide(); return; }
         // JC | 2026-11-12 | 정보창과 선택 중 배지 표시를 분리합니다. ASB 입력·선택 대상에는 쓰지 않습니다.
         var settings = turnSlotSettings != null ? turnSlotSettings.Draft : null;
         var cells = cellVisualSettings != null ? cellVisualSettings.Draft : null;
+        if (idleAllyHover)
+        {
+            // JC | 2026-11-16 | 회복 호버의 선명도·색을 재사용하되 그리드·턴 배지는 그리지 않습니다.
+            // 아군 필드 툴팁 내용/팝업은 기획 후속이므로 이번에는 기존 숨김 상태를 유지합니다.
+            hoverLink.Show(target, false, null, battlefieldCamera != null ? battlefieldCamera : Camera.main,
+                badgesOnly: true, settings: settings, healing: true, selectionModel: true,
+                selectedColor: cells != null ? (Color?)cells.For(BattleCellVisualState.HealingArea).mainColor : null,
+                showBadges: false);
+            HidePanel();
+            return;
+        }
         if (target.IsPlayer && !healing) hoverLink.Clear();
         else hoverLink.Show(target, hoveredTurnUI, hoveredTurnSlot,
             battlefieldCamera != null ? battlefieldCamera : Camera.main, selectingSkill, false, settings, healing,
