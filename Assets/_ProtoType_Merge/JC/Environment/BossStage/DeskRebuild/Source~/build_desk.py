@@ -65,18 +65,25 @@ v += [(-w/2,-d/2,0),(w/2,-d/2,0),(w/2,d/2,0),(-w/2,d/2,0)]
 for j in range(4):f.append((j,24+j,24+(j+1)%4,(j+1)%4));ix.append(1)
 f.append((27,26,25,24));ix.append(1)
 mesh_obj('Continuous bordered carpet',v,f,'01_Carpet',['Fabric','FabricEdge','Brass'],ix)
-# JC | 2026-11-16 | 하부는 빈 면이 없는 본체. 다리·띠·전면 패널은 정상적인 닫힌 입체로 구성합니다.
-box('Solid desk carcass',(0,-.20,.65),(5.38,1.16,1.24),'02_Desk')
-box('Plinth',(0,-.20,.08),(5.49,1.24,.12),'02_Desk','Rubber',.025)
-box('Countertop',(0,-.21,1.295),(5.66,1.37,.17),'02_Desk','Edge',.025)
-box('Top inset',(0,-.21,1.386),(5.46,1.17,.016),'02_Desk','Lacquer',.006)
+# JC | 2026-11-16 | 책상만 전용 무광 재질로 분리하여 휘장/소품의 기존 공유 재질을 보존합니다.
+material('BodyLacquer',(.105,.125,.185),.82)
+material('BodyEdge',(.19,.22,.29),.78)
+# JC | 2026-11-16 | 전면 금장만 콘솔 테두리와 같은 광택 황동으로 맞추며 휘장/본체 재질은 보존합니다.
+material('BodyBrass',(.52,.395,.18),.36,.62)
+material('BodyBase',(.026,.033,.046),.88)
+# JC | 2026-11-16 | 얇게 포개진 상판과 전면 판을 단일 닫힌 판으로 합쳐 미세 경계와 하이라이트를 줄입니다.
+box('Solid desk carcass',(0,-.20,.65),(5.38,1.16,1.24),'02_Desk','BodyLacquer',.025)
+box('Plinth',(0,-.20,.08),(5.49,1.24,.12),'02_Desk','BodyBase',.025)
+top=box('Continuous countertop',(0,-.21,1.302),(5.66,1.37,.184),'02_Desk','BodyEdge',.035)
+top.data.materials.append(mats['BodyLacquer'])
+for face in top.data.polygons:
+    if face.normal.z>.999:face.material_index=1
 for x in [-2.43,2.43]:
-    box('Pedestal foot',(x,-.20,.09),(.72,1.30,.14),'02_Desk','Edge',.022)
-    box('Pedestal',(x,-.20,.68),(.62,1.20,1.10),'02_Desk','Edge',.025)
-    box('Pedestal inset',(x,-.812,.68),(.43,.025,.86),'02_Desk','Lacquer',.008)
-box('Front inset',(0,-.795,.69),(3.65,.055,.96),'02_Desk','Edge',.016)
-box('Front face',(0,-.83,.69),(3.49,.028,.82),'02_Desk','Lacquer',.012)
-box('Front brass inlay',(0,-.851,.87),(1.5,.014,.055),'02_Desk','Brass',.009)
+    box('Pedestal foot',(x,-.20,.09),(.72,1.30,.14),'02_Desk','BodyEdge',.022)
+    box('Pedestal',(x,-.20,.68),(.62,1.20,1.10),'02_Desk','BodyEdge',.025)
+box('Continuous front panel',(0,-.799,.69),(3.65,.090,.96),'02_Desk','BodyLacquer',.018)
+# JC | 2026-11-16 | 앞서 승인된 금장의 윗선/두 배 높이를 유지하고 책상 전용 황동을 사용합니다.
+box('Front brass inlay',(0,-.851,.8425),(1.5,.014,.110),'02_Desk','BodyBrass',.009)
 # JC | 2026-11-16 | 휘장은 상판에서 전면으로 부드럽게 꺾이는 독립 직물. 양끝/뒷면도 닫습니다.
 def banner(cx,group):
     # JC | 2026-11-16 | 상판 모서리를 관통하던 직선 대신 외측 원호로 감싸 상면과 앞면 직물이 끊기지 않게 합니다.

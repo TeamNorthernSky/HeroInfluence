@@ -9,6 +9,8 @@ namespace JC.BattleTesting
         [Tooltip("전투 판정 없이 무대·바닥·기둥 외형만 포함하는 프리팹입니다.")]
         public GameObject visualPrefab;
         public JcBossCameraProfile cameraProfile;
+        // JC | 2026-11-16 | 본게임/테스트 보스만 공유하는 배치 프로필이며 카메라·은행 설정은 독립 유지합니다.
+        [Tooltip("실내 배치물·캐릭터·전투 그리드의 타일 단위 오프셋입니다.")] public JcBossLayoutProfile layoutProfile;
         public Material glassProfile;
         // JC | 2026-11-09 | 은행과 같은 계산기를 사용하지만 보스 테스트/BE490 전용 프로필만 참조합니다.
         [Tooltip("보스 전용 툰 설정입니다. 기본 꺼짐이며 은행 프로필과 독립적입니다.")] public JcBankToonProfile toonProfile;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using JC.BattleTesting;
@@ -197,8 +197,6 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool projectileFocusLatched;
     private Vector3 projectileFocusPoint;
     private bool followAttackFocus;
-    // JC | 2026-11-13 | 젬 파워의 공통 이동 추적은 보스 기본뷰 경계에 고정하지 않습니다. 일반 스킬 정본과 별도 수명입니다.
-    private bool followCoreActor;
 
     public static BattlePresentationController FindInScene(UnityEngine.SceneManagement.Scene scene)
     {
@@ -364,13 +362,7 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void ApplyCameraPose(Vector3 position, Quaternion rotation, float fov, float blackBulletEntryBlend = 1f)
     {
-        // JC | 2026-11-13 | JC 보스 경계 분기가 ASB 젬 파워 추적을 막던 문제를 수정합니다. 진입·추적·복귀는 공통 계산을 그대로 적용합니다.
-        if (BossCamera && !followCoreActor && !blackBulletProtection && !blackBulletResidual)
-        {
-            BossCamera.ApplyPose(position,rotation,fov);
-            return;
-        }
-        // JC | 2026-11-11 | 두 정본의 전환/복귀/잔여 숫자를 보호합니다. 사용자 결정대로 블랙불릿 구도는 보스 무대 경계보다 우선하며 기본뷰 경계 상태는 보존합니다.
+        // JC | 2026-11-16 | 모든 캐릭터가 같은 포즈 쓰기 경로를 사용합니다. 보스 무대 제한을 제거하되 BB의 인물/숫자 보호식은 유지합니다.
         if ((blackBulletProtection || blackBulletResidual) && blackBulletCameraControls && blackBulletCameraControls.Draft)
         {
             RefreshBlackBulletProtection();
@@ -409,6 +401,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         return required;
     }
 
+    // JC | 2026-11-16 | 보스 전용 타겟 재정렬을 제거하고 기존 스킬별 초점/비행 종료 동작으로 복원합니다. 새 공통 종료 규칙은 아직 적용하지 않습니다.
     private Vector3 AttackFocusPosition
     {
         get
@@ -692,7 +685,6 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (previewCamera == null) return;
         // JC | 2026-11-10 | 다음 스킬(코어 포함)이 시작되면 이전 BB 숫자 보호의 카메라 소유권을 종료합니다.
         ReleaseBlackBulletResidual();
-        if (BossCamera) BossCamera.EndBasePreview();
         CancelTurnPresentation();
         if (cameraMotion != null) StopCoroutine(cameraMotion);
         cameraMotion = null;
@@ -704,7 +696,9 @@ public sealed class BattlePresentationController : MonoBehaviour
         }
         if (cameraProfile == null || playerPlace == null || enemyPlace == null) return;
         var pose = view == 0 ? cameraProfile.viewA : cameraProfile.viewB;
+        // JC | 2026-11-16 | 보스는 배치 이동 전의 원근 기준으로 저장한 기본뷰를 재현합니다. 은행/야외 계산은 유지합니다.
         pose.Resolve((playerPlace.position + enemyPlace.position) * .5f, out var position, out var rotation, out var fov);
+        if (BossCamera) BossCamera.ResolveView(view, out position, out rotation, out fov);
         ApplyCameraPose(position, rotation, fov);
     }
 
@@ -781,12 +775,13 @@ public sealed class BattlePresentationController : MonoBehaviour
         int view = playerTurn ? 0 : 1;
         // JC | 2026-11-10 | 다음 스킬(코어 포함)이 시작되면 이전 BB 숫자 보호의 카메라 소유권을 종료합니다.
         ReleaseBlackBulletResidual();
-        if (BossCamera) BossCamera.EndBasePreview();
         if (turnCameraView == view) return;
         turnCameraView = view;
         var pose = playerTurn ? cameraProfile.viewA : cameraProfile.viewB;
         pose.Resolve((playerPlace.position + enemyPlace.position) * .5f,
             out var position, out var rotation, out var fov);
+        // JC | 2026-11-16 | 턴 전환도 보스 기본뷰의 동일한 기준점을 사용합니다.
+        if (BossCamera) BossCamera.ResolveView(view, out position, out rotation, out fov);
         if (cameraMotion != null) StopCoroutine(cameraMotion);
         cameraMotion = StartCoroutine(TransitionTurnCamera(position, rotation, fov));
     }
@@ -841,7 +836,6 @@ public sealed class BattlePresentationController : MonoBehaviour
     {
         // JC | 2026-11-10 | 다음 스킬(코어 포함)이 시작되면 이전 BB 숫자 보호의 카메라 소유권을 종료합니다.
         ReleaseBlackBulletResidual();
-        if (BossCamera) BossCamera.EndBasePreview();
         bool shouldFocusDebuffTarget = skill != null && skill.skillKey == "HCS005" &&
             target != null && !target.IsDead;
         int family = skill != null ? HeroSkillRules.FamilyId(skill.skillIndex) : 0;
@@ -873,8 +867,6 @@ public sealed class BattlePresentationController : MonoBehaviour
         shieldGuardEffects.Clear();
         attackFocusActor = actor;
         attackFocusTarget = target;
-        // JC | 2026-11-13 | 특정 캐릭터/씬별 카메라를 만들지 않고 같은 근접 코어 HCS001에만 추적 우선권을 줍니다.
-        followCoreActor = skill != null && skill.skillKey == "HCS001";
         rifleBarrageUnits.Clear();
         if (shouldFrameRifleBarrage)
             foreach (var unit in FindObjectsOfType<BattleCharactor>())
@@ -907,6 +899,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         }
         // JC | 2026-11-10 | 시작 때 실제 전신/점유 셀 범위를 보존합니다. 대상 사망·근접 이동 뒤에도 확대 중심과 그리드 범위가 흔들리지 않습니다.
         bool useBlackBulletCloseUp = canonicalSkill;
+        // JC | 2026-11-16 | 보스 기본뷰가 이미 배치를 따라 이동했으므로 스킬에서 오프셋을 다시 더하지 않습니다. 복귀도 이 실제 시작 구도를 사용합니다.
         blackBulletCalculationPosition = attackCameraPosition;
         if (useBlackBulletCloseUp)
         {
@@ -921,7 +914,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             blackBulletReferenceRotation = playerPlace ? playerPlace.rotation : Quaternion.identity;
             blackBulletWorldFromReference = playerPlace ? Matrix4x4.TRS(playerPlace.position, playerPlace.rotation, Vector3.one) *
                 Matrix4x4.Translate(-settings.referencePlayerOrigin) : Matrix4x4.identity;
-            // 실내 기본뷰와 스킬 구도는 분리합니다. 정본2 계산에는 일반전의 기준뷰를 같은 진형 원점으로 옮겨 사용합니다.
+            // JC | 2026-11-16 | 보스 스킬 재구도 변경을 롤백합니다. 실내 BB는 기존 공통 정본 기준으로 계산하고 기본뷰/배치 연동은 별도로 유지합니다.
             if ((BankBackground || BossCamera) && settings.referenceCamera)
             {
                 settings.referenceCamera.viewA.Resolve(new Vector3(0, .3f, 0), out var referencePosition, out _, out _);
@@ -1451,8 +1444,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         blackBulletResidual = blackBulletLivePoints.Count > 0;
         blackBulletProtection = false;
         blackBulletResidualFov = attackCameraFov;
-        // JC | 2026-11-13 | 정상 종료·중단 모두 원래 보스 기본뷰 경계 소유권을 복구합니다. 저장 프로필은 변경하지 않습니다.
-        followCoreActor = false;
+        // JC | 2026-11-16 | 정상 종료·중단 모두 스킬 시작 때의 기본 구도로 복귀합니다. 무대 경계 보정 없이 저장 프로필을 보존합니다.
         if (previewCamera != null)
         {
             ApplyCameraPose(attackCameraPosition, attackCameraRotation, attackCameraFov);

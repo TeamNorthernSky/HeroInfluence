@@ -881,6 +881,19 @@ public class EnemySpawner : MonoBehaviour
         battle.OnDied += (bc) => ScheduleCorpseRemoval(bc, g);
     }
 
+    // JC | 2026-11-16 | 승인된 보스 배치 이동 후 생성/소환의 보관 좌표만 갱신합니다.
+    // 셀 번호·점유·생성 목록·전투 상태는 그대로 유지하며 일반 전투에서는 호출하지 않습니다.
+    public void RefreshGridWorldPositions()
+    {
+        if (!hierarchyReady) return;
+        foreach (var pair in gridCellsByNumber)
+        {
+            if (pair.Value == null) continue;
+            gridSlots[pair.Key] = pair.Value.transform.position;
+            gridRotations[pair.Key] = pair.Value.transform.rotation;
+        }
+    }
+
     // JC | 2026-11-10 | 시뮬레이션 진형 이동 후 소환·부활 검사도 새 칸의 인스턴스를 조회하게 합니다.
     public void RefreshSimulationFormation()
     {

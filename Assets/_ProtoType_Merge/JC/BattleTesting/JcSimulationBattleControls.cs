@@ -16,6 +16,11 @@ namespace JC.BattleTesting
         BattleFlowManager flow;
         Canvas canvas;
         RectTransform modal;
+        // JC | 2026-11-16 | 접힌 버튼과 펼친 도구창은 같은 우상단 기준점을 공유하여 전환 시 위치를 유지합니다.
+        RectTransform toolbar, compactHeader, expandedHeader, toolbarBody;
+        TMP_Text compactCaption;
+        bool compact = true;
+        Vector2 lastCanvasSize;
         Button editButton, targetButton;
         Toggle repeatToggle, draftToggle;
         TMP_Text status, message;
@@ -84,6 +89,10 @@ namespace JC.BattleTesting
             repeatToggle.SetIsOnWithoutNotify(ownedFilter != null);
             status.text = ownedFilter != null ? $"반복 대상: {repeatUnit.UnitName} · 다음 턴부터" : "시뮬레이션 · 진형 편집 / 반복턴";
             if (modal && (flow.IsActionInProgress || flow.IsTurnPresentationPending)) Close();
+            // JC | 2026-11-16 | 접혀 있어도 반복 활성 상태를 알리고, 해상도 변경 때만 화면 안으로 위치를 보정합니다.
+            compactCaption.text = ownedFilter != null ? "전투 테스트 · 반복 ON" : "전투 테스트";
+            var canvasSize = ((RectTransform)canvas.transform).rect.size;
+            if (lastCanvasSize != canvasSize) { lastCanvasSize = canvasSize; ClampWindow(toolbar); }
         }
 
         bool CanOpen() => modal == null && flow.CurrentUnit && !flow.IsActionInProgress && !flow.IsTurnPresentationPending &&
@@ -101,12 +110,64 @@ namespace JC.BattleTesting
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = .5f;
-            var toolbar = Panel("시뮬레이션 도구", root.transform, new Vector2(470, 104), new Color(.04f, .08f, .12f, .96f));
+            // JC | 2026-11-16 | 메뉴 위 여백에 들어가는 200×32 버튼으로 시작하며 기능을 펼칠 때만 세부 조절기를 표시합니다.
+            toolbar = Panel("시뮬레이션 도구", root.transform, new Vector2(200, 32), new Color(.04f, .08f, .12f, .96f));
             toolbar.anchorMin = toolbar.anchorMax = toolbar.pivot = Vector2.one;
-            toolbar.anchoredPosition = new Vector2(-225, -18);
-            editButton = MakeButton(toolbar, "진형 변경", new Vector2(-130, 15), new Vector2(180, 44), Open);
-            repeatToggle = MakeToggle(toolbar, "한 명 반복", new Vector2(105, 15), on => SetRepeat(on ? (CanRepeat(repeatUnit) ? repeatUnit : flow.CurrentUnit) : null));
-            status = Label(toolbar, "", new Vector2(0, -30), new Vector2(450, 32), 19);
+            toolbar.anchoredPosition = new Vector2(-18, -2);
+            compactHeader = TopPanel("접힌 창 이동", toolbar, new Vector2(200, 32), Vector2.zero);
+            var expand = MakeButton(compactHeader, "전투 테스트", Vector2.zero, new Vector2(200, 32), () => SetCompact(false));
+            compactCaption = expand.GetComponentInChildren<TMP_Text>();
+            compactCaption.fontSize = 18;
+            AttachDrag(compactHeader, toolbar);
+            expandedHeader = TopPanel("도구창 이동", toolbar, new Vector2(260, 32), Vector2.zero);
+            Label(expandedHeader, "전투 테스트 · 이동", new Vector2(-15, 0), new Vector2(215, 28), 18);
+            var collapse = MakeButton(expandedHeader, "−", new Vector2(112, 0), new Vector2(32, 28), () => SetCompact(true));
+            collapse.GetComponentInChildren<TMP_Text>().fontSize = 20;
+            AttachDrag(expandedHeader, toolbar);
+            toolbarBody = TopPanel("도구 내용", toolbar, new Vector2(260, 126), new Vector2(0, -32));
+            editButton = MakeButton(toolbarBody, "진형 변경", new Vector2(0, 38), new Vector2(245, 40), Open);
+            repeatToggle = MakeToggle(toolbarBody, "한 명 반복", new Vector2(0, -8), on => SetRepeat(on ? (CanRepeat(repeatUnit) ? repeatUnit : flow.CurrentUnit) : null));
+            status = Label(toolbarBody, "", new Vector2(0, -44), new Vector2(250, 27), 14);
+            SetCompact(true);
+        }
+
+        // JC | 2026-11-16 | 기존 PanelDragHandler를 재사용합니다. 버튼을 자식에 두어 드래그한 입력이 펼치기/접기 클릭으로 이어지지 않습니다.
+        void AttachDrag(RectTransform handle, RectTransform window)
+            => handle.gameObject.AddComponent<PanelDragHandler>().SetTarget(window, _ => ClampWindow(window));
+
+        RectTransform TopPanel(string name, RectTransform parent, Vector2 size, Vector2 offset)
+        {
+            var panel = Panel(name, parent, size, normal);
+            panel.anchorMin = panel.anchorMax = Vector2.one;
+            panel.pivot = new Vector2(.5f, .5f);
+            panel.anchoredPosition = offset - size * .5f;
+            return panel;
+        }
+
+        void SetCompact(bool value)
+        {
+            compact = value;
+            toolbar.sizeDelta = compact ? new Vector2(200, 32) : new Vector2(260, 158);
+            compactHeader.gameObject.SetActive(compact);
+            expandedHeader.gameObject.SetActive(!compact);
+            toolbarBody.gameObject.SetActive(!compact);
+            ClampWindow(toolbar);
+        }
+
+        // JC | 2026-11-16 | 부모 UI 좌표로 가장자리를 제한합니다. 작은 화면에서는 큰 편집창도 제목을 잡을 수 있도록 상단을 유지합니다.
+        static void ClampWindow(RectTransform window)
+        {
+            if (!window || !(window.parent is RectTransform parent)) return;
+            var area = parent.rect;
+            var size = window.rect.size;
+            var pos = window.localPosition;
+            float left = area.xMin + size.x * window.pivot.x;
+            float right = area.xMax - size.x * (1 - window.pivot.x);
+            float bottom = area.yMin + size.y * window.pivot.y;
+            float top = area.yMax - size.y * (1 - window.pivot.y);
+            pos.x = left <= right ? Mathf.Clamp(pos.x, left, right) : (left + right) * .5f;
+            pos.y = bottom <= top ? Mathf.Clamp(pos.y, bottom, top) : top;
+            window.localPosition = pos;
         }
 
         void Open()
@@ -124,7 +185,11 @@ namespace JC.BattleTesting
             modal.anchorMax = Vector2.one;
             modal.offsetMin = modal.offsetMax = Vector2.zero;
             var body = Panel("편집창", modal, new Vector2(1060, 740), new Color(.055f, .08f, .12f, 1));
-            Label(body, "진형 변경", new Vector2(0, 320), new Vector2(960, 56), 32);
+            // JC | 2026-11-16 | 진형 편집 본창도 제목 영역을 잡고 이동합니다. 배경 차단막과 전투 흐름 잠금은 유지합니다.
+            var title = Panel("진형 편집창 이동", body, new Vector2(1040, 66), normal);
+            title.anchoredPosition = new Vector2(0, 327);
+            Label(title, "진형 변경 · 드래그하여 이동", Vector2.zero, new Vector2(1000, 56), 28);
+            AttachDrag(title, body);
             Label(body, "캐릭터 → 목적지: 이동·교환  /  빈 적 칸: 적 추가", new Vector2(0, 262), new Vector2(1000, 44), 23);
             // JC | 2026-11-10 | 각 열의 제목을 실제 칸 중심에 맞춰 전열·후열을 명확하게 구분합니다.
             string[] headings = { "아군 · 후열", "아군 · 전열", "적군 · 전열", "적군 · 후열" };
@@ -256,7 +321,11 @@ namespace JC.BattleTesting
             enemyPicker.anchorMin = Vector2.zero; enemyPicker.anchorMax = Vector2.one;
             enemyPicker.offsetMin = enemyPicker.offsetMax = Vector2.zero;
             var body = Panel("추가할 적 선택", enemyPicker, new Vector2(1000, 650), new Color(.055f, .08f, .12f, 1));
-            Label(body, "추가할 적 선택 · 율리아 제외", new Vector2(0, 272), new Vector2(950, 50), 30);
+            // JC | 2026-11-16 | 적 선택 하위창도 기존 드래그 조절기를 사용합니다.
+            var title = Panel("적 선택창 이동", body, new Vector2(980, 56), normal);
+            title.anchoredPosition = new Vector2(0, 284);
+            Label(title, "추가할 적 선택 · 율리아 제외", Vector2.zero, new Vector2(950, 50), 30);
+            AttachDrag(title, body);
             Label(body, "레벨 " + CombatContext.Instance.EnemyLevel + " · 최종 확인 시 배치 / 다음 라운드부터 참여", new Vector2(0, 220), new Vector2(950, 44), 22);
             for (int i = enemyPage * 8; i < Mathf.Min(enemyChoices.Count, (enemyPage + 1) * 8); i++)
             {
