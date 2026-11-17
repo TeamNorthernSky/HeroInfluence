@@ -96,6 +96,7 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool SkillPanelBattleEnded => skillPanelBattleEnded || (flow != null && flow.IsBattleEnded);
     public void PrepareEntryHud(bool showPlayerPanel)
     {
+        showPlayerPanel &= !BattleRuntimeSettings.IsAutoBattle;
         // JC | 2026-11-12 | 늦게 끝난 첫 진입 연출도 종료된 HUD를 다시 열지 않습니다.
         if (SkillPanelBattleEnded) { HideSkillPanelOnBattleEnd(); return; }
         if (panelMotion != null) StopCoroutine(panelMotion);
@@ -240,6 +241,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             panelPositionInitialized = true;
         }
         flow = battle != null ? battle.GetComponent<BattleFlowManager>() : null;
+        BattleRuntimeSettings.AutoBattleChanged += HandleAutoBattleChanged;
         // JC | 2026-11-12 | 스킬을 거치지 않는 Shift+9/0도 같은 전투 종료 이벤트에서 패널 전체를 닫습니다.
         if (flow != null)
         {
@@ -1534,8 +1536,16 @@ public sealed class BattlePresentationController : MonoBehaviour
         skillPanel.gameObject.SetActive(false);
     }
 
+    private void HandleAutoBattleChanged(bool automatic)
+    {
+        SetSkillPanelVisible(!automatic && flow != null && flow.CurrentUnit != null &&
+            flow.CurrentUnit.IsPlayer && !flow.IsActionInProgress &&
+            turnPresentation == null && !attackZoomActive);
+    }
+
     private void SetSkillPanelVisible(bool visible)
     {
+        visible &= !BattleRuntimeSettings.IsAutoBattle;
         // JC | 2026-11-12 | 실패 행동 복구·턴 연출의 늦은 표시 요청에도 종료 상태가 우선합니다.
         if (SkillPanelBattleEnded) { HideSkillPanelOnBattleEnd(); return; }
         panelRequestedVisible = visible;
@@ -1581,6 +1591,7 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void OnDestroy()
     {
+        BattleRuntimeSettings.AutoBattleChanged -= HandleAutoBattleChanged;
         UnitEffectPresenter.EffectSpawned -= HandleSkillEffectSpawned;
         BattleVisualDirector.HealPresented -= HandleHealPresented;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightStarted -= HandleProjectileStarted;
