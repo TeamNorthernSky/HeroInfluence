@@ -936,7 +936,7 @@
     },
     {
       "id": "scene.OpeningCutScene.CunScene.Canvas.Click.to.Continue.Message",
-      "text": "Click to Continue",
+      "text": "클릭해서 다음으로",
       "scene": "Opening CutScene",
       "path": "CunScene Canvas/Click to Continue Message"
     },
