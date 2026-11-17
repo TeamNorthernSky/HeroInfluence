@@ -29,8 +29,13 @@ MonoBehaviour:
   citySkyProfile: {fileID: 11400000, guid: 90d2ff8aa3dc50245bd0a489d973363a, type: 2}
   cityShadowDistance: 300
   cityLodLibrary: {fileID: 11400000, guid: d135c8f9569cb824bbdf65e8d8958d45, type: 2}
-  cityLampBrightness: 0.35
-  cityLampInnerRatio: 0.2
+  cityLod:
+    highScreenHeight: 0.35
+    mediumScreenHeight: 0.246
+    mediumSimplification: 0.0495
+    lowSimplification: 0.081
+  cityLampBrightness: 0.553
+  cityLampInnerRatio: 0.233
   cityLampBudget: 48
   cityLampDistance: 650
   citySmallShadowHeight: 3

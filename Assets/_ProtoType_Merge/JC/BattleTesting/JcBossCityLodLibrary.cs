@@ -9,5 +9,7 @@ namespace JC.BattleTesting
         [Serializable] public sealed class Part { public Mesh high, medium, low; }
         [Serializable] public sealed class Entry { public Mesh source; public Part[] parts; }
         public Entry[] entries = Array.Empty<Entry>();
+        // JC | 2026-11-17 | 실제 생성 메시의 강도를 기록해 값만 저장되고 메시가 예전 상태로 남는 것을 막습니다.
+        public float bakedMediumSimplification=.0125f, bakedLowSimplification=.03f;
     }
 }

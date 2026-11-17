@@ -35,6 +35,8 @@ namespace JC.BattleTesting
         // JC | 2026-11-17 | 보스 원경만의 비용/밝기를 제한하며 실내 조명·IBL·탐사 프로필에는 적용하지 않습니다.
         [Header("원경 최적화")]
         public JcBossCityLodLibrary cityLodLibrary;
+        // JC | 2026-11-17 | 런타임 전환과 에디터 메시 생성기가 같은 명시 저장 프로필을 읽습니다.
+        public JcBossCityLodSettings cityLod = new JcBossCityLodSettings();
         [Range(0,1), Tooltip("저녁·새벽 가로등의 원본 대비 광량입니다.")] public float cityLampBrightness=.35f;
         [Range(.05f,.9f), Tooltip("Spot 내부 각도 비율입니다. 낮추면 밝은 중심에서 바깥 경계까지 넓게 감쇠합니다.")] public float cityLampInnerRatio=.2f;
         [Range(1,128), Tooltip("카메라 근처에서 동시에 사용할 원경 가로등 수입니다.")] public int cityLampBudget=48;

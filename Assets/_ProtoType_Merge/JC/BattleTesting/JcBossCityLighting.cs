@@ -49,6 +49,8 @@ namespace JC.BattleTesting
             cities = JcBossCityTime.Roots(stage);
             if (cities.Length == 0) return;
             optimization = settings;
+            // JC | 2026-11-17 | 플레이/에디트 조절값은 저장 전까지 원본 프로필과 분리합니다.
+            LodDraft = settings.cityLod.Copy();
             stageRoot = stage; // JC | 2026-11-17 | 시작 시 목록과 별개로 현재 무대 하위 도시를 다시 조회할 기준입니다.
             initialized = true; active.Add(this);
             foreach (var city in cities)
@@ -72,6 +74,17 @@ namespace JC.BattleTesting
                         // JC | 2026-11-17 | 원본별 색상/텍스처는 보존하고 동일한 보정만 공유합니다.
                         if (!sharedCopies.TryGetValue(mats[i], out var m)) {
                             m = new Material(mats[i]) { hideFlags = HideFlags.DontSave };
+                            // JC | 2026-11-17 | 도시 편집기가 저장한 창문 마스크를 공통 낮밤 신호에 연결합니다.
+                            // 가로등처럼 본색 텍스처를 그대로 발광에 쓰는 재질은 기존 발광을 유지합니다.
+                            if (m.HasProperty("_EmissionMap") && m.GetTexture("_EmissionMap") &&
+                                m.HasProperty("_BaseMap") && m.GetTexture("_EmissionMap") != m.GetTexture("_BaseMap"))
+                            {
+                                var mask=m.GetTexture("_EmissionMap");
+                                m.shader=Resources.Load<Shader>("JcNightLit");
+                                m.SetTexture("_JcWindowMask",mask);
+                                m.SetFloat("_JcSpecialWindow",0);
+                                m.SetColor("_EmissionColor",Color.black); m.DisableKeyword("_EMISSION");
+                            }
                             m.SetFloat("_ReceiveShadows", 1); m.DisableKeyword("_RECEIVE_SHADOWS_OFF");
                             sharedCopies.Add(mats[i], m); copySources.Add(m, mats[i]); copies.Add(m);
                         }

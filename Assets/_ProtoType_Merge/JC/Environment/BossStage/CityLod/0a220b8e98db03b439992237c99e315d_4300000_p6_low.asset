@@ -17,8 +17,8 @@ Mesh:
     firstVertex: 0
     vertexCount: 288
     localAABB:
-      m_Center: {x: 0, y: 0, z: 0}
-      m_Extent: {x: 0, y: 0, z: 0}
+      m_Center: {x: 30, y: 0.026, z: 32.64483}
+      m_Extent: {x: 6, y: 0, z: 0.044830322}
   m_Shapes:
     vertices: []
     shapes: []

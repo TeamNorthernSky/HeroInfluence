@@ -223,8 +223,9 @@ public sealed class BattlePresentationController : MonoBehaviour
     private Renderer[] bossJusticeActorRenderers;
     // JC | 2026-11-17 | 타격 종료 구도를 한 번 보관하고 실제 귀환 진행률로 기본뷰에 수렴시킵니다. 후열 좌측 등 고정 칸에 의존하지 않습니다.
     private bool bossJusticeReturnCaptured;
-    // JC | 2026-11-17 | 준비 모션은 기본뷰를 유지하고 실제 진입 이동에 맞춰 기존 타격 카메라 위치로 수렴합니다.
-    private Vector3 bossJusticeAttackPosition;
+    // JC | 2026-11-17 | 시전자 중심의 준비 줌에서 실제 진입 이동에 맞춰 기존 타격 구도로 선형 전환합니다.
+    private Vector3 bossJusticeAttackPosition, bossJusticeCastPosition;
+    private float bossJusticeCastFov;
     private Pose bossJusticeReturnPose;
     private float bossJusticeReturnFov, bossJusticeReturnProgress;
     // JC | 2026-11-17 | 네코밍 광역 구도는 발사 시 기준 위치와 가상 초점을 함께 이동하여 사용자가 맞춘 회전을 유지합니다.
@@ -415,25 +416,25 @@ public sealed class BattlePresentationController : MonoBehaviour
             fov = Mathf.Max(required, Mathf.Lerp(fov, Mathf.Max(attackZoomBaseFov, required),
                 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime)));
         }
-        // JC | 2026-11-17 | 아군 배치에 무관하게 출발점에서는 시전 직전 구도, 진입 완료부터 기존 타격 구도를 사용합니다.
+        // JC | 2026-11-17 | 준비 줌을 출발점으로 사용하여 발동 직후 기본뷰로 튀지 않고 기존 타격 구도까지 확대합니다.
         if (bossJusticeReady)
         {
             float blend = BossJusticeStartBlend();
-            position = Vector3.Lerp(attackCameraPosition, position, blend);
+            position = Vector3.Lerp(bossJusticeCastPosition, position, blend);
             rotation = Quaternion.Slerp(attackCameraRotation, rotation, blend);
-            fov = Mathf.Lerp(attackCameraFov, fov, blend);
+            fov = Mathf.Lerp(bossJusticeCastFov, fov, blend);
         }
         ApplyCameraPose(position,rotation,fov);
     }
 
-    // JC | 2026-11-17 | 시전 시간이 아닌 실행기의 실제 접근 위치로 전환합니다. 준비 중에는 기본뷰에서 벗어나지 않습니다.
+    // JC | 2026-11-17 | 실제 접근 진행률을 이징 없이 사용합니다. 준비 줌을 유지하다 이동 시작과 함께 선형 확대합니다.
     private float BossJusticeStartBlend()
     {
         if (bossJusticeTimeline && bossJusticeTimeline.time >= bossJusticeStartTime) return 1f;
         var travel = Vector3.ProjectOnPlane(bossJusticePlan.PathPoints.Entry - bossJusticePlan.OriginPosition, Vector3.up);
         if (travel.sqrMagnitude < .0001f) return 1f;
         var moved = Vector3.ProjectOnPlane(attackFocusActor.transform.position - bossJusticePlan.OriginPosition, Vector3.up);
-        return Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Vector3.Dot(moved, travel) / travel.sqrMagnitude));
+        return Mathf.Clamp01(Vector3.Dot(moved, travel) / travel.sqrMagnitude);
     }
 
     // JC | 2026-11-16 | 보스 낙하 스킬의 보호점은 시작 시 캡처하고 현재 초점/숫자만 갱신합니다. 별도 카메라 작성 경로는 만들지 않습니다.
@@ -814,6 +815,9 @@ public sealed class BattlePresentationController : MonoBehaviour
         bossJusticeReturnCaptured = false;
         bossJusticeReturnPose = default;
         bossJusticeReturnFov = bossJusticeReturnProgress = 0f;
+        // JC | 2026-11-17 | 다음 시전의 배치와 기본 카메라로 준비 줌을 다시 계산합니다.
+        bossJusticeCastPosition = bossJusticeAttackPosition = Vector3.zero;
+        bossJusticeCastFov = 0f;
         bossJusticePlan = null;
         bossJusticeActorRenderers = null;
         bossJusticeTimeline = null;
@@ -1500,11 +1504,23 @@ public sealed class BattlePresentationController : MonoBehaviour
                 BeginBlackBulletCloseUp(family,zoomPosition,zoomRotation,zoomFov);
             else
             {
-                // JC | 2026-11-17 | 저스티스 준비 모션의 하강·시전자 단독 회전을 생략합니다. 대사/공격 순서와 진입 시간은 유지합니다.
+                // JC | 2026-11-17 | 기존 공격 위치는 보존하고 준비 줌만 시전자의 실제 위치 기준으로 계산합니다.
                 bossJusticeAttackPosition = zoomPosition;
                 if (bossJusticeSkill)
-                    yield return AnimateAttackZoom(attackCameraPosition, attackCameraPosition, attackCameraRotation,
-                        attackCameraFov, attackCameraOrthoSize, attackZoomInSeconds, false);
+                {
+                    // JC | 2026-11-17 | 화각 축소에 맞춰 화면 평면에서만 이동하여 저스티스를 줌 중심으로 유지합니다.
+                    // 후열에서도 카메라 하강·단독 회전으로 무대 밖을 보는 문제 없이 다른 스킬과 같은 확대량/시간을 씁니다.
+                    Vector3 castFocus = actor.transform.position + Vector3.up * attackFocusHeight;
+                    Vector3 screenOffset = Vector3.ProjectOnPlane(castFocus - attackCameraPosition,
+                        attackCameraRotation * Vector3.forward);
+                    float viewScale = previewCamera.orthographic ? scale :
+                        Mathf.Tan(zoomFov * Mathf.Deg2Rad * .5f) / Mathf.Tan(attackCameraFov * Mathf.Deg2Rad * .5f);
+                    bossJusticeCastPosition = attackCameraPosition + screenOffset * (1f - viewScale);
+                    bossJusticeCastFov = zoomFov;
+                    yield return AnimateAttackZoom(bossJusticeCastPosition,
+                        Vector3.Lerp(attackCameraPosition, bossJusticeCastPosition, .5f), attackCameraRotation,
+                        bossJusticeCastFov, attackCameraOrthoSize * scale, attackZoomInSeconds, false);
+                }
                 else
                     yield return AnimateAttackZoom(zoomPosition, corner, zoomRotation,
                         zoomFov, attackCameraOrthoSize * scale, attackZoomInSeconds, true);

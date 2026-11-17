@@ -9,6 +9,34 @@ namespace JC.BattleTesting
         // JC | 2026-11-17 | 원본 배치/편집 메시를 유지하고 보스 표시 수명 동안만 구역별 LOD를 구성합니다.
         readonly List<GameObject> lodObjects = new();
         readonly Dictionary<Renderer,bool> lodSources = new();
+        // JC | 2026-11-17 | 생성된 그룹과 메시 교체를 추적하여 조절 즉시 반영하고 종료 시 복원합니다.
+        readonly List<LODGroup> cityLodGroups = new();
+        readonly Dictionary<MeshFilter,Mesh> previewMeshSources = new();
+        public JcBossBattleBackground OptimizationSource => optimization;
+        public JcBossCityLodSettings LodDraft { get; private set; }
+        // JC | 2026-11-17 | 같은 프로필의 에디트/플레이 조절기가 동일 초안을 미리봅니다.
+        public void SetLodDraft(JcBossCityLodSettings settings) { LodDraft=settings.Copy();ApplyLodDraft(); }
+        public void ApplyLodDraft()
+        {
+            if(LodDraft==null)return;
+            LodDraft.Validate();
+            foreach(var group in cityLodGroups)if(group) {
+                var levels=group.GetLODs();
+                levels[0].screenRelativeTransitionHeight=LodDraft.highScreenHeight;
+                levels[1].screenRelativeTransitionHeight=LodDraft.mediumScreenHeight;
+                group.SetLODs(levels);group.RecalculateBounds();
+            }
+        }
+        public void SetLodMeshPreview(Dictionary<Mesh,Mesh> replacements)
+        {
+            foreach(var pair in previewMeshSources)if(pair.Key)pair.Key.sharedMesh=pair.Value;
+            previewMeshSources.Clear();
+            if(replacements!=null)foreach(var go in lodObjects)if(go && go.TryGetComponent<MeshFilter>(out var filter) &&
+                filter.sharedMesh && replacements.TryGetValue(filter.sharedMesh,out var preview)) {
+                previewMeshSources.Add(filter,filter.sharedMesh);filter.sharedMesh=preview;
+            }
+            ApplyLodDraft();
+        }
         sealed class LodBlock { public readonly List<Renderer>[] levels = {new(),new(),new()}; }
         void BuildCityLods(Transform city)
         {
@@ -47,12 +75,15 @@ namespace JC.BattleTesting
                 var go=new GameObject("JC 원경 구역 LOD"){hideFlags=HideFlags.HideAndDontSave};go.transform.SetParent(city,false);lodObjects.Add(go);state.generated.Add(go);
                 var group=go.AddComponent<LODGroup>();
                 // JC | 2026-11-17 | 구역이 화면에서 작아질 때 단계별 단순화하며 최원경도 윤곽은 유지합니다.
-                group.SetLODs(new[]{new LOD(.35f,block.levels[0].ToArray()),new LOD(.16f,block.levels[1].ToArray()),new LOD(0,block.levels[2].ToArray())});
+                group.SetLODs(new[]{new LOD(LodDraft.highScreenHeight,block.levels[0].ToArray()),new LOD(LodDraft.mediumScreenHeight,block.levels[1].ToArray()),new LOD(0,block.levels[2].ToArray())});
+                cityLodGroups.Add(group);
                 group.RecalculateBounds();
             }
         }
         void ReleaseCityLods()
         {
+            // JC | 2026-11-17 | 미저장 메시 초안을 원본 에셋 참조로 복원한 뒤 임시 그룹을 제거합니다.
+            SetLodMeshPreview(null);cityLodGroups.Clear();
             // JC | 2026-11-17 | 시작 후 복제한 도시도 현재 무대에서 찾아 임시 LOD와 원본 상태를 함께 복원합니다.
             foreach(var city in JcBossCityTime.Roots(stageRoot))if(city)
                 foreach(var state in city.GetComponents<JcBossCityLodState>())if(state)state.Restore();

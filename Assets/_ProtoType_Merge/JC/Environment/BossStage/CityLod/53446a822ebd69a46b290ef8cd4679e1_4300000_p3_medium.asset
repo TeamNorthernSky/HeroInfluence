@@ -6,7 +6,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 53446a822ebd69a46b290ef8cd4679e1_4300000_p3_medium
+  m_Name: 53446a822ebd69a46b290ef8cd4679e1_4300000_p3_high(Clone)
   serializedVersion: 11
   m_SubMeshes:
   - serializedVersion: 2
@@ -17,8 +17,8 @@ Mesh:
     firstVertex: 0
     vertexCount: 3069
     localAABB:
-      m_Center: {x: 0, y: 0, z: 0}
-      m_Extent: {x: 0, y: 0, z: 0}
+      m_Center: {x: 54, y: -3.77, z: 39}
+      m_Extent: {x: 6, y: 0, z: 0.5}
   m_Shapes:
     vertices: []
     shapes: []

@@ -2411,7 +2411,7 @@ MonoBehaviour:
     variation: 0.025
   - source: {fileID: 2100000, guid: b6adee6250809034eb6516459fb2e634, type: 2}
     rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.147858, g: 0.15844895, b: 0.17610055, a: 1}
+    color: {r: 0.29197815, g: 0.31098172, b: 0.3584906, a: 1}
     defaultColor: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
     colorInitialized: 1
     colorOnly: 0
