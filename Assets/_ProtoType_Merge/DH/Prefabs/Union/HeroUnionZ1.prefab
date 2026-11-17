@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8521844722801733158}
   - component: {fileID: 3579854251900779421}
   - component: {fileID: -5642025937601547453}
+  - component: {fileID: 2495803596937929509}
   m_Layer: 10
   m_Name: HeroUnionZ1
   m_TagString: Untagged
@@ -55,8 +56,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.85, y: 0.24, z: 0.55}
-  m_Center: {x: 0, y: 0.17, z: -0.19}
+  m_Size: {x: 0.85, y: 0.24, z: 0.73}
+  m_Center: {x: 0, y: 0.17, z: -0.02}
 --- !u!114 &8521844722801733158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,6 +111,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9221b28ec6414634eab27c502258aaa1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!65 &2495803596937929509
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3392802035522500956}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 0.3, z: 0.48}
+  m_Center: {x: 0, y: 0.42, z: 0.11}
 --- !u!1001 &1445647386689708393
 PrefabInstance:
   m_ObjectHideFlags: 0
