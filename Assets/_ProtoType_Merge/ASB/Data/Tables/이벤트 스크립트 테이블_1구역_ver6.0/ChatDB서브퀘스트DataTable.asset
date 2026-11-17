@@ -128,7 +128,7 @@ MonoBehaviour:
     Chat_Type: 0
     Char_Name: "\uC131\uB09C \uBE4C\uB7F0"
     Char_Profile: 
-    Message_Text: "\uC7A0\uAE50!\n\uADF8\uAC74 \uD558\uB8E8 \uC885\uC77C \uC904 \uC11C\uC11C
+    Message_Text: "\uC7A0\uAE50! \uADF8\uAC74 \uD558\uB8E8 \uC885\uC77C\n\uC904 \uC11C\uC11C
       \uBC1B\uC740 \uAC70\uC57C!"
     IMG_Res: 
     Next_Chat_ID: 1060021
@@ -315,7 +315,7 @@ MonoBehaviour:
     Char_Name: 
     Char_Profile: 
     Message_Text: "\uD788\uC5B4\uB85C\uAC00 \uBE4C\uB7F0 \uBB3C\uAC74\uC744\n\uC555\uC218\uD558\uB294
-      \uAC74 \uD569\uBC95\uC801\uC778 \uC808\uCC28\uC9C0."
+      \uAC74 \uD569\uBC95\uC801 \uC808\uCC28\uC9C0."
     IMG_Res: 
     Next_Chat_ID: 1060260
     Branch_Group_ID: 0

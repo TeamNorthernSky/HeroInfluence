@@ -132,6 +132,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
             skillPanel.anchoredPosition = HiddenPanelPosition;
         }
         flow = battle != null ? battle.GetComponent<BattleFlowManager>() : null;
+        BattleRuntimeSettings.AutoBattleChanged += HandleAutoBattleChanged;
         if (flow != null) flow.OnTurnStarted += HandleTurnStarted;
         turnBanner = FindFirstObjectByType<BattleTurnBanner>(FindObjectsInactive.Include);
         if (turnBanner != null) turnBanner.TurnBannerShown += HandleTurnBannerShown;
@@ -812,8 +813,16 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         projectileFocusLatched = false;
     }
 
+    private void HandleAutoBattleChanged(bool automatic)
+    {
+        SetSkillPanelVisible(!automatic && flow != null && flow.CurrentUnit != null &&
+            flow.CurrentUnit.IsPlayer && !flow.IsActionInProgress &&
+            turnPresentation == null && !attackZoomActive);
+    }
+
     private void SetSkillPanelVisible(bool visible)
     {
+        visible &= !BattleRuntimeSettings.IsAutoBattle;
         if (skillPanel == null) return;
         Vector2 destination = visible ? panelHome : HiddenPanelPosition;
         if (panelMotion != null && panelDestination == destination) return;
@@ -865,6 +874,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
 
     private void OnDestroy()
     {
+        BattleRuntimeSettings.AutoBattleChanged -= HandleAutoBattleChanged;
         UnitEffectPresenter.EffectSpawned -= HandleSkillEffectSpawned;
         BattleVisualDirector.HealPresented -= HandleHealPresented;
         if (flow != null) flow.OnParticipantRegistered -= ProtectEnemy;
