@@ -2684,6 +2684,11 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 734b8a8f4c89c104fb8cfb2f66383f91, type: 3}
   - {fileID: 21300000, guid: 6fd4d87e1dfd354438fde495d1ead150, type: 3}
   - {fileID: 21300000, guid: 35f97c6f73ed49e4881b15cb73bd5a0a, type: 3}
+  confirmButton: {fileID: 1139828745751781072}
+  buildButtonSprite: {fileID: 21300000, guid: 1bba794bd8e160844a421f18760cc339, type: 3}
+  buildDisabledButtonSprite: {fileID: 21300000, guid: 4c715c85e9b008840949229f5327b8f2,
+    type: 3}
+  confirmHoverOverlay: {fileID: 0}
 --- !u!1 &3903629828036903988
 GameObject:
   m_ObjectHideFlags: 0
@@ -6511,11 +6516,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7352447581933694480, guid: ee8783684d4636a4aaa0e6af97bc185c,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5928251532795397567}
+      addedObject: {fileID: 8571302320221074424}
     - targetCorrespondingSourceObject: {fileID: 7352447581933694480, guid: ee8783684d4636a4aaa0e6af97bc185c,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8571302320221074424}
+      addedObject: {fileID: 5928251532795397567}
     - targetCorrespondingSourceObject: {fileID: 7352447581933694480, guid: ee8783684d4636a4aaa0e6af97bc185c,
         type: 3}
       insertIndex: -1

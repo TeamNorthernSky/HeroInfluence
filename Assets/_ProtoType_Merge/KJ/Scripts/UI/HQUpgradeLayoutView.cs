@@ -11,10 +11,56 @@ public sealed class HQUpgradeLayoutView : MonoBehaviour
     public TMP_Text requirements, money, supply, extraCosts, resultTitle, resultBody;
     public Image facilityImage;
     public Sprite[] facilitySprites;
+    public Button confirmButton;
+    public Sprite buildButtonSprite, buildDisabledButtonSprite;
+    public Image confirmHoverOverlay;
+    private bool confirmAppearanceSaved;
+    private Sprite defaultConfirmSprite;
+    private SpriteState defaultConfirmState;
+    private Selectable.Transition defaultConfirmTransition;
+    private PopupButton confirmPopupVisual;
+    private bool defaultPopupVisualEnabled;
+
+    public void SetBuildButtonMode(bool building)
+    {
+        if (confirmButton == null || !(confirmButton.targetGraphic is Image image)) return;
+        if (!confirmAppearanceSaved)
+        {
+            defaultConfirmSprite = image.sprite;
+            defaultConfirmState = confirmButton.spriteState;
+            defaultConfirmTransition = confirmButton.transition;
+            confirmPopupVisual = confirmButton.GetComponent<PopupButton>();
+            defaultPopupVisualEnabled = confirmPopupVisual != null && confirmPopupVisual.enabled;
+            confirmAppearanceSaved = true;
+        }
+        if (building && buildButtonSprite != null && buildDisabledButtonSprite != null)
+        {
+            // PopupButton otherwise restores its saved upgrade sprite on pointer exit and interactability changes.
+            if (confirmPopupVisual != null) confirmPopupVisual.enabled = false;
+            if (confirmHoverOverlay != null) confirmHoverOverlay.gameObject.SetActive(false);
+            var state = defaultConfirmState;
+            state.highlightedSprite = state.pressedSprite = state.selectedSprite = buildButtonSprite;
+            state.disabledSprite = buildDisabledButtonSprite;
+            image.sprite = buildButtonSprite;
+            confirmButton.transition = Selectable.Transition.SpriteSwap;
+            confirmButton.spriteState = state;
+            image.overrideSprite = confirmButton.IsInteractable() ? buildButtonSprite : buildDisabledButtonSprite;
+            image.CrossFadeColor(Color.white, 0f, true, true);
+        }
+        else
+        {
+            image.sprite = defaultConfirmSprite;
+            image.overrideSprite = null;
+            confirmButton.spriteState = defaultConfirmState;
+            confirmButton.transition = defaultConfirmTransition;
+            if (confirmPopupVisual != null) confirmPopupVisual.enabled = defaultPopupVisualEnabled;
+        }
+    }
 
     public void RefreshDisplay(HQDepartment dept, int level, HQStateManager hq, EconomyManager economy,
         IReadOnlyDictionary<ResourceType, int> costs)
     {
+        SetBuildButtonMode(level == 0);
         bool maxed = level >= hq.GetMaxLevel(dept);
         heading.text = level == 0 ? "시설 건설" : "시설 업그레이드";
         facilityName.text = HQStateManager.GetDepartmentKoreanName(dept);
