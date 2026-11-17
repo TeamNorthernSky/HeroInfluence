@@ -155,6 +155,8 @@ public class InfirmaryModalController : MonoBehaviour
 
         bool reviveThisClick = reviveAllMode;
         bool revived = false;
+        bool healed = false;
+        bool allHealsSucceeded = true;
         List<int> units = ResolveVisitingUnits();
         foreach (int idx in units)
         {
@@ -162,10 +164,20 @@ public class InfirmaryModalController : MonoBehaviour
             {
                 if (gm.Infirmary.CanRevive(idx) && gm.Infirmary.TryRevive(idx)) revived = true;
             }
-            else if (gm.Infirmary.CanHeal(idx)) TryHealOne(idx);
+            else if (gm.Infirmary.CanHeal(idx))
+            {
+                bool success = TryHealOne(idx);
+                healed |= success;
+                allHealsSucceeded &= success;
+            }
         }
         Refresh();
         if (revived) ShowReviveNotice();
+        else if (healed && allHealsSucceeded)
+        {
+            if (stateInfoText != null) stateInfoText.text = "모든 유닛이 회복되었습니다";
+            noticeView.Show();
+        }
     }
 
     private void ShowReviveNotice()
