@@ -103295,20 +103295,20 @@ MonoBehaviour:
   zones:
   - zoneId: 1
     zoneLabel: "1\uAD6C\uC5ED"
-    chatMainTable: {fileID: 11400000, guid: cc516af73d5a5ff4aa0f25adf30e2969, type: 2}
-    chatSubTable: {fileID: 11400000, guid: dc46515d99a20aa43bc0454f417f691c, type: 2}
-    branchMainTable: {fileID: 11400000, guid: 9965e1b11932dab4a889cc0850870a34, type: 2}
-    branchSubTable: {fileID: 11400000, guid: f576d04fb7468e5429fd65912debfcad, type: 2}
+    chatMainTable: {fileID: 11400000, guid: 9b84c9a8ef7506846a5face64c5e0503, type: 2}
+    chatSubTable: {fileID: 11400000, guid: 607c7c623f35d5f40a5acef18a23f3ad, type: 2}
+    branchMainTable: {fileID: 11400000, guid: e734aa322eaa7834d847bf3dcc77f255, type: 2}
+    branchSubTable: {fileID: 11400000, guid: 27d91417742d2af4b896954261fa40ed, type: 2}
     enemyBattleGroupTable: {fileID: 11400000, guid: 751447153aa7c8a429f2a2c570f35d81,
       type: 2}
     enemyBattleUnitTable: {fileID: 11400000, guid: cac12e2cd29c6b54ebf215c78e3b51f2,
       type: 2}
   - zoneId: 2
     zoneLabel: "2\uAD6C\uC5ED"
-    chatMainTable: {fileID: 11400000, guid: 65effe05b0d60624a82a4e21f1a2f20e, type: 2}
-    chatSubTable: {fileID: 11400000, guid: 1204d582156b8124590e96794622593c, type: 2}
-    branchMainTable: {fileID: 11400000, guid: af93f3d4e2ed0b64f92238b78cfd4733, type: 2}
-    branchSubTable: {fileID: 11400000, guid: 19f865d5eb4b1a841bfe4d5617570f8f, type: 2}
+    chatMainTable: {fileID: 11400000, guid: 8e01b00c38a67d74da0832e61fd741c4, type: 2}
+    chatSubTable: {fileID: 11400000, guid: ef7cd27d99d09bd4e85139fa474c9340, type: 2}
+    branchMainTable: {fileID: 11400000, guid: fb8ba1c19de886f4d94122044ac99a9c, type: 2}
+    branchSubTable: {fileID: 11400000, guid: 723c539ba628c7b4883cd622c320a635, type: 2}
     enemyBattleGroupTable: {fileID: 11400000, guid: 7f521ec11ff8e0642abaad827e6b4843,
       type: 2}
     enemyBattleUnitTable: {fileID: 11400000, guid: eac0d97ea3d8e95409e75d10545a4586,
@@ -103329,19 +103329,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dc01e21d3ac7b44ea8dca3fe1e48ef9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  consumeNpcTableV16: {fileID: 11400000, guid: 12bc8b8b28d53984884b08642c33d522, type: 2}
-  consumeConditionTableV16: {fileID: 11400000, guid: 7d505dfaeee85cb4c89584fd69d5e906,
+  consumeNpcTableV16: {fileID: 11400000, guid: 7b01337e28fb0674892b84edcae9e820, type: 2}
+  consumeConditionTableV16: {fileID: 11400000, guid: f163b47de3875c142b8741581e7509c0,
     type: 2}
-  consumeResultTable: {fileID: 11400000, guid: a36b128f6d7ebb14a84064b503d8d08c, type: 2}
-  rewardNpcTableV16: {fileID: 11400000, guid: 65e8f104d23cd6e45a17ae98c0c07f9e, type: 2}
-  rewardConditionTableV16: {fileID: 11400000, guid: fa4581c01cbb19b42bf6b89c8019dd89,
+  consumeResultTable: {fileID: 11400000, guid: 06c217869a6b0184e80fd40495701404, type: 2}
+  rewardNpcTableV16: {fileID: 11400000, guid: 9d7301e37a8c29646bff426fbef41524, type: 2}
+  rewardConditionTableV16: {fileID: 11400000, guid: 4d7f4d83dae7ebb48834f931d0df6943,
     type: 2}
-  choiceNpcTableV16: {fileID: 11400000, guid: 4e6b0e7c8ec930b4bb931880fb01d568, type: 2}
-  choiceConditionTableV16: {fileID: 11400000, guid: 3e29fd32f537f8948b507ef01029d9c2,
+  choiceNpcTableV16: {fileID: 11400000, guid: 01a6ec6045c1df64b87100fb483b2961, type: 2}
+  choiceConditionTableV16: {fileID: 11400000, guid: bfef4a6cf7a8c694eaf689e291b02178,
     type: 2}
-  choiceOptionTableV16: {fileID: 11400000, guid: 2c15dabb44edc6848977d0fa911d4ec9,
+  choiceOptionTableV16: {fileID: 11400000, guid: 4ccd903d3d4ad514da6f4e54e09b3e81,
     type: 2}
-  choiceResultTableV16: {fileID: 11400000, guid: b5f956ee5541fe54eb4cb018d0ebb8bd,
+  choiceResultTableV16: {fileID: 11400000, guid: 3970e441d3000df43b2adcc13c0a7cb1,
     type: 2}
   loadOnAwake: 1
   dontDestroyOnLoad: 1

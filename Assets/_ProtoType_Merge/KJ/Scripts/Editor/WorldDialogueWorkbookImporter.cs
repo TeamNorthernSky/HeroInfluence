@@ -10,7 +10,7 @@ using UnityEngine;
 /// <summary>Converts the designated planning workbook into build-ready dialogue data.</summary>
 public sealed class WorldDialogueWorkbookImporter : AssetPostprocessor
 {
-    public const string SourcePath = "Assets/_ProtoType_Merge/KJ/Effects/Resources/H.I_히어로 월드 대사 기획서_1.0v.xlsx";
+    public const string SourcePath = "Assets/_ProtoType_Merge/KJ/Effects/Resources/H.I_히어로 월드 대사 기획서_1.01v.xlsx";
     public const string OutputFolder = "Assets/_ProtoType_Merge/KJ/Effects/Resources";
     public const string OutputPath = OutputFolder + "/" + ExplorationHeroDialogue.ResourceName + ".asset";
     private static readonly string[] Headers = {
