@@ -167,7 +167,6 @@ public partial class SkillTooltip : MonoBehaviour
         {
             if (tipBRect != null) tipBRect.sizeDelta = new Vector2(tipBRootBaseW + extraWidth, tipBRect.sizeDelta.y);
             if (tipBDescPanel != null) tipBDescPanel.sizeDelta = new Vector2(tipBDescPanelBaseW + extraWidth, tipBDescPanel.sizeDelta.y);
-            if (tipBDesc != null) tipBDesc.rectTransform.sizeDelta = new Vector2(tipBDescBaseW + extraWidth, tipBDesc.rectTransform.sizeDelta.y);
         }
         SkillTooltipCardLayout.Info(tipBRect, tipBIcon, tipBName, tipBDesc, tipBDescPanel, extraWidth, iconDeltaX, usePrefabLayout);
         tipBRoot.SetActive(true);
