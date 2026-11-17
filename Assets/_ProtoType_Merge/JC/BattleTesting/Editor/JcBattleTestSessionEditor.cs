@@ -15,10 +15,11 @@ namespace JC.BattleTesting.Editor
 
         private void DrawCameraTools(JcBattleTestSession session)
         {
+            // JC | 2026-11-17 | 카메라 버튼 전용 조작에 맞춰 단축키 안내를 제거합니다.
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("카메라 프로필 편집", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("A/B 초안의 '원근감 강도': 1 = 기존, 0.5 = 완화, 0.2 = 강하게 완화. 플레이 중 현재 구도의 위치·회전·FOV·원근감 강도는 수정 즉시 선형 전환으로 반영됩니다. 카메라 프로필 저장을 눌러야 종료 후에도 유지됩니다. F8 기본 뷰는 바뀌지 않습니다.", MessageType.Info);
-            EditorGUILayout.HelpBox("우클릭 홀드 + WASD 이동 / Q·E 상하 / Shift 가속 / Ctrl 감속. 현재 자세 가져오기는 F6·F7에서만 가능합니다. 프리카메라 이동 후에는 현재 자세를 가져온 다음 초안을 조절하세요. 초안 변경 시 프리카메라를 종료하고 해당 초안으로 이동합니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("A/B 초안의 '원근감 강도': 1 = 기존, 0.5 = 완화, 0.2 = 강하게 완화. 플레이 중 현재 구도의 위치·회전·FOV·원근감 강도는 수정 즉시 선형 전환으로 반영됩니다. 카메라 프로필 저장을 눌러야 종료 후에도 유지됩니다. 기본 구도 기본 뷰는 바뀌지 않습니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("우클릭 홀드 + WASD 이동 / Q·E 상하 / Shift 가속 / Ctrl 감속. 현재 자세 가져오기는 구도 A·B에서만 가능합니다. 프리카메라 이동 후에는 현재 자세를 가져온 다음 초안을 조절하세요. 초안 변경 시 프리카메라를 종료하고 해당 초안으로 이동합니다.", MessageType.Info);
             using (new EditorGUI.DisabledScope(!Application.isPlaying))
             {
                 if (GUILayout.Button(session.FreeCameraActive ? "프리카메라 종료 (현재 위치 유지)" : "프리카메라 시작"))
@@ -31,16 +32,16 @@ namespace JC.BattleTesting.Editor
                         serializedObject.Update();
                     }
                 if (session.CurrentCameraView == 2)
-                    EditorGUILayout.HelpBox("F8 기존 뷰: 현재 위치 저장이 잠겨 있습니다. F6 또는 F7로 이동한 뒤 구도를 잡아 주세요.", MessageType.Warning);
+                    EditorGUILayout.HelpBox("기본 구도 기존 뷰: 현재 위치 저장이 잠겨 있습니다. 구도 A 또는 B로 이동한 뒤 구도를 잡아 주세요.", MessageType.Warning);
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("A 초안 적용 (F6)")) session.SelectCameraView(0);
-                if (GUILayout.Button("B 초안 적용 (F7)")) session.SelectCameraView(1);
-                if (GUILayout.Button("기존 뷰 (F8)")) session.SelectCameraView(2);
+                if (GUILayout.Button("A 초안 적용")) session.SelectCameraView(0);
+                if (GUILayout.Button("B 초안 적용")) session.SelectCameraView(1);
+                if (GUILayout.Button("기존 뷰")) session.SelectCameraView(2);
                 EditorGUILayout.EndHorizontal();
             }
             using (new EditorGUI.DisabledScope(session.cameraProfile == null))
             {
-                if (GUILayout.Button(new GUIContent("카메라 프로필 저장", "A/B 초안을 에셋에 저장합니다. 현재 카메라 위치를 자동으로 가져오지 않으며 F8은 저장하지 않습니다.")))
+                if (GUILayout.Button(new GUIContent("카메라 프로필 저장", "A/B 초안을 에셋에 저장합니다. 현재 카메라 위치를 자동으로 가져오지 않으며 기본 구도은 저장하지 않습니다.")))
                 {
                     Undo.RecordObject(session.cameraProfile, "카메라 프로필 저장");
                     session.cameraProfile.viewA = session.cameraDraftA.Copy();

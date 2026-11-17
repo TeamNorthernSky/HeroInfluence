@@ -28,7 +28,10 @@ namespace JC.BattleTesting
             // JC | 2026-11-05 | 사용자 지정 재질은 기본 표면보다 우선하되, 파괴된 이전 복제본을 복원하지 않게 순서를 맞춥니다.
             if (Environment) Environment.SuspendMaterialOverrides();
             RestoreSurfaces();
-            if (!SurfaceDraft || !SurfaceDraft.surfaceShader) return;
+            // JC | 2026-11-17 | 전투 종료 때 무대가 먼저 파괴되어도 기존 복제본은 정리하고, 사라진 Transform은 조회하지 않습니다.
+            if (!stageRoot || !SurfaceDraft || !SurfaceDraft.surfaceShader) return;
+            // JC | 2026-11-17 | 미저장 초안에서만 초기 색을 채우며 기존 프로필 에셋을 자동 저장하지 않습니다.
+            foreach (var item in SurfaceDraft.surfaces) if (item != null) item.EnsureColor();
             foreach (var renderer in stageRoot.GetComponentsInChildren<Renderer>(true))
             {
                 var originals = renderer.sharedMaterials;
@@ -39,7 +42,9 @@ namespace JC.BattleTesting
                     foreach (var item in SurfaceDraft.surfaces)
                         // JC | 2026-11-09 | 승인된 내보내기 대응표로 원본 설정을 찾아 석재·책상·카펫·줄눈 연결을 복구합니다.
                         if (item != null && item.source && item.source == SurfaceDraft.ResolveSource(originals[slot]) &&
-                            (string.IsNullOrEmpty(item.rendererPath) || stageRoot.Find(item.rendererPath) == renderer.transform)) rule = item;
+                            item.Matches(renderer, stageRoot)) rule = item; // JC | 2026-11-17 | 명시된 연장 바닥도 같은 규칙에 연결합니다.
+                    // JC | 2026-11-17 | 창틀 전용 원본은 유지하고 실내 조명용 복제만 만듭니다. 표면 색/줄눈 규칙은 적용하지 않습니다.
+                    if (JcBossSurfaceProfile.IsWindowFrame(renderer, stageRoot)) rule = null;
                     // JC | 2026-11-05 | 금속 창틀/몰딩도 실내에 포함합니다. 조절 규칙이 없는 재질은 기존 표면값을 유지합니다.
                     bool isolated = Environment && Environment.Isolated && Environment.IsInterior(renderer) && originals[slot] &&
                         (originals[slot].shader.name == "Universal Render Pipeline/Lit" || originals[slot].shader == SurfaceDraft.surfaceShader);
@@ -49,7 +54,9 @@ namespace JC.BattleTesting
                     copy.SetFloat("_BossLocalOnly", isolated ? 1 : 0);
                     // JC | 2026-11-12 | 도시에도 같은 원본 재질이 있을 수 있으므로 실내 렌더러만 IBL 대상으로 지정합니다.
                     if(Environment && Environment.IsInterior(renderer)) copy.EnableKeyword("_JC_INDOOR_IBL_TARGET");
-                    if (rule != null)
+                    // JC | 2026-11-17 | 기본색은 각 슬롯의 기존 색을 보존하며 색 전용 항목은 기존 광택을 유지합니다.
+                    if (rule != null && rule.colorInitialized && rule.color != rule.defaultColor) copy.SetColor("_BaseColor", rule.color);
+                    if (rule != null && !rule.colorOnly)
                     {
                         copy.SetFloat("_Smoothness", rule.smoothness); copy.SetColor("_SpecColor", new Color(rule.specular,rule.specular,rule.specular,1));
                         copy.SetFloat("_SurfaceVariation", rule.variation); copy.SetFloat("_FloorTiles", rule.floorTiles ? 1 : 0);
@@ -60,6 +67,8 @@ namespace JC.BattleTesting
                         copy.SetColor("_SpecColor", Color.Lerp(new Color(.04f,.04f,.04f), copy.GetColor("_BaseColor"), metal));
                         copy.SetFloat("_SurfaceVariation", 0); copy.SetFloat("_FloorTiles", 0);
                     }
+                    // JC | 2026-11-17 | 시간대 프로필의 타일 오프셋을 줄눈 좌표에 전달합니다.
+                    copy.SetVector("_TileOffset", new Vector4(SurfaceDraft.tileOffset.x, SurfaceDraft.tileOffset.y, 0, 0));
                     copy.SetFloat("_TileSize", SurfaceDraft.tileSize); copy.SetFloat("_JointWidth", SurfaceDraft.jointWidth);
                     copy.SetFloat("_JointContrast", SurfaceDraft.jointContrast); copy.SetFloat("_JointNormal", SurfaceDraft.jointNormal);
                     copy.SetFloat("_TileVariation", SurfaceDraft.tileVariation);
@@ -74,6 +83,12 @@ namespace JC.BattleTesting
             if (Environment) Environment.ResumeMaterialOverrides();
         }
 
+        // JC | 2026-11-17 | 시간대별 표면 설정을 동일 적용기에서 사용합니다.
+        public void SelectSurfaceProfile(JcBossSurfaceProfile profile)
+        {
+            if (!profile || !SurfaceDraft) return;
+            SurfaceSource = profile; JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), SurfaceDraft);
+        }
         public void ReloadSurfaces()
         {
             if (!SurfaceSource || !SurfaceDraft) return;

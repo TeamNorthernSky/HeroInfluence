@@ -39,8 +39,7 @@ namespace JC.VFX.Seam
         [Tooltip("방출 종료 후 정리할 때 사용하는 최대 입자 수명(초)입니다. 실제 입자 수명보다 짧으면 잔상이 일찍 잘릴 수 있습니다.")]
         [SerializeField, Min(0f)] private float lifeMaxForCleanup = 0.7f;
 
-        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         /// <summary>서브스텝당 목표 이동 거리(m) — 방출 지점이 프레임당 크게 튀는 것을 막는다.</summary>
         const float SubStepTargetMeters = 0.15f;
@@ -103,8 +102,7 @@ namespace JC.VFX.Seam
 
             Destroy(gameObject, sweepDuration + lifeMaxForCleanup + extraLinger);
 
-            if (logLifecycle)
-                Debug.Log("[JcArcShard] Play  origin=" + transform.position.ToString("F2"), this);
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
         }
 
         /// <summary>전진 기준(시계 12시) = 시전자→타깃 수평. 없으면 시전자 정면.</summary>
@@ -155,7 +153,7 @@ namespace JC.VFX.Seam
                             var em = systems[i].emission;
                             em.enabled = false;   // 방출만 멈춘다 — 이미 튄 파편은 계속 날아간다
                         }
-                        if (logLifecycle) Debug.Log("[JcArcShard] 주행 종료 — 잔여 파편 비행", this);
+                        // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
                     }
                 }
 

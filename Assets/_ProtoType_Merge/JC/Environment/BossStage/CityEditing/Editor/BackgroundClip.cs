@@ -7,7 +7,9 @@ namespace JC.BackgroundEditing { public static partial class BackgroundOps {
     {
         public Vector3 p,n;public Vector4 tangent,u0,u1,u2,u3;public Color color;
         public static ClipVertex Lerp(ClipVertex a,ClipVertex b,float t)=>new ClipVertex{p=Vector3.Lerp(a.p,b.p,t),n=Vector3.Lerp(a.n,b.n,t),tangent=Vector4.Lerp(a.tangent,b.tangent,t),u0=Vector4.Lerp(a.u0,b.u0,t),u1=Vector4.Lerp(a.u1,b.u1,t),u2=Vector4.Lerp(a.u2,b.u2,t),u3=Vector4.Lerp(a.u3,b.u3,t),color=Color.Lerp(a.color,b.color,t)};
-    }    static Mesh Clip(MeshFilter f,Vector2 min,Vector2 max)
+    }
+    // JC | 2026-11-17 | 구획 복제는 같은 보간기를 사용해 사각형 안쪽을 보존하고, 기존 지형 칠하기는 바깥쪽을 보존합니다.
+    static Mesh Clip(MeshFilter f,Vector2 min,Vector2 max,bool keepInside=false)
     {
         var m=f.sharedMesh;var vs=m.vertices;var ns=m.normals;var ts=m.tangents;var cs=m.colors;var sourceUV=new List<Vector4>[4];var resultUV=new List<Vector4>[4];for(int c=0;c<4;c++){sourceUV[c]=new List<Vector4>();m.GetUVs(c,sourceUV[c]);resultUV[c]=new List<Vector4>();}Vector4 U(int channel,int index)=>sourceUV[channel].Count==vs.Length?sourceUV[channel][index]:Vector4.zero;var verts=new List<Vector3>();var norms=new List<Vector3>();var tangents=new List<Vector4>();var colors=new List<Color>();var subs=new List<int>[m.subMeshCount];
         List<ClipVertex> Clip(List<ClipVertex> p,int axis,float boundary,bool greater)
@@ -22,7 +24,9 @@ namespace JC.BackgroundEditing { public static partial class BackgroundOps {
             {
                 var p=new List<ClipVertex>();for(int j=0;j<3;j++){int k=ids[i+j];p.Add(new ClipVertex{p=vs[k],n=ns.Length==vs.Length?ns[k]:Vector3.up,u0=U(0,k),u1=U(1,k),u2=U(2,k),u3=U(3,k),tangent=ts.Length==vs.Length?ts[k]:Vector4.zero,color=cs.Length==vs.Length?cs[k]:Color.white});}
                 // 네 바깥 영역을 서로 겹치지 않게 순서대로 분리합니다.
-                var pieces=new List<List<ClipVertex>>();pieces.Add(Clip(p,0,min.x,false));p=Clip(p,0,min.x,true);pieces.Add(Clip(p,0,max.x,true));p=Clip(p,0,max.x,false);pieces.Add(Clip(p,2,min.y,false));p=Clip(p,2,min.y,true);pieces.Add(Clip(p,2,max.y,true));
+                var pieces=new List<List<ClipVertex>>();
+                if(keepInside){p=Clip(p,0,min.x,true);p=Clip(p,0,max.x,false);p=Clip(p,2,min.y,true);p=Clip(p,2,max.y,false);pieces.Add(p);}
+                else{pieces.Add(Clip(p,0,min.x,false));p=Clip(p,0,min.x,true);pieces.Add(Clip(p,0,max.x,true));p=Clip(p,0,max.x,false);pieces.Add(Clip(p,2,min.y,false));p=Clip(p,2,min.y,true);pieces.Add(Clip(p,2,max.y,true));}
                 foreach(var piece in pieces)for(int j=1;j+1<piece.Count;j++){foreach(var v in new[]{piece[0],piece[j],piece[j+1]}){subs[sub].Add(verts.Count);verts.Add(v.p);norms.Add(v.n);resultUV[0].Add(v.u0);resultUV[1].Add(v.u1);resultUV[2].Add(v.u2);resultUV[3].Add(v.u3);tangents.Add(v.tangent);colors.Add(v.color);}}
             }
         }

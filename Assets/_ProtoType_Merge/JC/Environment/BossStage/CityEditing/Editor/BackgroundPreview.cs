@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering.Universal;
 using JC.BattleTesting;
 namespace JC.BackgroundEditing
 {
@@ -15,7 +16,8 @@ namespace JC.BackgroundEditing
         void DisposePreview(){if(allyMaterial)DestroyImmediate(allyMaterial);if(enemyMaterial)DestroyImmediate(enemyMaterial);if(previewScene.IsValid())EditorSceneManager.CloseScene(previewScene,true);previewScene=default;if(previewTexture){previewTexture.Release();DestroyImmediate(previewTexture);}previewTexture=null;previewCamera=null;previewStage=null;previewHUD=null;}
         void OnInspectorUpdate()
         {
-            if(!document||!autoPreview||EditorApplication.isPlaying||EditorApplication.isCompiling||EditorApplication.timeSinceStartup<nextPreview)return;nextPreview=EditorApplication.timeSinceStartup+1;
+            // JC | 2026-11-16 | Play 전환 도중 미리보기가 다시 활성 씬을 가져가지 않도록 준비 단계부터 중단합니다.
+            if(!document||!autoPreview||EditorApplication.isPlayingOrWillChangePlaymode||EditorApplication.isCompiling||EditorApplication.timeSinceStartup<nextPreview)return;nextPreview=EditorApplication.timeSinceStartup+1;
             int hash=viewMode*397+(showHUD?1:0)+document.hour.GetHashCode()+document.stageScale.GetHashCode()+document.stageOffset.GetHashCode()+document.cityAltitude.GetHashCode()+(document.overrideCityAltitude?1:0)+(document.foregroundFloor?document.foregroundFloor.GetInstanceID():0);unchecked{foreach(var f in document.GetComponentsInChildren<MeshFilter>()){hash=hash*31+f.transform.localToWorldMatrix.GetHashCode();hash=hash*31+f.sharedMesh.GetInstanceID();foreach(var m in f.GetComponent<Renderer>().sharedMaterials)hash=hash*31+(m?m.GetInstanceID():0);}}
             if(hash!=previewHash||!previewTexture){Run(()=>RefreshPreview(true));previewHash=hash;}
         }
@@ -34,9 +36,18 @@ allyMaterial=new Material(Shader.Find("JC/Battle/SoftCharacter"));allyMaterial.S
             }
             if(geometry||!previewStage)
             {
+                // JC | 2026-11-16 | 독립 도시 작업본의 미리보기는 저장된 무대 프리팹을 사용하므로 임시 배치를 지워도 동작합니다.
+                if(document.IsCityTile)
+                {
+                    if(previewStage)DestroyImmediate(previewStage);
+                    previewStage=BackgroundOps.CreateCityPreview(document,previewScene);
+                }
+                else
+                {
                 if(previewStage)DestroyImmediate(previewStage);previewStage=Instantiate(document.stage);SceneManager.MoveGameObjectToScene(previewStage,previewScene);
                 var old=previewStage.transform.Find("도시 원경 (베이크)");if(!old)throw new Exception("도시 원경 기준 없음");var p=old.localPosition;var q=old.localRotation;var s=old.localScale;DestroyImmediate(old.gameObject);
                 var city=BackgroundOps.Child(previewStage.transform,"도시 원경 (베이크)");BackgroundOps.CopyCityVisuals(document,city.transform);city.transform.localPosition=p;city.transform.localRotation=q;city.transform.localScale=s;city.AddComponent<JcBossCityTime>().worldLighting=true;BackgroundOps.ApplyStageFraming(document,previewStage);
+                }
             }
             // JC | 2026-11-05 | 미리보기 구도도 일반 전투가 아닌 현재 보스전 저장 프로필을 읽습니다.
             var profile=JcBossBattleBackground.Load().cameraProfile;var shot=viewMode==1?profile.viewB:profile.viewA;shot.Resolve(new Vector3(0,.3f,0),out var cp,out var cr,out float cf);previewCamera.transform.SetPositionAndRotation(cp,cr);previewCamera.fieldOfView=cf;if(viewMode==2){previewCamera.fieldOfView*=1.35f;previewCamera.transform.position+=previewCamera.transform.up*2;}
@@ -49,24 +60,55 @@ allyMaterial=new Material(Shader.Find("JC/Battle/SoftCharacter"));allyMaterial.S
             var settings=JcBossBattleBackground.Load();
             if(!settings||!settings.citySun)throw new InvalidOperationException("원경 월드 조명 설정이 없습니다.");
             var controls=new GameObject("원경 미리보기 환경");SceneManager.MoveGameObjectToScene(controls,previewScene);
-            JcBossCityLighting city=null;JcBossBackgroundMaterials materials=null;JcBossEnvironment environment=null;
+            // JC | 2026-11-16 | 실전과 동일한 공통 실내 진입점에서 IBL·툰·접점·창문/추가광을 함께 적용합니다.
+            JcBossCityLighting city=null;JcIndoorEnvironment indoor=null;
+            string[] globalNames={"_JcDayNight","_JcWindowLight","_JcNightReadability"};
+            var globals=globalNames.Select(Shader.GetGlobalVector).ToArray();
+            float glassReady=Shader.GetGlobalFloat("_JcBossGlassColorReady");
             try{
                 SceneManager.SetActiveScene(previewScene);
                 var mask=EditorSceneManager.CalculateAvailableSceneCullingMask();EditorSceneManager.SetSceneCullingMask(previewScene,mask);previewCamera.overrideSceneCullingMask=mask;
                 city=controls.AddComponent<JcBossCityLighting>();city.Initialize(previewStage.transform,settings,document.hour);
-                materials=controls.AddComponent<JcBossBackgroundMaterials>();materials.Initialize(previewStage,settings.glassProfile,previewCamera,settings.surfaceProfile);
-                environment=controls.AddComponent<JcBossEnvironment>();environment.Initialize(settings.environmentProfile,previewStage.transform);
-                materials.Environment=environment;environment.SurfaceController=materials;materials.ApplySurfaces();
+                previewCamera.GetUniversalAdditionalCameraData();
+                indoor=controls.AddComponent<JcIndoorEnvironment>();indoor.Initialize(previewStage,previewCamera,null,settings);
                 previewCamera.Render();
             }finally{
-                if(environment){environment.SendMessage("OnDisable");environment.SendMessage("OnDestroy");}
-                if(materials)materials.SendMessage("OnDestroy");
-                if(city)city.SendMessage("OnDestroy");
-                DestroyImmediate(controls);
-                var clock=previewScene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<JC.Environment.JcDayNightController>(true)).FirstOrDefault();
-                if(clock)DestroyImmediate(clock.gameObject);
-                SceneManager.SetActiveScene(previous);
+                // JC | 2026-11-16 | 비플레이 미리보기에서는 SendMessage가 실행 제한 경고와 같은 오브젝트의 중복 정리를 일으킵니다.
+                // 에디터에서만 정확한 컴포넌트의 기존 정리 메서드를 호출하여 런타임과 같은 복원 순서를 유지합니다.
+                try
+                {
+                    if(indoor)
+                    {
+                        if(indoor.Toon)indoor.Toon.ReleaseEditorPreview();
+                        if(indoor.Boss)CleanupPreviewComponent(indoor.Boss,"OnDisable");
+                        if(indoor.Contact)indoor.Contact.ReleaseEditorPreview();
+                        if(indoor.BossMaterials)CleanupPreviewComponent(indoor.BossMaterials,"OnDestroy");
+                        if(indoor.Boss)CleanupPreviewComponent(indoor.Boss,"OnDestroy");
+                        CleanupPreviewComponent(indoor,"OnDestroy");
+                    }
+                }
+                finally
+                {
+                    try { if(city)CleanupPreviewComponent(city,"OnDestroy"); }
+                    finally
+                    {
+                        DestroyImmediate(controls);
+                        var clock=previewScene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<JC.Environment.JcDayNightController>(true)).FirstOrDefault();
+                        if(clock)DestroyImmediate(clock.gameObject);
+                        // JC | 2026-11-16 | 시계 해제 시 초기화되는 전역값도 미리보기 전 값으로 되돌립니다.
+                        for(int i=0;i<globalNames.Length;i++)Shader.SetGlobalVector(globalNames[i],globals[i]);
+                        Shader.SetGlobalFloat("_JcBossGlassColorReady",glassReady);
+                        SceneManager.SetActiveScene(previous);
+                    }
+                }
             }
+        }
+        // JC | 2026-11-16 | 실행 전용 컴포넌트를 ExecuteAlways로 바꾸지 않고 편집 미리보기의 명시적 수명만 정리합니다.
+        static void CleanupPreviewComponent(MonoBehaviour component,string method)
+        {
+            var cleanup=component.GetType().GetMethod(method,System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+            if(cleanup==null)throw new MissingMethodException(component.GetType().FullName,method);
+            cleanup.Invoke(component,null);
         }
         void LoadHUD()
         {

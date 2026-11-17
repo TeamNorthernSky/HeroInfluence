@@ -1498,6 +1498,9 @@ public sealed partial class SkillPresentationDirector
 
         Quaternion originRotation = Quaternion.Euler(0f, originRotationY, 0f);
         Vector3 meleeOrigin = movementOrigin ?? actor.transform.position;
+        // JC | 2026-11-17 | 확정된 광역 곡선/대상을 보스 카메라에 읽기 전달합니다. 기존 접근·타격·Timeline 순서는 변경하지 않습니다.
+        var movingCamera = BattlePresentationController.FindInScene(actor.gameObject.scene);
+        if (movingAttackPlan != null && movingCamera) movingCamera.PrepareBossJusticeCamera(actor, movingAttackPlan);
         bool rotateForTimeline = !meleeMovement && movingAttackPlan == null &&
                                  (presentation.Move?.Enabled ?? true) && shouldRotate;
         if (movingAttackPlan != null)
@@ -1704,6 +1707,9 @@ public sealed partial class SkillPresentationDirector
             director.Evaluate();
             director.Play();
             if (skillCameraClock) skillCameraClock.BeginSkillCameraTimeline(actor, director, director.time);
+            // JC | 2026-11-17 | 실제 곡선 구간의 시각을 전달해 Hold/배속/귀환에서도 저스티스 앵글 보정이 이동과 일치하게 합니다.
+            if (skillCameraClock && movingAttackSpan != null)
+                skillCameraClock.BindBossJusticeTimeline(actor, director, movingAttackSpan.Start.time, movingAttackSpan.End.time);
             if (_battle.HasPendingRevive) _battle.TriggerPendingRevive();
             List<PresentationHoldMarker> holdMarks = CollectHoldMarks(timeline);
             var holdDone = new bool[holdMarks.Count];

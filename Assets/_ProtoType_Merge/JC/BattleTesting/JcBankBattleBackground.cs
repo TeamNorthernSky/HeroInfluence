@@ -8,6 +8,8 @@ namespace JC.BattleTesting
     {
         [Tooltip("은행 실내 외형만 포함하는 전용 프리팹입니다. 전투 그리드와 판정은 포함하지 않습니다.")]
         public GameObject visualPrefab;
+        // JC | 2026-11-17 | 시간대별 조명·유리·재질·툰·접점 저장값을 본게임과 테스트가 공유합니다.
+        public JcIndoorPeriodProfiles periodProfiles;
         // JC | 2026-11-05 | 테스트와 본게임이 동일한 은행 재질 저장값을 사용합니다.
         public JcBankMaterialProfile materialProfile;
         // JC | 2026-11-05 | 은행 본게임·테스트가 같은 고정 실내 조명을 사용하며 탐사 시각을 상속하지 않습니다.

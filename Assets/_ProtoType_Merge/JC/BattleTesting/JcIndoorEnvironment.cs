@@ -9,7 +9,7 @@ namespace JC.BattleTesting
     // JC | 2026-11-09 | 본게임/테스트 양쪽의 단일 설치·조절 진입점입니다. 기존 프로필과 전문 적용기를
     // 재사용하고 초안만 편집합니다. 보스 원경·창문은 보스 확장으로 남겨 은행과 전역 환경을 섞지 않습니다.
     [DisallowMultipleComponent]
-    public sealed class JcIndoorEnvironment : MonoBehaviour
+    public sealed partial class JcIndoorEnvironment : MonoBehaviour
     {
         public JcBankEnvironment Bank { get; private set; }
         public JcBossEnvironment Boss { get; private set; }
@@ -51,6 +51,12 @@ namespace JC.BattleTesting
         public void Initialize(GameObject stage, Camera camera, JcBankBattleBackground bank, JcBossBattleBackground boss)
         {
             if(initialized || !stage || (bank == null) == (boss == null)) return;
+            // JC | 2026-11-17 | 진입 시각의 저장 프로필을 먼저 연결한 뒤 기존 전문 조절기를 생성합니다.
+            bankSettings=bank;
+            PeriodProfiles = bank ? bank.periodProfiles : boss.periodProfiles;
+            periodClock = boss ? boss.cityTimeProfile : JC.Environment.JcDayNightController.CurrentProfile;
+            PeriodIndex = ResolvePeriod();
+            var period = PeriodProfiles ? PeriodProfiles.Get(PeriodIndex) : null;
             cellPresetIsBoss = boss != null;
             initialized = true; instances.Add(this); Acquire();
             // JC | 2026-11-09 | 은행 전용 렌더러 선택도 이 조절기 수명에 묶고 중지 시 원래 선택을 복원합니다.
@@ -61,21 +67,23 @@ namespace JC.BattleTesting
                 originalRenderer=JsonUtility.FromJson<CameraSettings>(JsonUtility.ToJson(cameraData)).m_RendererIndex;
                 bank.ApplyCamera(camera);
             }
-            var contact = bank ? bank.contactShadingProfile : boss.contactShadingProfile;
-            var toon = bank ? bank.toonProfile : boss.toonProfile;
+            var contact = period?.contact ? period.contact : bank ? bank.contactShadingProfile : boss.contactShadingProfile;
+            var toon = period?.toon ? period.toon : bank ? bank.toonProfile : boss.toonProfile;
             if(contact) { Contact = Add<JC.Environment.JcContactShadingController>("JC_ContactShading"); Contact.Initialize(contact,stage.transform); }
             if(bank)
             {
                 BankMaterials = Add<JcBankBackgroundMaterials>("JC_Materials");
-                BankMaterials.Initialize(stage,bank.materialProfile,Contact,toon ? toon.surfaceShader : null);
-                Bank = Add<JcBankEnvironment>("JC_Lighting"); Bank.Initialize(bank.environmentProfile,stage.transform);
+                BankMaterials.Initialize(stage,period?.bankMaterials ? period.bankMaterials : bank.materialProfile,Contact,toon ? toon.surfaceShader : null);
+                Bank = Add<JcBankEnvironment>("JC_Lighting"); Bank.Initialize(period?.bankLighting ? period.bankLighting : bank.environmentProfile,stage.transform);
             }
             else
             {
                 BossMaterials = Add<JcBossBackgroundMaterials>("JC_Materials");
+                // JC | 2026-11-17 | 하위 오브젝트를 직접 선택해도 유리·표면 조절 및 프로필 저장 인스펙터를 표시합니다.
+                BossMaterials.hideFlags = HideFlags.None;
                 BossMaterials.ContactShading = Contact;
-                BossMaterials.Initialize(stage,boss.glassProfile,camera,boss.surfaceProfile);
-                Boss = Add<JcBossEnvironment>("JC_Lighting"); Boss.Initialize(boss.environmentProfile,stage.transform);
+                BossMaterials.Initialize(stage,period?.glass ? period.glass : boss.glassProfile,camera,period?.surfaces ? period.surfaces : boss.surfaceProfile);
+                Boss = Add<JcBossEnvironment>("JC_Lighting"); Boss.Initialize(period?.bossLighting ? period.bossLighting : boss.environmentProfile,stage.transform);
                 BossMaterials.Environment = Boss; Boss.SurfaceController = BossMaterials; BossMaterials.ApplySurfaces();
             }
             if(toon) { Toon = Add<JcBankToonController>("JC_Toon"); Toon.Initialize(toon); }
@@ -124,7 +132,9 @@ namespace JC.BattleTesting
         void LateUpdate()
         {
             if(!initialized) return;
+            // JC | 2026-11-17 | 자동 시간대 추적은 플레이 중에만 수행하고 에디트 선택은 인스펙터가 소유합니다.
             if(SceneManager.GetActiveScene()!=gameObject.scene) { if(acquired) Suspend(); return; }
+            if (Application.isPlaying && FollowTime && PeriodProfiles) SelectPeriod(ResolvePeriod(), true);
             if(!acquired) { foreach(var item in owned) if(item) item.enabled=true; ApplyDraft(); }
         }
         void Suspend()
@@ -140,6 +150,6 @@ namespace JC.BattleTesting
         }
         void OnEnable() { if(initialized) { if(bankSettings && cameraData)bankSettings.ApplyCamera(cameraData.GetComponent<Camera>()); foreach(var item in owned) if(item) item.enabled=true; ApplyDraft(); } }
         void OnDisable() => Suspend();
-        void OnDestroy() { Suspend(); instances.Remove(this); }
+        void OnDestroy() { Suspend(); instances.Remove(this); ReleasePeriodDrafts(); }
     }
 }

@@ -14,7 +14,8 @@ namespace JC.BackgroundEditing
             {
                 if(f.name.StartsWith("BG",StringComparison.Ordinal))continue;var r=f.GetComponent<Renderer>();var b=r.bounds;
                 if(p.x<b.min.x||p.x>b.max.x||p.z<b.min.z||p.z>b.max.z)continue;
-                var m=r.sharedMaterial;string tex=m&&m.HasProperty("_BaseMap")&&m.GetTexture("_BaseMap")?m.GetTexture("_BaseMap").name:"";string name=m?m.name:"";
+                // JC | 2026-11-17 | 복제 기준에 포함된 완성 수면도 지형 재생성과 같은 분류로 스포이트합니다.
+                var m=r.sharedMaterial;string tex=SurfaceTexture(r)??"";string name=m?m.name:"";
                 int extra=Array.IndexOf(TileTextures,tex);int kind=extra>=5?extra:tex.StartsWith("Road",StringComparison.Ordinal)||name.Contains("Asphalt")?0:tex=="tilemap_01"||name.Contains("Pavement")?1:tex=="tilemap_04"?2:tex=="tilemap_02"||name.Contains("Water")?3:-1;if(kind<0)continue;
                 var mesh=f.sharedMesh;var v=mesh.vertices;var ids=mesh.triangles;
                 for(int i=0;i<ids.Length;i+=3)

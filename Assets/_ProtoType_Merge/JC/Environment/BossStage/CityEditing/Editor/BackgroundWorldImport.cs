@@ -24,7 +24,24 @@ namespace JC.BackgroundEditing
         public static bool IsProp(MeshFilter f)
         {
             for (var t = f.transform; t; t = t.parent) if (t.name == "건물 배치") return true;
-            return f.name.StartsWith("BG", StringComparison.Ordinal);
+            // JC | 2026-11-17 | 베이크된 가로등도 이동 가능한 배치물이며 지형 재생성 대상에 포함하지 않습니다.
+            return f.name.StartsWith("BG", StringComparison.Ordinal) || IsStreetlight(f);
+        }
+        static bool IsStreetlight(MeshFilter f) => f && f.sharedMesh &&
+            (f.sharedMesh.name.StartsWith("Streetlamp", StringComparison.OrdinalIgnoreCase) ||
+             f.name.Equals("Streetlight", StringComparison.OrdinalIgnoreCase));
+
+        // JC | 2026-11-17 | 기존 작업본의 가로등은 복제하지 않고 광원 자식과 함께 배치 그룹으로 옮겨 편집값을 보존합니다.
+        static void PrepareEditableProps(BackgroundDocument document,bool recordUndo=true)
+        {
+            if (!document.Terrain || !document.Buildings) return;
+            foreach (var lamp in document.Terrain.GetComponentsInChildren<MeshFilter>(true).Where(IsStreetlight).ToArray())
+            {
+                // JC | 2026-11-17 | Undo 이후 표시 재생성에서는 새 Undo 작업을 만들어 Redo 기록을 버리지 않습니다.
+                if(recordUndo)Undo.SetTransformParent(lamp.transform, document.Buildings, "가로등 선택·이동 활성화");
+                else lamp.transform.SetParent(document.Buildings,true);
+                lamp.gameObject.hideFlags &= ~HideFlags.NotEditable;
+            }
         }
         static bool Mountain(Transform node)
         {
@@ -46,7 +63,8 @@ namespace JC.BackgroundEditing
                 var copy = go.AddComponent<Light>(); EditorUtility.CopySerialized(light, copy);
                 var data = light.GetComponent<UniversalAdditionalLightData>();
                 if (data) EditorUtility.CopySerialized(data, go.AddComponent<UniversalAdditionalLightData>());
-                var timer = light.GetComponentInParent<DayNightLightController>();
+                // JC | 2026-11-16 | 기준 프리팹 에셋은 비활성 계층으로 취급되므로 포함해 찾아 재생성 뒤에도 점등 설정을 보존합니다.
+                var timer = light.GetComponentInParent<DayNightLightController>(true);
                 if (timer)
                 {
                     var controller = go.AddComponent<DayNightLightController>(); EditorUtility.CopySerialized(timer, controller);
@@ -150,7 +168,8 @@ namespace JC.BackgroundEditing
         public static BackgroundDocument OpenLatest()
         {
             // JC | 2026-11-05 | 현재 미저장 편집본을 우선 보존하고, 이후에는 고정 작업 씬 하나만 재사용합니다.
-            Guard(); var current = OpenDocuments();
+            // JC | 2026-11-16 | 기존 전체 편집 버튼은 별도로 열린 도시 단위 문서를 잘못 재사용하지 않습니다.
+            Guard(); var current = OpenDocuments().Where(d=>!d.IsCityTile).ToArray();
             if (current.Length > 1) throw new InvalidOperationException("원경 작업 씬이 여러 개 열려 있습니다. 계속 편집할 작업 씬 하나만 남겨 주세요.");
             if (current.Length == 1) return current[0];
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(WorkspacePath))

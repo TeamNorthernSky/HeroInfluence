@@ -72,8 +72,7 @@ namespace JC.VFX.Seam
                  "끄면: 말미 대시도 전부 태어나고, 스윕 종료 후 앵커가 등속으로 연장 주행하며 마저 그린다.")]
         [SerializeField] private bool skipShortRemainder = true;
 
-        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         const float SubStepTargetMeters = 0.15f;
 
@@ -198,8 +197,7 @@ namespace JC.VFX.Seam
             float overrun = skipShortRemainder ? 0f : strokeLifeMax;
             Destroy(gameObject, sweepDuration + overrun + extraLinger);
 
-            if (logLifecycle)
-                Debug.Log("[JcArcPoint] Play  origin=" + transform.position.ToString("F2"), this);
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
         }
 
         private static Vector3 ResolveForward(SkillEffectContext ctx)
@@ -241,7 +239,7 @@ namespace JC.VFX.Seam
                     {
                         emissionCut = true;
                         SetEmission(false);
-                        if (logLifecycle) Debug.Log("[JcArcPoint] 주행 종료 — 잔여 대시 연장 주행", this);
+                        // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
                     }
                     else
                     {

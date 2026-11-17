@@ -41,6 +41,15 @@ namespace JC.BattleTesting
         public float nearHeightRatio = .9f;
         [InspectorName("높이 보간 거리 (가까움 / 멂)"), Tooltip("두 캐릭터 사이의 월드 거리입니다. 기본 8~14.58은 일반 전투의 전열 간~후열 간 거리입니다. 가까움 이하는 90%, 멂 이상은 80%를 적용합니다.")]
         public Vector2 heightDistanceRange = new Vector2(8f, 14.58f);
+        // JC | 2026-11-17 | 보스에서 직접 조절한 좌/중 구도를 기존 거리별 구도의 상대 목표로 보존합니다.
+        // 월드 위치를 고정하지 않아 시전자 진형/레이아웃 이동을 따르며 은행·야외에서는 사용하지 않습니다.
+        [Header("보스 전용 · 적 위치별 구도")]
+        [InspectorName("좌측 적 (전진 / 화각 비율 / 좌우 회전)"), Tooltip("진형 기준 전진 거리, 투영 폭 배율, 추가 Y 회전입니다. 높이는 유지합니다. 좌측 수동 구도 Z +0.82, FOV 24.964→19.6, Y 회전 +2.799도를 기준으로 합니다.")]
+        public Vector3 bossLeftComposition = new Vector3(.82f, .7802914f, 2.799f);
+        [InspectorName("중앙 적 (전진 / 화각 비율 / 좌우 회전)"), Tooltip("중앙 수동 구도 Z +1.49, FOV 25.080→22.2를 기준으로 합니다. 인물·효과 보호에 필요한 최소 화각은 유지합니다.")]
+        public Vector3 bossCenterComposition = new Vector3(1.49f, .8820686f, 0);
+        [InspectorName("우측 적 (전진 / 화각 비율 / 좌우 회전)"), Tooltip("기본 0 / 1 / 0은 승인된 우측 구도를 그대로 유지합니다. 세 기준 사이는 부드럽게 보간합니다.")]
+        public Vector3 bossRightComposition = new Vector3(0, 1, 0);
         [Header("우측 블랙불릿 → 적 좌측열의 지정 구도")]
         // JC | 2026-11-10 | 사용자 일시정지 Transform의 X/Z와 회전을 보간 끝점으로 사용합니다. 좌측 시전자는 유지, 중앙은 절반입니다.
         [InspectorName("지정 카메라 위치 (X / Z)"), Tooltip("우측 후열→적 좌측 후열에서 직접 조절한 X 8.25 / Z -17.86입니다. 다른 배치에서는 인물 중점 이동을 반영합니다.")]

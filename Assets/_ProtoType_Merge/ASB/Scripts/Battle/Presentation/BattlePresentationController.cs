@@ -126,6 +126,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     private JcBlackBulletCameraCanon blackBulletCanon;
     private int blackBulletTargetSlot;
     private Matrix4x4 blackBulletWorldFromReference = Matrix4x4.identity;
+    // JC | 2026-11-16 | 보스 전장의 수평 변환과 렌즈 기울기를 분리합니다. 일반전에는 전달하지 않습니다.
+    private float? blackBulletBasisPitchOffset;
     private Quaternion blackBulletReferenceRotation = Quaternion.identity;
     private Vector3 blackBulletCalculationPosition;
     private bool blackBulletCloseUpActive, blackBulletCloseUpMoving;
@@ -190,6 +192,46 @@ public sealed class BattlePresentationController : MonoBehaviour
     private JC.VFX.TaoBarrageVfx nekoBarrageEffect;
     private Bounds nekoBarrageBounds;
     private JC.VFX.PawForYouVfx nekoFallingPaw;
+    // JC | 2026-11-16 | 보스의 4020/4021 낙하 구도만 공용 출력 안에서 보정합니다. 일반전·은행과 VFX 타이밍은 유지합니다.
+    private bool bossNekoPawFrame, bossNekoPawDescending;
+    private float bossNekoPawBlend;
+    private readonly List<Vector3> bossNekoPawProtection = new List<Vector3>();
+    private readonly List<Vector3> bossNekoPawLivePoints = new List<Vector3>();
+    // JC | 2026-11-16 | 보스의 단일 목적지 투사체/일반 돌진에서 카메라 초점만 진형 왼쪽으로 이동합니다.
+    // 실제 궤적·피해·전투 배치는 그대로 두고, 시작과 종료 때 해제해 다른 스킬에 이어지지 않게 합니다.
+    private bool bossFollowProjectile, bossFollowActor, bossFollowPathReady;
+    // JC | 2026-11-17 | 열/방향은 시전 때 고정하고 오프셋 크기는 공유 초안에서 매 프레임 읽어 실시간 편집을 반영합니다.
+    private Vector3 bossFollowStart, bossFollowTravel, bossFollowDirection;
+    private int bossFollowColumn;
+    // JC | 2026-11-17 | 루미나 광역기는 실제 VFX 초점과 대상 중심으로 진행률을 구합니다. 순차 착탄에도 보정량이 역행하지 않게 보관합니다.
+    private bool bossFollowArea, bossAreaFocusLive, bossAreaFlightStarted;
+    private Vector3 bossAreaCenter;
+    private float bossAreaColumn, bossAreaProgress;
+    private readonly List<BattleCharactor> bossAreaTargets = new List<BattleCharactor>();
+    private readonly List<Vector3> bossAreaProtection = new List<Vector3>();
+    private readonly List<Vector3> bossAreaLivePoints = new List<Vector3>();
+    // JC | 2026-11-17 | 저스티스 크래시는 실행기가 확정한 광역 경로/대상과 Timeline 구간만 관찰합니다. 이동·타격은 변경하지 않습니다.
+    private bool bossJusticeSkill, bossJusticeReady, bossJusticeReturning;
+    private SkillPresentationDirector.MovingAttackPlan bossJusticePlan;
+    private UnityEngine.Playables.PlayableDirector bossJusticeTimeline;
+    private double bossJusticeStartTime, bossJusticeEndTime;
+    private float bossJusticeProgress, bossJusticeColumn;
+    private readonly List<BattleCharactor> bossJusticeTargets = new List<BattleCharactor>();
+    private readonly List<Vector3> bossJusticeProtection = new List<Vector3>();
+    private readonly List<Vector3> bossJusticeLivePoints = new List<Vector3>();
+    // JC | 2026-11-17 | 시전자 렌더러 목록은 한 번만 수집하고 이동 중 bounds만 읽어 매 프레임 배열 할당을 피합니다.
+    private Renderer[] bossJusticeActorRenderers;
+    // JC | 2026-11-17 | 타격 종료 구도를 한 번 보관하고 실제 귀환 진행률로 기본뷰에 수렴시킵니다. 후열 좌측 등 고정 칸에 의존하지 않습니다.
+    private bool bossJusticeReturnCaptured;
+    // JC | 2026-11-17 | 준비 모션은 기본뷰를 유지하고 실제 진입 이동에 맞춰 기존 타격 카메라 위치로 수렴합니다.
+    private Vector3 bossJusticeAttackPosition;
+    private Pose bossJusticeReturnPose;
+    private float bossJusticeReturnFov, bossJusticeReturnProgress;
+    // JC | 2026-11-17 | 네코밍 광역 구도는 발사 시 기준 위치와 가상 초점을 함께 이동하여 사용자가 맞춘 회전을 유지합니다.
+    private Vector3 bossBarrageBasePosition, bossBarrageOffset;
+    private readonly List<BattleCharactor> bossBarrageTargets = new List<BattleCharactor>();
+    private readonly List<Vector3> bossBarrageProtection = new List<Vector3>();
+    private readonly List<Vector3> bossBarrageLivePoints = new List<Vector3>();
     private bool focusNekoHeal;
     private readonly List<Transform> nekoHealProjectiles = new List<Transform>();
     private readonly List<BattleCharactor> nekoHealTargets = new List<BattleCharactor>();
@@ -198,7 +240,6 @@ public sealed class BattlePresentationController : MonoBehaviour
     private bool projectileFocusLatched;
     private Vector3 projectileFocusPoint;
     private bool followAttackFocus;
-
     public static BattlePresentationController FindInScene(UnityEngine.SceneManagement.Scene scene)
     {
         foreach (var root in scene.GetRootGameObjects())
@@ -251,6 +292,8 @@ public sealed class BattlePresentationController : MonoBehaviour
         }
         turnBanner = FindSceneComponent<BattleTurnBanner>();
         if (turnBanner != null) turnBanner.TurnBannerShown += HandleTurnBannerShown;
+        // JC | 2026-11-16 | 기존 비행 목적지 이벤트만 구독하며 전투/투사체 실행 경로는 변경하지 않습니다.
+        ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightDestinationResolved += HandleBossProjectileDestination;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightStarted += HandleProjectileStarted;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightFinished += HandleProjectileFinished;
         UnitEffectPresenter.EffectSpawned += HandleSkillEffectSpawned;
@@ -259,6 +302,9 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void LateUpdate()
     {
+        // JC | 2026-11-16 | 런타임 연결 카메라도 공통 출력에 등록하며 렌더 임시값을 다음 계산에 누적하지 않습니다.
+        RegisterCameraOutput();
+        RestoreCameraOverlay();
         // JC | 2026-11-10 | 복귀 후 남은 숫자도 보존하되 전투 턴/팝업 수명은 늘리지 않습니다.
         UpdateBlackBulletResidual();
         // JC | 2026-11-10 | 스킬 발동부터 직접 전환을 기존 대사·공격과 병행합니다. 전환 중에는 쌍 구도 보정과 경쟁하지 않습니다.
@@ -270,10 +316,33 @@ public sealed class BattlePresentationController : MonoBehaviour
             if (blackBulletCloseUpActive) return;
         }
         if (!attackZoomActive || !followAttackFocus || previewCamera == null || attackFocusActor == null) return;
+        // JC | 2026-11-17 | 타격 후에는 멀어지는 시전자와 적을 함께 감싸는 화각 계산을 끝냅니다.
+        // 귀환 중 전장을 계속 넓히던 이전 보호 경로 대신, 해당 시전 직전의 구도로 위치·회전·화각을 함께 되돌립니다.
+        // JC | 2026-11-17 | 아직 경로가 시작되지 않은 준비 모션에서 후열 시전자를 향해 무대 밖으로 회전하지 않습니다.
+        if (bossJusticeSkill && !bossJusticeReady) return;
+        if (bossJusticeReady)
+        {
+            UpdateBossJusticePhase();
+            if (bossJusticeReturning)
+            {
+                ApplyBossJusticeReturn();
+                return;
+            }
+        }
         nekoHealProjectiles.RemoveAll(projectile => projectile == null);
-        var position = previewCamera.transform.position;
+        // JC | 2026-11-16 | 보스도 기존 일반 전투의 추적·보간식을 사용합니다.
+        // JC | 2026-11-17 | 크래시는 준비뷰에서 접근할 때만 보간하며 기존 타격 위치는 유지합니다.
+        var position = bossJusticeReady ? bossJusticeAttackPosition : previewCamera.transform.position;
         var rotation = previewCamera.transform.rotation;
         float fov = previewCamera.fieldOfView;
+        // JC | 2026-11-17 | 매 프레임 기준 위치에서 계산하여 보정이 누적되지 않으며, 기존 최종 출력 한 곳으로 전달합니다.
+        if (BossCamera && focusNekoBarrage)
+        {
+            Vector2 requested = BossCamera.Draft.nekoBarrageOffset;
+            bossBarrageOffset = Vector3.Lerp(bossBarrageOffset, new Vector3(requested.x, requested.y, 0f),
+                1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
+            position = bossBarrageBasePosition + bossBarrageOffset;
+        }
         // JC | 2026-11-06 | ASB 공용 연출 경로 안에서 블랙불릿의 화면 범위를 계산합니다.
         // 별도 카메라 제어나 각도 임계값 없이 진입·유지 모두 같은 구도 계산을 사용합니다.
         if (UseProjectedPairFraming)
@@ -283,10 +352,21 @@ public sealed class BattlePresentationController : MonoBehaviour
             rotation = Quaternion.Slerp(rotation, targetRotation, blend);
             fov = Mathf.Lerp(fov, targetFov, blend);
         }
+        // JC | 2026-11-16 | 낙하부터 착탄까지 보정을 0.25초에 걸쳐 적용하고 효과 종료에도 유지해 화각이 되튀지 않게 합니다.
+        if (bossNekoPawFrame)
+        {
+            if (nekoFallingPaw && (nekoFallingPaw.DropDescending || nekoFallingPaw.DropImpacted)) bossNekoPawDescending = true;
+            else if (!nekoFallingPaw && nekoLightTarget) bossNekoPawDescending = true;
+            bossNekoPawBlend = Mathf.MoveTowards(bossNekoPawBlend, bossNekoPawDescending ? 1f : 0f, Time.unscaledDeltaTime / .25f);
+        }
         Vector3 direction = AttackFocusPosition - position;
+        // JC | 2026-11-17 | 위치와 초점의 같은 이동량이 상쇄되어 기존 추적 회전이 유지됩니다.
+        if (BossCamera && focusNekoBarrage) direction += bossBarrageOffset;
         if (!UseProjectedPairFraming && direction.sqrMagnitude > .001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
+            // JC | 2026-11-16 | 기존 추적 목표에만 하향 2.5도를 더합니다. 현재 회전에 누적하지 않고 기존 회전 보간을 유지합니다.
+            if (bossNekoPawFrame) targetRotation *= Quaternion.Euler(2.5f * bossNekoPawBlend, 0f, 0f);
             rotation = projectileFocusLatched
                 ? Quaternion.RotateTowards(previewCamera.transform.rotation, targetRotation,
                     projectileFocusSpeed * Time.unscaledDeltaTime)
@@ -299,8 +379,93 @@ public sealed class BattlePresentationController : MonoBehaviour
                 RequiredPairFov(position, rotation));
             fov = Mathf.Lerp(fov, neededFov,
                 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
+            // JC | 2026-11-17 | 보스 광역 구도 이동 중에도 필요한 표시 화각 아래로 내려가지 않게 합니다.
+            if (BossCamera && focusNekoBarrage) fov = Mathf.Max(fov, neededFov);
+        }
+        if (bossNekoPawFrame && bossNekoPawBlend > 0f)
+        {
+            // JC | 2026-11-16 | 낙하 전 화각에서 최대 12%만 좁히되 대상·낙하 초점·실제 피해 숫자의 표시 여유를 우선합니다.
+            float desiredFov = Mathf.Max(attackZoomBaseFov * Mathf.Lerp(1f, .88f, bossNekoPawBlend),
+                RequiredBossNekoPawFov(position, rotation));
+            fov = Mathf.Lerp(fov, desiredFov, 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
+        }
+        // JC | 2026-11-17 | 광역 초점 이동 뒤 실제 대상과 피해 숫자의 표시 범위를 최종 회전 기준으로 확인합니다.
+        if (bossFollowArea && bossAreaFlightStarted)
+        {
+            bossAreaLivePoints.Clear();
+            bossAreaLivePoints.AddRange(bossAreaProtection);
+            bossAreaLivePoints.Add(projectileFocusPoint);
+            foreach (var unit in bossAreaTargets)
+                if (unit) DamagePopupEffect.AppendActiveCameraPoints(unit.transform.GetInstanceID(), bossAreaLivePoints);
+            float required = RequiredAreaPointsFov(bossAreaLivePoints, position, rotation);
+            fov = Mathf.Max(required, Mathf.Lerp(fov, Mathf.Max(attackZoomBaseFov, required),
+                1f - Mathf.Exp(-12f * Time.unscaledDeltaTime)));
+        }
+        // JC | 2026-11-17 | 크래시 초점을 왼쪽에 남겨도 이동 중 저스티스·적·피해 숫자는 최종 회전의 화각 안에 유지합니다.
+        if (bossJusticeReady)
+        {
+            bossJusticeLivePoints.Clear();
+            bossJusticeLivePoints.AddRange(bossJusticeProtection);
+            foreach (var renderer in bossJusticeActorRenderers)
+                if (renderer && renderer.enabled && (renderer is MeshRenderer || renderer is SkinnedMeshRenderer))
+                    for (int i = 0; i < 8; i++) bossJusticeLivePoints.Add(JcBlackBulletCameraFraming.Corner(renderer.bounds, i));
+            foreach (var unit in bossJusticeTargets)
+                if (unit) DamagePopupEffect.AppendActiveCameraPoints(unit.transform.GetInstanceID(), bossJusticeLivePoints);
+            float required = RequiredAreaPointsFov(bossJusticeLivePoints, position, rotation);
+            fov = Mathf.Max(required, Mathf.Lerp(fov, Mathf.Max(attackZoomBaseFov, required),
+                1f - Mathf.Exp(-12f * Time.unscaledDeltaTime)));
+        }
+        // JC | 2026-11-17 | 아군 배치에 무관하게 출발점에서는 시전 직전 구도, 진입 완료부터 기존 타격 구도를 사용합니다.
+        if (bossJusticeReady)
+        {
+            float blend = BossJusticeStartBlend();
+            position = Vector3.Lerp(attackCameraPosition, position, blend);
+            rotation = Quaternion.Slerp(attackCameraRotation, rotation, blend);
+            fov = Mathf.Lerp(attackCameraFov, fov, blend);
         }
         ApplyCameraPose(position,rotation,fov);
+    }
+
+    // JC | 2026-11-17 | 시전 시간이 아닌 실행기의 실제 접근 위치로 전환합니다. 준비 중에는 기본뷰에서 벗어나지 않습니다.
+    private float BossJusticeStartBlend()
+    {
+        if (bossJusticeTimeline && bossJusticeTimeline.time >= bossJusticeStartTime) return 1f;
+        var travel = Vector3.ProjectOnPlane(bossJusticePlan.PathPoints.Entry - bossJusticePlan.OriginPosition, Vector3.up);
+        if (travel.sqrMagnitude < .0001f) return 1f;
+        var moved = Vector3.ProjectOnPlane(attackFocusActor.transform.position - bossJusticePlan.OriginPosition, Vector3.up);
+        return Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Vector3.Dot(moved, travel) / travel.sqrMagnitude));
+    }
+
+    // JC | 2026-11-16 | 보스 낙하 스킬의 보호점은 시작 시 캡처하고 현재 초점/숫자만 갱신합니다. 별도 카메라 작성 경로는 만들지 않습니다.
+    private void CaptureBossNekoPawProtection()
+    {
+        bossNekoPawProtection.Clear();
+        if (!attackFocusTarget) return;
+        foreach (var renderer in attackFocusTarget.GetComponentsInChildren<Renderer>())
+            if (renderer.enabled && (renderer is MeshRenderer || renderer is SkinnedMeshRenderer))
+                for (int i = 0; i < 8; i++) bossNekoPawProtection.Add(JcBlackBulletCameraFraming.Corner(renderer.bounds, i));
+        var visual = FindSceneComponent<BattleVisualDirector>();
+        if (visual && visual.TryGetDamageCameraEnvelope(attackFocusTarget.transform, 4, .3f, attackCameraRotation, out var popup))
+            for (int i = 0; i < 8; i++) bossNekoPawProtection.Add(JcBlackBulletCameraFraming.Corner(popup, i));
+    }
+
+    private float RequiredBossNekoPawFov(Vector3 position, Quaternion rotation)
+    {
+        // JC | 2026-11-16 | 화면 가장자리 8%를 남겨 착탄 효과와 숫자를 보호합니다. 상승 중 화면 밖으로 나가는 기존 연출은 변경하지 않습니다.
+        bossNekoPawLivePoints.Clear();
+        bossNekoPawLivePoints.AddRange(bossNekoPawProtection);
+        var effect = new Bounds(AttackFocusPosition, Vector3.one * 2.4f);
+        for (int i = 0; i < 8; i++) bossNekoPawLivePoints.Add(JcBlackBulletCameraFraming.Corner(effect, i));
+        if (attackFocusTarget) DamagePopupEffect.AppendActiveCameraPoints(attackFocusTarget.transform.GetInstanceID(), bossNekoPawLivePoints);
+        float tangent = 0f;
+        var inverse = Quaternion.Inverse(rotation);
+        foreach (var point in bossNekoPawLivePoints)
+        {
+            var local = inverse * (point - position);
+            float depth = Mathf.Max(previewCamera.nearClipPlane, local.z);
+            tangent = Mathf.Max(tangent, Mathf.Max(Mathf.Abs(local.y), Mathf.Abs(local.x) / Mathf.Max(.1f, previewCamera.aspect)) / (depth * .84f));
+        }
+        return 2f * Mathf.Atan(tangent) * Mathf.Rad2Deg;
     }
 
     // JC | 2026-11-06 | 블랙불릿만 시작 시 확정한 두 인물의 구도를 복귀까지 보관합니다.
@@ -362,9 +527,82 @@ public sealed class BattlePresentationController : MonoBehaviour
             }
     }
 
+    // JC | 2026-11-16 | 기본뷰/스킬/잔여 숫자/렌더 효과가 공유하는 유일한 Transform/FOV 출력입니다.
+    // 표시 보호는 ApplyCameraPose에서만 수행하고, 타격 효과 뒤에 재보정하지 않아 일반전의 기존 결과를 유지합니다.
+    public static void WriteCameraPose(Camera camera, Vector3 position, Quaternion rotation, float fov, float? orthoSize = null)
+    {
+        if (!camera) return;
+        camera.transform.SetPositionAndRotation(position,rotation);
+        camera.fieldOfView=fov;
+        if (orthoSize.HasValue) camera.orthographicSize=orthoSize.Value;
+    }
+    static readonly Dictionary<Camera,BattlePresentationController> cameraOwners = new Dictionary<Camera,BattlePresentationController>();
+    Camera outputCamera;
+    Pose renderBase;
+    float renderBaseFov, renderBaseSize;
+    bool renderOverlay;
+    public static BattlePresentationController ForCamera(Camera camera) =>
+        camera && cameraOwners.TryGetValue(camera,out var owner) && owner && owner.isActiveAndEnabled ? owner : null;
+    void RegisterCameraOutput()
+    {
+        if(outputCamera==previewCamera) return;
+        UnregisterCameraOutput();outputCamera=previewCamera;
+        if(outputCamera) cameraOwners[outputCamera]=this;
+    }
+    void UnregisterCameraOutput()
+    {
+        RestoreCameraOverlay();
+        if(outputCamera && cameraOwners.TryGetValue(outputCamera,out var owner) && owner==this)cameraOwners.Remove(outputCamera);
+        outputCamera=null;
+    }
+    void OnEnable()
+    {
+        RegisterCameraOutput();
+        UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering+=BeginCameraOverlay;
+        UnityEngine.Rendering.RenderPipelineManager.endCameraRendering+=EndCameraOverlay;
+    }
+    void OnDisable()
+    {
+        UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering-=BeginCameraOverlay;
+        UnityEngine.Rendering.RenderPipelineManager.endCameraRendering-=EndCameraOverlay;
+        UnregisterCameraOutput();
+    }
+    void BeginCameraOverlay(UnityEngine.Rendering.ScriptableRenderContext context, Camera camera)
+    {
+        if(camera!=outputCamera || ForCamera(camera)!=this) return;
+        RestoreCameraOverlay();
+        renderBase=new Pose(camera.transform.position,camera.transform.rotation);
+        renderBaseFov=camera.fieldOfView;renderBaseSize=camera.orthographicSize;
+        var shake=camera.GetComponent<CameraShakeEffect>();var punch=camera.GetComponent<BattleCameraHitPunch>();
+        Vector3 offset=shake && shake.isActiveAndEnabled ? shake.SampleRenderOffset() : Vector3.zero;
+        float amount=punch && punch.isActiveAndEnabled ? punch.CurrentAmount : 0;
+        // 기존 타격 줌의 무시 임계값과 식을 그대로 보존합니다.
+        if(amount<=.0001f)amount=0;
+        if(offset==Vector3.zero && amount==0)return;
+        float fov=renderBaseFov,size=renderBaseSize;
+        if(amount>0) {
+            float scale=1/(1+amount);
+            if(camera.orthographic)size*=scale;
+            else fov=2*Mathf.Atan(Mathf.Tan(fov*.5f*Mathf.Deg2Rad)*scale)*Mathf.Rad2Deg;
+        }
+        WriteCameraPose(camera,renderBase.position+offset,renderBase.rotation,fov,size);
+        renderOverlay=true;
+    }
+    void EndCameraOverlay(UnityEngine.Rendering.ScriptableRenderContext context, Camera camera)
+    {
+        if(camera==outputCamera)RestoreCameraOverlay();
+    }
+    void RestoreCameraOverlay()
+    {
+        if(!renderOverlay || !outputCamera)return;
+        renderOverlay=false;
+        WriteCameraPose(outputCamera,renderBase.position,renderBase.rotation,renderBaseFov,renderBaseSize);
+    }
+
     private void ApplyCameraPose(Vector3 position, Quaternion rotation, float fov, float blackBulletEntryBlend = 1f)
     {
-        // JC | 2026-11-16 | 모든 캐릭터가 같은 포즈 쓰기 경로를 사용합니다. 보스 무대 제한을 제거하되 BB의 인물/숫자 보호식은 유지합니다.
+        RegisterCameraOutput();
+        // JC | 2026-11-16 | 모든 전장이 기존 일반 전투 표시 보호식을 적용한 뒤 공통 출력에 전달합니다.
         if ((blackBulletProtection || blackBulletResidual) && blackBulletCameraControls && blackBulletCameraControls.Draft)
         {
             RefreshBlackBulletProtection();
@@ -374,8 +612,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             fov = Mathf.Max(fov,required);
 
         }
-        previewCamera.transform.SetPositionAndRotation(position,rotation);
-        previewCamera.fieldOfView = fov;
+        WriteCameraPose(previewCamera,position,rotation,fov);
     }
 
     // JC | 2026-11-11 | 두 정본의 전환·복귀·잔여 숫자에 같은 가시성 보호식을 사용합니다.
@@ -403,8 +640,11 @@ public sealed class BattlePresentationController : MonoBehaviour
         return required;
     }
 
-    // JC | 2026-11-16 | 보스 전용 타겟 재정렬을 제거하고 기존 스킬별 초점/비행 종료 동작으로 복원합니다. 새 공통 종료 규칙은 아직 적용하지 않습니다.
-    private Vector3 AttackFocusPosition
+    // JC | 2026-11-16 | 보스 전용 마지막점 고정을 제거하고 일반 전투의 스킬별 초점 규칙을 공유합니다.
+    // JC | 2026-11-16 | 진입/추적은 같은 초점 보정 한 곳을 통과하고 기존 회전 보간·화각·복귀식을 유지합니다.
+    private Vector3 AttackFocusPosition => ResolveBossFollowFocus(RawAttackFocusPosition);
+
+    private Vector3 RawAttackFocusPosition
     {
         get
         {
@@ -423,7 +663,10 @@ public sealed class BattlePresentationController : MonoBehaviour
                 int count = 0;
                 foreach (var projectile in nekoHealProjectiles)
                     if (projectile != null) { center += projectile.position; count++; }
-                if (count > 0) return center / count;
+                if (count > 0)
+                {
+                    return center/count;
+                }
             }
             if (focusNekoHeal && nekoHealTargets.Count > 0)
             {
@@ -437,11 +680,16 @@ public sealed class BattlePresentationController : MonoBehaviour
                 return attackFocusTarget.transform.position + Vector3.up * attackFocusHeight;
             if (focusNekoBarrage) return nekoBarrageBounds.center;
             if (focusNekoLightTarget && nekoFallingPaw != null && nekoFallingPaw.IsPlaying)
-                return nekoFallingPaw.FallingFocusPosition;
+            {
+                var point = nekoFallingPaw.FallingFocusPosition;
+                return point;
+            }
             if (focusNekoLightTarget && nekoLightTarget != null)
                 return nekoLightTarget.transform.position + Vector3.up * attackFocusHeight;
             if (followLuminaProjectile)
             {
+                // JC | 2026-11-17 | 마지막 수정 소멸 후에도 도착 보정을 유지하며 충전 중에는 진행을 시작하지 않습니다.
+                bossAreaFocusLive = false;
                 if (luminaProjectile != null)
                 {
                     projectileFocusPoint = luminaProjectile.position;
@@ -454,11 +702,13 @@ public sealed class BattlePresentationController : MonoBehaviour
                 }
                 else if (luminaSolarPrism != null && luminaSolarPrism.TryGetCameraFocus(out var solarPoint))
                 {
+                    bossAreaFocusLive = true;
                     projectileFocusPoint = solarPoint;
                     projectileFocusLatched = true;
                 }
                 else if (luminaPrismExplosion != null && luminaPrismExplosion.TryGetCameraFocus(out var prismPoint))
                 {
+                    bossAreaFocusLive = true;
                     projectileFocusPoint = prismPoint;
                     projectileFocusLatched = true;
                 }
@@ -469,6 +719,216 @@ public sealed class BattlePresentationController : MonoBehaviour
                 focus = Vector3.Lerp(focus, attackFocusTarget.transform.position, rangedTargetFocusWeight);
             return focus + Vector3.up * attackFocusHeight;
         }
+    }
+
+    // JC | 2026-11-16 | 실제 연출 카탈로그와 이동 판정을 재사용합니다. BB 고정 샷, 회복, 연쇄·낙하·회전 공격은 제외합니다.
+    private void PrepareBossFollow(BattleCharactor actor, BattleCharactor target, SkillData skill)
+    {
+        ResetBossFollow();
+        if (!BossCamera || !actor || !actor.IsPlayer || !target || target.IsPlayer ||
+            !target.OccupiedCell || !playerPlace || skill == null) return;
+        var manager = FindSceneComponent<BattleManager>();
+        if (!manager) return;
+        var presentation = manager.PresentationCatalog?.Get(skill.skillIndex);
+        if (presentation == null) return;
+        // JC | 2026-11-17 | 커스텀 VFX의 2030/2040 계열도 기존 보스 초점 계산에 연결합니다. 코어 공유 VFX는 해당하지 않습니다.
+        int family = HeroSkillRules.FamilyId(skill.skillIndex);
+        // JC | 2026-11-17 | 보스의 저스티스 1040/1041만 선택합니다. 실제 광역 경로를 전달받기 전에는 기존 추적을 유지합니다.
+        bossJusticeSkill = actor.PresentationIndex == "10001" && family == 1040 &&
+            presentation.PresentationArchetype == PresentationArchetype.MovingAttack &&
+            presentation.MovingAttack?.HitMode == MovingAttackHitMode.SequentialAoE &&
+            !(skill.skillKey?.StartsWith("HCS", StringComparison.Ordinal) ?? false);
+        bossFollowArea = followLuminaProjectile && actor.PresentationIndex == "10002" &&
+            (family == 2030 || family == 2040) && !(skill.skillKey?.StartsWith("HCS", StringComparison.Ordinal) ?? false);
+        var projectile = manager.Presentation.GetProjectileVisual(actor, skill, presentation);
+        // JC | 2026-11-16 | 포물선도 수평 진행은 직선이므로 높이는 그대로 추적합니다. 상공 낙하와 연쇄는 보정하지 않습니다.
+        bossFollowProjectile = followLuminaProjectile && actor.PresentationIndex == "10002" && projectile != null &&
+            projectile.Trajectory != ProjectileTrajectoryType.OverheadDrop &&
+            projectile.DeliveryMode == ProjectileDeliveryMode.Single && !projectile.TargetFormationCenter;
+        if (presentation.PresentationArchetype == PresentationArchetype.Melee && (presentation.Move?.Enabled ?? true))
+        {
+            manager.Presentation.ResolveSkillMovement(actor, target, skill, out var movement, out var shouldMove,
+                out _, out var origin, out _);
+            bossFollowActor = shouldMove && movement != null;
+            if (bossFollowActor)
+            {
+                bossFollowStart = origin;
+                var travel = Vector3.ProjectOnPlane(target.transform.position - origin, Vector3.up);
+                // 기존 접근 정지 거리와 동일하게 계산하므로 타격 지점에서 100%, 귀환 시 0%가 됩니다.
+                bossFollowTravel = travel.normalized * Mathf.Max(0f, travel.magnitude - movement.ApproachDistance);
+                bossFollowPathReady = bossFollowTravel.sqrMagnitude > .0001f;
+            }
+        }
+        // JC | 2026-11-16 | 적 열 0/1/2는 왼쪽/중앙/오른쪽입니다. 진형 회전도 반영하고 카메라 회전축과 혼용하지 않습니다.
+        // JC | 2026-11-17 | 중앙1.8/오른쪽3.6 기본값은 보스 프로필로 이동합니다. 시전 중에도 크기 편집이 적용되도록 캐시하지 않습니다.
+        bossFollowDirection = Vector3.ProjectOnPlane(-playerPlace.right, Vector3.up).normalized;
+        bossFollowColumn = Mathf.Clamp(target.OccupiedCell.Coords.y, 0, 2);
+    }
+
+    private Vector3 ResolveBossFollowFocus(Vector3 raw)
+    {
+        // JC | 2026-11-17 | 일반 직선 돌진의 진행률 대신 크래시 전용 곡선 구간과 실제 접근/귀환 위치를 사용합니다.
+        if (bossJusticeReady) return ResolveBossJusticeFocus(raw);
+        // JC | 2026-11-17 | 광역 대상 열의 평균값을 보간해 선택한 대표 적에 따라 전체공격 구도가 달라지지 않게 합니다.
+        if (bossFollowArea && bossAreaTargets.Count > 0)
+        {
+            if (!bossAreaFlightStarted && bossAreaFocusLive)
+            {
+                bossFollowStart = raw;
+                bossFollowTravel = Vector3.ProjectOnPlane(bossAreaCenter - raw, Vector3.up);
+                bossAreaFlightStarted = true;
+            }
+            if (!bossAreaFlightStarted) return raw;
+            float travelSquared = bossFollowTravel.sqrMagnitude;
+            float areaProgress = !bossAreaFocusLive || travelSquared < .0001f ? 1f :
+                Mathf.Clamp01(Vector3.Dot(Vector3.ProjectOnPlane(raw - bossFollowStart, Vector3.up), bossFollowTravel) / travelSquared);
+            bossAreaProgress = Mathf.Max(bossAreaProgress, areaProgress);
+            var profile = BossCamera.Draft;
+            float areaOffset = bossAreaColumn <= 1f ? Mathf.Lerp(0f, profile.FollowOffsetForColumn(1), bossAreaColumn) :
+                Mathf.Lerp(profile.FollowOffsetForColumn(1), profile.FollowOffsetForColumn(2), bossAreaColumn - 1f);
+            return raw + bossFollowDirection * (areaOffset * Mathf.SmoothStep(0f, 1f, bossAreaProgress));
+        }
+        if (!bossFollowPathReady || (!bossFollowActor && !(bossFollowProjectile && projectileFocusLatched))) return raw;
+        var point = bossFollowActor && attackFocusActor ? attackFocusActor.transform.position : raw;
+        float progress = Mathf.Clamp01(Vector3.Dot(Vector3.ProjectOnPlane(point - bossFollowStart, Vector3.up),
+            bossFollowTravel) / bossFollowTravel.sqrMagnitude);
+        // JC | 2026-11-16 | 출발/도착의 변화율이 0인 보간으로 강제 정지 없이 줄여 추적하며 돌진 귀환도 역순으로 풀립니다.
+        // JC | 2026-11-17 | 기존 카메라 보간 전에 초점만 갱신하며, 부모 기본뷰 ApplyDraft를 호출해 스킬 카메라를 덮어쓰지 않습니다.
+        float offset = BossCamera && BossCamera.Draft ? BossCamera.Draft.FollowOffsetForColumn(bossFollowColumn) : 0f;
+        return raw + bossFollowDirection * (offset * Mathf.SmoothStep(0f, 1f, progress));
+    }
+
+    private void HandleBossProjectileDestination(BattleCharactor actor, Transform projectile, Vector3 destination)
+    {
+        if (!attackZoomActive || !bossFollowProjectile || actor != attackFocusActor || !projectile) return;
+        // JC | 2026-11-16 | 실제 발사 위치/목적지 이벤트를 받아 별도 가상 궤적이나 투사체 Transform 수정 없이 진행률만 구합니다.
+        bossFollowStart = projectile.position;
+        bossFollowTravel = Vector3.ProjectOnPlane(destination - bossFollowStart, Vector3.up);
+        bossFollowPathReady = bossFollowTravel.sqrMagnitude > .0001f;
+    }
+
+    private void ResetBossFollow()
+    {
+        // JC | 2026-11-17 | 정상 종료·인터럽트·다음 스킬에서 크래시의 경로와 관찰 참조를 함께 해제합니다.
+        bossJusticeSkill = bossJusticeReady = bossJusticeReturning = false;
+        bossJusticeReturnCaptured = false;
+        bossJusticeReturnPose = default;
+        bossJusticeReturnFov = bossJusticeReturnProgress = 0f;
+        bossJusticePlan = null;
+        bossJusticeActorRenderers = null;
+        bossJusticeTimeline = null;
+        bossJusticeStartTime = bossJusticeEndTime = 0d;
+        bossJusticeProgress = bossJusticeColumn = 0f;
+        bossJusticeTargets.Clear();
+        bossJusticeProtection.Clear();
+        bossJusticeLivePoints.Clear();
+        // JC | 2026-11-17 | 정상 복귀·중단·다음 시전 모두 광역 보정의 기준과 대상 참조를 정리합니다.
+        bossFollowArea = bossAreaFocusLive = bossAreaFlightStarted = false;
+        bossAreaCenter = bossBarrageBasePosition = bossBarrageOffset = Vector3.zero;
+        bossAreaColumn = bossAreaProgress = 0f;
+        bossAreaTargets.Clear();
+        bossAreaProtection.Clear();
+        bossAreaLivePoints.Clear();
+        bossBarrageTargets.Clear();
+        bossBarrageProtection.Clear();
+        bossBarrageLivePoints.Clear();
+        bossFollowProjectile = bossFollowActor = bossFollowPathReady = false;
+        // JC | 2026-11-17 | 다음 스킬에 이전 대상 열이 남지 않도록 방향과 함께 초기화합니다.
+        bossFollowStart = bossFollowTravel = bossFollowDirection = Vector3.zero;
+        bossFollowColumn = 0;
+    }
+
+    // JC | 2026-11-17 | ASB 실행기가 이미 확정한 plan을 읽기만 합니다. 대표 적으로 경로를 재구성하거나 사망 때 중심을 다시 잡지 않습니다.
+    public void PrepareBossJusticeCamera(BattleCharactor actor, SkillPresentationDirector.MovingAttackPlan plan)
+    {
+        if (!bossJusticeSkill || actor != attackFocusActor || plan == null || plan.Targets == null ||
+            plan.Targets.Count == 0 || bossJusticeReady) return;
+        bossJusticePlan = plan;
+        foreach (var unit in plan.Targets)
+        {
+            if (!unit || bossJusticeTargets.Contains(unit)) continue;
+            bossJusticeTargets.Add(unit);
+            bossJusticeColumn += unit.OccupiedCell ? Mathf.Clamp(unit.OccupiedCell.Coords.y, 0, 2) : bossFollowColumn;
+            foreach (var renderer in unit.GetComponentsInChildren<Renderer>())
+                if (renderer.enabled && (renderer is MeshRenderer || renderer is SkinnedMeshRenderer))
+                    for (int i = 0; i < 8; i++) bossJusticeProtection.Add(JcBlackBulletCameraFraming.Corner(renderer.bounds, i));
+        }
+        if (bossJusticeTargets.Count == 0) return;
+        bossJusticeColumn /= bossJusticeTargets.Count;
+        bossJusticeActorRenderers = actor.GetComponentsInChildren<Renderer>();
+        bossJusticeReady = true;
+    }
+
+    // JC | 2026-11-17 | 현재 1040 기본/강화판이 사용하는 AoE Timeline의 실제 곡선 시작/종료 시각을 받습니다. 재생기는 제어하지 않습니다.
+    public void BindBossJusticeTimeline(BattleCharactor actor, UnityEngine.Playables.PlayableDirector director, double start, double end)
+    {
+        if (!bossJusticeReady || actor != attackFocusActor || !director || end <= start) return;
+        bossJusticeTimeline = director;
+        bossJusticeStartTime = start;
+        bossJusticeEndTime = end;
+    }
+
+    private Vector3 ResolveBossJusticeFocus(Vector3 raw)
+    {
+        UpdateBossJusticePhase();
+        var origin = bossJusticePlan.OriginPosition;
+        var endpoint = bossJusticeReturning ? bossJusticePlan.PathPoints.Exit : bossJusticePlan.PathPoints.Entry;
+        var travel = Vector3.ProjectOnPlane(endpoint - origin, Vector3.up);
+        var current = Vector3.ProjectOnPlane(attackFocusActor.transform.position - origin, Vector3.up);
+        float envelope = bossJusticeTimeline && bossJusticeTimeline.time >= bossJusticeStartTime && !bossJusticeReturning ? 1f :
+            (travel.sqrMagnitude > .0001f ? Mathf.Clamp01(Vector3.Dot(current, travel) / travel.sqrMagnitude) : 0f);
+        var profile = BossCamera.Draft;
+        float offset = bossJusticeColumn <= 1f ? Mathf.Lerp(0f, profile.FollowOffsetForColumn(1), bossJusticeColumn) :
+            Mathf.Lerp(profile.FollowOffsetForColumn(1), profile.FollowOffsetForColumn(2), bossJusticeColumn - 1f);
+        return ResolveBossJusticeFocusPoint(raw, bossJusticePlan.FormationCenter, bossFollowDirection,
+            offset, envelope, bossJusticeProgress);
+    }
+
+    // JC | 2026-11-17 | LateUpdate의 화각 계산 전에 종료를 알 수 있도록 타격 단계 판정을 초점 계산에서 분리합니다.
+    private void UpdateBossJusticePhase()
+    {
+        // JC | 2026-11-17 | Hold/배속은 Timeline 시각 그대로 따르며 역평가로 초점이 되튀지 않도록 이미 통과한 진행률을 유지합니다.
+        if (bossJusticeTimeline)
+        {
+            bossJusticeProgress = Mathf.Max(bossJusticeProgress,
+                Mathf.Clamp01((float)((bossJusticeTimeline.time - bossJusticeStartTime) / (bossJusticeEndTime - bossJusticeStartTime))));
+            if (bossJusticeTimeline.time >= bossJusticeEndTime) bossJusticeReturning = true;
+        }
+    }
+
+    private void ApplyBossJusticeReturn()
+    {
+        // JC | 2026-11-17 | 프레임마다 출발 카메라를 다시 잡지 않아 이동/화각이 누적되거나 귀환 끝에 지연되지 않습니다.
+        if (!bossJusticeReturnCaptured)
+        {
+            bossJusticeReturnPose = new Pose(previewCamera.transform.position, previewCamera.transform.rotation);
+            bossJusticeReturnFov = previewCamera.fieldOfView;
+            bossJusticeReturnCaptured = true;
+        }
+        bossJusticeReturnProgress = Mathf.Max(bossJusticeReturnProgress, ResolveBossJusticeReturnProgress(
+            bossJusticePlan.OriginPosition, bossJusticePlan.PathPoints.Exit, attackFocusActor.transform.position));
+        float blend = Mathf.SmoothStep(0f, 1f, bossJusticeReturnProgress);
+        ApplyCameraPose(Vector3.Lerp(bossJusticeReturnPose.position, attackCameraPosition, blend),
+            Quaternion.Slerp(bossJusticeReturnPose.rotation, attackCameraRotation, blend),
+            Mathf.Lerp(bossJusticeReturnFov, attackCameraFov, blend));
+    }
+
+    // JC | 2026-11-17 | 실제 시전 출발점/곡선 끝점을 쓰므로 아군 6칸·진형 회전/이동에도 동일하게 0→1로 복귀합니다.
+    private static float ResolveBossJusticeReturnProgress(Vector3 origin, Vector3 exit, Vector3 current)
+    {
+        var travel = Vector3.ProjectOnPlane(exit - origin, Vector3.up);
+        if (travel.sqrMagnitude <= .0001f) return 1f;
+        return 1f - Mathf.Clamp01(Vector3.Dot(Vector3.ProjectOnPlane(current - origin, Vector3.up), travel) / travel.sqrMagnitude);
+    }
+
+    // JC | 2026-11-17 | 곡선 후반의 오른쪽 이탈 성분만 적 중심 쪽으로 줄입니다. 높이는 그대로 추적하고 귀환하면 보정은 0이 됩니다.
+    private static Vector3 ResolveBossJusticeFocusPoint(Vector3 raw, Vector3 center, Vector3 left,
+        float offset, float envelope, float sweepProgress)
+    {
+        float rightward = Mathf.Max(0f, Vector3.Dot(raw - center, -left));
+        // JC | 2026-11-17 | 추가 이탈 억제도 기존 오프셋 크기 이내로 제한합니다. 오프셋 0은 원래 추적으로 돌아갑니다.
+        return raw + left * ((offset + Mathf.Min(rightward, offset) * Mathf.SmoothStep(0f, 1f, sweepProgress)) *
+            Mathf.SmoothStep(0f, 1f, envelope));
     }
 
     private void HandleHealPresented(BattleVisualDirector source, ASB.Work.Battle.Core.BattleHitResult result)
@@ -488,6 +948,25 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (focusShieldGuard && context.Presentation.SkillIndex == 200032)
             shieldGuardEffects.Add(instance);
         int family = HeroSkillRules.FamilyId(context.Presentation.SkillIndex);
+        // JC | 2026-11-17 | VFX에 전달된 실제 광역 대상만 시전당 한 번 캡처합니다. 개별 수정의 착탄/소멸로 중심이 이동하지 않습니다.
+        if (bossFollowArea && (family == 2030 || family == 2040) && bossAreaTargets.Count == 0 && context.Targets != null)
+        {
+            foreach (var unit in context.Targets)
+            {
+                if (!unit || unit.IsPlayer || unit.IsDead || !unit.OccupiedCell || bossAreaTargets.Contains(unit)) continue;
+                bossAreaTargets.Add(unit);
+                bossAreaCenter += unit.transform.position;
+                bossAreaColumn += Mathf.Clamp(unit.OccupiedCell.Coords.y, 0, 2);
+                foreach (var renderer in unit.GetComponentsInChildren<Renderer>())
+                    if (renderer.enabled && !(renderer is ParticleSystemRenderer) && !(renderer is TrailRenderer))
+                        for (int i = 0; i < 8; i++) bossAreaProtection.Add(JcBlackBulletCameraFraming.Corner(renderer.bounds, i));
+            }
+            if (bossAreaTargets.Count > 0)
+            {
+                bossAreaCenter /= bossAreaTargets.Count;
+                bossAreaColumn /= bossAreaTargets.Count;
+            }
+        }
         // HCS002 uses the same SolarPrismVfx flight as Lumina 2030.
         if (followLuminaProjectile && (family == 2030 || family == 2))
             luminaSolarPrism = instance.GetComponentInChildren<JC.VFX.SolarPrismVfx>(true);
@@ -517,6 +996,9 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void FrameNekoBarrage(SkillEffectContext context, GameObject instance)
     {
+        // JC | 2026-11-17 | 상공과 지상의 빈 공간까지 큰 상자로 묶지 않고 실제 각 표시 영역을 보관합니다.
+        bossBarrageTargets.Clear();
+        bossBarrageProtection.Clear();
         bool hasBounds = false;
         Vector3 center = Vector3.zero;
         int count = 0;
@@ -526,6 +1008,11 @@ public sealed class BattlePresentationController : MonoBehaviour
                 unit.gameObject.scene != context.Caster.gameObject.scene) return;
             Bounds unitBounds = new Bounds(unit.transform.position + Vector3.up * 1.1f,
                 new Vector3(1.5f, 2.2f, 1.5f));
+            if (BossCamera)
+            {
+                bossBarrageTargets.Add(unit);
+                for (int i = 0; i < 8; i++) bossBarrageProtection.Add(JcBlackBulletCameraFraming.Corner(unitBounds, i));
+            }
             if (!hasBounds) { nekoBarrageBounds = unitBounds; hasBounds = true; }
             else nekoBarrageBounds.Encapsulate(unitBounds);
             center += unit.transform.position;
@@ -540,12 +1027,29 @@ public sealed class BattlePresentationController : MonoBehaviour
         nekoBarrageEffect = barrage;
         Vector3 top = barrage != null ? barrage.LightOrigin : center / count + Vector3.up * 7f;
         nekoBarrageBounds.Encapsulate(new Bounds(top, Vector3.one * 2f));
+        if (BossCamera)
+            for (int i = 0; i < 8; i++) bossBarrageProtection.Add(JcBlackBulletCameraFraming.Corner(new Bounds(top, Vector3.one * 2f), i));
+        // JC | 2026-11-17 | 현재 스킬 구도를 한 번만 기준으로 잡아 위치 편집과 반복 시전의 누적을 방지합니다.
+        if (BossCamera && !focusNekoBarrage)
+        {
+            bossBarrageBasePosition = previewCamera.transform.position;
+            bossBarrageOffset = Vector3.zero;
+        }
         focusNekoBarrage = true;
         nekoLightTarget = null;
     }
 
-    private float RequiredNekoBarrageFov(Vector3 cameraPosition)
+    private float RequiredNekoBarrageFov(Vector3 cameraPosition, Quaternion cameraRotation)
     {
+        // JC | 2026-11-17 | 보스 위치 보정 후에는 실제 회전으로 범위를 검사합니다. 다른 전장의 기존 계산은 유지합니다.
+        if (BossCamera)
+        {
+            bossBarrageLivePoints.Clear();
+            bossBarrageLivePoints.AddRange(bossBarrageProtection);
+            foreach (var unit in bossBarrageTargets)
+                if (unit) DamagePopupEffect.AppendActiveCameraPoints(unit.transform.GetInstanceID(), bossBarrageLivePoints);
+            return RequiredAreaPointsFov(bossBarrageLivePoints, cameraPosition, cameraRotation);
+        }
         Quaternion inverse = Quaternion.Inverse(Quaternion.LookRotation(nekoBarrageBounds.center - cameraPosition));
         float tangent = 0f;
         Vector3 min = nekoBarrageBounds.min, max = nekoBarrageBounds.max;
@@ -559,6 +1063,21 @@ public sealed class BattlePresentationController : MonoBehaviour
                 Mathf.Abs(local.x) / (depth * Mathf.Max(.1f, previewCamera.aspect)));
         }
         return Mathf.Clamp(2f * Mathf.Atan(tangent / .8f) * Mathf.Rad2Deg, 1f, 110f);
+    }
+
+    // JC | 2026-11-17 | 보스 광역 공격의 실제 표시점에 화면 가장자리 8% 여유를 둡니다. 스킬 판정이나 VFX 위치는 변경하지 않습니다.
+    private float RequiredAreaPointsFov(List<Vector3> points, Vector3 position, Quaternion rotation)
+    {
+        float tangent = 0f;
+        Quaternion inverse = Quaternion.Inverse(rotation);
+        foreach (var point in points)
+        {
+            Vector3 local = inverse * (point - position);
+            float depth = Mathf.Max(.1f, local.z);
+            tangent = Mathf.Max(tangent, Mathf.Abs(local.y) / depth,
+                Mathf.Abs(local.x) / (depth * Mathf.Max(.1f, previewCamera.aspect)));
+        }
+        return Mathf.Clamp(2f * Mathf.Atan(tangent / .84f) * Mathf.Rad2Deg, 1f, 110f);
     }
 
     private void ClearNekoPawSequence()
@@ -600,10 +1119,14 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private void HandleProjectileFinished(BattleCharactor actor, Transform projectile, Vector3 point, bool arrived)
     {
-        if (nekoHealProjectiles.Remove(projectile)) return;
+        if (nekoHealProjectiles.Remove(projectile))
+        {
+            return;
+        }
         if (projectile != luminaProjectile) return;
         luminaProjectile = null;
         projectileFocusPoint = point;
+        // JC | 2026-11-16 | 일반 전투와 동일하게 도착한 투사체만 마지막 지점을 유지합니다. 취소/회복 종료의 기존 초점 규칙을 복원합니다.
         projectileFocusLatched = arrived;
     }
 
@@ -650,7 +1173,7 @@ public sealed class BattlePresentationController : MonoBehaviour
 
     private float RequiredPairFov(Vector3 cameraPosition, Quaternion cameraRotation)
     {
-        if (focusNekoBarrage) return RequiredNekoBarrageFov(cameraPosition);
+        if (focusNekoBarrage) return RequiredNekoBarrageFov(cameraPosition, cameraRotation);
         float tangent = 0f;
         Quaternion inverse = Quaternion.Inverse(cameraRotation);
         bool frameHealProjectiles = focusNekoHeal && nekoHealProjectiles.Count > 0;
@@ -865,10 +1388,17 @@ public sealed class BattlePresentationController : MonoBehaviour
         attackCameraRotation = previewCamera.transform.rotation;
         attackCameraFov = previewCamera.fieldOfView;
         attackCameraOrthoSize = previewCamera.orthographicSize;
+        // JC | 2026-11-16 | 스킬 시작마다 고정 기준을 새로 잡습니다. 레이아웃 이동은 이미 이 기본뷰에 반영되어 있습니다.
         focusShieldGuard = shouldFocusShieldGuard;
         shieldGuardEffects.Clear();
         attackFocusActor = actor;
         attackFocusTarget = target;
+        // JC | 2026-11-16 | 보스 4020 계열에만 적용하고 시전마다 보간/보호 상태를 새로 만듭니다.
+        bossNekoPawFrame = BossCamera && shouldFocusNekoPaw && focusNekoLightTarget;
+        bossNekoPawDescending = false;
+        bossNekoPawBlend = 0f;
+        bossNekoPawProtection.Clear();
+        if (bossNekoPawFrame) CaptureBossNekoPawProtection();
         rifleBarrageUnits.Clear();
         if (shouldFrameRifleBarrage)
             foreach (var unit in FindObjectsOfType<BattleCharactor>())
@@ -892,7 +1422,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (shouldFrameRifleBarrage) frameRangedPair = true;
         // JC | 2026-11-06 | ASB 공용 연출 안의 기존 JC 블랙불릿 구도만 시작 시 확정합니다.
         // 대상 사망·파괴 이후에도 이 상태를 유지하고 RestoreAttackCamera에서 해제합니다.
-        blackBulletPairActive = blackBulletClassSkill && (!BossCamera || canonicalSkill) && (frameRangedPair || canonicalSkill) && actor.IsPlayer &&
+        blackBulletPairActive = blackBulletClassSkill && (frameRangedPair || canonicalSkill) && actor.IsPlayer &&
             actor.PresentationIndex == "10003" && target != null && rifleBarrageUnits.Count == 0;
         if (blackBulletPairActive)
         {
@@ -905,6 +1435,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         blackBulletCalculationPosition = attackCameraPosition;
         if (useBlackBulletCloseUp)
         {
+            // JC | 2026-11-16 | 모든 전장은 같은 정본 선택과 스킬별 계산을 사용합니다. 보스 차이는 기준 좌표 변환뿐입니다.
             blackBulletCanon = blackBulletCameraControls.Draft.canon;
             blackBulletTargetSlot = target.OccupiedCell ? JcBankSkillCameraProfile.TargetIndex(target.OccupiedCell.Coords) : -1;
             blackBulletCloseUpFamily = family;
@@ -913,16 +1444,36 @@ public sealed class BattlePresentationController : MonoBehaviour
             blackBulletColumnBlend = actor.OccupiedCell && target.OccupiedCell ?
                 Mathf.Clamp01(actor.OccupiedCell.Coords.y * .5f) * Mathf.Clamp01(target.OccupiedCell.Coords.y * .5f) : 0;
             var settings = blackBulletCameraControls.Draft;
+            blackBulletBasisPitchOffset = null;
             blackBulletReferenceRotation = playerPlace ? playerPlace.rotation : Quaternion.identity;
             blackBulletWorldFromReference = playerPlace ? Matrix4x4.TRS(playerPlace.position, playerPlace.rotation, Vector3.one) *
                 Matrix4x4.Translate(-settings.referencePlayerOrigin) : Matrix4x4.identity;
-            // JC | 2026-11-16 | 보스 스킬 재구도 변경을 롤백합니다. 실내 BB는 기존 공통 정본 기준으로 계산하고 기본뷰/배치 연동은 별도로 유지합니다.
-            if ((BankBackground || BossCamera) && settings.referenceCamera)
+            // JC | 2026-11-16 | 은행 촬영 기준은 은행에만 남깁니다. 보스는 실제 기본뷰/배치 좌표가 유일한 기준입니다.
+            if (BankBackground && !BossCamera && settings.referenceCamera)
             {
                 settings.referenceCamera.viewA.Resolve(new Vector3(0, .3f, 0), out var referencePosition, out _, out _);
                 blackBulletCalculationPosition = blackBulletWorldFromReference.MultiplyPoint3x4(referencePosition);
             }
+            // JC | 2026-11-16 | 보스 기본뷰의 이동·방향 차이를 공통 촬영 계산에 전달합니다.
+            // 배치 이동량은 기본뷰에 이미 포함되며, 정본2의 열별 구도는 공통 탐색 목표로 함께 계산합니다.
+            if (BossCamera && settings.referenceCamera)
+            {
+                settings.referenceCamera.viewA.Resolve(new Vector3(0,.3f,0),out var referencePosition,out var referenceRotation,out _);
+                // JC | 2026-11-16 | full 회전으로 진형까지 기울이면 평면 기반 높이/열 계산이 깨집니다.
+                // Y 회전만 좌표계에 반영하고 X 차이는 공통 구도 탐색의 촬영 목표로 전달합니다.
+                blackBulletReferenceRotation=Quaternion.Euler(0,Mathf.DeltaAngle(referenceRotation.eulerAngles.y,attackCameraRotation.eulerAngles.y),0);
+                blackBulletBasisPitchOffset=Mathf.DeltaAngle(referenceRotation.eulerAngles.x,attackCameraRotation.eulerAngles.x);
+                // JC | 2026-11-16 | 직접 촬영한 정본1은 배치 탐색을 하지 않으므로 기존 저장 구도의 상대 회전을 보존합니다.
+                if (blackBulletCanon == JcBlackBulletCameraCanon.Authored)
+                {
+                    blackBulletReferenceRotation=attackCameraRotation*Quaternion.Inverse(referenceRotation);
+                    blackBulletBasisPitchOffset=null;
+                }
+                blackBulletWorldFromReference=Matrix4x4.TRS(attackCameraPosition,blackBulletReferenceRotation,Vector3.one)*Matrix4x4.Translate(-referencePosition);
+            }
         }
+        // JC | 2026-11-16 | 보스 추적 오프셋은 이 공격의 실제 대상과 이동 설정으로만 초기화합니다.
+        PrepareBossFollow(actor, target, skill);
         attackZoomActive = true;
         skillRearBlur?.BeginAttack(actor, target, skill);
         try
@@ -945,17 +1496,26 @@ public sealed class BattlePresentationController : MonoBehaviour
             // JC | 2026-11-11 | 두 정본 모두 중간 카메라 이동·준비 대기 없이 스킬 시작에서 최종 앵글로 바로 전환합니다.
             // 이전 초기 앵글은 최종 구도를 유지하는 계산 기준으로만 쓰며 카메라를 그곳으로 이동시키지 않습니다.
             if (useBlackBulletCloseUp)
-                BeginBlackBulletCloseUp(family, zoomPosition, zoomRotation, zoomFov);
+                // JC | 2026-11-16 | 보스 전용 고정/재탐색 없이 일반전과 같은 스킬별 구도 계산을 사용합니다.
+                BeginBlackBulletCloseUp(family,zoomPosition,zoomRotation,zoomFov);
             else
             {
-                yield return AnimateAttackZoom(zoomPosition, corner, zoomRotation,
-                    zoomFov, attackCameraOrthoSize * scale, attackZoomInSeconds, true);
+                // JC | 2026-11-17 | 저스티스 준비 모션의 하강·시전자 단독 회전을 생략합니다. 대사/공격 순서와 진입 시간은 유지합니다.
+                bossJusticeAttackPosition = zoomPosition;
+                if (bossJusticeSkill)
+                    yield return AnimateAttackZoom(attackCameraPosition, attackCameraPosition, attackCameraRotation,
+                        attackCameraFov, attackCameraOrthoSize, attackZoomInSeconds, false);
+                else
+                    yield return AnimateAttackZoom(zoomPosition, corner, zoomRotation,
+                        zoomFov, attackCameraOrthoSize * scale, attackZoomInSeconds, true);
                 followAttackFocus = true;
             }
             yield return ShowSkillSpeech(actor, skill, counter);
             yield return WaitForLuminaCast(actor, skill);
             if (useBlackBulletCloseUp) blackBulletCloseUpAttackRunning = true;
             yield return attack;
+            // JC | 2026-11-17 | 귀환 완료와 코루틴 종료가 같은 프레임이어도 마지막 기본뷰를 반영한 뒤 후딜로 넘어갑니다.
+            if (bossJusticeReady && bossJusticeReturning) ApplyBossJusticeReturn();
             // JC | 2026-11-10 | 공격이 끝나면 시간 동기화만 해제하고 기존 공통 후딜·복귀를 유지합니다.
             EndBlackBulletCloseUpAttack();
             if (shouldFocusNekoBarrage)
@@ -968,7 +1528,10 @@ public sealed class BattlePresentationController : MonoBehaviour
             followAttackFocus = false;
             focusNekoBarrage = false;
             skillRearBlur?.BeginReturn();
-            yield return AnimateAttackZoom(attackCameraPosition, corner, attackCameraRotation,
+            // JC | 2026-11-16 | 복귀 곡선/시간도 일반 전투와 동일하게 공격 시작 기본뷰를 사용합니다.
+            // JC | 2026-11-17 | 크래시는 이동 귀환 중 기본뷰에 수렴합니다. 마지막 공통 복귀가 옛 진입 코너를 다시 경유하지 않게 합니다.
+            Vector3 returnCorner = bossJusticeReady ? Vector3.Lerp(previewCamera.transform.position, attackCameraPosition, .5f) : corner;
+            yield return AnimateAttackZoom(attackCameraPosition, returnCorner, attackCameraRotation,
                 attackCameraFov, attackCameraOrthoSize, attackZoomOutSeconds, false, useBlackBulletCloseUp);
         }
         finally
@@ -1113,7 +1676,9 @@ public sealed class BattlePresentationController : MonoBehaviour
         }
         if (blackBulletHasTargetBody) { var bounds = blackBulletTargetBody; bounds.Expand(2 * Mathf.Max(0, settings.targetMotionMargin)); Add(bounds, true); }
         var hit = blackBulletTargetAnchor + Vector3.up * attackFocusHeight;
-        Add(new Bounds(hit, Vector3.one * (2 * settings.ImpactRadius(blackBulletCloseUpFamily))), true);
+        // JC | 2026-11-16 | 보스 전용 최대 반경 강제를 제거하고 일반 전투의 스킬별 효과 여유를 사용합니다.
+        float impactRadius = settings.ImpactRadius(blackBulletCloseUpFamily);
+        Add(new Bounds(hit, Vector3.one * (2 * Mathf.Max(0,impactRadius))), true);
         var socket = attackFocusActor ? attackFocusActor.GetComponent<UnitVisualProfile>() : null;
         var muzzle = socket && socket.AttackEffectSocket ? socket.AttackEffectSocket.position : blackBulletActorAnchor + Vector3.up * attackFocusHeight;
         // 직선 투사체 구간은 볼록이므로 두 끝의 여유 영역을 포함하면 중간 경로도 포함됩니다.
@@ -1184,13 +1749,17 @@ public sealed class BattlePresentationController : MonoBehaviour
             ApplyCameraPose(previewCamera.transform.position, previewCamera.transform.rotation, blackBulletResidualFov);
             return;
         }
-        previewCamera.fieldOfView = Mathf.Lerp(previewCamera.fieldOfView, blackBulletResidualFov, 1 - Mathf.Exp(-15 * Time.deltaTime));
+        float residualFov=Mathf.Lerp(previewCamera.fieldOfView, blackBulletResidualFov, 1 - Mathf.Exp(-15 * Time.deltaTime));
+        WriteCameraPose(previewCamera,previewCamera.transform.position,previewCamera.transform.rotation,residualFov);
         if (Mathf.Abs(previewCamera.fieldOfView - blackBulletResidualFov) < .01f) ReleaseBlackBulletResidual();
     }
 
     private void ReleaseBlackBulletResidual()
     {
-        if (blackBulletResidual && previewCamera) previewCamera.fieldOfView = blackBulletResidualFov;
+        if (blackBulletResidual && previewCamera)
+        {
+            WriteCameraPose(previewCamera,previewCamera.transform.position,previewCamera.transform.rotation,blackBulletResidualFov);
+        }
         blackBulletResidual = false;
     }
 
@@ -1250,6 +1819,12 @@ public sealed class BattlePresentationController : MonoBehaviour
     public void EndSkillCameraTimeline(BattleCharactor actor, UnityEngine.Playables.PlayableDirector director)
     {
         skillRearBlur?.EndTimeline(actor, director);
+        // JC | 2026-11-17 | Stop의 시간 초기화가 크래시 보정을 재진입시키지 않게 관찰을 끝내고 실제 귀환 위치로 감쇠합니다.
+        if (bossJusticeReady && actor == attackFocusActor && director == bossJusticeTimeline)
+        {
+            bossJusticeReturning = true;
+            bossJusticeTimeline = null;
+        }
         if (!blackBulletTimelineActive || actor != attackFocusActor || director != blackBulletTimeline) return;
         // Stop()이 재생 시간을 초기화하기 전에 마지막 증가량을 소비합니다. 종료 알림에서 새 확대를 시작하지는 않습니다.
         float delta = ReadBlackBulletCloseUpDelta();
@@ -1381,7 +1956,10 @@ public sealed class BattlePresentationController : MonoBehaviour
                     previewCamera.nearClipPlane, new Vector2(previewCamera.pixelWidth, previewCamera.pixelHeight), settings,
                     out var position, out var rotation, out blackBulletFrameFov,
                     inverse.MultiplyPoint3x4(new Vector3(blackBulletActorAnchor.x, blackBulletGroundHeight, blackBulletActorAnchor.z)).y,
-                    blackBulletColumnBlend, endpoint);
+                    // JC | 2026-11-17 | 보스 구도 기준은 시전자 열과 곱한 기존 가중치가 아닌 실제 적의 좌/중/우입니다.
+                    // 공통 연출기의 기존 호출 한 곳에서 전달하며 은행·야외는 basisPitchOffset이 없어 적용되지 않습니다.
+                    blackBulletColumnBlend, endpoint, blackBulletBasisPitchOffset,
+                    attackFocusTarget && attackFocusTarget.OccupiedCell ? Mathf.Clamp01(attackFocusTarget.OccupiedCell.Coords.y * .5f) : 1f);
                 blackBulletFramePosition = blackBulletWorldFromReference.MultiplyPoint3x4(position);
                 blackBulletFrameRotation = blackBulletReferenceRotation * rotation;
             }
@@ -1421,7 +1999,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             else if (focusActor && attackFocusActor != null)
                 rotation = Quaternion.LookRotation(AttackFocusPosition - cameraPosition);
             ApplyCameraPose(cameraPosition, Quaternion.Slerp(startRotation, rotation, t), Mathf.Lerp(startFov, fov, t));
-            previewCamera.orthographicSize = Mathf.Lerp(startSize, orthoSize, t);
+            WriteCameraPose(previewCamera,previewCamera.transform.position,previewCamera.transform.rotation,previewCamera.fieldOfView,Mathf.Lerp(startSize,orthoSize,t));
             yield return null;
         }
         if (previewCamera != null)
@@ -1432,14 +2010,17 @@ public sealed class BattlePresentationController : MonoBehaviour
             else if (focusActor && attackFocusActor != null)
                 rotation = Quaternion.LookRotation(AttackFocusPosition - position);
             ApplyCameraPose(position, rotation, fov);
-            previewCamera.orthographicSize = orthoSize;
+            WriteCameraPose(previewCamera,previewCamera.transform.position,previewCamera.transform.rotation,previewCamera.fieldOfView,orthoSize);
         }
     }
 
     private void RestoreAttackCamera()
     {
         skillRearBlur?.Cancel();
+        // JC | 2026-11-16 | 정상 종료뿐 아니라 비활성화·취소에도 보스 추적 기준을 즉시 해제합니다.
+        ResetBossFollow();
         if (!attackZoomActive) return;
+        // JC | 2026-11-16 | 모든 전장의 정상 종료/취소가 같은 복구 경로를 사용합니다.
         // JC | 2026-11-10 | 복귀 후 숫자의 표시 수명만 FOV 보호에 남깁니다. 원래 카메라 위치·회전과 턴 종료 시각은 그대로 복구합니다.
         blackBulletLivePoints.Clear();
         if (blackBulletProtection) DamagePopupEffect.AppendActiveCameraPoints(blackBulletPopupOwner, blackBulletLivePoints);
@@ -1450,7 +2031,7 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (previewCamera != null)
         {
             ApplyCameraPose(attackCameraPosition, attackCameraRotation, attackCameraFov);
-            previewCamera.orthographicSize = attackCameraOrthoSize;
+            WriteCameraPose(previewCamera,previewCamera.transform.position,previewCamera.transform.rotation,previewCamera.fieldOfView,attackCameraOrthoSize);
         }
         attackZoomActive = false;
         // JC | 2026-11-10 | 정상 복귀·비활성화·중단 시 추가 확대와 임시 범위도 기존 finally 정리에 포함합니다.
@@ -1497,6 +2078,11 @@ public sealed class BattlePresentationController : MonoBehaviour
         nekoBarrageBounds = default;
         nekoFallingPaw = null;
         ClearNekoPawSequence();
+        // JC | 2026-11-16 | 정상 복귀·중단 후 다음 캐릭터의 구도에 보스 낙하 보정이 남지 않게 정리합니다.
+        bossNekoPawFrame = bossNekoPawDescending = false;
+        bossNekoPawBlend = 0f;
+        bossNekoPawProtection.Clear();
+        bossNekoPawLivePoints.Clear();
         projectileFocusLatched = false;
     }
 
@@ -1594,6 +2180,8 @@ public sealed class BattlePresentationController : MonoBehaviour
         BattleRuntimeSettings.AutoBattleChanged -= HandleAutoBattleChanged;
         UnitEffectPresenter.EffectSpawned -= HandleSkillEffectSpawned;
         BattleVisualDirector.HealPresented -= HandleHealPresented;
+        // JC | 2026-11-16 | 재활성화 시 목적지 이벤트가 중복되지 않도록 대칭 해제합니다.
+        ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightDestinationResolved -= HandleBossProjectileDestination;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightStarted -= HandleProjectileStarted;
         ASB.Work.Battle.Sequence.ProjectileImpactAction.FlightFinished -= HandleProjectileFinished;
         RestoreAttackCamera();
@@ -1606,5 +2194,7 @@ public sealed class BattlePresentationController : MonoBehaviour
             flow.OnBattleEnded -= HandleBattleEnded;
         }
         if (turnBanner != null) turnBanner.TurnBannerShown -= HandleTurnBannerShown;
+        // JC | 2026-11-16 | 종료 경로의 복구가 끝난 뒤 카메라 담당과 렌더 구독을 해제합니다.
+        OnDisable();
     }
 }

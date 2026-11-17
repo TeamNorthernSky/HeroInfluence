@@ -46,7 +46,7 @@ namespace JC.VFX.Seam
         [SerializeField] private bool autoCenter = true;
         [SerializeField, Range(-2f, 2f)] private float centerShift = 0f;
 
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         const int WallSegments = 64;
         /// <summary>바닥 쿼드 여유 배율 — 소프트 경계·뜯김이 잘리지 않게 바깥 반경보다 크게 잡는다.</summary>
@@ -100,8 +100,7 @@ namespace JC.VFX.Seam
 
             Destroy(gameObject, fadeIn + hold + fadeOut + 0.1f);
 
-            if (logLifecycle)
-                Debug.Log("[JcWindRing] Play  origin=" + transform.position.ToString("F2"), this);
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
         }
 
         private void Update()

@@ -13,6 +13,8 @@ Shader "JC/Environment/Boss Interior Surface"
         _SurfaceVariation("표면 거칠기 변화",Range(0,1))=.035
         _FloorTiles("바닥 줄눈 사용",Float)=0
         _TileSize("타일 한 변 길이",Float)=4
+        // JC | 2026-11-17 | 무대 X/Z 방향으로 타일 격자만 평행 이동합니다.
+        _TileOffset("타일 위치 오프셋 X/Z",Vector)=(0,0,0,0)
         _JointWidth("줄눈 폭",Float)=.025
         _JointContrast("줄눈 명암",Range(0,.5))=.12
         _JointNormal("얕은 줄눈 노멀",Range(0,.08))=.018
@@ -56,7 +58,8 @@ Shader "JC/Environment/Boss Interior Surface"
             float _BossLocalOnly;
             float _SurfaceVariation,_FloorTiles,_TileSize,_JointWidth,_JointContrast,_JointNormal,_TileVariation;
             float4x4 _WorldToStage;
-            float4 _StageScale;
+            // JC | 2026-11-17 | 오프셋도 타일 크기와 같은 월드 길이 단위를 사용합니다.
+            float4 _StageScale, _TileOffset;
             float Hash(float2 p){return frac(sin(dot(p,float2(127.1,311.7)))*43758.5453);}
             float SoftNoise(float2 p)
             {
@@ -74,7 +77,7 @@ Shader "JC/Environment/Boss Interior Surface"
                 if(_FloorTiles>.5 && data.normalWS.y>.8)
                 {
                     // JC | 2026-11-05 | 넓은 타일을 월드 길이로 배치하고 깊이 변위 없이 얕은 줄눈만 표현합니다. 전투 셀/충돌은 그대로입니다.
-                    float size=max(.5,_TileSize);float2 uv=local.xz/size;
+                    float size=max(.5,_TileSize);float2 uv=(local.xz-_TileOffset.xy)/size; // JC | 2026-11-17 | 양수 오프셋은 해당 축의 양수 방향 이동입니다.
                     float2 signedDistance=(frac(uv+.5)-.5)*size;
                     float2 distance=abs(signedDistance);
                     float2 aa=max(fwidth(local.xz),.002);

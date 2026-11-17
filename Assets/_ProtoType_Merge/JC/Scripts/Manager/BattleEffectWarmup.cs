@@ -136,7 +136,6 @@ public sealed class BattleEffectWarmup : MonoBehaviour
         GameObject rig = null;
         RenderTexture target = null;
         Camera camera = null;
-        int count = 0;
         try
         {
             rig = new GameObject("VFX warmup render rig");
@@ -168,7 +167,6 @@ public sealed class BattleEffectWarmup : MonoBehaviour
                 if (RenderRecipe(recipes[source], rig.transform, camera, target))
                 {
                     prepared.Add(source);
-                    count++;
                 }
                 // Spread different effects over loading frames, not active battle frames.
                 yield return null;
@@ -180,7 +178,7 @@ public sealed class BattleEffectWarmup : MonoBehaviour
             if (target != null) { target.Release(); Destroy(target); }
             if (rig != null) Destroy(rig);
             IsPreparing = false;
-            Debug.Log($"[VFX Warmup] Prepared {count} new effects; {prepared.Count} retained for this process.");
+            // JC | 2026-11-17 | 전투 진입·시각 준비의 정상 처리 개발 로그를 제거합니다.
         }
     }
 

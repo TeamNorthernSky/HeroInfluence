@@ -57,7 +57,7 @@ namespace JC.BattleTesting
         void PrepareFloor()
         {
             // JC | 2026-11-16 | 기존 바닥의 문양 슬롯(1)과 맞닿은 타일 꼭짓점을 함께 이동해 구멍·겹침을 만들지 않습니다.
-            // 원본 메시/재질/계층은 보존하며 20개 꼭짓점의 전용 런타임 사본만 사용합니다.
+            // JC | 2026-11-16 | 원본과 후방 연장면은 보존하며 전체 꼭짓점의 전용 런타임 사본을 사용합니다.
             floorFilter = floor.GetComponent<MeshFilter>();
             originalFloor = floorFilter ? floorFilter.sharedMesh : null;
             if (!originalFloor || !originalFloor.isReadable || originalFloor.subMeshCount != 2)

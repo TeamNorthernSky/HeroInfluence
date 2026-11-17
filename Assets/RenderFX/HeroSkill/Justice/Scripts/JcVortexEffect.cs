@@ -49,7 +49,7 @@ namespace JC.VFX.Seam
         [Tooltip("방출을 끈 뒤 잔광이 사라질 때까지의 추가 여유(초).")]
         [SerializeField, Min(0f)] private float fadeOutExtraSeconds = 0.5f;
 
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         private Vector3 travelDir;
         private float traveled;
@@ -107,10 +107,7 @@ namespace JC.VFX.Seam
                 swirls[i].Play(true);
             }
 
-            if (logLifecycle)
-            {
-                Debug.Log("[JcVortex] Play  origin=" + origin.ToString("F2") + "  dir=" + travelDir.ToString("F2"), this);
-            }
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
         }
 
         /// <summary>스폰 위치. 소켓이 있으면 그 위치에 오프셋을 얹고, 없으면 컨텍스트가 준 위치를 쓴다.</summary>
@@ -196,10 +193,7 @@ namespace JC.VFX.Seam
                 if (tail > life) life = tail;
             }
 
-            if (logLifecycle)
-            {
-                Debug.Log("[JcVortex] Stop  " + life.ToString("F2") + "초 뒤 정리", this);
-            }
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
 
             Destroy(gameObject, life + fadeOutExtraSeconds);
         }

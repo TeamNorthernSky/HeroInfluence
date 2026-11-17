@@ -17,6 +17,13 @@ namespace JC.BattleTesting
             source = profile;
             ReloadProfile();
         }
+        // JC | 2026-11-17 | 시간대 전환은 기존 초안과 광원/재질 소유권을 유지하고 저장 대상만 전환합니다.
+        public void SelectProfile(JcBankToonProfile profile)
+        {
+            if (!profile || !draft) return;
+            source = profile;
+            JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), draft);
+        }
         public void ReloadProfile()
         {
             ReleaseDraft();

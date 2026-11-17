@@ -45,7 +45,7 @@ namespace JC.VFX.Seam
         [Tooltip("주행 종료 후 잔광 여유(초). 파티클·트레일 수명이 더 길면 그쪽을 따른다.")]
         [SerializeField, Min(0f)] private float fadeOutExtraSeconds = 0.4f;
 
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         private ParticleSystem[] streaks;
         private float elapsed;
@@ -116,10 +116,7 @@ namespace JC.VFX.Seam
                 streaks[i].Simulate(0f, false, true, false);   // restart — 이후는 Update가 전진시킨다
             }
 
-            if (logLifecycle)
-            {
-                Debug.Log("[JcArcSweep] Play  origin=" + transform.position.ToString("F2"), this);
-            }
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
         }
 
         /// <summary>전진 기준(시계 12시 방향) = 시전자→타깃 수평. 없으면 시전자 정면.</summary>
@@ -223,10 +220,7 @@ namespace JC.VFX.Seam
                 if (tail > life) life = tail;
             }
 
-            if (logLifecycle)
-            {
-                Debug.Log("[JcArcSweep] 주행 종료 — " + life.ToString("F2") + "초 뒤 정리", this);
-            }
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
 
             Destroy(gameObject, life + fadeOutExtraSeconds);
         }

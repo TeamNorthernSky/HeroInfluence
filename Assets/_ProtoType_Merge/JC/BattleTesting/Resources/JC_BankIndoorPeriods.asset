@@ -1,0 +1,2667 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7218108927818381067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c06f6bb442e64448ba56af64e8fbd2, type: 3}
+  m_Name: "\uC0C8\uBCBD \uC7AC\uC9C8"
+  m_EditorClassIdentifier: 
+  surfaces:
+  - label: "\uAE08\uACE0 \uBB38\xB7\uC190\uC7A1\uC774\xB7\uACBD\uCCA9"
+    source: {fileID: 2100000, guid: d305991cbb0a8c346a8ccd53f061e006, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.55
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBC14\uB2E5"
+    source: {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+    tint: {r: 0.72327036, g: 0.70537275, b: 0.6345673, a: 1}
+    metallic: 0
+    smoothness: 0.595
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.29
+    groutContrast: 0.224
+    tileSize: 3.75
+  - label: "\uB370\uC2A4\uD06C \uC0C1\uD310"
+    source: {fileID: 2100000, guid: b58612d9b208ada41884269a89709969, type: 2}
+    tint: {r: 0.36477977, g: 0.31601375, b: 0.26956993, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uD30C\uB780\uC0C9"
+    source: {fileID: 2100000, guid: d52c8f4aee7db8f4dbf77d9123e33e79, type: 2}
+    tint: {r: 0.19186337, g: 0.42991778, b: 0.6855345, a: 1}
+    metallic: 0
+    smoothness: 0.405
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uC544\uC774\uBCF4\uB9AC\uC0C9"
+    source: {fileID: 2100000, guid: bbca0f85d9b02d24594da555f1e2526e, type: 2}
+    tint: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uB178\uB780\uC0C9"
+    source: {fileID: 2100000, guid: 1e1588efa2182fa4985aac6bd931058d, type: 2}
+    tint: {r: 0.16352195, g: 0.16352195, b: 0.16352195, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uC704 \uC18C\uD488"
+    source: {fileID: 2100000, guid: b0a97e13c880ade4cb44b2360ab2ba56, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAA8\uB2C8\uD130\xB7\uBC1B\uCE68\uB300"
+    source: {fileID: 2100000, guid: 3fad129ddd1bb2a4aadf56073c1e0303, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD604\uAE08\uC778\uCD9C\uAE30"
+    source: {fileID: 2100000, guid: 72a459f29dc23e74f87144e3f574e3c2, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uB178\uB780 \uB760"
+    source: {fileID: 2100000, guid: b900c029e329d3445a25ca0b878e4125, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uD30C\uB780 \uBC1B\uCE68"
+    source: {fileID: 2100000, guid: 4d3ad8e7891098d4785cba4337ee0643, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD\xB7\uAE30\uB465\xB7\uC7A5\uC2DD"
+    source: {fileID: 2100000, guid: c994b8db3634b6848852e703db81c94f, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC18C\uD30C"
+    source: {fileID: 2100000, guid: 506987dcffd3cf04898238921f146576, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD654\uBD84"
+    source: {fileID: 2100000, guid: cd49256b88868504b8e801463d0e87d1, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC0C1\uC544\uC0C9 \uBCBD\xB7\uAE30\uB465\xB7\uBAB0\uB529"
+    source: {fileID: 2100000, guid: 920bace23ddbef94d867eda4bd2bb76b, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uD14C\uB450\uB9AC"
+    source: {fileID: 2100000, guid: 26990b4caad071043a10456a36b05909, type: 2}
+    tint: {r: 0.67295593, g: 0.55656415, b: 0.55656415, a: 1}
+    metallic: 0.117
+    smoothness: 0.4
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC605\uC740 \uB178\uB791 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: d8155ba651bdfd34bbd79e9587047604, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.975, b: 0.85, a: 1}
+    emissionIntensity: 8
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uCD9C\uC785\uAD6C \uD6C4\uBA74 \xB7 \uD770 \uBC1C\uAD11 \uD328\uB110"
+    source: {fileID: 2100000, guid: 105a69a388e6719408d39732ed34b976, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.2
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 1.2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAB0\uB529\xB7\uBB38\uC591 \uC544\uB798 \uBC14 \xB7 \uC6D0\uB798 \uC605\uC740
+      \uB178\uB791"
+    source: {fileID: 2100000, guid: a7f71144791c6b848a93b5d3b0695c67, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC740\uD589 \uBB38\uC591 \xB7 \uAE08\uC18D"
+    source: {fileID: 2100000, guid: 10e5f28f5d7d5cf4bbfd0d1ac10545c7, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uBCF8\uCCB4"
+    source: {fileID: 2100000, guid: f604d6d9ebc418346a2b4cabf23e5c85, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.5
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uAE08\uC0C9 \uB05D\uB2E8"
+    source: {fileID: 2100000, guid: 8ec226c35dfc964428c547b5cdacf2f9, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: e2410faa09725e54f97c8eee5fe9fb53, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.3
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+--- !u!114 &-2609774930755451786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1643420ee9dd85439ef7d41cad56b5a, type: 3}
+  m_Name: "\uC0C8\uBCBD \uC2E4\uB0B4 \uC870\uBA85"
+  m_EditorClassIdentifier: 
+  ibl:
+    enabled: 1
+    environment: {fileID: 11400000, guid: 8819e1a4a54d34e4e9dbaf206931e4a5, type: 2}
+    diffuseIntensity: 0.6
+    specularIntensity: 0.5
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    rotation: 0
+    bankProbeBlend: 0.25
+  characterLighting: 0
+  ssaoFeature: {fileID: -1878332245247344467, guid: ae0cc4904269f6c45906c992c0d617c2,
+    type: 2}
+  ssaoEnabled: 1
+  ssaoIntensity: 1.58
+  ssaoRadius: 0.54
+  ssaoDirectLightingStrength: 0.752
+  ssaoDownsample: 0
+  localAttachmentShadowMaterial: {fileID: 2100000, guid: b751423f1d72ddc47933c78bad91c88c,
+    type: 2}
+  ambientColor: {r: 0.65, g: 0.68, b: 0.73, a: 1}
+  ambientIntensity: 0.95
+  reflectionIntensity: 0.89
+  reflectionPosition: {x: 8.215331, y: 5, z: -5.4730535}
+  reflectionSize: {x: 44.23108, y: 26, z: 50.399998}
+  glyphHaloColor: {r: 1, g: 1, b: 1, a: 1}
+  glyphHaloIntensity: 1.23
+  glyphHaloWidth: 0.215
+  lights:
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 1"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -21.892214}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 2"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -8.893712}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 3"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: 2.7365267}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 1 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 2.6646929}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 106
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 2 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 8.506494}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 101
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 3 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -4.589, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 55
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 4 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 6.87, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 89
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 1.258, y: 7.14, z: 11.208817}
+    rotation: {x: 67.258415, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 91
+    range: 70
+    spotAngle: 88
+    innerSpotRatio: 0.712
+    shadows: 2
+    shadowStrength: 0.566
+    shadowBias: 0.05
+    shadowNormalBias: 0.1
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 1"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -6.3}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.97044027, b: 0.8522012, a: 1}
+    intensity: 79
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.515
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 2"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -3.75}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 32.3
+    spotAngle: 120
+    innerSpotRatio: 0.523
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 3"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -1.2}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.499
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 8\uC2DC 30\uBD84 \uADF8\uB9BC\uC790"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 6, y: 14, z: 6}
+    rotation: {x: 49.1, y: 207.2, z: 0}
+    color: {r: 1, g: 0.9686275, b: 0.85098046, a: 1}
+    intensity: 1
+    range: 47.1
+    spotAngle: 135
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0
+    shadowNormalBias: 0
+  - playerBackFill: 1
+    label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 0, y: 14, z: 0}
+    rotation: {x: 25, y: -34.45, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 0.6
+    range: 55.6
+    spotAngle: 58
+    innerSpotRatio: 0.406
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cda6cddc7aae4c19922fa313882e89fa, type: 3}
+  m_Name: JC_BankIndoorPeriods
+  m_EditorClassIdentifier: 
+  periods:
+  - bossLighting: {fileID: 0}
+    bankLighting: {fileID: 8320922582577412317}
+    glass: {fileID: 0}
+    surfaces: {fileID: 0}
+    bankMaterials: {fileID: 8134372439245491502}
+    toon: {fileID: 5600064265741454334}
+    contact: {fileID: 3103599409220490388}
+  - bossLighting: {fileID: 0}
+    bankLighting: {fileID: 6231569676992808501}
+    glass: {fileID: 0}
+    surfaces: {fileID: 0}
+    bankMaterials: {fileID: 5235877797988808062}
+    toon: {fileID: 7141399237437950715}
+    contact: {fileID: 288773494642992838}
+  - bossLighting: {fileID: 0}
+    bankLighting: {fileID: 8056229817750650466}
+    glass: {fileID: 0}
+    surfaces: {fileID: 0}
+    bankMaterials: {fileID: 5028875186956074297}
+    toon: {fileID: 3609883865173622499}
+    contact: {fileID: 5184290114833376359}
+  - bossLighting: {fileID: 0}
+    bankLighting: {fileID: -2609774930755451786}
+    glass: {fileID: 0}
+    surfaces: {fileID: 0}
+    bankMaterials: {fileID: -7218108927818381067}
+    toon: {fileID: 4089476261409722109}
+    contact: {fileID: 7188945166802195508}
+--- !u!114 &288773494642992838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca026b837f6125942a6dcaca67539dc0, type: 3}
+  m_Name: "\uC624\uD6C4 \uC811\uC810 \uC74C\uC601"
+  m_EditorClassIdentifier: 
+  shadingEnabled: 1
+  tint: {r: 0.25, g: 0.23, b: 0.21, a: 1}
+  strength: 0.238
+  width: 0.12
+  softness: 1
+  targetMaterials:
+  - {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+  contactShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
+  segments:
+  - start: {x: -9.1776, y: 0.29, z: -31.2309}
+    end: {x: -9.1776, y: 0.29, z: -29.7788}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.1776, y: 0.29, z: -29.7788}
+    end: {x: -9.24449, y: 0.29, z: -29.74717}
+    receiverDirection: {x: 0.4268054, y: 0, z: 0.9043435}
+  - start: {x: -9.2445, y: 0.29, z: -29.7472}
+    end: {x: -9.7656, y: 0.29, z: -29.7472}
+    receiverDirection: {x: 0, y: 0, z: 1}
+  - start: {x: -9.7656, y: 0.29, z: -29.7472}
+    end: {x: -9.7656, y: 0.29, z: 1.947}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.7656, y: 0.29, z: 1.947}
+    end: {x: -9.2446, y: 0.29, z: 1.947}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -9.2446, y: 0.29, z: 1.947}
+    end: {x: -9.1776, y: 0.29, z: 1.97851}
+    receiverDirection: {x: 0.4260493, y: 0, z: -0.9046999}
+  - start: {x: -9.1776, y: 0.29, z: 1.9785}
+    end: {x: -9.1776, y: 0.29, z: 3.4306}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -10.872, y: 0.29, z: 1.9785}
+    end: {x: -10.805, y: 0.29, z: 1.94699}
+    receiverDirection: {x: -0.4257255, y: 0, z: -0.9048524}
+  - start: {x: -10.805, y: 0.29, z: 1.947}
+    end: {x: -10.4357, y: 0.29, z: 1.947}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -10.4358, y: 0.29, z: -29.7472}
+    end: {x: -10.805, y: 0.29, z: -29.7472}
+    receiverDirection: {x: 0, y: 0, z: 1}
+  - start: {x: -10.805, y: 0.29, z: -29.7472}
+    end: {x: -10.87197, y: 0.29, z: -29.77886}
+    receiverDirection: {x: -0.426481, y: 0, z: 0.9044965}
+  - start: {x: -10.3614, y: 0.29, z: 10.9693}
+    end: {x: -9.9629, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -10.872, y: 0.29, z: 7.8202}
+    end: {x: -10.805, y: 0.29, z: 7.78869}
+    receiverDirection: {x: -0.4257255, y: 0, z: -0.9048524}
+  - start: {x: -10.805, y: 0.29, z: 7.7887}
+    end: {x: -9.2446, y: 0.29, z: 7.7887}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -9.2446, y: 0.29, z: 7.7887}
+    end: {x: -9.1776, y: 0.29, z: 7.82021}
+    receiverDirection: {x: 0.4260493, y: 0, z: -0.9046999}
+  - start: {x: -9.1776, y: 0.29, z: 7.8202}
+    end: {x: -9.1776, y: 0.29, z: 9.2724}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.8002, y: 0.29, z: 9.3039}
+    end: {x: -9.8002, y: 0.29, z: 10.9693}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.8002, y: 0.29, z: 10.9693}
+    end: {x: -5.4505, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -5.4218, y: 0.29, z: 10.0366}
+    end: {x: -3.4702, y: 0.29, z: 10.0366}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -3.4702, y: 0.29, z: 10.0366}
+    end: {x: -3.42409, y: 0.29, z: 10.1103}
+    receiverDirection: {x: 0.8477429, y: 0, z: -0.5304074}
+  - start: {x: -3.4241, y: 0.29, z: 10.1103}
+    end: {x: -3.4241, y: 0.29, z: 12.5442}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: 5.8201, y: 0.29, z: 12.5442}
+    end: {x: 5.8201, y: 0.29, z: 10.1103}
+    receiverDirection: {x: -1, y: 0, z: -0}
+  - start: {x: 5.8201, y: 0.29, z: 10.1103}
+    end: {x: 5.86623, y: 0.29, z: 10.03656}
+    receiverDirection: {x: -0.8472255, y: 0, z: -0.5312335}
+  - start: {x: 5.8663, y: 0.29, z: 10.0366}
+    end: {x: 7.5739, y: 0.29, z: 10.0366}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: 7.6027, y: 0.29, z: 10.9693}
+    end: {x: 28.2835, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+--- !u!114 &3103599409220490388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca026b837f6125942a6dcaca67539dc0, type: 3}
+  m_Name: "\uC544\uCE68 \uC811\uC810 \uC74C\uC601"
+  m_EditorClassIdentifier: 
+  shadingEnabled: 1
+  tint: {r: 0.25, g: 0.23, b: 0.21, a: 1}
+  strength: 0.238
+  width: 0.12
+  softness: 1
+  targetMaterials:
+  - {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+  contactShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
+  segments:
+  - start: {x: -9.1776, y: 0.29, z: -31.2309}
+    end: {x: -9.1776, y: 0.29, z: -29.7788}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.1776, y: 0.29, z: -29.7788}
+    end: {x: -9.24449, y: 0.29, z: -29.74717}
+    receiverDirection: {x: 0.4268054, y: 0, z: 0.9043435}
+  - start: {x: -9.2445, y: 0.29, z: -29.7472}
+    end: {x: -9.7656, y: 0.29, z: -29.7472}
+    receiverDirection: {x: 0, y: 0, z: 1}
+  - start: {x: -9.7656, y: 0.29, z: -29.7472}
+    end: {x: -9.7656, y: 0.29, z: 1.947}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.7656, y: 0.29, z: 1.947}
+    end: {x: -9.2446, y: 0.29, z: 1.947}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -9.2446, y: 0.29, z: 1.947}
+    end: {x: -9.1776, y: 0.29, z: 1.97851}
+    receiverDirection: {x: 0.4260493, y: 0, z: -0.9046999}
+  - start: {x: -9.1776, y: 0.29, z: 1.9785}
+    end: {x: -9.1776, y: 0.29, z: 3.4306}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -10.872, y: 0.29, z: 1.9785}
+    end: {x: -10.805, y: 0.29, z: 1.94699}
+    receiverDirection: {x: -0.4257255, y: 0, z: -0.9048524}
+  - start: {x: -10.805, y: 0.29, z: 1.947}
+    end: {x: -10.4357, y: 0.29, z: 1.947}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -10.4358, y: 0.29, z: -29.7472}
+    end: {x: -10.805, y: 0.29, z: -29.7472}
+    receiverDirection: {x: 0, y: 0, z: 1}
+  - start: {x: -10.805, y: 0.29, z: -29.7472}
+    end: {x: -10.87197, y: 0.29, z: -29.77886}
+    receiverDirection: {x: -0.426481, y: 0, z: 0.9044965}
+  - start: {x: -10.3614, y: 0.29, z: 10.9693}
+    end: {x: -9.9629, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -10.872, y: 0.29, z: 7.8202}
+    end: {x: -10.805, y: 0.29, z: 7.78869}
+    receiverDirection: {x: -0.4257255, y: 0, z: -0.9048524}
+  - start: {x: -10.805, y: 0.29, z: 7.7887}
+    end: {x: -9.2446, y: 0.29, z: 7.7887}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -9.2446, y: 0.29, z: 7.7887}
+    end: {x: -9.1776, y: 0.29, z: 7.82021}
+    receiverDirection: {x: 0.4260493, y: 0, z: -0.9046999}
+  - start: {x: -9.1776, y: 0.29, z: 7.8202}
+    end: {x: -9.1776, y: 0.29, z: 9.2724}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.8002, y: 0.29, z: 9.3039}
+    end: {x: -9.8002, y: 0.29, z: 10.9693}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.8002, y: 0.29, z: 10.9693}
+    end: {x: -5.4505, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -5.4218, y: 0.29, z: 10.0366}
+    end: {x: -3.4702, y: 0.29, z: 10.0366}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -3.4702, y: 0.29, z: 10.0366}
+    end: {x: -3.42409, y: 0.29, z: 10.1103}
+    receiverDirection: {x: 0.8477429, y: 0, z: -0.5304074}
+  - start: {x: -3.4241, y: 0.29, z: 10.1103}
+    end: {x: -3.4241, y: 0.29, z: 12.5442}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: 5.8201, y: 0.29, z: 12.5442}
+    end: {x: 5.8201, y: 0.29, z: 10.1103}
+    receiverDirection: {x: -1, y: 0, z: -0}
+  - start: {x: 5.8201, y: 0.29, z: 10.1103}
+    end: {x: 5.86623, y: 0.29, z: 10.03656}
+    receiverDirection: {x: -0.8472255, y: 0, z: -0.5312335}
+  - start: {x: 5.8663, y: 0.29, z: 10.0366}
+    end: {x: 7.5739, y: 0.29, z: 10.0366}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: 7.6027, y: 0.29, z: 10.9693}
+    end: {x: 28.2835, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+--- !u!114 &3609883865173622499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3606c28893e51b24aa2bfc1f1befa6ab, type: 3}
+  m_Name: "\uC800\uB141 \uD230"
+  m_EditorClassIdentifier: 
+  surfaceShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
+  toonEnabled: 0
+  background: 1
+  characters: 1
+  strength: 1
+  steps: 3
+  softness: 0.217
+  shadowTint: {r: 0.654088, g: 0.654088, b: 0.654088, a: 1}
+--- !u!114 &4089476261409722109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3606c28893e51b24aa2bfc1f1befa6ab, type: 3}
+  m_Name: "\uC0C8\uBCBD \uD230"
+  m_EditorClassIdentifier: 
+  surfaceShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
+  toonEnabled: 0
+  background: 1
+  characters: 1
+  strength: 1
+  steps: 3
+  softness: 0.217
+  shadowTint: {r: 0.654088, g: 0.654088, b: 0.654088, a: 1}
+--- !u!114 &5028875186956074297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c06f6bb442e64448ba56af64e8fbd2, type: 3}
+  m_Name: "\uC800\uB141 \uC7AC\uC9C8"
+  m_EditorClassIdentifier: 
+  surfaces:
+  - label: "\uAE08\uACE0 \uBB38\xB7\uC190\uC7A1\uC774\xB7\uACBD\uCCA9"
+    source: {fileID: 2100000, guid: d305991cbb0a8c346a8ccd53f061e006, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.55
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBC14\uB2E5"
+    source: {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+    tint: {r: 0.72327036, g: 0.70537275, b: 0.6345673, a: 1}
+    metallic: 0
+    smoothness: 0.595
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.29
+    groutContrast: 0.224
+    tileSize: 3.75
+  - label: "\uB370\uC2A4\uD06C \uC0C1\uD310"
+    source: {fileID: 2100000, guid: b58612d9b208ada41884269a89709969, type: 2}
+    tint: {r: 0.36477977, g: 0.31601375, b: 0.26956993, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uD30C\uB780\uC0C9"
+    source: {fileID: 2100000, guid: d52c8f4aee7db8f4dbf77d9123e33e79, type: 2}
+    tint: {r: 0.19186337, g: 0.42991778, b: 0.6855345, a: 1}
+    metallic: 0
+    smoothness: 0.405
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uC544\uC774\uBCF4\uB9AC\uC0C9"
+    source: {fileID: 2100000, guid: bbca0f85d9b02d24594da555f1e2526e, type: 2}
+    tint: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uB178\uB780\uC0C9"
+    source: {fileID: 2100000, guid: 1e1588efa2182fa4985aac6bd931058d, type: 2}
+    tint: {r: 0.16352195, g: 0.16352195, b: 0.16352195, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uC704 \uC18C\uD488"
+    source: {fileID: 2100000, guid: b0a97e13c880ade4cb44b2360ab2ba56, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAA8\uB2C8\uD130\xB7\uBC1B\uCE68\uB300"
+    source: {fileID: 2100000, guid: 3fad129ddd1bb2a4aadf56073c1e0303, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD604\uAE08\uC778\uCD9C\uAE30"
+    source: {fileID: 2100000, guid: 72a459f29dc23e74f87144e3f574e3c2, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uB178\uB780 \uB760"
+    source: {fileID: 2100000, guid: b900c029e329d3445a25ca0b878e4125, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uD30C\uB780 \uBC1B\uCE68"
+    source: {fileID: 2100000, guid: 4d3ad8e7891098d4785cba4337ee0643, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD\xB7\uAE30\uB465\xB7\uC7A5\uC2DD"
+    source: {fileID: 2100000, guid: c994b8db3634b6848852e703db81c94f, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC18C\uD30C"
+    source: {fileID: 2100000, guid: 506987dcffd3cf04898238921f146576, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD654\uBD84"
+    source: {fileID: 2100000, guid: cd49256b88868504b8e801463d0e87d1, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC0C1\uC544\uC0C9 \uBCBD\xB7\uAE30\uB465\xB7\uBAB0\uB529"
+    source: {fileID: 2100000, guid: 920bace23ddbef94d867eda4bd2bb76b, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uD14C\uB450\uB9AC"
+    source: {fileID: 2100000, guid: 26990b4caad071043a10456a36b05909, type: 2}
+    tint: {r: 0.67295593, g: 0.55656415, b: 0.55656415, a: 1}
+    metallic: 0.117
+    smoothness: 0.4
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC605\uC740 \uB178\uB791 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: d8155ba651bdfd34bbd79e9587047604, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.975, b: 0.85, a: 1}
+    emissionIntensity: 8
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uCD9C\uC785\uAD6C \uD6C4\uBA74 \xB7 \uD770 \uBC1C\uAD11 \uD328\uB110"
+    source: {fileID: 2100000, guid: 105a69a388e6719408d39732ed34b976, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.2
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 1.2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAB0\uB529\xB7\uBB38\uC591 \uC544\uB798 \uBC14 \xB7 \uC6D0\uB798 \uC605\uC740
+      \uB178\uB791"
+    source: {fileID: 2100000, guid: a7f71144791c6b848a93b5d3b0695c67, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC740\uD589 \uBB38\uC591 \xB7 \uAE08\uC18D"
+    source: {fileID: 2100000, guid: 10e5f28f5d7d5cf4bbfd0d1ac10545c7, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uBCF8\uCCB4"
+    source: {fileID: 2100000, guid: f604d6d9ebc418346a2b4cabf23e5c85, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.5
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uAE08\uC0C9 \uB05D\uB2E8"
+    source: {fileID: 2100000, guid: 8ec226c35dfc964428c547b5cdacf2f9, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: e2410faa09725e54f97c8eee5fe9fb53, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.3
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+--- !u!114 &5184290114833376359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca026b837f6125942a6dcaca67539dc0, type: 3}
+  m_Name: "\uC800\uB141 \uC811\uC810 \uC74C\uC601"
+  m_EditorClassIdentifier: 
+  shadingEnabled: 1
+  tint: {r: 0.25, g: 0.23, b: 0.21, a: 1}
+  strength: 0.238
+  width: 0.12
+  softness: 1
+  targetMaterials:
+  - {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+  contactShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
+  segments:
+  - start: {x: -9.1776, y: 0.29, z: -31.2309}
+    end: {x: -9.1776, y: 0.29, z: -29.7788}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.1776, y: 0.29, z: -29.7788}
+    end: {x: -9.24449, y: 0.29, z: -29.74717}
+    receiverDirection: {x: 0.4268054, y: 0, z: 0.9043435}
+  - start: {x: -9.2445, y: 0.29, z: -29.7472}
+    end: {x: -9.7656, y: 0.29, z: -29.7472}
+    receiverDirection: {x: 0, y: 0, z: 1}
+  - start: {x: -9.7656, y: 0.29, z: -29.7472}
+    end: {x: -9.7656, y: 0.29, z: 1.947}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.7656, y: 0.29, z: 1.947}
+    end: {x: -9.2446, y: 0.29, z: 1.947}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -9.2446, y: 0.29, z: 1.947}
+    end: {x: -9.1776, y: 0.29, z: 1.97851}
+    receiverDirection: {x: 0.4260493, y: 0, z: -0.9046999}
+  - start: {x: -9.1776, y: 0.29, z: 1.9785}
+    end: {x: -9.1776, y: 0.29, z: 3.4306}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -10.872, y: 0.29, z: 1.9785}
+    end: {x: -10.805, y: 0.29, z: 1.94699}
+    receiverDirection: {x: -0.4257255, y: 0, z: -0.9048524}
+  - start: {x: -10.805, y: 0.29, z: 1.947}
+    end: {x: -10.4357, y: 0.29, z: 1.947}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -10.4358, y: 0.29, z: -29.7472}
+    end: {x: -10.805, y: 0.29, z: -29.7472}
+    receiverDirection: {x: 0, y: 0, z: 1}
+  - start: {x: -10.805, y: 0.29, z: -29.7472}
+    end: {x: -10.87197, y: 0.29, z: -29.77886}
+    receiverDirection: {x: -0.426481, y: 0, z: 0.9044965}
+  - start: {x: -10.3614, y: 0.29, z: 10.9693}
+    end: {x: -9.9629, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -10.872, y: 0.29, z: 7.8202}
+    end: {x: -10.805, y: 0.29, z: 7.78869}
+    receiverDirection: {x: -0.4257255, y: 0, z: -0.9048524}
+  - start: {x: -10.805, y: 0.29, z: 7.7887}
+    end: {x: -9.2446, y: 0.29, z: 7.7887}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -9.2446, y: 0.29, z: 7.7887}
+    end: {x: -9.1776, y: 0.29, z: 7.82021}
+    receiverDirection: {x: 0.4260493, y: 0, z: -0.9046999}
+  - start: {x: -9.1776, y: 0.29, z: 7.8202}
+    end: {x: -9.1776, y: 0.29, z: 9.2724}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.8002, y: 0.29, z: 9.3039}
+    end: {x: -9.8002, y: 0.29, z: 10.9693}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.8002, y: 0.29, z: 10.9693}
+    end: {x: -5.4505, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -5.4218, y: 0.29, z: 10.0366}
+    end: {x: -3.4702, y: 0.29, z: 10.0366}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -3.4702, y: 0.29, z: 10.0366}
+    end: {x: -3.42409, y: 0.29, z: 10.1103}
+    receiverDirection: {x: 0.8477429, y: 0, z: -0.5304074}
+  - start: {x: -3.4241, y: 0.29, z: 10.1103}
+    end: {x: -3.4241, y: 0.29, z: 12.5442}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: 5.8201, y: 0.29, z: 12.5442}
+    end: {x: 5.8201, y: 0.29, z: 10.1103}
+    receiverDirection: {x: -1, y: 0, z: -0}
+  - start: {x: 5.8201, y: 0.29, z: 10.1103}
+    end: {x: 5.86623, y: 0.29, z: 10.03656}
+    receiverDirection: {x: -0.8472255, y: 0, z: -0.5312335}
+  - start: {x: 5.8663, y: 0.29, z: 10.0366}
+    end: {x: 7.5739, y: 0.29, z: 10.0366}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: 7.6027, y: 0.29, z: 10.9693}
+    end: {x: 28.2835, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+--- !u!114 &5235877797988808062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c06f6bb442e64448ba56af64e8fbd2, type: 3}
+  m_Name: "\uC624\uD6C4 \uC7AC\uC9C8"
+  m_EditorClassIdentifier: 
+  surfaces:
+  - label: "\uAE08\uACE0 \uBB38\xB7\uC190\uC7A1\uC774\xB7\uACBD\uCCA9"
+    source: {fileID: 2100000, guid: d305991cbb0a8c346a8ccd53f061e006, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.55
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBC14\uB2E5"
+    source: {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+    tint: {r: 0.72327036, g: 0.70537275, b: 0.6345673, a: 1}
+    metallic: 0
+    smoothness: 0.595
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.29
+    groutContrast: 0.224
+    tileSize: 3.75
+  - label: "\uB370\uC2A4\uD06C \uC0C1\uD310"
+    source: {fileID: 2100000, guid: b58612d9b208ada41884269a89709969, type: 2}
+    tint: {r: 0.36477977, g: 0.31601375, b: 0.26956993, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uD30C\uB780\uC0C9"
+    source: {fileID: 2100000, guid: d52c8f4aee7db8f4dbf77d9123e33e79, type: 2}
+    tint: {r: 0.19186337, g: 0.42991778, b: 0.6855345, a: 1}
+    metallic: 0
+    smoothness: 0.405
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uC544\uC774\uBCF4\uB9AC\uC0C9"
+    source: {fileID: 2100000, guid: bbca0f85d9b02d24594da555f1e2526e, type: 2}
+    tint: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uB178\uB780\uC0C9"
+    source: {fileID: 2100000, guid: 1e1588efa2182fa4985aac6bd931058d, type: 2}
+    tint: {r: 0.16352195, g: 0.16352195, b: 0.16352195, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uC704 \uC18C\uD488"
+    source: {fileID: 2100000, guid: b0a97e13c880ade4cb44b2360ab2ba56, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAA8\uB2C8\uD130\xB7\uBC1B\uCE68\uB300"
+    source: {fileID: 2100000, guid: 3fad129ddd1bb2a4aadf56073c1e0303, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD604\uAE08\uC778\uCD9C\uAE30"
+    source: {fileID: 2100000, guid: 72a459f29dc23e74f87144e3f574e3c2, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uB178\uB780 \uB760"
+    source: {fileID: 2100000, guid: b900c029e329d3445a25ca0b878e4125, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uD30C\uB780 \uBC1B\uCE68"
+    source: {fileID: 2100000, guid: 4d3ad8e7891098d4785cba4337ee0643, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD\xB7\uAE30\uB465\xB7\uC7A5\uC2DD"
+    source: {fileID: 2100000, guid: c994b8db3634b6848852e703db81c94f, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC18C\uD30C"
+    source: {fileID: 2100000, guid: 506987dcffd3cf04898238921f146576, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD654\uBD84"
+    source: {fileID: 2100000, guid: cd49256b88868504b8e801463d0e87d1, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC0C1\uC544\uC0C9 \uBCBD\xB7\uAE30\uB465\xB7\uBAB0\uB529"
+    source: {fileID: 2100000, guid: 920bace23ddbef94d867eda4bd2bb76b, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uD14C\uB450\uB9AC"
+    source: {fileID: 2100000, guid: 26990b4caad071043a10456a36b05909, type: 2}
+    tint: {r: 0.67295593, g: 0.55656415, b: 0.55656415, a: 1}
+    metallic: 0.117
+    smoothness: 0.4
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC605\uC740 \uB178\uB791 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: d8155ba651bdfd34bbd79e9587047604, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.975, b: 0.85, a: 1}
+    emissionIntensity: 8
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uCD9C\uC785\uAD6C \uD6C4\uBA74 \xB7 \uD770 \uBC1C\uAD11 \uD328\uB110"
+    source: {fileID: 2100000, guid: 105a69a388e6719408d39732ed34b976, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.2
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 1.2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAB0\uB529\xB7\uBB38\uC591 \uC544\uB798 \uBC14 \xB7 \uC6D0\uB798 \uC605\uC740
+      \uB178\uB791"
+    source: {fileID: 2100000, guid: a7f71144791c6b848a93b5d3b0695c67, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC740\uD589 \uBB38\uC591 \xB7 \uAE08\uC18D"
+    source: {fileID: 2100000, guid: 10e5f28f5d7d5cf4bbfd0d1ac10545c7, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uBCF8\uCCB4"
+    source: {fileID: 2100000, guid: f604d6d9ebc418346a2b4cabf23e5c85, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.5
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uAE08\uC0C9 \uB05D\uB2E8"
+    source: {fileID: 2100000, guid: 8ec226c35dfc964428c547b5cdacf2f9, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: e2410faa09725e54f97c8eee5fe9fb53, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.3
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+--- !u!114 &5600064265741454334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3606c28893e51b24aa2bfc1f1befa6ab, type: 3}
+  m_Name: "\uC544\uCE68 \uD230"
+  m_EditorClassIdentifier: 
+  surfaceShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
+  toonEnabled: 0
+  background: 1
+  characters: 1
+  strength: 1
+  steps: 3
+  softness: 0.217
+  shadowTint: {r: 0.654088, g: 0.654088, b: 0.654088, a: 1}
+--- !u!114 &6231569676992808501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1643420ee9dd85439ef7d41cad56b5a, type: 3}
+  m_Name: "\uC624\uD6C4 \uC2E4\uB0B4 \uC870\uBA85"
+  m_EditorClassIdentifier: 
+  ibl:
+    enabled: 1
+    environment: {fileID: 11400000, guid: 8819e1a4a54d34e4e9dbaf206931e4a5, type: 2}
+    diffuseIntensity: 0.6
+    specularIntensity: 0.5
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    rotation: 0
+    bankProbeBlend: 0.25
+  characterLighting: 0
+  ssaoFeature: {fileID: -1878332245247344467, guid: ae0cc4904269f6c45906c992c0d617c2,
+    type: 2}
+  ssaoEnabled: 1
+  ssaoIntensity: 1.58
+  ssaoRadius: 0.54
+  ssaoDirectLightingStrength: 0.752
+  ssaoDownsample: 0
+  localAttachmentShadowMaterial: {fileID: 2100000, guid: b751423f1d72ddc47933c78bad91c88c,
+    type: 2}
+  ambientColor: {r: 0.65, g: 0.68, b: 0.73, a: 1}
+  ambientIntensity: 0.95
+  reflectionIntensity: 0.89
+  reflectionPosition: {x: 8.215331, y: 5, z: -5.4730535}
+  reflectionSize: {x: 44.23108, y: 26, z: 50.399998}
+  glyphHaloColor: {r: 1, g: 1, b: 1, a: 1}
+  glyphHaloIntensity: 1.23
+  glyphHaloWidth: 0.215
+  lights:
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 1"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -21.892214}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 2"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -8.893712}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 3"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: 2.7365267}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 1 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 2.6646929}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 106
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 2 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 8.506494}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 101
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 3 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -4.589, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 55
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 4 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 6.87, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 89
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 1.258, y: 7.14, z: 11.208817}
+    rotation: {x: 67.258415, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 91
+    range: 70
+    spotAngle: 88
+    innerSpotRatio: 0.712
+    shadows: 2
+    shadowStrength: 0.566
+    shadowBias: 0.05
+    shadowNormalBias: 0.1
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 1"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -6.3}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.97044027, b: 0.8522012, a: 1}
+    intensity: 79
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.515
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 2"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -3.75}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 32.3
+    spotAngle: 120
+    innerSpotRatio: 0.523
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 3"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -1.2}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.499
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 8\uC2DC 30\uBD84 \uADF8\uB9BC\uC790"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 6, y: 14, z: 6}
+    rotation: {x: 49.1, y: 207.2, z: 0}
+    color: {r: 1, g: 0.9686275, b: 0.85098046, a: 1}
+    intensity: 1
+    range: 47.1
+    spotAngle: 135
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0
+    shadowNormalBias: 0
+  - playerBackFill: 1
+    label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 0, y: 14, z: 0}
+    rotation: {x: 25, y: -34.45, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 0.6
+    range: 55.6
+    spotAngle: 58
+    innerSpotRatio: 0.406
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+--- !u!114 &7141399237437950715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3606c28893e51b24aa2bfc1f1befa6ab, type: 3}
+  m_Name: "\uC624\uD6C4 \uD230"
+  m_EditorClassIdentifier: 
+  surfaceShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
+  toonEnabled: 0
+  background: 1
+  characters: 1
+  strength: 1
+  steps: 3
+  softness: 0.217
+  shadowTint: {r: 0.654088, g: 0.654088, b: 0.654088, a: 1}
+--- !u!114 &7188945166802195508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca026b837f6125942a6dcaca67539dc0, type: 3}
+  m_Name: "\uC0C8\uBCBD \uC811\uC810 \uC74C\uC601"
+  m_EditorClassIdentifier: 
+  shadingEnabled: 1
+  tint: {r: 0.25, g: 0.23, b: 0.21, a: 1}
+  strength: 0.238
+  width: 0.12
+  softness: 1
+  targetMaterials:
+  - {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+  contactShader: {fileID: 4800000, guid: b77b00d0ed0aeda479043f7b21ea266f, type: 3}
+  segments:
+  - start: {x: -9.1776, y: 0.29, z: -31.2309}
+    end: {x: -9.1776, y: 0.29, z: -29.7788}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.1776, y: 0.29, z: -29.7788}
+    end: {x: -9.24449, y: 0.29, z: -29.74717}
+    receiverDirection: {x: 0.4268054, y: 0, z: 0.9043435}
+  - start: {x: -9.2445, y: 0.29, z: -29.7472}
+    end: {x: -9.7656, y: 0.29, z: -29.7472}
+    receiverDirection: {x: 0, y: 0, z: 1}
+  - start: {x: -9.7656, y: 0.29, z: -29.7472}
+    end: {x: -9.7656, y: 0.29, z: 1.947}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.7656, y: 0.29, z: 1.947}
+    end: {x: -9.2446, y: 0.29, z: 1.947}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -9.2446, y: 0.29, z: 1.947}
+    end: {x: -9.1776, y: 0.29, z: 1.97851}
+    receiverDirection: {x: 0.4260493, y: 0, z: -0.9046999}
+  - start: {x: -9.1776, y: 0.29, z: 1.9785}
+    end: {x: -9.1776, y: 0.29, z: 3.4306}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -10.872, y: 0.29, z: 1.9785}
+    end: {x: -10.805, y: 0.29, z: 1.94699}
+    receiverDirection: {x: -0.4257255, y: 0, z: -0.9048524}
+  - start: {x: -10.805, y: 0.29, z: 1.947}
+    end: {x: -10.4357, y: 0.29, z: 1.947}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -10.4358, y: 0.29, z: -29.7472}
+    end: {x: -10.805, y: 0.29, z: -29.7472}
+    receiverDirection: {x: 0, y: 0, z: 1}
+  - start: {x: -10.805, y: 0.29, z: -29.7472}
+    end: {x: -10.87197, y: 0.29, z: -29.77886}
+    receiverDirection: {x: -0.426481, y: 0, z: 0.9044965}
+  - start: {x: -10.3614, y: 0.29, z: 10.9693}
+    end: {x: -9.9629, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -10.872, y: 0.29, z: 7.8202}
+    end: {x: -10.805, y: 0.29, z: 7.78869}
+    receiverDirection: {x: -0.4257255, y: 0, z: -0.9048524}
+  - start: {x: -10.805, y: 0.29, z: 7.7887}
+    end: {x: -9.2446, y: 0.29, z: 7.7887}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -9.2446, y: 0.29, z: 7.7887}
+    end: {x: -9.1776, y: 0.29, z: 7.82021}
+    receiverDirection: {x: 0.4260493, y: 0, z: -0.9046999}
+  - start: {x: -9.1776, y: 0.29, z: 7.8202}
+    end: {x: -9.1776, y: 0.29, z: 9.2724}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.8002, y: 0.29, z: 9.3039}
+    end: {x: -9.8002, y: 0.29, z: 10.9693}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: -9.8002, y: 0.29, z: 10.9693}
+    end: {x: -5.4505, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -5.4218, y: 0.29, z: 10.0366}
+    end: {x: -3.4702, y: 0.29, z: 10.0366}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: -3.4702, y: 0.29, z: 10.0366}
+    end: {x: -3.42409, y: 0.29, z: 10.1103}
+    receiverDirection: {x: 0.8477429, y: 0, z: -0.5304074}
+  - start: {x: -3.4241, y: 0.29, z: 10.1103}
+    end: {x: -3.4241, y: 0.29, z: 12.5442}
+    receiverDirection: {x: 1, y: -0, z: 0}
+  - start: {x: 5.8201, y: 0.29, z: 12.5442}
+    end: {x: 5.8201, y: 0.29, z: 10.1103}
+    receiverDirection: {x: -1, y: 0, z: -0}
+  - start: {x: 5.8201, y: 0.29, z: 10.1103}
+    end: {x: 5.86623, y: 0.29, z: 10.03656}
+    receiverDirection: {x: -0.8472255, y: 0, z: -0.5312335}
+  - start: {x: 5.8663, y: 0.29, z: 10.0366}
+    end: {x: 7.5739, y: 0.29, z: 10.0366}
+    receiverDirection: {x: -0, y: 0, z: -1}
+  - start: {x: 7.6027, y: 0.29, z: 10.9693}
+    end: {x: 28.2835, y: 0.29, z: 10.9693}
+    receiverDirection: {x: -0, y: 0, z: -1}
+--- !u!114 &8056229817750650466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1643420ee9dd85439ef7d41cad56b5a, type: 3}
+  m_Name: "\uC800\uB141 \uC2E4\uB0B4 \uC870\uBA85"
+  m_EditorClassIdentifier: 
+  ibl:
+    enabled: 1
+    environment: {fileID: 11400000, guid: 8819e1a4a54d34e4e9dbaf206931e4a5, type: 2}
+    diffuseIntensity: 0.6
+    specularIntensity: 0.5
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    rotation: 0
+    bankProbeBlend: 0.25
+  characterLighting: 0
+  ssaoFeature: {fileID: -1878332245247344467, guid: ae0cc4904269f6c45906c992c0d617c2,
+    type: 2}
+  ssaoEnabled: 1
+  ssaoIntensity: 1.58
+  ssaoRadius: 0.54
+  ssaoDirectLightingStrength: 0.752
+  ssaoDownsample: 0
+  localAttachmentShadowMaterial: {fileID: 2100000, guid: b751423f1d72ddc47933c78bad91c88c,
+    type: 2}
+  ambientColor: {r: 0.65, g: 0.68, b: 0.73, a: 1}
+  ambientIntensity: 0.95
+  reflectionIntensity: 0.89
+  reflectionPosition: {x: 8.215331, y: 5, z: -5.4730535}
+  reflectionSize: {x: 44.23108, y: 26, z: 50.399998}
+  glyphHaloColor: {r: 1, g: 1, b: 1, a: 1}
+  glyphHaloIntensity: 1.23
+  glyphHaloWidth: 0.215
+  lights:
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 1"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -21.892214}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 2"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -8.893712}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 3"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: 2.7365267}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 1 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 2.6646929}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 106
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 2 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 8.506494}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 101
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 3 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -4.589, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 55
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 4 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 6.87, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 89
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 1.258, y: 7.14, z: 11.208817}
+    rotation: {x: 67.258415, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 91
+    range: 70
+    spotAngle: 88
+    innerSpotRatio: 0.712
+    shadows: 2
+    shadowStrength: 0.566
+    shadowBias: 0.05
+    shadowNormalBias: 0.1
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 1"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -6.3}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.97044027, b: 0.8522012, a: 1}
+    intensity: 79
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.515
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 2"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -3.75}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 32.3
+    spotAngle: 120
+    innerSpotRatio: 0.523
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 3"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -1.2}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.499
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 8\uC2DC 30\uBD84 \uADF8\uB9BC\uC790"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 6, y: 14, z: 6}
+    rotation: {x: 49.1, y: 207.2, z: 0}
+    color: {r: 1, g: 0.9686275, b: 0.85098046, a: 1}
+    intensity: 1
+    range: 47.1
+    spotAngle: 135
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0
+    shadowNormalBias: 0
+  - playerBackFill: 1
+    label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 0, y: 14, z: 0}
+    rotation: {x: 25, y: -34.45, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 0.6
+    range: 55.6
+    spotAngle: 58
+    innerSpotRatio: 0.406
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+--- !u!114 &8134372439245491502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c06f6bb442e64448ba56af64e8fbd2, type: 3}
+  m_Name: "\uC544\uCE68 \uC7AC\uC9C8"
+  m_EditorClassIdentifier: 
+  surfaces:
+  - label: "\uAE08\uACE0 \uBB38\xB7\uC190\uC7A1\uC774\xB7\uACBD\uCCA9"
+    source: {fileID: 2100000, guid: d305991cbb0a8c346a8ccd53f061e006, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.55
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBC14\uB2E5"
+    source: {fileID: 2100000, guid: b079a106e41c0c7428e49638ddea796e, type: 2}
+    tint: {r: 0.72327036, g: 0.70537275, b: 0.6345673, a: 1}
+    metallic: 0
+    smoothness: 0.595
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.29
+    groutContrast: 0.224
+    tileSize: 3.75
+  - label: "\uB370\uC2A4\uD06C \uC0C1\uD310"
+    source: {fileID: 2100000, guid: b58612d9b208ada41884269a89709969, type: 2}
+    tint: {r: 0.36477977, g: 0.31601375, b: 0.26956993, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uD30C\uB780\uC0C9"
+    source: {fileID: 2100000, guid: d52c8f4aee7db8f4dbf77d9123e33e79, type: 2}
+    tint: {r: 0.19186337, g: 0.42991778, b: 0.6855345, a: 1}
+    metallic: 0
+    smoothness: 0.405
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uC544\uC774\uBCF4\uB9AC\uC0C9"
+    source: {fileID: 2100000, guid: bbca0f85d9b02d24594da555f1e2526e, type: 2}
+    tint: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uBAB8\uCCB4 \xB7 \uB178\uB780\uC0C9"
+    source: {fileID: 2100000, guid: 1e1588efa2182fa4985aac6bd931058d, type: 2}
+    tint: {r: 0.16352195, g: 0.16352195, b: 0.16352195, a: 1}
+    metallic: 0
+    smoothness: 0
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uB370\uC2A4\uD06C \uC704 \uC18C\uD488"
+    source: {fileID: 2100000, guid: b0a97e13c880ade4cb44b2360ab2ba56, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAA8\uB2C8\uD130\xB7\uBC1B\uCE68\uB300"
+    source: {fileID: 2100000, guid: 3fad129ddd1bb2a4aadf56073c1e0303, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD604\uAE08\uC778\uCD9C\uAE30"
+    source: {fileID: 2100000, guid: 72a459f29dc23e74f87144e3f574e3c2, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uB178\uB780 \uB760"
+    source: {fileID: 2100000, guid: b900c029e329d3445a25ca0b878e4125, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uD558\uB2E8 \uD30C\uB780 \uBC1B\uCE68"
+    source: {fileID: 2100000, guid: 4d3ad8e7891098d4785cba4337ee0643, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD\xB7\uAE30\uB465\xB7\uC7A5\uC2DD"
+    source: {fileID: 2100000, guid: c994b8db3634b6848852e703db81c94f, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC18C\uD30C"
+    source: {fileID: 2100000, guid: 506987dcffd3cf04898238921f146576, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uD654\uBD84"
+    source: {fileID: 2100000, guid: cd49256b88868504b8e801463d0e87d1, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC0C1\uC544\uC0C9 \uBCBD\xB7\uAE30\uB465\xB7\uBAB0\uB529"
+    source: {fileID: 2100000, guid: 920bace23ddbef94d867eda4bd2bb76b, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uD14C\uB450\uB9AC"
+    source: {fileID: 2100000, guid: 26990b4caad071043a10456a36b05909, type: 2}
+    tint: {r: 0.67295593, g: 0.55656415, b: 0.55656415, a: 1}
+    metallic: 0.117
+    smoothness: 0.4
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBCBD \uB7A8\uD504 \xB7 \uC605\uC740 \uB178\uB791 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: d8155ba651bdfd34bbd79e9587047604, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.975, b: 0.85, a: 1}
+    emissionIntensity: 8
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uCD9C\uC785\uAD6C \uD6C4\uBA74 \xB7 \uD770 \uBC1C\uAD11 \uD328\uB110"
+    source: {fileID: 2100000, guid: 105a69a388e6719408d39732ed34b976, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.2
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 1.2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uBAB0\uB529\xB7\uBB38\uC591 \uC544\uB798 \uBC14 \xB7 \uC6D0\uB798 \uC605\uC740
+      \uB178\uB791"
+    source: {fileID: 2100000, guid: a7f71144791c6b848a93b5d3b0695c67, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.15
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uC740\uD589 \uBB38\uC591 \xB7 \uAE08\uC18D"
+    source: {fileID: 2100000, guid: 10e5f28f5d7d5cf4bbfd0d1ac10545c7, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.35
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 1, b: 1, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uC740\uBC31\uC0C9 \uBCF8\uCCB4"
+    source: {fileID: 2100000, guid: f604d6d9ebc418346a2b4cabf23e5c85, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.5
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uAE08\uC0C9 \uB05D\uB2E8"
+    source: {fileID: 2100000, guid: 8ec226c35dfc964428c547b5cdacf2f9, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0.65
+    smoothness: 0.45
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 0
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+  - label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504 \xB7 \uBC1C\uAD11\uBA74"
+    source: {fileID: 2100000, guid: e2410faa09725e54f97c8eee5fe9fb53, type: 2}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    metallic: 0
+    smoothness: 0.3
+    specularHighlights: 1
+    environmentReflections: 1
+    emissionColor: {r: 1, g: 0.985, b: 0.94, a: 1}
+    emissionIntensity: 2
+    normalStrength: 0.35
+    groutContrast: 0
+    tileSize: 8
+--- !u!114 &8320922582577412317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1643420ee9dd85439ef7d41cad56b5a, type: 3}
+  m_Name: "\uC544\uCE68 \uC2E4\uB0B4 \uC870\uBA85"
+  m_EditorClassIdentifier: 
+  ibl:
+    enabled: 1
+    environment: {fileID: 11400000, guid: 8819e1a4a54d34e4e9dbaf206931e4a5, type: 2}
+    diffuseIntensity: 0.6
+    specularIntensity: 0.5
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    rotation: 0
+    bankProbeBlend: 0.25
+  characterLighting: 0
+  ssaoFeature: {fileID: -1878332245247344467, guid: ae0cc4904269f6c45906c992c0d617c2,
+    type: 2}
+  ssaoEnabled: 1
+  ssaoIntensity: 1.58
+  ssaoRadius: 0.54
+  ssaoDirectLightingStrength: 0.752
+  ssaoDownsample: 0
+  localAttachmentShadowMaterial: {fileID: 2100000, guid: b751423f1d72ddc47933c78bad91c88c,
+    type: 2}
+  ambientColor: {r: 0.65, g: 0.68, b: 0.73, a: 1}
+  ambientIntensity: 0.95
+  reflectionIntensity: 0.89
+  reflectionPosition: {x: 8.215331, y: 5, z: -5.4730535}
+  reflectionSize: {x: 44.23108, y: 26, z: 50.399998}
+  glyphHaloColor: {r: 1, g: 1, b: 1, a: 1}
+  glyphHaloIntensity: 1.23
+  glyphHaloWidth: 0.215
+  lights:
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 1"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -21.892214}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 2"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: -8.893712}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 3"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 7.5808697, y: 14, z: 2.7365267}
+    rotation: {x: 90, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.96, a: 1}
+    intensity: 50
+    range: 70
+    spotAngle: 145
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 0.2
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 1 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 2.6646929}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 106
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 2 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -7.631077, y: 11.5, z: 8.506494}
+    rotation: {x: 79.3804, y: 270, z: -0.000018531253}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 101
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 3 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: -4.589, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 55
+    range: 70
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uBCBD \uB7A8\uD504 4 \xB7 \uCC9C\uC7A5 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 6.87, y: 11.5, z: 8.7}
+    rotation: {x: 79.38035, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 89
+    range: 16
+    spotAngle: 120
+    innerSpotRatio: 0.05
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uAE08\uACE0 \uC0C1\uBD80 \uB7A8\uD504"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 0
+    position: {x: 1.258, y: 7.14, z: 11.208817}
+    rotation: {x: 67.258415, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.94, a: 1}
+    intensity: 91
+    range: 70
+    spotAngle: 88
+    innerSpotRatio: 0.712
+    shadows: 2
+    shadowStrength: 0.566
+    shadowBias: 0.05
+    shadowNormalBias: 0.1
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 1"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -6.3}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.97044027, b: 0.8522012, a: 1}
+    intensity: 79
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.515
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 2"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -3.75}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 32.3
+    spotAngle: 120
+    innerSpotRatio: 0.523
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCE74\uC6B4\uD130 \uC6D4\uC2A4\uD3FF 3"
+    fixturePrefab: {fileID: 6711049145926156630, guid: 919fd15b92f67ad488c960c190c1a5c2,
+      type: 3}
+    enabled: 1
+    type: 0
+    position: {x: -9.1610775, y: 6.95, z: -1.2}
+    rotation: {x: 65.772255, y: 90, z: 0}
+    color: {r: 1, g: 0.95686275, b: 0.7647059, a: 1}
+    intensity: 77
+    range: 25
+    spotAngle: 110
+    innerSpotRatio: 0.499
+    shadows: 2
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2
+  - playerBackFill: 0
+    label: "\uCC9C\uC7A5 \uC8FC\uAD11 \xB7 8\uC2DC 30\uBD84 \uADF8\uB9BC\uC790"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 6, y: 14, z: 6}
+    rotation: {x: 49.1, y: 207.2, z: 0}
+    color: {r: 1, g: 0.9686275, b: 0.85098046, a: 1}
+    intensity: 1
+    range: 47.1
+    spotAngle: 135
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0
+    shadowNormalBias: 0
+  - playerBackFill: 1
+    label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
+    fixturePrefab: {fileID: 0}
+    enabled: 1
+    type: 2
+    position: {x: 0, y: 14, z: 0}
+    rotation: {x: 25, y: -34.45, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 0.6
+    range: 55.6
+    spotAngle: 58
+    innerSpotRatio: 0.406
+    shadows: 0
+    shadowStrength: 0.65
+    shadowBias: 0.05
+    shadowNormalBias: 0.2

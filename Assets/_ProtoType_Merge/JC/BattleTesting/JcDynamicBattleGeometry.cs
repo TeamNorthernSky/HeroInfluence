@@ -416,7 +416,7 @@ namespace JC.BattleTesting
                 // JC | 2026-11-13 | 본게임·테스트 배경 생성에 동일한 튜토리얼 도로 접합 처리를 적용합니다.
                 output.AddDistantGround(source, transform);
                 if (source.sourceScene != null && source.sourceScene.EndsWith("/TutorialExploreScene.unity", StringComparison.Ordinal)) RepairTutorialRoads(root);
-                Debug.Log(output.Report,root);
+                // JC | 2026-11-17 | 전투 진입·시각 준비의 정상 처리 개발 로그를 제거합니다.
                 return root;
             }
             catch{if(Application.isPlaying)UnityEngine.Object.Destroy(root);else UnityEngine.Object.DestroyImmediate(root);throw;}

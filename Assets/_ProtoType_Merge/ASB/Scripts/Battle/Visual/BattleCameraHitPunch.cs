@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
@@ -88,6 +88,8 @@ public sealed class BattleCameraHitPunch : MonoBehaviour
     private void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
     {
         if (camera != _camera || _applied) return;
+        // JC | 2026-11-16 | 전투는 공용 연출기가 기존 타격 줌을 합성합니다. 경계/FOV 재검사 없이 기존 결과를 보존하며 비전투는 기존 경로입니다.
+        if (BattlePresentationController.ForCamera(camera)) return;
         float amount = Evaluate();
         if (amount <= 0.0001f) return;
         _savedFov = camera.fieldOfView;

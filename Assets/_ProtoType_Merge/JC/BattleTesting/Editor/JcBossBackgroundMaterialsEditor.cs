@@ -15,16 +15,23 @@ namespace JC.BattleTesting.Editor
         {
             var settings = (JcBossBackgroundMaterials)target;
             var draft = settings.GlassDraft;
-            if (!draft) return;
+            // JC | 2026-11-17 | 미초기화 상태도 빈 인스펙터 대신 실제 사용 위치를 안내합니다.
+            if (!draft)
+            {
+                EditorGUILayout.HelpBox("보스 전투 진입 후 JC_IndoorEnvironment 또는 하위 JC_Materials에서 유리를 조절할 수 있습니다.", MessageType.Info);
+                return;
+            }
             EditorGUILayout.LabelField("보스 홀 유리", EditorStyles.boldLabel);
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.ObjectField("저장 대상", settings.GlassProfile, typeof(Material), false);
-            EditorGUILayout.HelpBox("현재 전투에서 바로 확인할 수 있습니다. 저장하면 다음 보스전에도 적용됩니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("현재 전투의 초안에 즉시 반영됩니다. 아래 저장 버튼을 눌러야 Play 종료 후와 다음 보스전에도 유지됩니다. 불투명도 0은 투과 유리, 1은 배경을 가리는 틴트색입니다.", MessageType.Info);
+            // JC | 2026-11-17 | 색의 흡수량과 별도로 배경 투과를 가리는 불투명도를 조절합니다.
+            FloatControl(draft, "_Opacity", "불투명도", 0, 1);
             Color color = draft.GetColor(Tint);
             Color.RGBToHSV(color, out float hue, out float saturation, out float value);
             if (saturation > 0f && value > 0f) lastHue = hue;
             EditorGUI.BeginChangeCheck();
-            var picked = EditorGUILayout.ColorField(new GUIContent("유리 색상"), color, true, false, false);
+            var picked = EditorGUILayout.ColorField(new GUIContent("유리 틴트"), color, true, false, false);
             if (EditorGUI.EndChangeCheck())
             {
                 draft.SetColor(Tint, picked);
@@ -44,6 +51,11 @@ namespace JC.BattleTesting.Editor
             FloatControl(draft,"_Absorption","착색 강도",0,8);
             FloatControl(draft,"_ReflectionStrength","표면 반사 강도",0,1);
             FloatControl(draft,"_ReflectionRoughness","표면 반사 거칠기",0,1);
+            // JC | 2026-11-17 | 직접광의 광택과 환경 반사를 구별해 저장하고 시간대별 유리에도 같은 항목을 제공합니다.
+            EditorGUILayout.Space();EditorGUILayout.LabelField("광택 · 직접광 하이라이트",EditorStyles.boldLabel);
+            FloatControl(draft,"_GlossStrength","광택 강도",0,4);
+            FloatControl(draft,"_GlossSmoothness","광택 선명도",0,1);
+            draft.SetColor("_GlossTint",EditorGUILayout.ColorField("광택 색상",draft.GetColor("_GlossTint")));
             settings.ApplyGlass();
             if (GUILayout.Button("현재 유리 값을 프로필에 저장"))
             {
@@ -57,14 +69,8 @@ namespace JC.BattleTesting.Editor
             DrawSurfaces(settings);
         }
 
-        static void CopyGlass(Material source, Material destination)
-        {
-            destination.SetColor(Tint, source.GetColor(Tint));
-            destination.SetFloat(Face, source.GetFloat(Face));
-            destination.SetFloat(Edge, source.GetFloat(Edge));
-            foreach(var name in new[]{"_Thickness","_IOR","_RefractionStrength","_Absorption","_ReflectionStrength","_ReflectionRoughness"})
-                destination.SetFloat(name,source.GetFloat(name));
-        }
+        // JC | 2026-11-17 | 에디트/플레이/시간대 캐시가 같은 유리 속성 목록으로 저장·불러오기합니다.
+        static void CopyGlass(Material source, Material destination) => JcBossBackgroundMaterials.CopyGlassValues(source,destination);
 
         static void FloatControl(Material draft,string property,string label,float min,float max)
         { draft.SetFloat(property,EditorGUILayout.Slider(label,draft.GetFloat(property),min,max)); }
@@ -76,8 +82,18 @@ namespace JC.BattleTesting.Editor
             EditorGUILayout.Space(); EditorGUILayout.LabelField("실내 표면 · 큼직한 바닥 줄눈",EditorStyles.boldLabel);
             using(new EditorGUI.DisabledScope(true)) EditorGUILayout.ObjectField("저장 대상",settings.SurfaceSource,typeof(JcBossSurfaceProfile),false);
             var serialized = new SerializedObject(settings.SurfaceDraft); serialized.Update();
-            foreach(var field in new[]{"tileSize","jointWidth","jointContrast","jointNormal","tileVariation"})
+            foreach(var field in new[]{"tileSize","tileOffset","jointWidth","jointContrast","jointNormal","tileVariation"})
                 EditorGUILayout.PropertyField(serialized.FindProperty(field),true);
+            // JC | 2026-11-17 | 전체 복원도 저장된 현재 시간대 초안만 수정하고 원본 프로필은 저장 버튼으로 반영합니다.
+            if (GUILayout.Button("실내 표면 색상 모두 기본값으로 되돌리기"))
+            {
+                var list = serialized.FindProperty("surfaces");
+                for (int i = 0; i < list.arraySize; i++)
+                {
+                    var item = list.GetArrayElementAtIndex(i);
+                    item.FindPropertyRelative("color").colorValue = item.FindPropertyRelative("defaultColor").colorValue;
+                }
+            }
             DrawSurfaceList(serialized.FindProperty("surfaces"));
             if(serialized.ApplyModifiedProperties())settings.ApplySurfaces();
             if(GUILayout.Button("현재 실내 표면 값을 프로필에 저장"))
@@ -110,14 +126,21 @@ namespace JC.BattleTesting.Editor
                     case "WovenEmblem": title = "중앙 카펫 · WovenEmblem"; break;
                     case "FurnitureLacquer": title = "책상 · FurnitureLacquer"; break;
                     case "HallStone": title = item.FindPropertyRelative("rendererPath").stringValue == "FinalStage/Floor"
-                        ? "홀 바닥 · HallStone" : "홀 벽·기둥 · HallStone"; break;
+                        ? "홀 바닥 · HallStone" : item.FindPropertyRelative("rendererPath").stringValue == "FinalStage/Pillar"
+                        ? "기둥 석재 · HallStone" : "홀 석재 · HallStone"; break; // JC | 2026-11-17 | 기둥 전용 색을 바닥과 구별합니다.
                     case "WarmStone": title = "웜스톤 · WarmStone"; break;
                 }
                 item.isExpanded = EditorGUILayout.Foldout(item.isExpanded, title, true);
                 if (!item.isExpanded) continue;
                 using (new EditorGUI.IndentLevelScope())
-                    foreach (var field in new[] { "source", "rendererPath", "floorTiles", "smoothness", "specular", "variation" })
+                {
+                    // JC | 2026-11-17 | 색 변경과 기본색 복원을 같은 행 가까이에 제공하며 기준색은 편집하지 못하게 숨깁니다.
+                    EditorGUILayout.PropertyField(item.FindPropertyRelative("color"));
+                    if (GUILayout.Button("이 표면 색상 기본값으로 되돌리기"))
+                        item.FindPropertyRelative("color").colorValue = item.FindPropertyRelative("defaultColor").colorValue;
+                    foreach (var field in new[] { "source", "rendererPath", "additionalRendererPaths", "colorOnly", "floorTiles", "smoothness", "specular", "variation" })
                         EditorGUILayout.PropertyField(item.FindPropertyRelative(field), true);
+                }
             }
         }
     }

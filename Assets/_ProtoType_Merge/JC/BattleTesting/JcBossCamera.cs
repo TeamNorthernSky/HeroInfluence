@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace JC.BattleTesting
 {
-    // JC | 2026-11-16 | 보스 기본뷰는 저장한 구도에 기준 배치 대비 이동량만 더합니다. 무대 경계 검사와 자동 회전/이동 제한은 폐기했습니다.
+    // JC | 2026-11-16 | 보스 기본뷰는 저장한 구도에 기준 배치 대비 이동량만 더합니다. 스킬은 일반 전투 경로를 사용하며 보스 전용 경계/앵글 제한을 적용하지 않습니다.
     public sealed class JcBossCamera : MonoBehaviour
     {
         public JcBossCameraProfile Source { get; private set; }
@@ -35,6 +35,13 @@ namespace JC.BattleTesting
                 presentation.BossCamera = this;
                 presentation.cameraProfile = Draft;
             }
+            // JC | 2026-11-17 | 본게임/테스트 공통 초기화에서 동일 초안에 연결된 조절 진입점을 만듭니다. 별도 카메라 루프는 없습니다.
+            if (!GetComponentInChildren<JcBossFollowOffsetControls>(true))
+            {
+                var follow = new GameObject("JC_FollowOffset");
+                follow.transform.SetParent(transform, false);
+                follow.AddComponent<JcBossFollowOffsetControls>();
+            }
             ApplyDraft();
         }
 
@@ -58,18 +65,21 @@ namespace JC.BattleTesting
         public void ApplyDraft()
         {
             // JC | 2026-11-16 | 스킬 중 편집값은 복귀 후 반영해 추적/애니메이션의 카메라 소유권을 보존합니다.
-            if (!CanCaptureBase) { refreshBase = true; return; }
+            if (!CanCaptureBase)
+            {
+                refreshBase = true; return;
+            }
             ResolveView(0, out var position, out var rotation, out var fov);
             ApplyPose(position, rotation, fov);
         }
 
         public void ApplyPose(Vector3 position, Quaternion rotation, float fov)
         {
-            lens.transform.SetPositionAndRotation(position, rotation);
-            lens.fieldOfView = fov;
+            // JC | 2026-11-16 | 기본뷰도 공통 최종 출력만 사용합니다. 보스 스킬 제한/보정은 없습니다.
+            BattlePresentationController.WriteCameraPose(lens,position,rotation,fov);
         }
 
-        // JC | 2026-11-16 | 스킬용 임시 각도/정본 변환은 롤백했습니다. 이 조절기는 저장 기본뷰와 배치 평행이동만 담당합니다.
+        // JC | 2026-11-16 | 공용 스킬 종료 후 보류한 기본뷰/배치 편집만 적용합니다.
         public void EndAttack()
         {
             if (refreshBase) { refreshBase = false; ApplyDraft(); }

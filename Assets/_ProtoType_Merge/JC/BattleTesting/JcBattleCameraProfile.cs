@@ -39,9 +39,10 @@ namespace JC.BattleTesting
     [CreateAssetMenu(menuName = "JC/전투 테스트/카메라 프로필")]
     public class JcBattleCameraProfile : ScriptableObject
     {
-        [Tooltip("F6 구도입니다. 플레이 중에는 세션 초안을 편집한 뒤 명시적으로 저장하세요.")]
+        // JC | 2026-11-17 | 버튼 전용 구도 선택 명세에 맞춰 안내를 갱신합니다.
+        [Tooltip("구도 A 구도입니다. 플레이 중에는 세션 초안을 편집한 뒤 명시적으로 저장하세요.")]
         public JcBattleCameraPose viewA = new JcBattleCameraPose { position = new Vector3(13.322f, 15.563f, -9.328f), rotation = new Vector3(45f, -55f, 0f) };
-        [Tooltip("F7 구도입니다. F8 기존 뷰는 프로필에 저장하지 않습니다.")]
+        [Tooltip("구도 B 구도입니다. 기본 구도 기존 뷰는 프로필에 저장하지 않습니다.")]
         public JcBattleCameraPose viewB = new JcBattleCameraPose { position = new Vector3(13.322f, 15.563f, 9.328f), rotation = new Vector3(45f, -125f, 0f) };
     }
 }

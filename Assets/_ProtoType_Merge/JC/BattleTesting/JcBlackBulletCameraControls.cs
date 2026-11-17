@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace JC.BattleTesting
 {
@@ -11,6 +11,20 @@ namespace JC.BattleTesting
         JcBlackBulletCameraProfile draft, draftSource;
         JcBankSkillCameraProfile authoredDraft, authoredSource;
         [HideInInspector] public int editingSkill, editingTarget;
+        // JC | 2026-11-16 | 공통 Inspector에서 보스 기본뷰 상대 변환과 공유 저장 범위를 안내하기 위해 전장 연결을 읽습니다.
+        public bool UsesBossBasis
+        {
+            get
+            {
+                foreach(var root in gameObject.scene.GetRootGameObjects())
+                {
+                    if(root.GetComponentInChildren<JcBossCamera>(true)) return true;
+                    var test=root.GetComponentInChildren<JcStandaloneBattleTest>(true);
+                    if(test && test.scenario==JcStandaloneBattleTest.Scenario.Boss)return true;
+                }
+                return false;
+            }
+        }
         public string Phase { get; private set; } = "대기 · 블랙불릿 공통 카메라";
         public JcBlackBulletCameraProfile Draft
         {

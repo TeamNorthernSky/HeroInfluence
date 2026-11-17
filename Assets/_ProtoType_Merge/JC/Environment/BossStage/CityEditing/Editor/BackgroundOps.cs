@@ -16,7 +16,8 @@ namespace JC.BackgroundEditing
     {
         public const string Local="Assets/_ProtoType_Merge/JC/Environment/BossStage/CityEditing";
         public const string Boss="Assets/_ProtoType_Merge/JC/Environment/BossStage/";
-        public static void Guard(){if(Application.dataPath!="C:/Dev/HeroInfluence_Polish/Assets"||EditorApplication.isPlayingOrWillChangePlaymode||EditorApplication.isCompiling)throw new InvalidOperationException("폴리싱 프로젝트의 편집 모드에서만 사용할 수 있습니다.");}
+        // JC | 2026-11-16 | 특정 checkout 경로 제한을 제거합니다. Play·컴파일 중 편집 방지는 모든 브랜치에서 유지합니다.
+        public static void Guard(){if(EditorApplication.isPlayingOrWillChangePlaymode||EditorApplication.isCompiling)throw new InvalidOperationException("플레이를 종료하고 컴파일이 끝난 편집 모드에서 사용해 주세요.");}
         public static GameObject Child(Transform parent,string name){var g=new GameObject(name);g.transform.SetParent(parent,false);return g;}
         public static void Folder(string p){if(!AssetDatabase.IsValidFolder(p)){Folder(Path.GetDirectoryName(p).Replace('\\','/'));AssetDatabase.CreateFolder(Path.GetDirectoryName(p).Replace('\\','/'),Path.GetFileName(p));}}
         public static T Store<T>(T value,string path)where T:UnityEngine.Object{value.hideFlags=HideFlags.None;var old=AssetDatabase.LoadAssetAtPath<T>(path);if(old){if(value is Mesh sourceMesh && old is Mesh targetMesh)CopyMesh(sourceMesh,targetMesh);else EditorUtility.CopySerialized(value,old);UnityEngine.Object.DestroyImmediate(value);EditorUtility.SetDirty(old);return old;}AssetDatabase.CreateAsset(value,path);return value;}
@@ -33,7 +34,8 @@ namespace JC.BackgroundEditing
         public static GameObject Visual(MeshFilter f,Transform parent,string name=null){var g=Child(parent,name??f.name);
             // JC | 2026-11-05 | 입력의 필드 좌표를 출력 부모의 로컬 좌표로 복사하여 무대 배율이 위치/크기에 한 번씩만 적용됩니다.
             g.transform.localPosition=f.transform.position;g.transform.localRotation=f.transform.rotation;g.transform.localScale=f.transform.lossyScale;g.AddComponent<MeshFilter>().sharedMesh=f.sharedMesh;var r=g.AddComponent<MeshRenderer>();r.sharedMaterials=f.GetComponent<Renderer>().sharedMaterials;// JC | 2026-11-05 | 그림자와 가로등을 메시 복사 과정에서도 보존합니다.
-            var original=f.GetComponent<Renderer>();r.shadowCastingMode=original.shadowCastingMode;r.receiveShadows=original.receiveShadows;CopyLights(f.transform,g.transform);return g;}
+            // JC | 2026-11-16 | 도시 작업본에서 꺼 둔 메시도 베이크 시 임의로 다시 켜지 않게 원본 표시 상태를 보존합니다.
+            var original=f.GetComponent<Renderer>();r.enabled=original.enabled;r.shadowCastingMode=original.shadowCastingMode;r.receiveShadows=original.receiveShadows;CopyLights(f.transform,g.transform);return g;}
         public static HashSet<Vector2Int> PaintCells(BackgroundDocument d,Vector2Int a,Vector2Int b,int width,bool rectangle)
         {
             if((long)(Math.Abs(b.x-a.x)+1)*(Math.Abs(b.y-a.y)+1)>10000)throw new InvalidOperationException("한 번에 10000셀 이하로 편집해 주세요.");var points=new HashSet<Vector2Int>();
@@ -55,6 +57,8 @@ namespace JC.BackgroundEditing
         }
         public static void ApplyStageFraming(BackgroundDocument d,GameObject stage)
         {
+            // JC | 2026-11-16 | 도시 단위 편집은 실내 무대나 다른 타일의 배치·배율을 변경하지 않습니다.
+            if(d.IsCityTile)return;
             if(d.windowlessPillar){var pillar=stage.GetComponentsInChildren<MeshFilter>().First(f=>f.name=="Pillar");pillar.sharedMesh=d.windowlessPillar;}
             if(d.foregroundFloor&&!stage.transform.Find("실내 앞쪽 바닥 보완")){
                 var source=stage.GetComponentsInChildren<MeshRenderer>().First(r=>r.name=="실내 바닥 연장");
@@ -65,24 +69,36 @@ namespace JC.BackgroundEditing
             var city=stage.transform.Find("도시 원경 (베이크)")??stage.transform.Find("도시 미리보기");
             if(city&&d.overrideCityAltitude)city.position=new Vector3(city.position.x,d.cityAltitude,city.position.z);
         }
+        // JC | 2026-11-17 | 일반 표시 복원과 사용자가 요청한 전체 마감 재생성을 분리합니다.
+        public static void RegenerateDressing(BackgroundDocument d)
+        {
+            Guard();if(!d||!d.baseline)throw new InvalidOperationException("도시 편집 작업본을 먼저 열어 주세요.");
+            Undo.RegisterCompleteObjectUndo(d,"드레싱 다시 생성");d.regenerateSurfaceDetails=true;
+            EditorUtility.SetDirty(d);Rebuild(d);
+        }
         public static void Rebuild(BackgroundDocument d,bool detailed=true)
         {
             Guard();if(!d||!d.baseline)return;Folder(d.assetFolder+"/Generated");
+            // JC | 2026-11-17 | 이전 작업본의 가로등 이동·회전·광원은 지형을 지우기 전에 배치물로 보존합니다.
+            PrepareEditableProps(d,false);
             var terrain=d.Terrain;if(!terrain)terrain=Child(d.transform,"지형 결과").transform;
             foreach(Transform t in terrain.Cast<Transform>().ToArray())UnityEngine.Object.DestroyImmediate(t.gameObject);
             int index=0;
             AssetDatabase.StartAssetEditing();try{
             foreach(var f in d.baseline.GetComponentsInChildren<MeshFilter>())
             {
-                if(IsProp(f)||(!d.preserveWorld&&(Fence(f)||OldDressing(f)||SurfaceTexture(f.GetComponent<Renderer>())!=null)))continue;var g=Visual(f,terrain);Mesh current=null;
+                // JC | 2026-11-17 | 전체 재마감은 기존 타일·마감만 교체하며 수작업 교량 구조와 배치물은 그대로 둡니다.
+                if(IsProp(f)||(!d.preserveWorld&&(Fence(f)||OldDressing(f)||SurfaceTexture(f.GetComponent<Renderer>())!=null))||
+                    (d.regenerateSurfaceDetails&&!BridgeSurface(f)&&(OldDressing(f)||SurfaceTexture(f.GetComponent<Renderer>())!=null)))continue;var g=Visual(f,terrain);Mesh current=null;
                 foreach(var c in d.cuts){var bounds=g.GetComponent<Renderer>().bounds;if(bounds.max.x<=c.min.x||bounds.min.x>=c.max.x||bounds.max.z<=c.min.y||bounds.min.z>=c.max.y)continue;var next=Clip(g.GetComponent<MeshFilter>(),c.min,c.max);if(current)UnityEngine.Object.DestroyImmediate(current);current=next;g.GetComponent<MeshFilter>().sharedMesh=current;}
                 if(current){g.GetComponent<MeshFilter>().sharedMesh=Store(current,d.assetFolder+"/Generated/Cut_"+index+".asset");}index++;
             }
             }finally{AssetDatabase.StopAssetEditing();}
             // JC | 2026-11-05 | 원본에는 손대지 않고 사용자가 칠한 구역만 다시 만듭니다.
-            if(!d.preserveWorld||d.cuts.Count>0||d.cells.Count>0)BuildWholeSurface(d,terrain,detailed);
+            if(!d.preserveWorld||d.regenerateSurfaceDetails||d.cuts.Count>0||d.cells.Count>0)BuildWholeSurface(d,terrain,detailed);
             if(d.borderMountains)foreach(var f in d.borderMountains.GetComponentsInChildren<MeshFilter>())Visual(f,terrain,"경계 산 · "+f.name);
-            ApplyLocks(d);
+            // JC | 2026-11-17 | 재생성은 표시 파생 작업이므로 선택 잠금의 새 Undo 기록 없이 수행합니다.
+            ApplyLocks(d,false);
             EditorSceneManager.MarkSceneDirty(d.gameObject.scene);SceneView.RepaintAll();
         }
         static void BuildPainted(BackgroundDocument d,Transform parent)
@@ -136,10 +152,16 @@ namespace JC.BackgroundEditing
             mesh.subMeshCount=submeshes.Length;for(int sub=0;sub<submeshes.Length;sub++)mesh.SetTriangles(submeshes[sub].Select(i=>remap[i]).ToArray(),sub);
             mesh.RecalculateBounds();return mesh;
         }
-        public static void ApplyLocks(BackgroundDocument d)
+        public static void ApplyLocks(BackgroundDocument d,bool recordPickingUndo=true)
         {
-            SceneVisibilityManager.instance.DisablePicking(d.Terrain.gameObject,true);d.Terrain.gameObject.hideFlags=HideFlags.NotEditable;
-            foreach(Transform t in d.Buildings){var r=t.GetComponent<Renderer>();var c=r?r.bounds.center:t.position;bool locked=d.lockBuildings||(d.limitArea&&(c.x<d.editMin.x-.5f||c.x>d.editMax.x+.5f||c.z<d.editMin.y-.5f||c.z>d.editMax.y+.5f));t.gameObject.hideFlags=locked?HideFlags.NotEditable:HideFlags.None;if(locked)SceneVisibilityManager.instance.DisablePicking(t.gameObject,true);else SceneVisibilityManager.instance.EnablePicking(t.gameObject,true);}
+            // JC | 2026-11-17 | 기존 지형 그룹에 있던 가로등에도 건물과 같은 선택/잠금 규칙을 적용합니다.
+            PrepareEditableProps(d,recordPickingUndo);
+            // JC | 2026-11-17 | 재생성한 자식도 NotEditable로 잠급니다. SceneVisibilityManager의 Undo 기록은 사용자 잠금 조작 때만 사용합니다.
+            foreach(var t in d.Terrain.GetComponentsInChildren<Transform>(true))t.gameObject.hideFlags|=HideFlags.NotEditable;
+            if(recordPickingUndo)SceneVisibilityManager.instance.DisablePicking(d.Terrain.gameObject,true);
+            foreach(Transform t in d.Buildings){var r=t.GetComponent<Renderer>();var c=r?r.bounds.center:t.position;bool locked=d.lockBuildings||(d.limitArea&&(c.x<d.editMin.x-.5f||c.x>d.editMax.x+.5f||c.z<d.editMin.y-.5f||c.z>d.editMax.y+.5f));
+                foreach(var child in t.GetComponentsInChildren<Transform>(true))child.gameObject.hideFlags=locked?child.gameObject.hideFlags|HideFlags.NotEditable:child.gameObject.hideFlags&~HideFlags.NotEditable;
+                if(recordPickingUndo){if(locked)SceneVisibilityManager.instance.DisablePicking(t.gameObject,true);else SceneVisibilityManager.instance.EnablePicking(t.gameObject,true);}}
         }
     }
 }
