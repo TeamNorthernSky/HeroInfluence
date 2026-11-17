@@ -88,16 +88,19 @@ public class WorkshopManager : MonoBehaviour
     public bool IsOwned(int weaponIndex)
     {
         if (!IsValidWeaponIndex(weaponIndex)) return false;
-        if (weaponIndex == DefaultWeaponIndex) EnsureDefaultOwned();
-        return lookup.ContainsKey(weaponIndex);
+        return GetInstanceIndex(weaponIndex) > 0;
     }
 
     /// <summary>해당 코어의 무기 인스턴스 인덱스. 미보유면 0.</summary>
     private int GetInstanceIndex(int weaponIndex)
     {
         if (!IsValidWeaponIndex(weaponIndex)) return 0;
-        if (weaponIndex == DefaultWeaponIndex) EnsureDefaultOwned();
-        return lookup.TryGetValue(weaponIndex, out var e) ? e.instanceIndex : 0;
+        if (weaponIndex == DefaultWeaponIndex)
+        {
+            EnsureDefaultOwned();
+            return lookup.TryGetValue(weaponIndex, out var entry) ? entry.instanceIndex : 0;
+        }
+        return EnsureSharedWeapon(weaponIndex);
     }
 
     // ─── 제작 ──────────────────────────────────────────────────
@@ -212,9 +215,7 @@ public class WorkshopManager : MonoBehaviour
         return ok;
     }
 
-    /// <summary>[KJ 260729] 장착 인스턴스가 계정 소유 집합에 없으면 코어 1(계정 인스턴스)로 정정한다.
-    /// DH PersistentUnitRepository.EnsureDefaultWeaponInstance()가 유닛별로 따로 만든 기본 인스턴스를
-    /// 그대로 두면 "템플릿당 인스턴스 1개" 불변식이 깨져 강화 공유가 반영되지 않는다.</summary>
+    /// <summary>유효한 코어 종류는 유지하면서 같은 종류의 공용 인스턴스로 장착을 통일한다.</summary>
     public void EnsureDefaultEquipped(int unitIndex)
     {
         EnsureDefaultOwned();
@@ -238,7 +239,7 @@ public class WorkshopManager : MonoBehaviour
     /// <summary>코어 1(기본 보유)의 계정 인스턴스를 보장(멱등).</summary>
     public void EnsureDefaultOwned()
     {
-        if (lookup.ContainsKey(DefaultWeaponIndex)) return;
+        if (EnsureSharedWeapon(DefaultWeaponIndex) > 0) return;
         var weaponRepo = WeaponPersistentRepository.Instance;
         if (weaponRepo == null) return;
 
@@ -274,8 +275,46 @@ public class WorkshopManager : MonoBehaviour
         int weaponIndex = ResolveWeaponIndex(templateKey);
         if (!IsValidWeaponIndex(weaponIndex)) return true;
 
-        RegisterEntry(weaponIndex, templateKey, equipped);
+        EnsureSharedWeapon(weaponIndex);
         return true;
+    }
+
+    // Old saves can contain a separate copy of the same core for every hero.
+    // Keep the account instance stable, preserve the highest level, and rebind matching equipment.
+    private int EnsureSharedWeapon(int weaponIndex)
+    {
+        var weapons = WeaponPersistentRepository.Instance;
+        if (weapons == null) return 0;
+        int canonical = 0;
+        if (lookup.TryGetValue(weaponIndex, out var entry) && entry != null &&
+            weapons.TryGetWeaponTemplateKey(entry.instanceIndex, out string registeredKey) &&
+            ResolveWeaponIndex(registeredKey) == weaponIndex)
+            canonical = entry.instanceIndex;
+
+        int highestLevel = BaseWeaponLevel;
+        foreach (var weapon in weapons.Weapons)
+        {
+            if (weapon == null || !weapons.TryGetWeaponTemplateKey(weapon.WeaponIndex, out string key) ||
+                ResolveWeaponIndex(key) != weaponIndex) continue;
+            if (canonical == 0) canonical = weapon.WeaponIndex;
+            highestLevel = Mathf.Max(highestLevel, weapon.Level);
+        }
+        if (canonical == 0) return 0;
+
+        RegisterEntry(weaponIndex, ResolveWeaponKey(weaponIndex), canonical);
+        if (weapons.TryGetWeapon(canonical, out var shared) && highestLevel > shared.Level)
+            weapons.TryEnhanceWeapon(canonical, Mathf.Min(highestLevel, MaxWeaponLevel) - shared.Level);
+
+        var units = PersistentUnitRepository.Instance;
+        if (units != null)
+            foreach (var unit in units.Units)
+            {
+                if (unit == null || unit.EquippedWeaponInstanceIndex == canonical) continue;
+                if (weapons.TryGetWeaponTemplateKey(unit.EquippedWeaponInstanceIndex, out string key) &&
+                    ResolveWeaponIndex(key) == weaponIndex)
+                    units.EquipWeaponInstance(unit.UnitIndex, canonical);
+            }
+        return canonical;
     }
 
     private WeaponEntry RegisterEntry(int weaponIndex, string weaponKey, int instanceIndex)

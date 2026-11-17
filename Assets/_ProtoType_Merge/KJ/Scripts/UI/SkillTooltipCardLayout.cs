@@ -6,6 +6,48 @@ using UnityEngine.UI;
 public static class SkillTooltipCardLayout
 {
     private static readonly Color Ink = new Color(0.02f, 0.04f, 0.16f);
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<RectTransform, InfoLayout> infoLayouts =
+        new System.Runtime.CompilerServices.ConditionalWeakTable<RectTransform, InfoLayout>();
+
+    private sealed class InfoLayout
+    {
+        private readonly System.Action restore;
+        public InfoLayout(Image icon, TMP_Text name, TMP_Text description)
+        {
+            var mask = icon != null ? icon.GetComponentInParent<Mask>(true) : null;
+            var visual = mask != null ? mask.transform.parent as RectTransform : null;
+            var iconRect = visual != null && visual.name == "IconVisual" ? visual : icon != null ? icon.rectTransform : null;
+            restore = Capture(name != null ? name.rectTransform : null)
+                + Capture(description != null ? description.rectTransform : null) + Capture(iconRect);
+        }
+        public void Restore() => restore?.Invoke();
+        private static System.Action Capture(RectTransform rect)
+        {
+            if (rect == null) return null;
+            var parent = rect.parent;
+            var min = rect.anchorMin; var max = rect.anchorMax; var pivot = rect.pivot;
+            var position = rect.anchoredPosition3D; var size = rect.sizeDelta; var scale = rect.localScale;
+            bool active = rect.gameObject.activeSelf;
+            var text = rect.GetComponent<TMP_Text>();
+            var color = text != null ? text.color : Color.white;
+            var style = text != null ? text.fontStyle : FontStyles.Normal;
+            var alignment = text != null ? text.alignment : TextAlignmentOptions.TopLeft;
+            var margin = text != null ? text.margin : Vector4.zero;
+            var overflow = text != null ? text.overflowMode : TextOverflowModes.Overflow;
+            bool wrapping = text != null && text.enableWordWrapping;
+            return () =>
+            {
+                if (rect == null) return;
+                rect.SetParent(parent, false);
+                rect.anchorMin = min; rect.anchorMax = max; rect.pivot = pivot;
+                rect.anchoredPosition3D = position; rect.sizeDelta = size; rect.localScale = scale;
+                rect.gameObject.SetActive(active);
+                if (text == null) return;
+                text.color = color; text.fontStyle = style; text.alignment = alignment;
+                text.margin = margin; text.overflowMode = overflow; text.enableWordWrapping = wrapping;
+            };
+        }
+    }
 
     private static void Place(RectTransform rect, RectTransform parent, float x, float y, float w, float h)
     {
@@ -67,14 +109,36 @@ public static class SkillTooltipCardLayout
         if (panel != null && panel.TryGetComponent<Image>(out var image)) image.enabled = false;
     }
 
+    private static void ScaleInfoText(RectTransform root, TMP_Text name, TMP_Text description)
+    {
+        float scale = Mathf.Max(.01f, Mathf.Min(root.rect.width / 500f, root.rect.height / (1000f / 3f)));
+        foreach (var text in new[] { name, description })
+        {
+            if (text == null) continue;
+            text.enabled = true;
+            text.gameObject.SetActive(true);
+            text.enableAutoSizing = true;
+            text.fontSizeMin = 14f * scale;
+            text.fontSizeMax = (text == name ? 26f : 23f) * scale;
+            text.fontSize = text.fontSizeMax;
+        }
+    }
+
     public static void Info(RectTransform root, Image icon, TMP_Text name, TMP_Text description,
         RectTransform oldPanel, float extraWidth, float iconDeltaX, bool usePrefabLayout = false)
     {
         if (usePrefabLayout)
         {
+            if (infoLayouts.TryGetValue(root, out var layout))
+            {
+                layout.Restore();
+                infoLayouts.Remove(root);
+            }
+            ScaleInfoText(root, name, description);
             IgnoreInput(root);
             return;
         }
+        if (!infoLayouts.TryGetValue(root, out _)) infoLayouts.Add(root, new InfoLayout(icon, name, description));
         float width = Mathf.Max(400f, 500f + extraWidth);
         root.sizeDelta = new Vector2(width, width * (2f / 3f));
         HidePanelImage(oldPanel);
@@ -82,6 +146,7 @@ public static class SkillTooltipCardLayout
         Text(name, root, 132f, 36f, width - 154f, 65f, 26f, true);
         if (name != null) name.color = Color.white;
         Text(description, root, 32f, 130f, width - 64f, root.sizeDelta.y - 148f, 23f, false);
+        ScaleInfoText(root, name, description);
         IgnoreInput(root);
     }
 
