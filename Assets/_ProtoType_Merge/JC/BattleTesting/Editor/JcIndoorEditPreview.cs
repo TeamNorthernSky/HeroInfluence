@@ -81,8 +81,11 @@ namespace JC.BattleTesting.Editor
                 oldClock=scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<JcDayNightController>(true)).FirstOrDefault();
                 oldHour=JcDayNightController.CurrentHours;oldClockJson=oldClock?JsonUtility.ToJson(oldClock):null;
                 if(boss) {
-                    city=root.AddComponent<JcBossCityLighting>();city.hideFlags=HideFlags.HideInInspector;
+                    // JC | 2026-11-17 | 원경 LOD 조절 인스펙터를 실내 미리보기 오브젝트에서 함께 제공합니다.
+                    city=root.AddComponent<JcBossCityLighting>();
                     city.Initialize(test.stage.transform,bossSettings,clockProfile.segments[period].hour);
+                    // JC | 2026-11-17 | 씬 저장 전후에도 인스펙터의 미저장 전환/메시 미리보기를 이어갑니다.
+                    JcBossCityLodEditing.RestorePreview(city);
                     previewClock=city.Clock;
                     if(previewClock&&!oldClock)previewClock.gameObject.hideFlags=HideFlags.DontSave;
                 }

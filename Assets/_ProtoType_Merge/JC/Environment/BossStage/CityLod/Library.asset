@@ -658,3 +658,5 @@ MonoBehaviour:
         type: 3}
       medium: {fileID: 4300000, guid: fd78a5f603352244c8774dd7fa380a64, type: 2}
       low: {fileID: 4300000, guid: 9b60d316277f8be43b5244645c83aab0, type: 2}
+  bakedMediumSimplification: 0.0495
+  bakedLowSimplification: 0.081

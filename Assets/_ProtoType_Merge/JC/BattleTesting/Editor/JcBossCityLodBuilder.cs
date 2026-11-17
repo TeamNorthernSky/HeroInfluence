@@ -72,7 +72,8 @@ namespace JC.BattleTesting.Editor
             public int count;public Vector3 position,normal;public Vector4 tangent;public Color color;
             public readonly Vector4[] uv=new Vector4[8];
         }
-        static Mesh Simplify(Mesh mesh,float ratio,string name)
+        // JC | 2026-11-17 | 인스펙터의 점진적 미리보기 작업도 검증된 동일 축약 알고리즘을 사용합니다.
+        public static Mesh Simplify(Mesh mesh,float ratio,string name)
         {
             // JC | 2026-11-17 | 위치 격자 축약은 법선·색상·재질 경계를 분리하고 UV는 해당 군집 안에서만 평균합니다.
             // 구역 경계 정점은 고정하여 인접 수로/바닥 청크가 다른 LOD일 때 틈이 생기지 않게 합니다.
@@ -134,7 +135,9 @@ namespace JC.BattleTesting.Editor
         {
             var library=JcBossBattleBackground.Load().cityLodLibrary;long high=0,medium=0,low=0;
             foreach(var entry in library.entries)foreach(var part in entry.parts){
-                var targets=new[]{part.medium,part.low};var ratios=new[]{.0125f,.03f};
+                // JC | 2026-11-17 | 명시 저장한 단순화 강도를 재생성에도 일관되게 적용합니다.
+                var settings=JcBossBattleBackground.Load().cityLod;
+                var targets=new[]{part.medium,part.low};var ratios=new[]{settings.mediumSimplification,settings.lowSimplification};
                 for(int level=0;level<2;level++){
                     var fresh=Simplify(part.high,ratios[level],targets[level].name);var target=targets[level];
                     target.Clear();target.indexFormat=fresh.indexFormat;target.vertices=fresh.vertices;
@@ -159,8 +162,10 @@ namespace JC.BattleTesting.Editor
                 AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mesh,out string guid,out long fileId);string id=guid+"_"+fileId;
                 var parts=new List<JcBossCityLodLibrary.Part>();int n=0;
                 foreach(var part in Split(mesh,id)) {
-                    var mid=Save(Simplify(part,.0125f,"JC 원경 LOD1 "+mesh.name),id+"_p"+n+"_medium");
-                    var far=Save(Simplify(part,.03f,"JC 원경 LOD2 "+mesh.name),id+"_p"+n+"_low");n++;
+                    // JC | 2026-11-17 | 최초 생성도 사용자 저장 강도를 사용합니다.
+                    var lod=JcBossBattleBackground.Load().cityLod;
+                    var mid=Save(Simplify(part,lod.mediumSimplification,"JC 원경 LOD1 "+mesh.name),id+"_p"+n+"_medium");
+                    var far=Save(Simplify(part,lod.lowSimplification,"JC 원경 LOD2 "+mesh.name),id+"_p"+n+"_low");n++;
                     high+=Triangles(part);medium+=Triangles(mid);low+=Triangles(far);partCount++;
                     parts.Add(new JcBossCityLodLibrary.Part{high=part,medium=mid,low=far});
                 }

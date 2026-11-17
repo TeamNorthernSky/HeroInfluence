@@ -18,8 +18,8 @@ MonoBehaviour:
     groundY: 0
     gaussianStartOffset: 1.5
     gaussianEndOffset: 6
-    gaussianStart: 180
-    gaussianEnd: 500
+    gaussianStart: 280
+    gaussianEnd: 800
     gaussianMaxRadius: 1.5
     highQualitySampling: 1
     focusDistance: 10
