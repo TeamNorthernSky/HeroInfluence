@@ -12,6 +12,10 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     [SerializeField] private GameObject rewardPanel;
     [SerializeField] private GameObject choicePanel;
 
+    [Header("보상 이동 — Quadratic Bezier")]
+    [Tooltip("시작점과 도착점의 중간을 기준으로 한 제어점 위치입니다. HUD 캔버스 단위이며 X는 좌우, Y는 위아래 휨을 조절합니다.")]
+    public Vector2 rewardFlightControlPoint = new Vector2(0f, 180f);
+
     private DHWorldEventRuntimeManager manager;
     private string displayedEventId;
     private DHWorldEventPresentationRequest current;
@@ -48,6 +52,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private Coroutine rewardFlight;
     private bool confirmingReward;
     private readonly List<GameObject> flyingRewards = new List<GameObject>();
+    private readonly List<ResourceGainNumberMotion.RewardFlight> rewardNumberMotions = new List<ResourceGainNumberMotion.RewardFlight>();
     private readonly List<ChoiceEntranceItem> entranceItems = new List<ChoiceEntranceItem>();
     private sealed class ChoiceEntranceItem
     {
@@ -919,6 +924,8 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     }
     private void ClearFlyingRewards()
     {
+        foreach (var motion in rewardNumberMotions) motion.Dispose();
+        rewardNumberMotions.Clear();
         foreach (var item in flyingRewards) if (item != null) Destroy(item);
         flyingRewards.Clear();
     }
@@ -939,18 +946,89 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         var starts = new List<Vector3>();
         var targets = new List<RectTransform>();
         var targetOffsets = new List<Vector3>();
+        var delays = new List<float>();
+        var motions = new List<ResourceGainNumberMotion.RewardFlight>();
+        var resourceMotions = new Dictionary<ResourceType, ResourceGainNumberMotion.RewardFlight>();
+        var totals = new Dictionary<ResourceGainNumberMotion.RewardFlight, int>();
+        var arrivals = new Dictionary<ResourceGainNumberMotion.RewardFlight, int>();
+        var completed = new List<bool>();
+        var orders = new List<float>();
+        const float iconInterval = .07f;
+        float lastIconDelay = 0f;
+        var partyView = FindFirstObjectByType<ExplorationHeroBoxController>();
+        var ipMotions = new Dictionary<TMP_Text, ResourceGainNumberMotion.RewardFlight>();
+        ResourceGainNumberMotion.RewardFlight ipStreamMotion = null;
+        void AddIcons(Image sourceIcon, RectTransform destination, Vector3 targetOffset,
+            int iconCount, ResourceGainNumberMotion.RewardFlight motion)
+        {
+            if (motion != null)
+            {
+                totals.TryGetValue(motion, out int total);
+                totals[motion] = total + iconCount;
+                arrivals[motion] = 0;
+            }
+            for (int index = 0; index < iconCount; index++)
+            {
+                var item = new GameObject("NpcRewardFlight", typeof(RectTransform), typeof(Image));
+                item.layer = canvasRect.gameObject.layer;
+                item.transform.SetParent(canvasRect, false);
+                var rect = (RectTransform)item.transform;
+                rect.position = sourceIcon.rectTransform.TransformPoint(sourceIcon.rectTransform.rect.center);
+                var corners = new Vector3[4];
+                sourceIcon.rectTransform.GetWorldCorners(corners);
+                rect.sizeDelta = new Vector2(canvasRect.InverseTransformVector(corners[3] - corners[0]).magnitude,
+                    canvasRect.InverseTransformVector(corners[1] - corners[0]).magnitude);
+                var graphic = item.GetComponent<Image>();
+                graphic.sprite = sourceIcon.sprite;
+                graphic.preserveAspect = true;
+                graphic.raycastTarget = false;
+                flyingRewards.Add(item);
+                starts.Add(canvasRect.InverseTransformPoint(rect.position));
+                targets.Add(destination);
+                targetOffsets.Add(targetOffset);
+                delays.Add(index * iconInterval);
+                lastIconDelay = Mathf.Max(lastIconDelay, index * iconInterval);
+                motions.Add(motion);
+                completed.Add(false);
+                orders.Add(iconCount > 1 ? (float)index / (iconCount - 1) : 0f);
+            }
+        }
         try
         {
             if (rows != null && canvasRect != null && !hud.useTutorialResources)
             {
-                foreach (Transform row in rows)
+                int rowIndex = 0;
+                foreach (var entry in request.PreviewEntries)
                 {
+                    if (entry == null || entry.Amount == 0) continue;
+                    if (rowIndex >= rows.childCount) break;
+                    var row = rows.GetChild(rowIndex++);
+                    if (entry.Group == DHWorldEventPreviewGroup.Cost || entry.Amount < 0) continue;
                     if (!row.gameObject.activeInHierarchy) continue;
                     var sourceIcon = row.Find("Icon")?.GetComponent<Image>();
                     if (sourceIcon == null || !sourceIcon.gameObject.activeSelf || sourceIcon.sprite == null) continue;
+                    if (entry.Label == "CurrentIP" && partyView != null)
+                    {
+                        RectTransform partyPanel = null;
+                        foreach (var label in partyView.GetIpRewardLabels())
+                        {
+                            if (!ipMotions.TryGetValue(label, out var ipMotion))
+                            {
+                                ipMotion = ResourceGainNumberMotion.BeginRewardFlight(label);
+                                ipMotions.Add(label, ipMotion);
+                                if (ipMotion != null) rewardNumberMotions.Add(ipMotion);
+                            }
+                            if (ipStreamMotion == null) ipStreamMotion = ipMotion;
+                            if (partyPanel == null) partyPanel = FindIpRewardPanel(label);
+                        }
+                        if (partyPanel != null)
+                            AddIcons(sourceIcon, partyPanel, Vector3.zero, entry.Amount, ipStreamMotion);
+                        continue;
+                    }
                     foreach (ResourceType resource in new[] { ResourceType.Money, ResourceType.Chip, ResourceType.Crystal, ResourceType.Supply })
                     {
                         if (sourceIcon.sprite != Sprites.UI.Resource(resource)) continue;
+                        int iconCount = resource == ResourceType.Money ? 4 : entry.Amount;
                         var anchor = hud.GetResourceAnchor(resource);
                         if (anchor == null || !anchor.gameObject.activeInHierarchy) break;
                         // Use the actual HUD icon, closest to its resource number.
@@ -969,55 +1047,102 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                             destination = anchor;
                             targetOffset = Vector3.left * (anchor.rect.width * .5f + 18f);
                         }
-                        var item = new GameObject("NpcRewardFlight", typeof(RectTransform), typeof(Image));
-                        item.layer = canvasRect.gameObject.layer;
-                        item.transform.SetParent(canvasRect, false);
-                        var rect = (RectTransform)item.transform;
-                        rect.position = sourceIcon.rectTransform.TransformPoint(sourceIcon.rectTransform.rect.center);
-                        var corners = new Vector3[4];
-                        sourceIcon.rectTransform.GetWorldCorners(corners);
-                        rect.sizeDelta = new Vector2(canvasRect.InverseTransformVector(corners[3] - corners[0]).magnitude,
-                            canvasRect.InverseTransformVector(corners[1] - corners[0]).magnitude);
-                        var graphic = item.GetComponent<Image>();
-                        graphic.sprite = sourceIcon.sprite;
-                        graphic.preserveAspect = true;
-                        graphic.raycastTarget = false;
-                        flyingRewards.Add(item);
-                        starts.Add(canvasRect.InverseTransformPoint(rect.position));
-                        targets.Add(destination);
-                        targetOffsets.Add(targetOffset);
+                        if (!resourceMotions.TryGetValue(resource, out var motion))
+                        {
+                            motion = ResourceGainNumberMotion.BeginRewardFlight(anchor.GetComponent<TMPro.TMP_Text>());
+                            resourceMotions.Add(resource, motion);
+                            if (motion != null) rewardNumberMotions.Add(motion);
+                        }
+                        AddIcons(sourceIcon, destination, targetOffset, iconCount, motion);
                         break;
                     }
                 }
             }
+            // 결과창이 닫혀도 복제 아이콘은 HUD 캔버스에 남아 카메라 복귀를 기다린다.
+            var eventCamera = Camera.main != null ? Camera.main.GetComponent<QuarterViewCameraFollower>() : null;
+            if (eventCamera == null) eventCamera = FindFirstObjectByType<QuarterViewCameraFollower>();
+            if (manager == null || !ReferenceEquals(manager.CurrentRequest, request) || !manager.ConfirmCurrentMessage())
+                yield break;
+            if (ipMotions.Count > 0 && partyView != null) partyView.Refresh();
+            // 종료 알림을 받은 말풍선과 카메라가 복귀 상태로 전환할 시간을 준다.
+            yield return null;
+            float zoomElapsed = 0f;
+            const float zoomDuration = .6f;
+            while (flyingRewards.Count > 0 &&
+                (zoomElapsed < zoomDuration || (eventCamera != null && eventCamera.IsEventFocusMoving)))
+            {
+                if (manager == null || manager.CurrentRequest != null) yield break;
+                zoomElapsed += Time.unscaledDeltaTime;
+                float zoomScale = RewardIconZoomScale(zoomElapsed / zoomDuration);
+                foreach (var item in flyingRewards)
+                    if (item != null) item.transform.localScale = Vector3.one * zoomScale;
+                yield return null;
+            }
             float elapsed = 0f;
             const float duration = .65f;
-            while (flyingRewards.Count > 0 && elapsed < duration)
+            while (flyingRewards.Count > 0 && elapsed < duration + lastIconDelay)
             {
-                if (manager == null || !ReferenceEquals(manager.CurrentRequest, request)) yield break;
+                if (manager == null || manager.CurrentRequest != null) yield break;
                 elapsed += Time.unscaledDeltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
                 for (int i = 0; i < flyingRewards.Count; i++)
                 {
-                    if (targets[i] == null) continue;
+                    if (completed[i]) continue;
+                    float raw = Mathf.Clamp01((elapsed - delays[i]) / duration);
+                    float t = RewardIconProgress(raw, orders[i]);
+                    float scale = (1f + 2f * 4f * t * (1f - t)) * RewardIconZoomScale(1f);
+                    if (targets[i] == null || raw >= 1f)
+                    {
+                        completed[i] = true;
+                        flyingRewards[i].SetActive(false);
+                        var motion = motions[i];
+                        if (motion != null)
+                        {
+                            arrivals[motion]++;
+                            float fraction = (float)arrivals[motion] / totals[motion];
+                            if (ReferenceEquals(motion, ipStreamMotion))
+                            {
+                                foreach (var ipMotion in ipMotions.Values) ipMotion?.SetProgress(fraction);
+                            }
+                            else motion.SetProgress(fraction);
+                        }
+                        continue;
+                    }
                     Vector3 end = canvasRect.InverseTransformPoint(targets[i].TransformPoint(
                         (Vector3)targets[i].rect.center + targetOffsets[i]));
-                    Vector3 control = (starts[i] + end) * .5f + Vector3.up * 180f;
+                    Vector3 control = (starts[i] + end) * .5f + (Vector3)rewardFlightControlPoint;
+                    // 시작점·제어점·도착점을 잇는 2차 베지어 곡선.
                     flyingRewards[i].transform.localPosition = (1f - t) * (1f - t) * starts[i] +
                         2f * (1f - t) * t * control + t * t * end;
+                    flyingRewards[i].transform.localScale = Vector3.one * scale;
                 }
                 yield return null;
             }
-            if (manager != null && ReferenceEquals(manager.CurrentRequest, request))
-                manager.ConfirmCurrentMessage();
         }
         finally
         {
+            foreach (var motion in resourceMotions.Values) motion?.Dispose();
             ClearFlyingRewards();
             confirmingReward = false;
             rewardFlight = null;
         }
     }
+
+    private static RectTransform FindIpRewardPanel(TMP_Text label)
+    {
+        for (var parent = label.transform.parent; parent != null; parent = parent.parent)
+            if (parent.name == "PartyPanel") return parent as RectTransform;
+        return null;
+    }
+
+    private static float RewardIconProgress(float t, float order)
+    {
+        const float lastIconAcceleration = 2.5f;
+        float slowdown = order * (1f - 1f / lastIconAcceleration);
+        return t + slowdown * Mathf.Sin(2f * Mathf.PI * t) / (2f * Mathf.PI);
+    }
+
+    private static float RewardIconZoomScale(float progress)
+        => Mathf.Lerp(1.15f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress))) / 1.15f;
 
     private void OnChoiceOne() { if (CanSubmit(choiceButtons[0])) manager.SelectChoice(choiceIds[0]); }
     private void OnChoiceTwo() { if (CanSubmit(choiceButtons[1])) manager.SelectChoice(choiceIds[1]); }
