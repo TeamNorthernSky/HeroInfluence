@@ -41,6 +41,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
     private Image[] defeatedOverlays = System.Array.Empty<Image>();
     private GameObject[] selectionFrames = System.Array.Empty<GameObject>();
     private RectTransform[] licenseClickThrough = System.Array.Empty<RectTransform>();
+    private ResourceGainNumberMotion[] ipMotions = System.Array.Empty<ResourceGainNumberMotion>();
+    private int[] ipMotionUnits = System.Array.Empty<int>();
     private HeroInfoModal selectedLicense;
     private int selectedHero = -1;
     private EconomyManager subEco; // 갱신 트리거(자원/IP 변동) 용
@@ -53,8 +55,12 @@ public class ExplorationHeroBoxController : MonoBehaviour
         defeatedOverlays = new Image[boundUnits.Length];
         selectionFrames = new GameObject[boundUnits.Length];
         licenseClickThrough = new RectTransform[boundUnits.Length];
+        ipMotions = new ResourceGainNumberMotion[boundUnits.Length];
+        ipMotionUnits = new int[boundUnits.Length];
         for (int i = 0; i < slots.Length; i++)
         {
+            ipMotions[i] = new ResourceGainNumberMotion(animateColor: false,
+                noticeIcon: () => Sprites.Load("NpcPreview/UI_icon_IP"));
             if (slots[i]?.root != null)
             {
                 selectionFrames[i] = slots[i].root.transform.Find("ProfileHoverBorder")?.gameObject;
@@ -103,6 +109,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
 
     private void Update()
     {
+        foreach (var motion in ipMotions) motion.Advance(Time.unscaledDeltaTime);
         RefreshSelection();
         if (GameManager.Instance == null) return;
         if (boundUnits.Length == 0) return;
@@ -145,6 +152,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
             boundUnits[i] = active ? members[i] : 0;
             if (!active)
             {
+                ipMotions[i].Reset();
+                ipMotionUnits[i] = 0;
                 if (ipMaxIcons[i] != null) ipMaxIcons[i].SetActive(false);
                 continue;
             }
@@ -186,10 +195,29 @@ public class ExplorationHeroBoxController : MonoBehaviour
             {
                 // [JC 260616] IP 표기 = 유닛 CurrentInfluence/IngameStats.Influence 일원화(PublicityManager 의존 제거)
                 float ip = unit != null ? unit.CurrentInfluence : 0f;
-                float maxIp = unit != null ? unit.IngameStats.Influence : 0f;
-                slot.ipText.text = $"{ip:F0}";
+                UpdateIpNumber(i, unitIndex, ip);
             }
         }
+    }
+
+    public IEnumerable<TMP_Text> GetIpRewardLabels()
+    {
+        var repo = PersistentUnitRepository.Instance;
+        for (int i = 0; i < slots.Length; i++)
+            if (slots[i]?.ipText != null && slots[i].ipText.gameObject.activeInHierarchy &&
+                boundUnits[i] > 0 && repo != null && repo.TryGetUnit(boundUnits[i], out var unit) &&
+                unit.CurrentInfluence < unit.IngameStats.Influence)
+                yield return slots[i].ipText;
+    }
+
+    private void UpdateIpNumber(int slotIndex, int unitIndex, float ip)
+    {
+        if (ipMotionUnits[slotIndex] != unitIndex)
+        {
+            ipMotions[slotIndex].Reset();
+            ipMotionUnits[slotIndex] = unitIndex;
+        }
+        ipMotions[slotIndex].Set(slots[slotIndex].ipText, Mathf.RoundToInt(ip));
     }
 
     public RectTransform GetInfluenceTooltipAnchor(string heroKey, RectTransform fallback)
@@ -253,6 +281,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
 
     private void OnDisable()
     {
+        foreach (var motion in ipMotions) motion.Reset();
         selectedLicense = null;
         selectedHero = -1;
         RefreshSelection();

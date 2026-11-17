@@ -9,6 +9,7 @@ public sealed class BubbleEffectLabPages : MonoBehaviour
     [SerializeField] private GameObject turnButtonPage;
     [SerializeField] private GameObject dialoguePopPage;
     [SerializeField] private GameObject ambientButtonPage;
+    [SerializeField] private GameObject rewardFlightPage;
 
     public void Configure(GameObject original, GameObject sidePop)
     {
@@ -22,6 +23,7 @@ public sealed class BubbleEffectLabPages : MonoBehaviour
     public void ShowTurnButton() => Show(3);
     public void ShowDialoguePop() => Show(4);
     public void ShowAmbientButton() => Show(5);
+    public void ShowRewardFlight() => Show(6);
 
     private void Show(int page)
     {
@@ -31,5 +33,6 @@ public sealed class BubbleEffectLabPages : MonoBehaviour
         if (turnButtonPage != null) turnButtonPage.SetActive(page == 3);
         if (dialoguePopPage != null) dialoguePopPage.SetActive(page == 4);
         if (ambientButtonPage != null) ambientButtonPage.SetActive(page == 5);
+        if (rewardFlightPage != null) rewardFlightPage.SetActive(page == 6);
     }
 }
