@@ -28,7 +28,7 @@ MonoBehaviour:
   indoorNightObjectAmbientBoost: 1.06
   humanoidNightFill: 0.16
   windowOnHour: 18.5
-  windowOffHour: 0.5
+  windowOffHour: 6.5
   windowFadeSeconds: 0.3
   windowTint: {r: 1, g: 0.94, b: 0.78, a: 1}
   windowIntensity: 1.1

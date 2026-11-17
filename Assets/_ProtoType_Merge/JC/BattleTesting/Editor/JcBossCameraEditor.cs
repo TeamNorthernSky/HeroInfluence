@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace JC.BattleTesting.Editor
@@ -18,7 +18,7 @@ namespace JC.BattleTesting.Editor
             EditorGUILayout.HelpBox("수정값은 현재 전투에 바로 반영됩니다. 플레이 종료 후에도 유지하려면 프로필에 저장하세요.",MessageType.Info);
             EditorGUILayout.PropertyField(draft.FindProperty("viewA"),new GUIContent("보스전 기본 카메라"),true);
             // JC | 2026-11-16 | 경계와 편집 미리보기 분기를 없애 저장값과 실제 기본뷰가 일치하도록 합니다.
-            EditorGUILayout.HelpBox("보스 스킬 연출은 이 기본뷰를 기준으로 계산합니다. 무대 경계에 의한 자동 보정은 없습니다. 스킬 중 기본뷰 수정은 복귀 후 적용됩니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("보스 스킬 연출은 이 기본뷰를 기준으로 계산합니다. 기본뷰는 경계에 의해 자동 보정하지 않습니다. 스킬 중 기본뷰 수정은 복귀 후 적용됩니다.", MessageType.Info);
             // JC | 2026-11-16 | 저장 기준을 읽기 전용으로 안내합니다. 배치 저장/카메라 저장이 기준을 자동 재설정하지 않도록 보존합니다.
             using (new EditorGUI.DisabledScope(true))
             {
@@ -26,6 +26,8 @@ namespace JC.BattleTesting.Editor
                 EditorGUILayout.Vector3Field("기본·스킬 공통 이동량", settings.LayoutOffset);
             }
             EditorGUILayout.HelpBox("JC_BossLayout의 전체+캐릭터 이동 차이만큼 기본 카메라가 먼저 이동하고, 스킬 연출은 그 기본뷰를 사용합니다. 오브젝트 전용 이동은 제외합니다. 배치 저장 후 재실행해도 같은 구도를 유지합니다.", MessageType.Info);
+            // JC | 2026-11-16 | 경계 토글과 경고를 제거해 저장값으로 제한이 부활하지 않게 합니다.
+            EditorGUILayout.HelpBox("스킬은 일반 전투 공용 연출을 사용합니다. 보스 전용 이동·회전·무대 경계 제한은 없습니다.",MessageType.None);
             if (draft.ApplyModifiedProperties()) settings.ApplyDraft();
             using (new EditorGUI.DisabledScope(!settings.CanCaptureBase))
                 if (GUILayout.Button("현재 화면에서 기본 구도 가져오기")) settings.CaptureBase();
@@ -48,6 +50,12 @@ namespace JC.BattleTesting.Editor
             to.viewA = from.viewA.Copy(); to.viewB = from.viewB.Copy();
             // JC | 2026-11-16 | 프로필 저장/불러오기에서 고정된 배치 기준을 함께 보존합니다.
             to.layoutReference = from.layoutReference;
+            // JC | 2026-11-17 | 부모의 전체 프로필 저장/불러오기에서도 자식 조절기의 값을 빠뜨리지 않습니다.
+            to.followMiddleOffset = from.followMiddleOffset;
+            to.followRightOffset = from.followRightOffset;
+            // JC | 2026-11-17 | 전체 프로필 저장에도 네코밍 광역 구도 조절값을 포함합니다.
+            to.nekoBarrageOffset = from.nekoBarrageOffset;
+
         }
     }
 }

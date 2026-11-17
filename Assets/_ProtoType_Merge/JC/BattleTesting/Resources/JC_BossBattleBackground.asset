@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   visualPrefab: {fileID: 7454900192816348364, guid: 0f29a5ddc5ab5d34ca677420979c5cad,
     type: 3}
+  periodProfiles: {fileID: 11400000, guid: 6cc3ba2484a99fb41aa8a858328496b7, type: 2}
   cameraProfile: {fileID: 11400000, guid: a8b00b86ef8962a49bfd8c3ea7f2ce6c, type: 2}
   layoutProfile: {fileID: 11400000, guid: 302e92a9bfd94dbdb976fc07315895b5, type: 2}
   glassProfile: {fileID: 2100000, guid: 000ffbad2aba4dc4aa0a939a31cd5db3, type: 2}
@@ -25,6 +26,13 @@ MonoBehaviour:
   surfaceProfile: {fileID: 11400000, guid: 2a4334a981404e1ba0255eb40b5fb82d, type: 2}
   citySun: {fileID: 7951856378101774353, guid: 9645966940bcb644dabd04f707a31404, type: 3}
   cityTimeProfile: {fileID: 11400000, guid: 8ff1ab1614516ff46829124c1192f1eb, type: 2}
+  citySkyProfile: {fileID: 11400000, guid: 90d2ff8aa3dc50245bd0a489d973363a, type: 2}
   cityShadowDistance: 300
+  cityLodLibrary: {fileID: 11400000, guid: d135c8f9569cb824bbdf65e8d8958d45, type: 2}
+  cityLampBrightness: 0.35
+  cityLampInnerRatio: 0.2
+  cityLampBudget: 48
+  cityLampDistance: 650
+  citySmallShadowHeight: 3
   zoneId: 2
   battleKey: BE490

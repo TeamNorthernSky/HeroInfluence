@@ -57,8 +57,7 @@ namespace JC.VFX.Seam
         [Tooltip("방출을 끈 뒤 잔광이 다 사라질 때까지의 추가 여유(초).")]
         [SerializeField, Min(0f)] private float fadeOutExtraSeconds = 0.15f;
 
-        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         private Transform followTarget;
         private bool following;
@@ -152,10 +151,7 @@ namespace JC.VFX.Seam
                 baseSpeedMax[i] = mm.constantMax;
             }
 
-            if (logLifecycle)
-            {
-                Debug.Log($"[JcSocketTrailEffect] Play — follow='{(followTarget != null ? followTarget.name : "NULL")}'", this);
-            }
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
         }
 
         /// <returns>false = 핸들을 계속 보유(이후 Stop도 받을 수 있게).</returns>
@@ -199,10 +195,7 @@ namespace JC.VFX.Seam
                 if (needed > life) life = needed;
             }
 
-            if (logLifecycle)
-            {
-                Debug.Log($"[JcSocketTrailEffect] Stop — {life:F2}초 뒤 정리", this);
-            }
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
 
             Destroy(gameObject, life);
         }

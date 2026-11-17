@@ -148,6 +148,8 @@ namespace JC.BattleTesting
                     ValidationMessage += "재질 대상/슬롯/재질을 확인하세요: " + spec.rendererPath + " [" + spec.slot + "]\n";
                     continue;
                 }
+                // JC | 2026-11-17 | 분리한 창틀 재질은 다른 실내 표면의 재질 덮어쓰기로 교체하지 않습니다.
+                if (JcBossSurfaceProfile.IsWindowFrame(target, Stage)) continue;
                 if (!originalMaterials.ContainsKey(target)) originalMaterials.Add(target, target.sharedMaterials);
                 var materials = target.sharedMaterials;
                 var copy = new Material(spec.material) { hideFlags = HideFlags.DontSave, name = spec.material.name + " (보스전 전용)" };
@@ -167,6 +169,13 @@ namespace JC.BattleTesting
         internal void SuspendMaterialOverrides() => RestoreMaterials();
         internal void ResumeMaterialOverrides() { if (isActiveAndEnabled && Draft) ApplyMaterials(); }
 
+        // JC | 2026-11-17 | 시간대 전환은 기존 초안과 광원/재질 소유권을 유지하고 저장 대상만 전환합니다.
+        public void SelectProfile(JcBossEnvironmentProfile profile)
+        {
+            if (!profile || !Draft) return;
+            Source = profile;
+            JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), Draft);
+        }
         public void ReloadProfile()
         {
             if (Source == null || Draft == null) return;
@@ -192,7 +201,8 @@ namespace JC.BattleTesting
             }
             applied = false;
             // JC | 2026-11-05 | 컴포넌트를 끄면 실내 표면의 전용 수광 상태도 해제하여 기존 환경으로 복원합니다.
-            if (SurfaceController) SurfaceController.ApplySurfaces();
+            // JC | 2026-11-17 | 조명만 끌 때는 표면을 복원하되, 무대 파괴·표면 적용기 종료 중에는 재질을 다시 생성하지 않습니다.
+            if (Stage && SurfaceController && SurfaceController.isActiveAndEnabled) SurfaceController.ApplySurfaces();
         }
         void OnEnable() { if (initialized) ApplyDraft(); }
         void OnDestroy() { UnregisterLocalLighting(); Release(Draft); if (lightRoot) Release(lightRoot.gameObject); }

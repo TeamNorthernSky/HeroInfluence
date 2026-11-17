@@ -82,6 +82,7 @@ namespace JC.Environment
 #if UNITY_EDITOR
         private void EditorTick()
         {
+            if (this == null) return; // JC | 2026-11-17 | 씬 교체 중 파괴된 객체에 콜백이 도달하면 Unity 속성 접근 전에 종료합니다.
             double now = UnityEditor.EditorApplication.timeSinceStartup;
             double delta = now - previousEditorTime;
             if (delta < 1.0 / 20) return;

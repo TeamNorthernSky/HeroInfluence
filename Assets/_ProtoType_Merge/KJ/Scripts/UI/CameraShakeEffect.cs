@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>Additive camera translation, restored when finished or disabled.</summary>
@@ -11,6 +11,8 @@ public sealed class CameraShakeEffect : MonoBehaviour
     [Min(0f), Tooltip("흔들림 강도. 값이 클수록 카메라가 크게 움직입니다.")]
     public float intensity = 0.15f;
     private Vector3 appliedOffset;
+    // JC | 2026-11-16 | 카메라 담당자가 바뀌어도 실제로 더했던 흔들림만 제거합니다.
+    private bool legacyOffsetApplied;
     private float elapsed;
     private bool shaking;
     // JC | 2026-11-04 | 굉음 대화의 진동과 개별 발걸음 반동을 별도로 조절해 반복 이동 중에도 타이밍을 유지합니다.
@@ -95,6 +97,15 @@ public sealed class CameraShakeEffect : MonoBehaviour
     {
         if (camera.transform != transform) return;
         RestoreRenderOffset();
+        // JC | 2026-11-16 | 전투에서는 공용 연출기가 기존 줌·흔들림을 한 번 합성합니다. 비전투/효과 실험실은 기존 렌더 경로입니다.
+        if (BattlePresentationController.ForCamera(camera)) return;
+        renderOffset=SampleRenderOffset(false);
+        transform.position+=renderOffset;
+    }
+
+    // JC | 2026-11-16 | 기존 타격 효과의 시간/파형을 그대로 제공하며 카메라 Transform에는 쓰지 않습니다.
+    public Vector3 SampleRenderOffset(bool includeLegacy = true)
+    {
         Vector2 offset = Vector2.zero;
         if (impactOwner)
         {
@@ -118,8 +129,7 @@ public sealed class CameraShakeEffect : MonoBehaviour
             }
         }
         // Move opposite to the desired image displacement. Restore before follow logic runs.
-        renderOffset = -transform.TransformDirection((Vector3)offset);
-        transform.position += renderOffset;
+        return -transform.TransformDirection((Vector3)offset) + (includeLegacy ? (transform.parent ? transform.parent.TransformVector(appliedOffset) : appliedOffset) : Vector3.zero);
     }
 
     private void EndRender(ScriptableRenderContext context, Camera camera)
@@ -161,7 +171,9 @@ public sealed class CameraShakeEffect : MonoBehaviour
         }
         Vector2 noise = NoiseOffset(elapsed, duration, intensity);
         appliedOffset = new Vector3(noise.x, noise.y, 0f);
-        transform.localPosition += appliedOffset;
+        // JC | 2026-11-16 | 구형 PlayShake도 공용 전투 카메라에서는 렌더 합성에 참여합니다. 실험실은 기존 직접 적용을 유지합니다.
+        legacyOffsetApplied = !BattlePresentationController.ForCamera(GetComponent<Camera>());
+        if (legacyOffsetApplied) transform.localPosition += appliedOffset;
     }
 
     [ContextMenu("Stop Shake")]
@@ -173,7 +185,8 @@ public sealed class CameraShakeEffect : MonoBehaviour
 
     private void RemoveOffset()
     {
-        transform.localPosition -= appliedOffset;
+        if (legacyOffsetApplied) transform.localPosition -= appliedOffset;
+        legacyOffsetApplied = false;
         appliedOffset = Vector3.zero;
     }
 

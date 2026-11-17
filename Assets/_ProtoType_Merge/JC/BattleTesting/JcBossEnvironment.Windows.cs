@@ -25,8 +25,9 @@ namespace JC.BattleTesting
                 if (environment && environment.Isolated && renderer && environment.gameObject.scene == renderer.gameObject.scene) return true;
             return false;
         }
+        // JC | 2026-11-16 | 모든 도시 복사본을 실내 IBL/창문광 대상에서 제외합니다. 이름 검색으로 첫 도시만 제외하지 않습니다.
         internal bool IsInterior(Renderer renderer) => renderer && renderer.transform.IsChildOf(Stage) &&
-            !renderer.transform.IsChildOf(Stage.Find("도시 원경 (베이크)"));
+            !renderer.GetComponentInParent<JcBossCityTime>();
 
         void ConfigureLocalLight(Light light, int mask)
         {
@@ -37,8 +38,8 @@ namespace JC.BattleTesting
         }
         void ApplyCityLayers()
         {
-            var city = Stage.Find("도시 원경 (베이크)");
-            if (!city) return;
+            // JC | 2026-11-16 | 도시별 편집 결과와 복사본 모두 동일한 실내광 격리 레이어를 사용합니다.
+            foreach (var city in JcBossCityTime.Roots(Stage))
             foreach (var renderer in city.GetComponentsInChildren<Renderer>(true))
             {
                 var go = renderer.gameObject;

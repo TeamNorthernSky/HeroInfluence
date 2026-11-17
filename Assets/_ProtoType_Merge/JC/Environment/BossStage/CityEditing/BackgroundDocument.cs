@@ -14,6 +14,13 @@ namespace JC.BackgroundEditing
         [Tooltip("그리드에서 직접 칠한 지형입니다. 0 도로, 1 인도, 2 풀밭, 3 수로.")] public List<Cell> cells=new List<Cell>();
         [Tooltip("원본 지형을 대체하는 영역입니다.")] public List<Cut> cuts=new List<Cut>();
         [Tooltip("작업본 전용 에셋 저장 경로입니다.")] public string assetFolder;
+        // JC | 2026-11-16 | 완성 베이크 한 덩이의 독립 작업본입니다. 임시 씬 배치를 삭제해도 편집·출력 연결은 유지됩니다.
+        [HideInInspector] public bool cityOnly;
+        [HideInInspector] public string cityName;
+        // JC | 2026-11-16 | 단일 원본 저장은 해당 씬의 도시만 갱신하며 예전 전체 원경 작업본과 분리합니다.
+        [HideInInspector] public bool singleOriginal;
+        [HideInInspector] public string originalScenePath;
+        public bool IsCityTile => cityOnly;
         [Tooltip("이 영역 밖의 브러시 입력을 막습니다.")] public bool limitArea=true;
         [Tooltip("편집 가능 영역의 좌하단 그리드입니다.")] public Vector2Int editMin=new Vector2Int(18,32);
         [Tooltip("편집 가능 영역의 우상단 그리드입니다.")] public Vector2Int editMax=new Vector2Int(95,55);
@@ -32,6 +39,8 @@ namespace JC.BackgroundEditing
         [Tooltip("창틀을 제거한 실내 기둥 메시입니다. 원본 모델은 변경하지 않습니다.")] public Mesh windowlessPillar;
         // JC | 2026-11-05 | 최신 월드 가져오기에서는 편집하지 않은 지형/차선/장식을 재생성하지 않습니다.
         [Tooltip("최신 월드에서 가져온 외형을 편집 구간 밖에서 그대로 보존합니다.")] public bool preserveWorld;
+        // JC | 2026-11-17 | 구획 복제로 칠하기 이력이 합쳐진 뒤에도 명시적 드레싱 재생성 결과를 저장·Undo에 유지합니다.
+        [HideInInspector] public bool regenerateSurfaceDetails;
         public Transform Buildings=>transform.Find("건물 배치");
         public Transform Terrain=>transform.Find("지형 결과");
     }

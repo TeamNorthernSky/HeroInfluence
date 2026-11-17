@@ -40,6 +40,12 @@ namespace JC.Environment
             ReloadProfile();
         }
 
+        // JC | 2026-11-17 | 시간대 전환에서 재질 등록을 유지한 채 접점 초안의 저장 대상을 바꿉니다.
+        public void SelectProfile(JcContactShadingProfile profile)
+        {
+            if (!profile || !draft) return;
+            source = profile; JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), draft);
+        }
         public void ReloadProfile()
         {
             DisposeDraft();

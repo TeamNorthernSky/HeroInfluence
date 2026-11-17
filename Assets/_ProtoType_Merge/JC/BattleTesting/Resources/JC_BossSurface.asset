@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
   tileSize: 4
+  tileOffset: {x: 0, y: 0}
   jointWidth: 0.025
   jointContrast: 0.12
   jointNormal: 0.018
@@ -21,76 +22,204 @@ MonoBehaviour:
   surfaces:
   - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
     rendererPath: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+    defaultColor: {r: 1, g: 1, b: 1, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.12
     specular: 0.018
     variation: 0.035
   - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
     rendererPath: 
+    color: {r: 0.63, g: 0.63, b: 0.63, a: 1}
+    defaultColor: {r: 0.63, g: 0.63, b: 0.63, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.12
     specular: 0.018
     variation: 0.035
   - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
     rendererPath: 
+    color: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
+    defaultColor: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.28
     specular: 0.028
     variation: 0.025
   - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
     rendererPath: 
+    color: {r: 0.65999997, g: 0.10999996, b: 0.13499996, a: 1}
+    defaultColor: {r: 0.65999997, g: 0.10999996, b: 0.13499996, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.08
     specular: 0.012
     variation: 0.025
   - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
     rendererPath: 
+    color: {r: 0.45999992, g: 0.089999996, b: 0.17999998, a: 1}
+    defaultColor: {r: 0.45999992, g: 0.089999996, b: 0.17999998, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.08
     specular: 0.012
     variation: 0.025
   - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
     rendererPath: FinalStage/Floor
+    color: {r: 1, g: 1, b: 1, a: 1}
+    defaultColor: {r: 1, g: 1, b: 1, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths:
+    - "\uC2E4\uB0B4 \uBC14\uB2E5 \uC5F0\uC7A5"
+    - "\uC2E4\uB0B4 \uC55E\uCABD \uBC14\uB2E5 \uBCF4\uC644"
     floorTiles: 1
     smoothness: 0.18
     specular: 0.022
     variation: 0.045
   - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
     rendererPath: FinalStage/Desk/Rebuilt/01_Carpet
+    color: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
+    defaultColor: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.28
     specular: 0.028
     variation: 0.025
   - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
     rendererPath: FinalStage/Floor
+    color: {r: 1, g: 1, b: 1, a: 1}
+    defaultColor: {r: 1, g: 1, b: 1, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.18
     specular: 0.04
     variation: 0
   - source: {fileID: 2100000, guid: c303682e12157a446acc6900c65e3159, type: 2}
     rendererPath: FinalStage/Desk/Rebuilt/02_Desk
+    color: {r: 0.3574911, g: 0.38857278, b: 0.46728474, a: 1}
+    defaultColor: {r: 0.3574911, g: 0.38857278, b: 0.46728474, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.18
     specular: 0.012
     variation: 0
   - source: {fileID: 2100000, guid: a092bd8f7a947384086e28d806d56211, type: 2}
     rendererPath: FinalStage/Desk/Rebuilt/02_Desk
+    color: {r: 0.47312057, g: 0.5063863, b: 0.5748709, a: 1}
+    defaultColor: {r: 0.47312057, g: 0.5063863, b: 0.5748709, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.22
     specular: 0.018
     variation: 0
   - source: {fileID: 2100000, guid: b29b5c0c2e0c3504daf7d6299a78e8a0, type: 2}
     rendererPath: FinalStage/Desk/Rebuilt/02_Desk
+    color: {r: 0.748379, g: 0.6614203, b: 0.4613561, a: 1}
+    defaultColor: {r: 0.748379, g: 0.6614203, b: 0.4613561, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.28
     specular: 0.028
     variation: 0.025
   - source: {fileID: 2100000, guid: b6adee6250809034eb6516459fb2e634, type: 2}
     rendererPath: FinalStage/Desk/Rebuilt/02_Desk
+    color: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
+    defaultColor: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
     floorTiles: 0
     smoothness: 0.12
     specular: 0.008
     variation: 0
+  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
+    rendererPath: FinalStage/Pillar
+    color: {r: 1, g: 1, b: 1, a: 1}
+    defaultColor: {r: 1, g: 1, b: 1, a: 1}
+    colorInitialized: 1
+    colorOnly: 0
+    additionalRendererPaths: []
+    floorTiles: 0
+    smoothness: 0.12
+    specular: 0.018
+    variation: 0.035
+  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
+    rendererPath: FinalStage/Pillar
+    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
+    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
+    colorInitialized: 1
+    colorOnly: 1
+    additionalRendererPaths: []
+    floorTiles: 0
+    smoothness: 0.18
+    specular: 0.02
+    variation: 0.035
+  - source: {fileID: 2100000, guid: 87f4c33073c71d644ba0f090737d8bf2, type: 2}
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/BevelledWindowProfiles"
+    color: {r: 0.39999998, g: 0.42999998, b: 0.45999992, a: 1}
+    defaultColor: {r: 0.39999998, g: 0.42999998, b: 0.45999992, a: 1}
+    colorInitialized: 1
+    colorOnly: 1
+    additionalRendererPaths: []
+    floorTiles: 0
+    smoothness: 0.18
+    specular: 0.02
+    variation: 0.035
+  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/CorniceTrim"
+    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
+    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
+    colorInitialized: 1
+    colorOnly: 1
+    additionalRendererPaths: []
+    floorTiles: 0
+    smoothness: 0.18
+    specular: 0.02
+    variation: 0.035
+  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/ValanceHem"
+    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
+    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
+    colorInitialized: 1
+    colorOnly: 1
+    additionalRendererPaths: []
+    floorTiles: 0
+    smoothness: 0.18
+    specular: 0.02
+    variation: 0.035
+  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
+    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/LowerWallGilt"
+    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
+    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
+    colorInitialized: 1
+    colorOnly: 1
+    additionalRendererPaths: []
+    floorTiles: 0
+    smoothness: 0.18
+    specular: 0.02
+    variation: 0.035
   exportedMaterials:
   - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
     exported: {fileID: 2100000, guid: a4f6e8cd8afb14747b966b92c45b529e, type: 2}

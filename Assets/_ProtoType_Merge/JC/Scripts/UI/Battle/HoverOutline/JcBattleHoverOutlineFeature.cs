@@ -83,7 +83,9 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
         {
             skillRenderers.Clear();
             foreach (var unit in Object.FindObjectsByType<BattleCharactor>(FindObjectsSortMode.None))
-                skillRenderers.AddRange(unit.GetComponentsInChildren<Renderer>(false));
+                // JC | 2026-11-17 | 캐릭터 하위 파티클/VFX는 MeshFilter가 없으므로 신체 메시 렌더러만 마스크에 전달합니다.
+                foreach (var candidate in unit.GetComponentsInChildren<Renderer>(false))
+                    if (candidate is MeshRenderer || candidate is SkinnedMeshRenderer) skillRenderers.Add(candidate);
             skillMask.SetRenderers(skillRenderers.ToArray());
             renderer.EnqueuePass(skillMask);
         }
@@ -149,12 +151,17 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
                 if (same) return;
             }
             ClearMaterials();
-            cached = renderers;
             if (renderers == null) return;
             foreach (var renderer in renderers)
             {
                 if (renderer == null) continue;
-                var mesh = renderer is SkinnedMeshRenderer skin ? skin.sharedMesh : renderer.GetComponent<MeshFilter>()?.sharedMesh;
+                // JC | 2026-11-17 | 지원하는 메시 렌더러만 처리하고 Unity 객체의 유효성을 명시적으로 검사합니다.
+                // ?.는 에디터의 누락 컴포넌트 참조를 걸러내지 못하므로 Smoke/VFX의 MeshFilter 접근 오류를 막지 못합니다.
+                Mesh mesh;
+                if (renderer is SkinnedMeshRenderer skin) mesh = skin.sharedMesh;
+                else if (renderer is MeshRenderer && renderer.TryGetComponent<MeshFilter>(out var filter) && filter)
+                    mesh = filter.sharedMesh;
+                else continue;
                 if (mesh == null) continue;
                 var sources = renderer.sharedMaterials;
                 for (int sub = 0; sub < mesh.subMeshCount && sub < sources.Length; sub++)
@@ -166,6 +173,8 @@ public sealed class JcBattleHoverOutlineFeature : ScriptableRendererFeature
                         maskMaterial = CoreUtils.CreateEngineMaterial(shader) });
                 }
             }
+            // JC | 2026-11-17 | 수집을 끝낸 결과만 캐시로 확정하여 중간 예외 뒤 불완전한 마스크가 재사용되지 않게 합니다.
+            cached = renderers;
         }
 
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace JC.BattleTesting
@@ -8,6 +8,8 @@ namespace JC.BattleTesting
     {
         [Tooltip("전투 판정 없이 무대·바닥·기둥 외형만 포함하는 프리팹입니다.")]
         public GameObject visualPrefab;
+        // JC | 2026-11-17 | 시간대별 조명·유리·재질·툰·접점 저장값을 본게임과 테스트가 공유합니다.
+        public JcIndoorPeriodProfiles periodProfiles;
         public JcBossCameraProfile cameraProfile;
         // JC | 2026-11-16 | 본게임/테스트 보스만 공유하는 배치 프로필이며 카메라·은행 설정은 독립 유지합니다.
         [Tooltip("실내 배치물·캐릭터·전투 그리드의 타일 단위 오프셋입니다.")] public JcBossLayoutProfile layoutProfile;
@@ -27,7 +29,17 @@ namespace JC.BattleTesting
         // JC | 2026-11-05 | 최신 월드의 방향광 설정과 공통 시간대 프로필을 원경에서 재사용합니다.
         [Tooltip("월드맵에서 가져온 태양 설정입니다. 실내에는 비추지 않습니다.")] public Light citySun;
         [Tooltip("월드와 공유하는 네 시간대 프로필입니다.")] public JC.Environment.JcDayNightProfile cityTimeProfile;
+        // JC | 2026-11-17 | 탐사 하늘의 표시만 재사용하며 이 프로필의 환경광·반사·라이트 값은 적용하지 않습니다.
+        [Tooltip("원경 하늘의 시간대별 배경·구름·천체 표시입니다. 실내 IBL과 조명에는 적용하지 않습니다.")] public JC.Env.JcTimePreviewSettings citySkyProfile;
         [Min(40), Tooltip("고층 원경까지 태양 그림자를 표시할 거리입니다. 보스전 동안만 적용합니다.")] public float cityShadowDistance=300;
+        // JC | 2026-11-17 | 보스 원경만의 비용/밝기를 제한하며 실내 조명·IBL·탐사 프로필에는 적용하지 않습니다.
+        [Header("원경 최적화")]
+        public JcBossCityLodLibrary cityLodLibrary;
+        [Range(0,1), Tooltip("저녁·새벽 가로등의 원본 대비 광량입니다.")] public float cityLampBrightness=.35f;
+        [Range(.05f,.9f), Tooltip("Spot 내부 각도 비율입니다. 낮추면 밝은 중심에서 바깥 경계까지 넓게 감쇠합니다.")] public float cityLampInnerRatio=.2f;
+        [Range(1,128), Tooltip("카메라 근처에서 동시에 사용할 원경 가로등 수입니다.")] public int cityLampBudget=48;
+        [Min(20), Tooltip("원경 가로등의 최대 표시 거리이며 마지막 25% 구간에서 부드럽게 꺼집니다.")] public float cityLampDistance=650;
+        [Min(0), Tooltip("이 높이보다 작은 원경 소품은 태양 그림자를 만들지 않습니다.")] public float citySmallShadowHeight=3;
         [Tooltip("보스전 이벤트 구역 번호입니다.")] public int zoneId = 2;
         [Tooltip("이 배경을 사용할 전투 키입니다. Start_ 접두어는 자동으로 제외합니다.")]
         public string battleKey = "BE490";

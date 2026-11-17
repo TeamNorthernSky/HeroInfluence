@@ -30,6 +30,11 @@ namespace JC.BattleTesting
         public static bool UsesRefraction(Camera camera)
         {
             if (!camera) return false;
+#if UNITY_EDITOR
+            // JC | 2026-11-17 | 편집 중인 보스 테스트 무대도 기존 투과색 패스를 사용해 창밖 도시를 표시합니다.
+            // 재질/환경 조절기를 실행하거나 씬을 저장하지 않고 카메라의 렌더 입력만 요청합니다.
+            if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode && UsesEditorRefraction(camera)) return true;
+#endif
             foreach (var item in instances)
             {
                 if (!item || !item.isActiveAndEnabled) continue;
@@ -47,6 +52,56 @@ namespace JC.BattleTesting
             }
             return false;
         }
+
+#if UNITY_EDITOR
+        // JC | 2026-11-17 | 도시 전체 렌더러를 매 프레임 검색하지 않도록 편집 구조/에셋 변경 때만 유리 목록을 갱신합니다.
+        static readonly Dictionary<GameObject, Renderer[]> editorPanes = new Dictionary<GameObject, Renderer[]>();
+        [UnityEditor.InitializeOnLoadMethod]
+        static void RegisterEditorRefraction()
+        {
+            UnityEditor.EditorApplication.hierarchyChanged -= ClearEditorPanes;
+            UnityEditor.EditorApplication.hierarchyChanged += ClearEditorPanes;
+            UnityEditor.EditorApplication.projectChanged -= ClearEditorPanes;
+            UnityEditor.EditorApplication.projectChanged += ClearEditorPanes;
+            UnityEditor.EditorApplication.playModeStateChanged -= ClearEditorPanesOnPlayChange;
+            UnityEditor.EditorApplication.playModeStateChanged += ClearEditorPanesOnPlayChange;
+            ClearEditorPanes();
+        }
+        static void ClearEditorPanes() => editorPanes.Clear();
+        static void ClearEditorPanesOnPlayChange(UnityEditor.PlayModeStateChange state) => ClearEditorPanes();
+        static bool UsesEditorRefraction(Camera camera)
+        {
+            if (camera.cameraType != CameraType.Game && camera.cameraType != CameraType.SceneView && camera.cameraType != CameraType.Preview) return false;
+            for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+            {
+                var scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+                if (!scene.isLoaded) continue;
+                // JC | 2026-11-17 | SceneView/카메라 미리보기의 씬 격리를 따르고 다른 씬·레이어에는 복사 패스를 추가하지 않습니다.
+                ulong sceneMask = camera.overrideSceneCullingMask;
+                if (sceneMask != 0)
+                {
+                    if ((sceneMask & UnityEditor.SceneManagement.EditorSceneManager.GetSceneCullingMask(scene)) == 0) continue;
+                }
+                else if (camera.cameraType != CameraType.SceneView && camera.gameObject.scene != scene) continue;
+                var test = JcStandaloneBattleTest.ForScene(scene);
+                if (!test || test.scenario != JcStandaloneBattleTest.Scenario.Boss || !test.stage || !test.stage.activeInHierarchy) continue;
+                if (!editorPanes.TryGetValue(test.stage, out var panes))
+                {
+                    var settings = JcBossBattleBackground.Load();
+                    if (!settings || !settings.glassProfile) continue;
+                    var found = new List<Renderer>();
+                    foreach (var candidate in test.stage.GetComponentsInChildren<Renderer>(true))
+                        foreach (var material in candidate.sharedMaterials)
+                            if (material && material.shader == settings.glassProfile.shader) { found.Add(candidate); break; }
+                    editorPanes.Add(test.stage, panes = found.ToArray());
+                }
+                foreach (var pane in panes)
+                    if (pane && pane.enabled && !pane.forceRenderingOff && pane.gameObject.activeInHierarchy &&
+                        (camera.cullingMask & (1 << pane.gameObject.layer)) != 0) return true;
+            }
+            return false;
+        }
+#endif
 
         public void Initialize(GameObject stage, Material profile, Camera camera = null, JcBossSurfaceProfile surfaces = null)
         {
@@ -77,6 +132,19 @@ namespace JC.BattleTesting
             instances.Add(this);
         }
 
+        // JC | 2026-11-17 | 창 메시/렌더러 연결을 유지하고 시간대별 유리의 초안과 저장 대상만 전환합니다.
+        public void SelectGlassProfile(Material profile)
+        {
+            if (!profile || !GlassDraft) return;
+            GlassProfile = profile; CopyGlassValues(profile, GlassDraft);
+        }
+        // JC | 2026-11-17 | 유리 광학 값을 명시 복사하여 시간대 전환 후 추가 셰이더 속성도 복제/저장 시 보존합니다.
+        public static void CopyGlassValues(Material source, Material destination)
+        {
+            foreach(var name in new[]{"_Tint","_GlossTint"}) destination.SetColor(name,source.GetColor(name));
+            foreach(var name in new[]{"_Opacity","_Thickness","_IOR","_RefractionStrength","_Absorption","_ReflectionStrength","_ReflectionRoughness","_FaceAlpha","_EdgeAlpha","_GlossStrength","_GlossSmoothness"})
+                destination.SetFloat(name,source.GetFloat(name));
+        }
         public void ApplyGlass()
         {
             if (!GlassDraft) return;

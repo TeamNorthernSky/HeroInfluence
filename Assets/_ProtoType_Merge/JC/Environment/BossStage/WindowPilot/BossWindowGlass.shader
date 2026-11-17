@@ -3,6 +3,8 @@ Shader "JC/Environment/Boss Window Glass"
     Properties
     {
         _Tint ("투과 색상", Color) = (0.63,0.94,1,1)
+        // JC | 2026-11-17 | 기존 프로필의 투과감은 0 기본값으로 유지하고 불투명도를 독립 조절합니다.
+        _Opacity ("불투명도", Range(0,1)) = 0
         _FaceAlpha ("정면 착색량", Range(0,1)) = .05
         _EdgeAlpha ("측면 착색량", Range(0,1)) = .14
         _Thickness ("유리 두께 (월드 단위)", Range(.005,.3)) = .06
@@ -11,6 +13,10 @@ Shader "JC/Environment/Boss Window Glass"
         _Absorption ("착색 강도", Range(0,8)) = 2
         _ReflectionStrength ("표면 반사 강도", Range(0,1)) = .1
         _ReflectionRoughness ("표면 반사 거칠기", Range(0,1)) = .25
+        // JC | 2026-11-17 | 실제 광원 하이라이트를 환경 반사와 별도 제어합니다.
+        _GlossStrength ("광택 강도", Range(0,4)) = .35
+        _GlossSmoothness ("광택 선명도", Range(0,1)) = .75
+        _GlossTint ("광택 색상", Color) = (1,1,1,1)
     }
     SubShader
     {
@@ -27,6 +33,10 @@ Shader "JC/Environment/Boss Window Glass"
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma multi_compile_instancing
+            // JC | 2026-11-17 | 보스 Forward+의 창문광·추가광도 광택 하이라이트에 반영합니다.
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _FORWARD_PLUS
+            #pragma multi_compile _ _LIGHT_LAYERS
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
@@ -34,9 +44,10 @@ Shader "JC/Environment/Boss Window Glass"
             TEXTURE2D_X(_JcBossGlassColor); SAMPLER(sampler_JcBossGlassColor);
             float _JcBossGlassColorReady;
             CBUFFER_START(UnityPerMaterial)
-                half4 _Tint;
+                half4 _Tint, _GlossTint;
+                half _GlossStrength, _GlossSmoothness;
                 float _Thickness, _IOR, _RefractionStrength, _Absorption;
-                half _FaceAlpha, _EdgeAlpha, _ReflectionStrength, _ReflectionRoughness;
+                half _FaceAlpha, _EdgeAlpha, _ReflectionStrength, _ReflectionRoughness, _Opacity;
             CBUFFER_END
             struct Attributes { float4 vertex:POSITION; float3 normal:NORMAL; UNITY_VERTEX_INPUT_INSTANCE_ID };
             struct Varyings { float4 pos:SV_POSITION; float3 world:TEXCOORD0; half3 normal:TEXCOORD1; UNITY_VERTEX_OUTPUT_STEREO };
@@ -48,6 +59,16 @@ Shader "JC/Environment/Boss Window Glass"
                 o.pos=TransformWorldToHClip(o.world);
                 o.normal=TransformObjectToWorldNormal(v.normal);
                 return o;
+            }
+            // JC | 2026-11-17 | 시선·법선·실제 광원 방향으로 부드러운 반짝임을 계산하며 광량 감쇠를 따릅니다.
+            half3 GlassGloss(Light light,float3 n,float3 v)
+            {
+                #ifdef _LIGHT_LAYERS
+                if(!IsMatchingLightLayer(light.layerMask,GetMeshRenderingLayer())) return 0;
+                #endif
+                float3 h=SafeNormalize(light.direction+v);
+                float power=exp2(3+8*saturate(_GlossSmoothness));
+                return light.color*(light.distanceAttenuation*light.shadowAttenuation)*pow(saturate(dot(n,h)),power)*saturate(dot(n,light.direction));
             }
             half4 Frag(Varyings i):SV_Target
             {
@@ -74,8 +95,23 @@ Shader "JC/Environment/Boss Window Glass"
                 half3 transmission=exp(-density*(1-saturate(_Tint.rgb)));
                 half f0=(_IOR-1)/(_IOR+1);f0*=f0;
                 half fresnel=(f0+(1-f0)*pow(1-facing,5))*_ReflectionStrength;
-                half3 reflection=GlossyEnvironmentReflection(reflect(-v,n),i.world,_ReflectionRoughness,1);
-                return half4(lerp(background*transmission,reflection,saturate(fresnel)),1);
+                half3 reflection=GlossyEnvironmentReflection(reflect(-v,n),i.world,_ReflectionRoughness,1,uv);
+                // JC | 2026-11-17 | 표면 반사는 유지하면서 배경 투과색을 틴트색으로 가립니다. Blend One Zero에서도 1이면 배경이 비치지 않습니다.
+                half3 glassColor=lerp(background*transmission,saturate(_Tint.rgb),saturate(_Opacity));
+                half3 gloss=GlassGloss(GetMainLight(),n,v);
+                InputData inputData=(InputData)0;
+                inputData.positionWS=i.world;inputData.normalizedScreenSpaceUV=uv;
+                #if defined(_ADDITIONAL_LIGHTS)
+                    #if USE_FORWARD_PLUS
+                    UNITY_LOOP for(uint lightIndex=0;lightIndex<min(URP_FP_DIRECTIONAL_LIGHTS_COUNT,MAX_VISIBLE_LIGHTS);lightIndex++)
+                        gloss+=GlassGloss(GetAdditionalLight(lightIndex,i.world,half4(1,1,1,1)),n,v);
+                    #endif
+                    uint lightCount=GetAdditionalLightsCount();
+                    LIGHT_LOOP_BEGIN(lightCount)
+                        gloss+=GlassGloss(GetAdditionalLight(lightIndex,i.world,half4(1,1,1,1)),n,v);
+                    LIGHT_LOOP_END
+                #endif
+                return half4(lerp(glassColor,reflection,saturate(fresnel))+gloss*_GlossTint.rgb*_GlossStrength,1);
             }
             ENDHLSL
         }

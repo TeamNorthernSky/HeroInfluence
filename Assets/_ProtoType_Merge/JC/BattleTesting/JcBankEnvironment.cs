@@ -270,9 +270,20 @@ namespace JC.BattleTesting
             if (reflectionRender >= 0 && !IndoorProbe.IsFinishedRendering(reflectionRender)) return;
             reflectionRender = IndoorProbe.RenderProbe(); reflectionPending = false;
         }
+#if UNITY_EDITOR
+        // JC | 2026-11-17 | 에디트 조절 중에도 요청된 반사 캡처만 지연 갱신하며 매 프레임 재캡처하지 않습니다.
+        public void TickEditorPreview() => LateUpdate();
+#endif
         void LateUpdate()
         {
             if (reflectionPending && Time.realtimeSinceStartup >= reflectionDue) RefreshReflectionNow();
+        }
+        // JC | 2026-11-17 | 시간대 전환은 기존 초안과 광원/재질 소유권을 유지하고 저장 대상만 전환합니다.
+        public void SelectProfile(JcBankEnvironmentProfile profile)
+        {
+            if (!profile || !Draft) return;
+            Source = profile;
+            JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), Draft);
         }
         public void ReloadProfile()
         {

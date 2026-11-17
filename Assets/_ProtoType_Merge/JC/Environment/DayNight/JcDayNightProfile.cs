@@ -21,7 +21,8 @@ namespace JC.Environment {
   [Tooltip("은행 실내의 야간 물체 환경광 추가 배율입니다."),Min(1)] public float indoorNightObjectAmbientBoost=1.06f;
   [Tooltip("필드 인간형 모델의 야간 알베도 발광 보정입니다."),Range(0,.5f)] public float humanoidNightFill=.16f;
   [Tooltip("창문 점등 시각입니다. 18.5는 18:30입니다."),Range(0,24)] public float windowOnHour=18.5f;
-  [Tooltip("창문 소등 시각입니다. .5는 00:30입니다."),Range(0,24)] public float windowOffHour=.5f;
+  // JC | 2026-11-17 | 월드·보스 원경의 새벽(4번째 시간대)에도 창문을 밝히고 일출 시각에 소등합니다.
+  [Tooltip("창문 소등 시각입니다. 6.5는 06:30이며 새벽에도 점등을 유지합니다."),Range(0,24)] public float windowOffHour=6.5f;
   [Tooltip("시간 배속과 무관한 실제 화면의 점등·소등 보간 시간입니다."),Min(.01f)] public float windowFadeSeconds=.3f;
   [Tooltip("점등 창문의 낮은 채도와 높은 명도 색상입니다."),ColorUsage(false,true)] public Color windowTint=new Color(1,.94f,.78f,1);
   [Tooltip("점등 창문의 발광 강도입니다."),Min(0)] public float windowIntensity=1.1f;

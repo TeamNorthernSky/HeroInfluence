@@ -15,7 +15,7 @@ namespace JC.BattleTesting.Editor
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.ObjectField(new GUIContent("공유 저장 프로필", "본게임 은행전과 BankTestScene이 함께 사용하는 조명 저장값입니다."), controls.Source, typeof(JcBankEnvironmentProfile), false);
             if (!controls.Draft) { EditorGUILayout.HelpBox("은행 배경 연결 후 조절할 수 있습니다.", MessageType.Info); return; }
-            EditorGUILayout.HelpBox("실외광·하늘·낮밤 보정을 차단한 고정 실내 조명입니다. 조절값은 즉시 반영되며 플레이 종료 전에 저장해야 유지됩니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("실외광·하늘·낮밤 보정을 차단한 고정 실내 조명입니다. 조절값은 즉시 반영되며 편집/플레이 중 조절 후 저장해야 다음 실행에도 유지됩니다.", MessageType.Info);
             if (!controls.isActiveAndEnabled) EditorGUILayout.HelpBox("실내 조명 미리보기가 중지되었습니다.", MessageType.Warning);
             // JC | 2026-11-06 | 기존 은행 환경 오브젝트에서 SSAO도 조절합니다. 누락된 연결은 임의 대체하지 않고 표시합니다.
             if (!controls.SsaoAvailable) EditorGUILayout.HelpBox("은행 SSAO 연결이 없습니다. 공유 환경 프로필의 연결을 확인해 주세요.", MessageType.Warning);

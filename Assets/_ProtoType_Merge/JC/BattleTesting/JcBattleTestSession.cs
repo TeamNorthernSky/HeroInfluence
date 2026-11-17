@@ -52,11 +52,12 @@ namespace JC.BattleTesting
         public Camera viewCamera;
         [Tooltip("켜면 전투 시작 시 기존 구도에서 쿼터뷰 A로 선형 이동합니다.")]
         public bool startInQuarterView = true;
-        [Tooltip("F6/F7 구도 저장 에셋입니다. 비어 있으면 기본 카메라 프로필을 사용합니다.")]
+        // JC | 2026-11-17 | 버튼 전용 구도 명칭으로 안내를 맞춥니다.
+        [Tooltip("A/B 구도 저장 에셋입니다. 비어 있으면 기본 카메라 프로필을 사용합니다.")]
         public JcBattleCameraProfile cameraProfile;
-        [Tooltip("F6 편집용 초안입니다. 적용과 프로필 저장은 별도 버튼으로 수행합니다.")]
+        [Tooltip("구도 A 편집용 초안입니다. 적용과 프로필 저장은 별도 버튼으로 수행합니다.")]
         public JcBattleCameraPose cameraDraftA = new JcBattleCameraPose();
-        [Tooltip("F7 편집용 초안입니다. F8에서 현재 자세를 가져올 수 없습니다.")]
+        [Tooltip("구도 B 편집용 초안입니다. 기본 구도에서 현재 자세를 가져올 수 없습니다.")]
         public JcBattleCameraPose cameraDraftB = new JcBattleCameraPose();
         private JC.VFX.JcFreeCamera freeCameraControl;
         private JcInputHandler cameraBlockedInput;
@@ -111,12 +112,7 @@ namespace JC.BattleTesting
         }
         [Tooltip("각 전환의 소요 시간(초)입니다. 가감속 없이 이동하며 일시정지와 배속에 영향받지 않습니다.")]
         [Min(0.05f)] public float cameraTransitionSeconds = 0.65f;
-        [Tooltip("기본 쿼터뷰 A(아군 좌하단/적 우상단)로 이동하는 키입니다.")]
-        public KeyCode quarterViewAKey = KeyCode.F6;
-        [Tooltip("쿼터뷰 B(아군 좌상단/적 우하단)로 이동하는 키입니다.")]
-        public KeyCode quarterViewBKey = KeyCode.F7;
-        [Tooltip("실행 시작 시 보관한 기존 기본 뷰로 이동하는 키입니다. 타겟 선택 상태는 유지합니다.")]
-        public KeyCode originalViewKey = KeyCode.F8;
+        // JC | 2026-11-17 | 테스트 세션도 구도 버튼으로 조작하므로 전용 단축키 설정을 제거합니다.
 
         private Vector3 originalCameraPosition, viewStartPosition, viewEndPosition;
         private Quaternion originalCameraRotation, viewStartRotation, viewEndRotation;
@@ -187,15 +183,7 @@ namespace JC.BattleTesting
         {
             if (!cameraCaptured || viewCamera == null) return;
             RefreshCameraDraft();
-            var events = UnityEngine.EventSystems.EventSystem.current;
-            var selected = events != null ? events.currentSelectedGameObject : null;
-            bool editing = selected != null && (selected.GetComponent<UnityEngine.UI.InputField>() != null || selected.GetComponent<TMPro.TMP_InputField>() != null);
-            if (!editing && modalMessage == null)
-            {
-                if (Input.GetKeyDown(quarterViewAKey)) SelectCameraView(0);
-                else if (Input.GetKeyDown(quarterViewBKey)) SelectCameraView(1);
-                else if (Input.GetKeyDown(originalViewKey)) SelectCameraView(2);
-            }
+            // JC | 2026-11-17 | 구도 전환은 기존 버튼 콜백으로만 요청합니다.
             if (viewMoving)
             {
                 viewElapsed += Time.unscaledDeltaTime;
@@ -205,9 +193,8 @@ namespace JC.BattleTesting
                 if (t >= 1f) viewMoving = false;
             }
             string[] names = { "구도 A", "구도 B", "기본" };
-            KeyCode[] keys = { quarterViewAKey, quarterViewBKey, originalViewKey };
             for (int i = 0; i < cameraViewLabels.Length; i++)
-                if (cameraViewLabels[i] != null) cameraViewLabels[i].text = (requestedView == i ? "> " : "") + names[i] + " [" + keys[i] + "]";
+                if (cameraViewLabels[i] != null) cameraViewLabels[i].text = (requestedView == i ? "> " : "") + names[i];
         }
 
         // JC | 2026-11-09 | 테스트 조작 버튼은 Noto 우선이며, 기존 슬롯은 Noto 누락 시에만 대체로 사용합니다.

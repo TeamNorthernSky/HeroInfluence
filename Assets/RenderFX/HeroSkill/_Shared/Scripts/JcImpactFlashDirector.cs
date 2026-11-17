@@ -35,8 +35,7 @@ namespace JC.VFX
         [Tooltip("파티클이 모두 끝난 뒤 정리까지의 여유(초).")]
         [SerializeField, Min(0f)] private float extraLifetime = 0.3f;
 
-        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         public Vector3 Offset { get => offset; set => offset = value; }
         public bool FlipRotation { get => flipRotation; set => flipRotation = value; }
@@ -82,10 +81,7 @@ namespace JC.VFX
                 if (life > longest) longest = life;
             }
 
-            if (logLifecycle)
-            {
-                Debug.Log($"[JcImpactFlashDirector] dir={dir:F2} pos={transform.position:F2} life={longest:F2}", this);
-            }
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
 
             Destroy(gameObject, longest + extraLifetime);
         }

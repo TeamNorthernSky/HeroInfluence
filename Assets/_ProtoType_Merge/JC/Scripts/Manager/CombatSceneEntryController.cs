@@ -29,7 +29,7 @@ public class CombatSceneEntryController : MonoBehaviour
 
     private void HandleCombatStarted(PartyGridMover party, EnemyGridMover enemy)
     {
-        Debug.Log($"[CombatSceneEntryController] HandleCombatStarted: party={(party != null ? party.name : "null")} enemy={(enemy != null ? enemy.name : "null")} battleSceneName='{battleSceneName}' instanceOk={GameSceneManager.Instance != null}");
+        // JC | 2026-11-17 | 전투 진입·시각 준비의 정상 처리 개발 로그를 제거합니다.
         if (string.IsNullOrWhiteSpace(battleSceneName))
         {
             Debug.LogWarning("[CombatSceneEntryController] battleSceneName 빈 값 — 씬 전환 건너뜀");

@@ -78,8 +78,7 @@ namespace JC.VFX.Seam
         [Tooltip("전체 소멸까지의 여유(초). 획 일생이 더 길면 그쪽을 따른다.")]
         [SerializeField, Min(0f)] private float extraLinger = 0.2f;
 
-        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         /// <summary>서브스텝당 목표 이동 거리(m). 첫 세그먼트 직선화의 최대 길이가 된다.</summary>
         const float SubStepTargetMeters = 0.15f;
@@ -268,10 +267,7 @@ namespace JC.VFX.Seam
             // 정리 예약: 잔여 시간 클램프로 모든 획이 스윕 종료와 함께 소멸하므로 주행 + 여유면 충분.
             Destroy(gameObject, sweepDuration + extraLinger);
 
-            if (logLifecycle)
-            {
-                Debug.Log("[JcArcStroke] Play  origin=" + transform.position.ToString("F2"), this);
-            }
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
         }
 
         /// <summary>전진 기준(시계 12시 방향) = 시전자→타깃 수평. 없으면 시전자 정면.</summary>
@@ -365,7 +361,7 @@ namespace JC.VFX.Seam
                     {
                         running = false;
                         SetEmission(false);
-                        if (logLifecycle) Debug.Log("[JcArcStroke] 주행 종료 — 잔상 페이드 진행", this);
+                        // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
                     }
                 }
 

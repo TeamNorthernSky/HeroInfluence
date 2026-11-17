@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -21,7 +21,7 @@ namespace JC.BattleTesting
         JcBankBattleBackground bankSettings;
         bool bossBackground;
         JcBossCamera bossCamera;
-        // JC | 2026-11-16 | 배치가 바뀌면 이전 배치의 F6/F7 이동 목적지가 새 카메라를 덮어쓰지 않게 합니다.
+        // JC | 2026-11-17 | 배치가 바뀌면 이전 배치의 A/B 이동 목적지가 새 카메라를 덮어쓰지 않게 합니다.
         int cameraLayoutRevision;
         bool clearTutorialArenaTrees;
         double lightingHour;
@@ -320,10 +320,12 @@ namespace JC.BattleTesting
                 bossCamera = controls.AddComponent<JcBossCamera>();
                 // JC | 2026-11-16 | 무대 경계 없이 저장한 보스 구도를 적용합니다.
                 bossCamera.Initialize(bossCameraProfile, battleCamera, center, bossLayout);
+                // JC | 2026-11-16 | 실제 방 기준 스킬 경계를 본게임과 테스트 진입에서 동일하게 연결합니다.
+                // JC | 2026-11-16 | 보스 무대 경계를 카메라에 연결하지 않습니다. 일반 전투 연출을 그대로 사용합니다.
                 profile = bossCamera.Draft;
             }
             else if (profile != null) SelectView(0);
-            Debug.Log("[JC Battle] 공통 뷰 적용: " + Report, this);
+            // JC | 2026-11-17 | 전투 진입·시각 준비의 정상 처리 개발 로그를 제거합니다.
         }
 
         public void SelectView(int view)
@@ -363,9 +365,7 @@ namespace JC.BattleTesting
             // sceneLoaded 이후 Start에서 생성된 외형까지 첫 Update에서 정리합니다.
             if (entered && clearTutorialArenaTrees) { RemoveArenaTrees(gameObject.scene); clearTutorialArenaTrees = false; }
             if (!entered) { if (Time.realtimeSinceStartup - createdAt > 30) Destroy(gameObject); return; }
-            if (Input.GetKeyDown(KeyCode.F6)) SelectView(0);
-            if (Input.GetKeyDown(KeyCode.F7)) SelectView(1);
-            if (Input.GetKeyDown(KeyCode.F8)) SelectView(2);
+            // JC | 2026-11-17 | 구도 선택은 디버그 버튼으로 처리하고 Update는 전환 애니메이션만 진행합니다.
             if (!moving || battleCamera == null) return;
             if (bossCamera && cameraLayoutRevision != bossCamera.LayoutRevision) { moving = false; return; }
             elapsed += Time.unscaledDeltaTime; float t = Mathf.Clamp01(elapsed / .65f);
@@ -391,9 +391,10 @@ namespace JC.BattleTesting
             if (!entered) return;
             // 빌드 씬에서는 디버그 창이 활성화된 동안에만 카메라 전환 버튼을 그린다.
             if (gameObject.scene.buildIndex >= 0 && !DebugPanelManager.IsDebugPanelActive) return;
-            if (GUI.Button(new Rect(Screen.width - 306, 8, 96, 24), "A [F6]")) SelectView(0);
-            if (GUI.Button(new Rect(Screen.width - 206, 8, 96, 24), "B [F7]")) SelectView(1);
-            if (GUI.Button(new Rect(Screen.width - 106, 8, 96, 24), "F8")) SelectView(2);
+            // JC | 2026-11-17 | 버튼에 실제 조작명만 표시합니다.
+            if (GUI.Button(new Rect(Screen.width - 306, 8, 96, 24), "구도 A")) SelectView(0);
+            if (GUI.Button(new Rect(Screen.width - 206, 8, 96, 24), "구도 B")) SelectView(1);
+            if (GUI.Button(new Rect(Screen.width - 106, 8, 96, 24), "기본 구도")) SelectView(2);
         }
         void OnDestroy() { if(lightingProfile!=null)Destroy(lightingProfile); SceneManager.sceneLoaded -= Loaded; if (pending == this) pending = null; }
     }

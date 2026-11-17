@@ -67,6 +67,8 @@ namespace JC.BackgroundEditing
     {
         public static string Export(BackgroundDocument d,bool selectResult=true)
         {
+            // JC | 2026-11-16 | 도시 단위 결과가 전체 보스 배경/프로필을 덮어쓰는 경로로 들어가지 않게 합니다.
+            if(d && d.IsCityTile)throw new InvalidOperationException("도시 단위 작업은 도시 프리팹 생성 또는 해당 도시에만 적용을 사용해 주세요.");
             Guard();Rebuild(d);Save(d);string dir=Boss+"Deliverables/"+DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");Folder(dir);
             var scene=EditorSceneManager.NewPreviewScene();GameObject output=null;
             try
@@ -104,12 +106,86 @@ namespace JC.BackgroundEditing
         }
         public static void CopyBlock(BackgroundDocument d,Vector2Int min,Vector2Int max,Vector2Int delta)
         {
-            Guard();if(delta==Vector2Int.zero)return;Undo.IncrementCurrentGroup();int group=Undo.GetCurrentGroup();Undo.SetCurrentGroupName("구획 복제");Undo.RecordObject(d,"구획 복제");
-            if((long)(max.x-min.x+1)*(max.y-min.y+1)>2500)throw new InvalidOperationException("구획 복제는 한 번에 2500셀 이하로 선택해 주세요.");var copied=new List<BackgroundDocument.Cell>();for(int x=min.x;x<=max.x;x++)for(int z=min.y;z<=max.y;z++){var p=new Vector2Int(x,z);var dest=p+delta;if(d.limitArea&&(dest.x<d.editMin.x||dest.x>d.editMax.x||dest.y<d.editMin.y||dest.y>d.editMax.y))throw new InvalidOperationException("복제 대상이 편집 영역 밖입니다.");copied.Add(new BackgroundDocument.Cell{position=p,kind=Sample(d,p)});}
-            var map=d.cells.ToDictionary(c=>c.position,c=>c.kind);foreach(var c in copied)map[c.position+delta]=c.kind;d.cells=map.Select(p=>new BackgroundDocument.Cell{position=p.Key,kind=p.Value}).ToList();
-            if(copied.Count>0)d.cuts.Add(new BackgroundDocument.Cut{min=(Vector2)(min+delta)-Vector2.one*.5f,max=(Vector2)(max+delta)+Vector2.one*.5f});
-            if(!d.lockBuildings)foreach(Transform t in d.Buildings.Cast<Transform>().ToArray()){var b=t.GetComponent<Renderer>()?.bounds;if(b.HasValue&&b.Value.center.x>=min.x&&b.Value.center.x<=max.x&&b.Value.center.z>=min.y&&b.Value.center.z<=max.y){var go=UnityEngine.Object.Instantiate(t.gameObject,d.Buildings);go.transform.position+=new Vector3(delta.x,0,delta.y);Undo.RegisterCreatedObjectUndo(go,"구획 복제");}}
-            Rebuild(d);Undo.CollapseUndoOperations(group);EditorUtility.SetDirty(d);
+            Guard();if(delta==Vector2Int.zero)return;
+            if(!d||!d.baseline||!d.Terrain||!d.Buildings)throw new InvalidOperationException("도시 편집 작업본을 먼저 열어 주세요.");
+            // JC | 2026-11-17 | 전체 도시(예:99×39셀)를 지원합니다. 범위 검사는 Undo/에셋 생성 전에 끝냅니다.
+            var low=Vector2Int.Min(min,max);max=Vector2Int.Max(min,max);min=low;
+            long sizeX=(long)max.x-min.x+1,sizeZ=(long)max.y-min.y+1;
+            if(sizeX>10000||sizeZ>10000||sizeX*sizeZ>10000)throw new InvalidOperationException("구획 복제는 한 번에 10000셀 이하로 선택해 주세요.");
+            var targetMin=new Vector2Int(checked(min.x+delta.x),checked(min.y+delta.y));
+            var targetMax=new Vector2Int(checked(max.x+delta.x),checked(max.y+delta.y));
+            if(d.limitArea&&(targetMin.x<d.editMin.x||targetMax.x>d.editMax.x||targetMin.y<d.editMin.y||targetMax.y>d.editMax.y))throw new InvalidOperationException("복제 대상이 편집 영역 밖입니다.");
+            Undo.IncrementCurrentGroup();int group=Undo.GetCurrentGroup();Undo.SetCurrentGroupName("구획 복제");
+            string folder=d.assetFolder+"/Blocks/"+Guid.NewGuid().ToString("N");
+            try
+            {
+                PrepareEditableProps(d);
+                // JC | 2026-11-17 | 지형 종류만 다시 칠하지 않고 현재 메시/재질/높이/호안/교량을 그대로 영역 복제합니다.
+                // 기존 칠하기 결과까지 독립 기준 프리팹에 보관하여 겹치는 복제와 후속 편집·Undo/Redo를 안전하게 지원합니다.
+                var baseline=CopyBlockBaseline(d,min,max,delta,folder);
+                if(!d.lockBuildings)foreach(Transform t in d.Buildings.Cast<Transform>().ToArray())
+                {
+                    var renderer=t.GetComponent<Renderer>();
+                    if(!renderer&&!t.GetComponentInChildren<Light>(true))continue;
+                    var center=renderer?renderer.bounds.center:t.position;
+                    if(center.x>=min.x-.5f&&center.x<=max.x+.5f&&center.z>=min.y-.5f&&center.z<=max.y+.5f)
+                    {
+                        var go=UnityEngine.Object.Instantiate(t.gameObject,d.Buildings);go.transform.position+=new Vector3(delta.x,0,delta.y);Undo.RegisterCreatedObjectUndo(go,"구획 복제");
+                    }
+                }
+                // JC | 2026-11-17 | 생성 객체 Undo가 진행 중 기록을 확정하므로 배치물 등록을 마친 뒤 문서 변경을 기록합니다.
+                Undo.RegisterCompleteObjectUndo(d,"구획 복제");
+                // JC | 2026-11-17 | 복제한 완성 마감을 새 기준에 포함했으므로 이후 일반 복원에서 또 전부 생성하지 않습니다.
+                d.baseline=baseline;d.cells=new List<BackgroundDocument.Cell>();d.cuts=new List<BackgroundDocument.Cut>();d.preserveWorld=true;d.regenerateSurfaceDetails=false;
+                Rebuild(d);EditorUtility.SetDirty(d);Undo.FlushUndoRecordObjects();Undo.CollapseUndoOperations(group);
+            }
+            catch
+            {
+                Undo.RevertAllDownToGroup(group);
+                if(AssetDatabase.IsValidFolder(folder))AssetDatabase.DeleteAsset(folder);
+                Rebuild(d);throw;
+            }
+        }
+
+        // JC | 2026-11-17 | 원본 작업 에셋은 수정하지 않고 새 기준에 지형만 확정합니다. 건물·가로등의 실제 배치는 기존 그룹이 소유합니다.
+        static GameObject CopyBlockBaseline(BackgroundDocument d,Vector2Int min,Vector2Int max,Vector2Int delta,string folder)
+        {
+            var scene=EditorSceneManager.NewPreviewScene();var owned=new List<Mesh>();
+            var from=(Vector2)min-Vector2.one*.5f;var to=(Vector2)max+Vector2.one*.5f;
+            var offset=new Vector3(delta.x,0,delta.y);
+            try
+            {
+                var root=new GameObject("도시 구획 복제 · 기준");UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root,scene);
+                var terrain=Child(root.transform,"지형 결과").transform;var props=Child(root.transform,"건물 배치").transform;
+                bool Overlaps(MeshFilter f,Vector2 a,Vector2 b){var bounds=f.GetComponent<Renderer>().bounds;return bounds.max.x>a.x&&bounds.min.x<b.x&&bounds.max.z>a.y&&bounds.min.z<b.y;}
+                void Add(MeshFilter source,Mesh mesh,Vector3 shift)
+                {
+                    if(!mesh||mesh.vertexCount==0)return;
+                    var copy=Visual(source,terrain);copy.GetComponent<MeshFilter>().sharedMesh=mesh;copy.transform.position+=shift;
+                    copy.SetActive(source.gameObject.activeInHierarchy);
+                }
+                foreach(var f in d.Terrain.GetComponentsInChildren<MeshFilter>(true))
+                {
+                    if(!f.sharedMesh||!f.GetComponent<MeshRenderer>())continue;
+                    // 별도 산 프리팹은 Rebuild가 기존대로 설치하므로 기준에 중복 보관하지 않습니다.
+                    if(d.borderMountains&&f.name.StartsWith("경계 산 · ",StringComparison.Ordinal))continue;
+                    if(Overlaps(f,from+delta,to+delta)){var remaining=Clip(f,from+delta,to+delta);owned.Add(remaining);Add(f,remaining,Vector3.zero);}
+                    else Add(f,f.sharedMesh,Vector3.zero);
+                    if(Overlaps(f,from,to)){var copied=Clip(f,from,to,true);owned.Add(copied);Add(f,copied,offset);}
+                }
+                // 기존 배치 팔레트와 도시 시간대 설정도 새 기준에 유지합니다.
+                foreach(var f in d.baseline.GetComponentsInChildren<MeshFilter>(true).Where(IsProp))Visual(f,props);
+                var time=d.baseline.GetComponent<JcBossCityTime>();
+                if(time){var copy=root.AddComponent<JcBossCityTime>();EditorUtility.CopySerialized(time,copy);copy.UseWorldLighting();}
+                // JC | 2026-11-17 | 큰 구획의 메시를 하나씩 재임포트하지 않고 전체 복사 후 한 번에 반영합니다.
+                AssetDatabase.StartAssetEditing();
+                try{new AssetCopier(folder+"/Assets",false).RemapHierarchy(root);}
+                finally{AssetDatabase.StopAssetEditing();}
+                var saved=PrefabUtility.SaveAsPrefabAsset(root,folder+"/Baseline.prefab");
+                if(!saved)throw new IOException("복제 지형의 기준 프리팹을 저장하지 못했습니다.");
+                return saved;
+            }
+            finally{EditorSceneManager.ClosePreviewScene(scene);foreach(var mesh in owned)if(mesh)UnityEngine.Object.DestroyImmediate(mesh);}
         }
     }
 }

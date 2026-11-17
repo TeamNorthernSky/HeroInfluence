@@ -131,6 +131,13 @@ namespace JC.BattleTesting
         static void SetKeyword(Material material, string keyword, bool enabled)
         { if (enabled) material.EnableKeyword(keyword); else material.DisableKeyword(keyword); }
 
+        // JC | 2026-11-17 | 시간대 전환은 기존 초안과 광원/재질 소유권을 유지하고 저장 대상만 전환합니다.
+        public void SelectProfile(JcBankMaterialProfile profile)
+        {
+            if (!profile || !draft) return;
+            source = profile;
+            JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), draft);
+        }
         public void ReloadProfile()
         {
             if (!source || !draft) return;

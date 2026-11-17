@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace JC.BattleTesting.Editor
@@ -22,6 +22,9 @@ namespace JC.BattleTesting.Editor
             var controls = (JcBlackBulletCameraControls)target;
             if (!controls.Draft) { EditorGUILayout.HelpBox("공통 저장 프로필을 연결해 주세요.", MessageType.Warning); return; }
             EditorGUILayout.HelpBox("모든 전투가 같은 정본을 사용합니다. 기본값은 정본2입니다. 정본 선택 변경은 다음 공격부터, 현재 정본의 조절값 변경은 진행 중인 공격에도 반영됩니다. 코어 스킬은 제외합니다.\n원본은 아래 저장 버튼으로 보존합니다.", MessageType.Info);
+            // JC | 2026-11-16 | 보스도 공통 정본 선택을 사용하며 촬영 기준을 보스 기본뷰에 상대 변환합니다.
+            // JC | 2026-11-17 | 보스 전용 세 구도 항목과 전장 공통 항목의 저장 영향을 구분해 안내합니다.
+            if(controls.UsesBossBasis) EditorGUILayout.HelpBox("보스 기본뷰·배치를 기준으로 촬영합니다. ‘보스 전용 · 적 위치별 구도’는 보스 본게임·테스트씬에만 적용됩니다. 나머지 정본·공통값은 다른 전장과 공유됩니다. 조절값은 아래 저장 버튼으로 보존합니다.", MessageType.Info);
             var values = new SerializedObject(controls.Draft); values.Update();
             EditorGUILayout.PropertyField(values.FindProperty("canon"));
             EditorGUILayout.PropertyField(values.FindProperty("transitionSeconds"));

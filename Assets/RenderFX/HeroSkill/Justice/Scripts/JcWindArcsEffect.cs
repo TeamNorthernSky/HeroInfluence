@@ -90,8 +90,7 @@ namespace JC.VFX.Seam
                  "기본은 꺼짐 — 재생 순간의 위치에 고정된다(제자리 방사광).")]
         [SerializeField] private bool followRoot;
 
-        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
-        [SerializeField] private bool logLifecycle;
+        // JC | 2026-11-17 | 빌드 로그 정리를 위해 JC VFX의 재생 진단 출력과 전용 옵션을 제거합니다.
 
         // 프리셋 바인더가 밀어넣는 값
         public Color ColorA { get => colorA; set => colorA = value; }
@@ -159,8 +158,7 @@ namespace JC.VFX.Seam
 
             Destroy(gameObject, spawnWindow + sweepDurMax + trailTimeMax + 0.3f);
 
-            if (logLifecycle)
-                Debug.Log("[JcWindArcs] Play  origin=" + center.ToString("F2"), this);
+            // JC | 2026-11-17 | 정상 VFX 재생 과정의 개발용 로그를 제거합니다.
         }
 
         private void Update()

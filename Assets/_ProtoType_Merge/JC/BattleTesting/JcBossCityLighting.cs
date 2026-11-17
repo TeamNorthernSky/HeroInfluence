@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using JC.Environment;
 using TMPro;
@@ -11,7 +11,8 @@ using UnityEngine.UI;
 namespace JC.BattleTesting
 {
     // JC | 2026-11-05 | 원경은 월드 시간대, 실내는 창문/추가광만 사용합니다. 변경값은 이 보스 무대 수명에 한정합니다.
-    public sealed class JcBossCityLighting : MonoBehaviour
+    [ExecuteAlways, DefaultExecutionOrder(200)]
+    public sealed partial class JcBossCityLighting : MonoBehaviour
     {
         public const int CityLayer = 30;
         public JcDayNightController Clock { get; private set; }
@@ -20,12 +21,19 @@ namespace JC.BattleTesting
         readonly Dictionary<Renderer, (ShadowCastingMode cast, bool receive, Material[] materials)> originals = new();
         readonly Dictionary<GameObject, int> layers = new();
         readonly List<Material> copies = new();
+        // JC | 2026-11-17 | 동일 원본의 그림자 설정 사본을 공유하여 수천 개의 중복 재질 생성을 방지합니다.
+        readonly Dictionary<Material, Material> sharedCopies = new();
+        // JC | 2026-11-17 | 에디트 중 복제한 원경도 임시 재질을 공유하므로 해제 전에 원본 에셋으로 되돌립니다.
+        readonly Dictionary<Material, Material> copySources = new();
         readonly List<(Light light, bool enabled)> previousSuns = new();
         readonly List<(Light light, int mask, float range, float intensity)> cityLights = new();
         UniversalRenderPipelineAsset pipeline;
         RenderPipelineAsset previousPipeline;
         Light previousSun;
-        Transform city;
+        // JC | 2026-11-16 | 한 무대의 모든 도시를 초기화 때만 수집합니다. 시간·태양·렌더 품질은 무대당 하나를 공유합니다.
+        Transform[] cities;
+        // JC | 2026-11-17 | 편집 중 도시 루트 자체를 복제해도 종료 시 새 루트의 임시 재질까지 복원합니다.
+        Transform stageRoot;
         GameObject toolbar;
         readonly List<Image> buttons = new();
         bool initialized;
@@ -38,35 +46,47 @@ namespace JC.BattleTesting
         public void Initialize(Transform stage, JcBossBattleBackground settings, double hour)
         {
             if (initialized || !stage || !settings || !settings.citySun || !settings.cityTimeProfile) return;
-            city = stage.Find("도시 원경 (베이크)") ?? stage.Find("도시 미리보기");
-            if (!city) return;
+            cities = JcBossCityTime.Roots(stage);
+            if (cities.Length == 0) return;
+            optimization = settings;
+            stageRoot = stage; // JC | 2026-11-17 | 시작 시 목록과 별개로 현재 무대 하위 도시를 다시 조회할 기준입니다.
             initialized = true; active.Add(this);
-            var oldTime = city.GetComponent<JcBossCityTime>();
-            if (oldTime) oldTime.UseWorldLighting();
-            foreach (var r in city.GetComponentsInChildren<Renderer>(true))
+            foreach (var city in cities)
             {
-                if (!layers.ContainsKey(r.gameObject)) layers.Add(r.gameObject, r.gameObject.layer);
-                r.gameObject.layer = CityLayer;
-                originals.Add(r, (r.shadowCastingMode, r.receiveShadows, r.sharedMaterials));
-                // JC | 2026-11-05 | 예전 출력물의 그림자 OFF도 복구합니다. 투명 수면/선은 그림자를 만들지 않습니다.
-                var mats = r.sharedMaterials;
-                bool opaque = mats.Any(m => m && m.renderQueue < 3000);
-                r.shadowCastingMode = opaque && !(r is LineRenderer) ? ShadowCastingMode.On : ShadowCastingMode.Off;
-                r.receiveShadows = true;
-                for (int i = 0; i < mats.Length; i++)
+                var oldTime = city.GetComponent<JcBossCityTime>();
+                if (oldTime) oldTime.UseWorldLighting();
+                BuildCityLods(city); // JC | 2026-11-17 | 표시용 LOD에도 같은 시간대/재질 보정을 적용합니다.
+                foreach (var r in city.GetComponentsInChildren<Renderer>(true))
                 {
-                    if (!mats[i] || !mats[i].HasProperty("_ReceiveShadows")) continue;
-                    var m = new Material(mats[i]) { hideFlags = HideFlags.DontSave };
-                    m.SetFloat("_ReceiveShadows", 1); m.DisableKeyword("_RECEIVE_SHADOWS_OFF");
-                    copies.Add(m); mats[i] = m;
+                    if (!layers.ContainsKey(r.gameObject)) layers.Add(r.gameObject, r.gameObject.layer);
+                    r.gameObject.layer = CityLayer;
+                    originals.Add(r, (r.shadowCastingMode, r.receiveShadows, r.sharedMaterials));
+                    // JC | 2026-11-05 | 예전 출력물의 그림자 OFF도 복구합니다. 투명 수면/선은 그림자를 만들지 않습니다.
+                    var mats = r.sharedMaterials;
+                    bool opaque = mats.Any(m => m && m.renderQueue < 3000);
+                    r.shadowCastingMode = opaque && !(r is LineRenderer) && r.bounds.size.y >= settings.citySmallShadowHeight ? ShadowCastingMode.On : ShadowCastingMode.Off;
+                    r.receiveShadows = true;
+                    for (int i = 0; i < mats.Length; i++)
+                    {
+                        if (!mats[i] || !mats[i].HasProperty("_ReceiveShadows")) continue;
+                        // JC | 2026-11-17 | 원본별 색상/텍스처는 보존하고 동일한 보정만 공유합니다.
+                        if (!sharedCopies.TryGetValue(mats[i], out var m)) {
+                            m = new Material(mats[i]) { hideFlags = HideFlags.DontSave };
+                            m.SetFloat("_ReceiveShadows", 1); m.DisableKeyword("_RECEIVE_SHADOWS_OFF");
+                            sharedCopies.Add(mats[i], m); copySources.Add(m, mats[i]); copies.Add(m);
+                        }
+                        mats[i] = m; // JC | 2026-11-17 | 복제 재질의 원본을 명시적으로 보관합니다.
+                    }
+                    r.sharedMaterials = mats;
                 }
-                r.sharedMaterials = mats;
-            }
-            foreach (var l in city.GetComponentsInChildren<Light>(true))
-            {
-                // JC | 2026-11-05 | 원경 축소율에 맞춰 광원 도달 거리와 역제곱 광량을 함께 맞춥니다.
-                cityLights.Add((l, l.cullingMask, l.range, l.intensity)); l.cullingMask = 1 << CityLayer;
-                float scale = Mathf.Abs(city.lossyScale.x); l.range *= scale; l.intensity *= scale * scale;
+                foreach (var l in city.GetComponentsInChildren<Light>(true))
+                {
+                    // JC | 2026-11-17 | 복제된 원경도 직렬화된 원본 광량에서 한 번만 배율 보정합니다.
+                    var baseline = city.GetComponent<JcBossCityTime>().GetLampDefaults(l);
+                    cityLights.Add((l, baseline.mask, baseline.range, baseline.intensity));
+                    ConfigureLamp(city, baseline);
+
+                }
             }
             foreach (var root in gameObject.scene.GetRootGameObjects())
                 foreach (var l in root.GetComponentsInChildren<Light>(true))
@@ -87,7 +107,8 @@ namespace JC.BattleTesting
                 pipeline.shadowDistance = Mathf.Max(source.shadowDistance, settings.cityShadowDistance);
                 QualitySettings.renderPipeline = pipeline;
             }
-            Clock = JcDayNightController.EnsureCity(gameObject.scene, hour, settings.cityTimeProfile);
+            // JC | 2026-11-17 | 하늘 표시 프로필만 전달하여 기존 보스 조명·반사 계산을 유지합니다.
+            Clock = JcDayNightController.EnsureCity(gameObject.scene, hour, settings.cityTimeProfile, settings.citySkyProfile);
             Clock.Settings.SegmentPair(hour, out int segment, out _, out _); SelectedPeriod = segment;
             RefreshLamps();
         }
@@ -102,12 +123,14 @@ namespace JC.BattleTesting
         }
         void RefreshLamps()
         {
-            if (!city) return;
-            foreach (var lamp in city.GetComponentsInChildren<DayNightLightController>(true)) lamp.RefreshLight();
+            // JC | 2026-11-17 | 450개 개별 Update 대신 보스 적용기가 시간대와 가시 광원을 함께 갱신합니다.
+            UpdateCityLamps(true);
         }
         void LateUpdate()
         {
-            if (!initialized || !Application.isPlaying) return;
+            if (!initialized) return;
+            UpdateCityLamps(false);
+            if (!Application.isPlaying) return;
             // JC | 2026-11-05 | 백쿼트 5회 콘솔의 실제 상단에 붙이고 테스트 전투에서만 제공합니다.
             var context = CombatContext.Instance;
             bool test = context && context.IsSimulation && context.SimulationPartyId == "JC_BOSS_PREVIEW";
@@ -163,7 +186,23 @@ namespace JC.BattleTesting
             foreach (var p in previousSuns) if (p.light) p.light.enabled = p.enabled;
             foreach (var p in cityLights) if (p.light) { p.light.cullingMask = p.mask; p.light.range = p.range; p.light.intensity = p.intensity; }
             foreach (var p in layers) if (p.Key) p.Key.layer = p.Value;
+            // JC | 2026-11-17 | 초기 등록 후 사용자가 복제한 렌더러도 저장 직전에 복원합니다.
+            // 이름 추측이나 대체 재질 없이 이 적용기가 만든 임시 재질만 정확한 원본으로 치환합니다.
+            // JC | 2026-11-17 | 최초 도시 배열에는 이후 복붙한 형제 루트가 없으므로 현재 무대에서 수집합니다.
+            foreach (var city in JcBossCityTime.Roots(stageRoot)) if (city)
+            foreach (var renderer in city.GetComponentsInChildren<Renderer>(true))
+            {
+                var materials = renderer.sharedMaterials; bool changed = false;
+                for (int slot = 0; slot < materials.Length; slot++)
+                    if (materials[slot] && copySources.TryGetValue(materials[slot], out var source))
+                    { materials[slot] = source; changed = true; }
+                if (changed) renderer.sharedMaterials = materials;
+            }
+            // JC | 2026-11-17 | 미리보기 중 새로 복제한 도시의 조명도 원본값으로 복구합니다.
+            foreach (var city in JcBossCityTime.Roots(stageRoot)) if(city) city.GetComponent<JcBossCityTime>().RestoreLampDefaults();
+            lamps.Clear(); sharedCopies.Clear(); copySources.Clear();
             foreach (var p in originals) if (p.Key) { p.Key.shadowCastingMode = p.Value.cast; p.Key.receiveShadows = p.Value.receive; p.Key.sharedMaterials = p.Value.materials; }
+            ReleaseCityLods(); // JC | 2026-11-17 | 저장 전 원본 렌더러와 배치를 복원합니다.
             foreach (var m in copies) Release(m);
             Release(toolbar); Release(pipeline);
         }

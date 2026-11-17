@@ -180,10 +180,12 @@ namespace JC.Environment {
   }
   public static JcDayNightProfile CurrentProfile => owner!=null?owner.profile:Resources.Load<JcDayNightProfile>("JC_DayNight_Default");
   // JC | 2026-11-05 | 저장 턴을 변경하지 않는 원경 전용 시각입니다. 편집 미리보기도 동일 계산을 사용합니다.
-  public static JcDayNightController EnsureCity(Scene scene,double hours,JcDayNightProfile settings){
+  // JC | 2026-11-17 | 보스의 하늘 표시만 별도 프로필로 연결합니다. 일반 탐사·전투 조명 경로는 유지합니다.
+  public static JcDayNightController EnsureCity(Scene scene,double hours,JcDayNightProfile settings,JC.Env.JcTimePreviewSettings visualSky=null){
    JcDayNightController c=null;
    foreach(var root in scene.GetRootGameObjects()){c=root.GetComponentInChildren<JcDayNightController>(true);if(c)break;}
    if(!c){var go=new GameObject("JC_CityDayNight");SceneManager.MoveGameObjectToScene(go,scene);c=go.AddComponent<JcDayNightController>();}
+   c.citySkySettings=visualSky;
    c.profile=settings;c.battle=true;c.indoor=false;c.CityWorldLighting=true;c.preview=true;c.previewHour=(float)hours;
    c.ApplyHour(hours);return c;
   }
@@ -208,6 +210,8 @@ namespace JC.Environment {
   AmbientMode oldAmbientMode; Color oldSky,oldEquator,oldGround,oldFog;
   float oldAmbientIntensity,oldReflectionIntensity;
   Material oldSkybox,skybox;
+  // JC | 2026-11-17 | 표시 재질과 IBL용 큐브맵은 독립 소유합니다. 원본 하늘 에셋은 수정하지 않습니다.
+  JC.Env.JcTimePreviewSettings citySkySettings;
   DefaultReflectionMode oldReflectionMode; Texture oldReflection; Cubemap cube;
   SphericalHarmonicsL2 oldProbe;
   struct ProbeState {public ReflectionProbe probe;public ReflectionProbeMode mode;public Texture texture;public float intensity;}
@@ -312,7 +316,11 @@ namespace JC.Environment {
    oldAmbientMode=RenderSettings.ambientMode;oldSky=RenderSettings.ambientSkyColor;oldEquator=RenderSettings.ambientEquatorColor;oldGround=RenderSettings.ambientGroundColor;
    oldAmbientIntensity=RenderSettings.ambientIntensity;oldFog=RenderSettings.fogColor;oldProbe=RenderSettings.ambientProbe;
    oldSkybox=RenderSettings.skybox;oldReflectionMode=RenderSettings.defaultReflectionMode;oldReflection=RenderSettings.customReflectionTexture;oldReflectionIntensity=RenderSettings.reflectionIntensity;
-   var shader=Settings.skyShader;if(shader!=null){skybox=new Material(shader){hideFlags=HideFlags.HideAndDontSave};RenderSettings.skybox=skybox;}
+   // JC | 2026-11-17 | 보스 원경은 탐사의 HDR 하늘/구름을 표시하되 아래 환경광·반사 생성은 기존대로 둡니다.
+   if(CityWorldLighting && citySkySettings && citySkySettings.skyTemplate && citySkySettings.day && citySkySettings.night)
+    skybox=new Material(citySkySettings.skyTemplate){name="JC Boss Visual Sky",hideFlags=HideFlags.HideAndDontSave};
+   else if(Settings.skyShader!=null)skybox=new Material(Settings.skyShader){hideFlags=HideFlags.HideAndDontSave};
+   if(skybox)RenderSettings.skybox=skybox;
    cube=new Cubemap(16,TextureFormat.RGBAHalf,false){name="JC time sky reflection",hideFlags=HideFlags.HideAndDontSave};
    RenderSettings.defaultReflectionMode=DefaultReflectionMode.Custom;RenderSettings.customReflectionTexture=cube;
    foreach(var root in gameObject.scene.GetRootGameObjects())foreach(var p in root.GetComponentsInChildren<ReflectionProbe>()){
@@ -357,7 +365,11 @@ namespace JC.Environment {
    RenderSettings.ambientSkyColor=(sky.linear*objectAmbient).gamma;RenderSettings.ambientEquatorColor=((horizon*.55f).linear*objectAmbient).gamma;RenderSettings.ambientGroundColor=(ground.linear*objectAmbient).gamma;
    var sh=new SphericalHarmonicsL2();sh.AddAmbientLight(horizon.linear*(.4f*objectAmbient));sh.AddDirectionalLight(Vector3.up,sky.linear,.7f*objectAmbient);RenderSettings.ambientProbe=sh;
    RenderSettings.fogColor=horizon;
-   if(skybox!=null){skybox.SetColor("_Top",sky);skybox.SetColor("_Horizon",horizon);skybox.SetColor("_Bottom",ground);}
+   // JC | 2026-11-17 | 배경 표시만 갱신합니다. DynamicGI/환경광/실내 반사값은 하늘 프로필에서 가져오지 않습니다.
+   if(skybox!=null){
+    if(CityWorldLighting && citySkySettings && skybox.HasProperty("_Weights"))ApplyCitySky((float)hours);
+    else {skybox.SetColor("_Top",sky);skybox.SetColor("_Horizon",horizon);skybox.SetColor("_Bottom",ground);}
+   }
    UpdateReflection(sky*look.reflectionTint,horizon*look.reflectionTint,ground*look.reflectionTint);
    RenderSettings.reflectionIntensity=oldReflectionIntensity*look.reflectionMultiplier;
    foreach(var state in probes)if(state.probe!=null)state.probe.intensity=state.intensity*look.reflectionMultiplier;
@@ -370,6 +382,17 @@ namespace JC.Environment {
    if(!windowInitialized || !Application.isPlaying){windowInitialized=true;windowFrom=windowLevel=windowTarget=target;}
    else if(target!=windowTarget){windowFrom=windowLevel;windowTarget=target;windowElapsed=0;}
    PublishWindows();
+  }
+  // JC | 2026-11-17 | 기존 탐사 시간대 프로필의 평가와 셰이더를 재사용하고 시각적 속성만 복제 재질에 씁니다.
+  void ApplyCitySky(float hour){
+   var s=citySkySettings;var v=s.Evaluate(Mathf.Repeat(hour,24));
+   skybox.SetFloat("_Rotation",s.landscapeRotation);skybox.SetVector("_Weights",v.weights);
+   skybox.SetVector("_SunDirection",v.sun);skybox.SetVector("_MoonDirection",v.moon);
+   skybox.SetFloat("_CloudSpeed",s.day.skyCloudSpeed);skybox.SetFloat("_CloudOffset",s.day.skyCloudOffset);skybox.SetFloat("_CloudOpacity",s.day.skyCloudOpacity);
+   skybox.SetFloat("_DayExposure",s.day.skyExposure);skybox.SetFloat("_NightExposure",s.night.skyExposure);
+   // JC | 2026-11-17 | 보스 복제 재질만 하부 풍경을 지웁니다. 실제 하늘색과 시간대 물색을 연결하고 IBL용 cube는 그대로 둡니다.
+   skybox.SetFloat("_JcBossHorizonBlend",1);
+   skybox.SetColor("_JcBossWaterColor",new Color(.12f,.28f,.38f)*Mathf.Lerp(.18f,1f,Settings.Evaluate(hour).daylight));
   }
   void UpdateWindowFade(){
    if(!applied)return;
