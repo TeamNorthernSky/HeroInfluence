@@ -67,6 +67,9 @@ public class ChatModalController : MonoBehaviour
     private DHEventEffectRuntimeManager effectManager;
     private bool dispatchingChatEffect;
     private bool hasRewardResult;
+    private readonly List<(DHEventRewardTemplate reward, ChatRewardResultView.ValueSnapshot before,
+        ChatRewardResultView.ValueSnapshot after, IReadOnlyList<string> party)> pendingRewardResults =
+        new List<(DHEventRewardTemplate, ChatRewardResultView.ValueSnapshot, ChatRewardResultView.ValueSnapshot, IReadOnlyList<string>)>();
     private bool waitingForRewardClose;
     private ChoiceButtonView briefingEndButton;
     private int briefingEndShownFrame = -1;
@@ -335,6 +338,7 @@ public class ChatModalController : MonoBehaviour
         isClosing = false;
         closeFinished = false;
         hasRewardResult = false;
+        pendingRewardResults.Clear();
         waitingForRewardClose = false;
         briefingEndButton = null;
         briefingEndShownFrame = -1;
@@ -567,6 +571,7 @@ public class ChatModalController : MonoBehaviour
     private void HandleChatEnded()
     {
         if (isClosing || waitingForRewardClose) return;
+        ShowPendingRewardResults();
         if (hasRewardResult && choiceLayout != null && choiceLayout.SpawnParent != null && choiceButtonPrefab != null)
         {
             ClearChoices();
@@ -618,12 +623,26 @@ public class ChatModalController : MonoBehaviour
         if (!int.TryParse(token.payload, out int rewardId) || rewardId <= 0) return;
         EventScriptCatalog catalog = EventScriptCatalog.Instance;
         if (catalog == null || !catalog.TryGetEventRewardTemplate(rewardId, out DHEventRewardTemplate reward)) return;
-        ChatRewardResultView result = Instantiate(rewardResultPrefab, contentRoot);
-        previousSpeakerBubble = null;
-        result.SetBeforeValues(rewardBefore);
-        result.Bind(reward);
-        hasRewardResult = true;
-        StartCoroutine(ScrollToBottomNextFrame());
+        // Reward effects can precede an automatic branch. Show their cards only after the whole conversation ends.
+        // EffectDispatched runs after RewardRequested has applied this reward.
+        var after = ChatRewardResultView.ValueSnapshot.Capture();
+        pendingRewardResults.Add((reward, rewardBefore, after, ChatRewardResultView.ResolvePartyKeys()));
+        rewardBefore = after;
+    }
+
+    private void ShowPendingRewardResults()
+    {
+        foreach (var pending in pendingRewardResults)
+        {
+            ChatRewardResultView result = Instantiate(rewardResultPrefab, contentRoot);
+            previousSpeakerBubble = null;
+            result.SetBeforeValues(pending.before);
+            result.SetAfterValues(pending.after);
+            result.Bind(pending.reward, pending.party);
+            hasRewardResult = true;
+        }
+        pendingRewardResults.Clear();
+        if (hasRewardResult) StartCoroutine(ScrollToBottomNextFrame());
     }
 
     private void SpawnChoiceHistory(string text)
@@ -812,6 +831,7 @@ public class ChatModalController : MonoBehaviour
 
     private void OnDestroy()
     {
+        pendingRewardResults.Clear();
         UnsubscribeFromManager();
         if (current == this) current = null;
         NotifyPresentationClosed();

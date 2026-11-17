@@ -350,7 +350,7 @@ public class LabModalController : MonoBehaviour
         if (!learned || level >= LabManager.MaxSkillLevel)
         {
             string label = !learned ? "미습득" : $"Lv {level} · 최고 단계";
-            SkillTooltip.Instance.ShowInfo(GetSkillIcon(rowIndex, level), $"{SkillName(skill)} ({label})", EffectText(skill, level), rt, usePrefabLayout: true);
+            SkillTooltip.Instance.ShowInfo(GetSkillIcon(rowIndex, level), $"{SkillName(skill)}{(learned ? " " : "\n")}({label})", EffectText(skill, level), rt, usePrefabLayout: true);
         }
         else
         {
