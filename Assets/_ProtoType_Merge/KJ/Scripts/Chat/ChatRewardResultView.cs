@@ -60,14 +60,16 @@ public sealed class ChatRewardResultView : MonoBehaviour
         }
     }
     private ValueSnapshot beforeValues;
+    private ValueSnapshot afterValues;
     private readonly Dictionary<TMP_Text, string> valueKeys = new Dictionary<TMP_Text, string>();
     public void SetBeforeValues(ValueSnapshot snapshot) => beforeValues = snapshot;
+    public void SetAfterValues(ValueSnapshot snapshot) => afterValues = snapshot;
 
     private void QueueNumber(TMP_Text label, int value, string prefix = "", string key = null)
     {
         // EXP is a per-unit grant, not a shared balance: keep its reward amount.
         if (key == null) { label.text = prefix + Signed(value); return; }
-        var current = ValueSnapshot.Capture();
+        var current = afterValues ?? ValueSnapshot.Capture();
         int start = beforeValues != null && beforeValues.Values.TryGetValue(key, out int oldValue)
             ? oldValue : current.Values.TryGetValue(key, out int currentValue) ? currentValue : value;
         var motion = new ResourceGainNumberMotion(n => prefix + n.ToString("N0"), showNotices: false, animateColor: false);
@@ -79,7 +81,7 @@ public sealed class ChatRewardResultView : MonoBehaviour
     private System.Collections.IEnumerator PlayNumbersAfterEntrance()
     {
         yield return null; // Let layout and the modal entrance initialize first.
-        var after = ValueSnapshot.Capture(); // Dispatch listeners have now all applied the reward.
+        var after = afterValues ?? ValueSnapshot.Capture();
         var modal = GetComponentInParent<ChatModalController>();
         while (modal != null && modal.IsEntrancePlaying) yield return null;
         foreach (var number in numbers)
@@ -129,7 +131,7 @@ public sealed class ChatRewardResultView : MonoBehaviour
         if (isActiveAndEnabled) numberRoutine = StartCoroutine(PlayNumbersAfterEntrance());
     }
 
-    private static IReadOnlyList<string> ResolvePartyKeys()
+    public static IReadOnlyList<string> ResolvePartyKeys()
     {
         var keys = new List<string>();
         var units = PersistentUnitRepository.Instance;
