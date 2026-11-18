@@ -25,6 +25,15 @@ public class ExplorationHUDController : MonoBehaviour
     private const int DaysPerWeek = 7;
     private TurnManager subscribedTM;
     private bool listenerHooked;
+    // JC | 2026-11-18 | 튜토리얼에 없는 일반 턴 관리자를 매 프레임 찾지 않습니다.
+    // 늦게 생성되는 시스템은 1초 이내 재연결하며 씬/활성 변경 시 즉시 다시 확인합니다.
+    private float nextTurnSearch, nextCameraSearch, nextPublicitySearch;
+    private void ResolveTurnManager()
+    {
+        if (turnManager != null || Time.unscaledTime < nextTurnSearch) return;
+        nextTurnSearch = Time.unscaledTime + 1f;
+        turnManager = FindFirstObjectByType<TurnManager>();
+    }
     private Canvas canvas;
     private GraphicRaycaster graphicRaycaster;
     private QuarterViewCameraFollower cameraFollower;
@@ -43,6 +52,7 @@ public class ExplorationHUDController : MonoBehaviour
 
     private void OnEnable()
     {
+        nextTurnSearch = nextCameraSearch = nextPublicitySearch = 0;
         SceneManager.activeSceneChanged += OnActiveSceneChanged;
         UpdateVisibility();
         TrySubscribe();
@@ -56,7 +66,9 @@ public class ExplorationHUDController : MonoBehaviour
         RefreshPublicityCameraState(false);
     }
 
-    private void OnActiveSceneChanged(Scene a, Scene b) => UpdateVisibility();
+    // JC | 2026-11-18 | 씬 전환에서는 재시도 대기를 해제해 기존 구독 시점을 유지합니다.
+    private void OnActiveSceneChanged(Scene a, Scene b)
+    { nextTurnSearch = nextCameraSearch = nextPublicitySearch = 0; UpdateVisibility(); }
 
     private void UpdateVisibility()
     {
@@ -74,15 +86,17 @@ public class ExplorationHUDController : MonoBehaviour
 
     public bool CanUseExplorationActions()
     {
-        if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
+        ResolveTurnManager();
         return turnManager != null && turnManager.IsPlayerTurn && !turnManager.IsEnemyTurnRunning &&
             !IsCameraPresentationBlocking();
     }
 
     private void RefreshPublicityCameraState(bool blocked)
     {
-        if (publicityButton == null)
+        if (publicityButton == null && Time.unscaledTime >= nextPublicitySearch)
         {
+            // JC | 2026-11-18 | 홍보 버튼이 없는 화면의 이름 검색도 초당 한 번으로 제한합니다.
+            nextPublicitySearch = Time.unscaledTime + 1f;
             publicityCameraBlocked = false;
             var target = GameObject.Find("Publicity Button");
             if (target != null && target.scene == gameObject.scene)
@@ -104,8 +118,10 @@ public class ExplorationHUDController : MonoBehaviour
     private bool IsCameraPresentationBlocking()
     {
         if (GateCameraFocusController.IsBusy) return true;
-        if (cameraFollower == null)
+        if (cameraFollower == null && Time.unscaledTime >= nextCameraSearch)
         {
+            // JC | 2026-11-18 | 카메라 연출 잠금 판정은 매 프레임 유지하고 누락 참조 탐색만 제한합니다.
+            nextCameraSearch = Time.unscaledTime + 1f;
             Camera mainCamera = Camera.main;
             cameraFollower = mainCamera != null ? mainCamera.GetComponent<QuarterViewCameraFollower>() : null;
             if (cameraFollower == null) cameraFollower = FindFirstObjectByType<QuarterViewCameraFollower>();
@@ -126,7 +142,7 @@ public class ExplorationHUDController : MonoBehaviour
             var go = GameObject.Find("BTN_Explor_NextTurn");
             if (go != null) nextTurnButton = go.GetComponentInChildren<Button>(true);
         }
-        if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
+        ResolveTurnManager();
     }
 
     private void HookButton()
@@ -141,7 +157,7 @@ public class ExplorationHUDController : MonoBehaviour
     private void TrySubscribe()
     {
         if (subscribedTM != null) return;
-        if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
+        ResolveTurnManager();
         if (turnManager == null) return;
         subscribedTM = turnManager;
         subscribedTM.DayAdvanced += OnDayAdvanced;
@@ -174,7 +190,7 @@ public class ExplorationHUDController : MonoBehaviour
 
     private void OnClickNextTurn()
     {
-        if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
+        ResolveTurnManager();
         if (turnManager == null) return;
         if (!CanUseExplorationActions()) return;
         if (defeatBlockPanelController != null) defeatBlockPanelController.HideForNextTurn();

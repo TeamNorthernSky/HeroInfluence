@@ -25,19 +25,27 @@ namespace JC.BuildingColors
         readonly JC.Environment.JcNightMaterialBindings nightMaterials=new JC.Environment.JcNightMaterialBindings();
         Material processor;
         int appliedHash=int.MinValue;
-        double nextScan;
+        // JC | 2026-11-18 | 씬 재질 인덱스는 여러 조절기가 공유하고 대상 슬롯만 매 프레임 검증합니다.
+        int boundRevision=-1;
+        readonly List<Material> checkedMaterials=new List<Material>();
+        readonly List<Renderer> candidates=new List<Renderer>();
+        readonly HashSet<Renderer> candidateSet=new HashSet<Renderer>();
         public int TargetCount=>targets.Count;
         public string Status {get;private set;}
         public static BgPartColor[] Copy(BgPartColor[] values)=>values==null?null:(BgPartColor[])values.Clone();
         public bool CanLoad=>definition&&profile&&profile.buildingId==definition.buildingId&&BgColorDefinition.ValidValues(profile.parts,profile.partIds);
         public void LoadProfile(){if(!CanLoad)throw new InvalidOperationException("건물 종류와 파츠 ID가 유효한 프로필이 필요합니다.");parts=definition.Remap(profile.parts,profile.partIds);partIds=(string[])definition.Ids.Clone();ApplyNow();}
         public void ResetInitial(){if(definition){parts=Copy(definition.Defaults);partIds=(string[])definition.Ids.Clone();showOriginal=false;highlightedPart=-1;ApplyNow();}}
-        void OnEnable(){appliedHash=int.MinValue;nextScan=0;}
-        void OnValidate(){appliedHash=int.MinValue;}
+        void OnEnable(){appliedHash=int.MinValue;boundRevision=-1;}
+        void OnValidate(){appliedHash=int.MinValue;boundRevision=-1;}
         void OnDisable(){Release();}
         void OnDestroy(){Release();}
-        void Update(){if(!definition){Release();return;} if(Time.realtimeSinceStartupAsDouble>=nextScan||TargetMaterialChanged()){Rebind();nextScan=Time.realtimeSinceStartupAsDouble+2;}ApplyNow();}
-        bool TargetMaterialChanged(){foreach(var t in targets){if(!t.renderer)return true;var materials=t.renderer.sharedMaterials;if(t.slot>=materials.Length||FindBinding(t.renderer,t.slot,materials[t.slot])!=t.binding||t.material!=definition.bindings[t.binding].material)return true;}return false;}
+        // JC | 2026-11-18 | 배경 전체 재검색을 한 프레임에 몰지 않고 공유 인덱스의 새 결과만 반영합니다.
+        void Update(){if(!definition){Release();return;}var index=BgColorSceneIndex.Get(gameObject.scene);index.Advance();
+            if(boundRevision!=index.Revision||TargetMaterialChanged())RebindCached();ApplyNow();}
+        bool TargetMaterialChanged(){foreach(var t in targets){if(!t.renderer||definition.bindings==null||t.binding>=definition.bindings.Length)return true;
+            t.renderer.GetSharedMaterials(checkedMaterials);
+            if(t.slot>=checkedMaterials.Count||FindBinding(t.renderer,t.slot,checkedMaterials[t.slot])!=t.binding||t.material!=definition.bindings[t.binding].material)return true;}return false;}
         int FindBinding(Renderer renderer,int slot,Material material)
         {
             material=JC.Environment.JcNightMaterialBindings.Original(material);
@@ -48,18 +56,29 @@ namespace JC.BuildingColors
                 foreach(var t in targets)if(t.renderer==renderer&&t.slot==slot&&t.binding<definition.bindings.Length&&t.material==definition.bindings[t.binding].material)return t.binding;
             return -1;
         }
-        public void Rebind()
+        // JC | 2026-11-18 | 편집기/생성기의 명시적 재연결 요청은 즉시 반영합니다. 주기 갱신만 분산합니다.
+        public void Rebind(){BgColorSceneIndex.Invalidate(gameObject.scene);RebindCached();}
+        internal void RebindCached()
         {
             if(!definition||definition.bindings==null){Release();return;}
             var root=GetComponentInParent<BgColorRoot>();var scope=root?root.targetRoot:null;
-            var renderers=searchEntireScene?AllSceneRenderers():root?root.TargetRenderers:(scope?scope.GetComponentsInChildren<Renderer>(true):AllSceneRenderers());
+            var index=BgColorSceneIndex.Get(gameObject.scene);index.Advance();
+            candidates.Clear();candidateSet.Clear();
+            foreach(var binding in definition.bindings)if(binding.material)foreach(var r in index.Candidates(binding.material))
+                if(r&&candidateSet.Add(r))candidates.Add(r);
+            // 가림용 임시 재질은 인덱스에서 원본을 찾을 수 없어도 이미 연결한 슬롯을 유지합니다.
+            foreach(var t in targets)if(t.renderer&&candidateSet.Add(t.renderer))candidates.Add(t.renderer);
+            candidates.Sort((a,b)=>a.GetInstanceID().CompareTo(b.GetInstanceID()));
+            boundRevision=index.Revision;
             var scopedModifiers=root?root.Children:Array.Empty<BgColorModifier>();
             var found=new List<Target>();
-            foreach(var r in renderers){if(!r||r.gameObject.scene!=gameObject.scene)continue;var mats=r.sharedMaterials;
+            foreach(var r in candidates){if(!r||r.gameObject.scene!=gameObject.scene)continue;
+                if(!searchEntireScene&&scope&&!r.transform.IsChildOf(scope))continue;
+                r.GetSharedMaterials(checkedMaterials);var mats=checkedMaterials;
                 if(root&&!root.Accepts(this,r))continue;
                 if(targetRadius>0&&!MatchesPosition(r))continue;
                 if(targetRadius<=0){bool overridden=false;foreach(var scoped in scopedModifiers)if(scoped!=this&&scoped.isActiveAndEnabled&&scoped.definition==definition&&scoped.targetRadius>0&&scoped.MatchesPosition(r)){overridden=true;break;}if(overridden)continue;}
-                for(int slot=0;slot<mats.Length;slot++){int binding=FindBinding(r,slot,mats[slot]);if(binding>=0){
+                for(int slot=0;slot<mats.Count;slot++){int binding=FindBinding(r,slot,mats[slot]);if(binding>=0){
                     found.Add(new Target{renderer=r,slot=slot,binding=binding,material=definition.bindings[binding].material});
                 }
                 }
@@ -69,7 +88,6 @@ namespace JC.BuildingColors
             RestoreTargets();foreach(var t in found){t.previous=new MaterialPropertyBlock();t.renderer.GetPropertyBlock(t.previous,t.slot);targets.Add(t);}
             BindMeshes();appliedHash=int.MinValue;
         }
-        Renderer[] AllSceneRenderers(){var list=new List<Renderer>();var scene=gameObject.scene;if(scene.IsValid()&&scene.isLoaded)foreach(var g in scene.GetRootGameObjects())list.AddRange(g.GetComponentsInChildren<Renderer>(true));return list.ToArray();}
         void BindMeshes()
         {
             foreach(var t in targets){var f=t.renderer?t.renderer.GetComponent<MeshFilter>():null;if(!f||meshTargets.Exists(m=>m.filter==f))continue;
@@ -129,7 +147,7 @@ namespace JC.BuildingColors
             appliedHash=hash;
         }
         void DestroyOutput(int i){if(outputs[i]){outputs[i].Release();DestroyOwned(outputs[i]);outputs[i]=null;}}
-        public void ResetTargets(){Release();}
+        public void ResetTargets(){Release();boundRevision=-1;}
         void Release(){RestoreTargets();for(int i=0;i<outputs.Count;i++)DestroyOutput(i);outputs.Clear();DestroyOwned(processor);processor=null;appliedHash=int.MinValue;}
         static void DestroyOwned(UnityEngine.Object o){if(!o)return;if(Application.isPlaying)Destroy(o);else DestroyImmediate(o);}
     }

@@ -105,12 +105,14 @@ namespace JC.Indicators
         }
 
         // JC | 2026-11-10 | 어느 컨트롤러에도 표시 후보가 없으면 월드 R만 생략하고 채움 보호 G는 유지합니다.
-        internal void PrepareDraw(Camera camera, bool needsWorldDepth, Plane[] frustum)
+        internal void PrepareDraw(Camera camera, bool needsWorldDepth, Plane[] frustum, List<Rect> markerRegions)
         {
             prepared.Clear();
             if (!shader || (markers.Count == 0 && protectedMeshes.Count == 0)) return;
             if (block == null) { block = new MaterialPropertyBlock(); slotBlock = new MaterialPropertyBlock(); }
             drawn.Clear();
+            // JC | 2026-11-18 | 모든 컨트롤러의 아이콘 영역을 공유해 다른 이벤트의 차폐도 보존합니다.
+            Matrix4x4 clipMatrix = camera.projectionMatrix * camera.worldToCameraMatrix;
             // JC | 2026-11-12 | 전체 월드 깊이가 필요 없으면 방문 팻말 소속과 기존 채움 보호 대상만 준비합니다.
             if (needsWorldDepth)
             {
@@ -124,10 +126,18 @@ namespace JC.Indicators
                 // JC | 2026-11-12 | 월드/보호 목록에 함께 있는 메시의 화면 밖 판정도 한 번만 수행합니다.
                 if (!r || !drawn.Add(r) || !r.enabled || r.forceRenderingOff || !r.gameObject.activeInHierarchy ||
                     (camera.cullingMask & (1 << r.gameObject.layer)) == 0 || !GeometryUtility.TestPlanesAABB(frustum, r.bounds)) return;
-                r.GetSharedMaterials(materials); block.Clear(); r.GetPropertyBlock(block);
                 bool protect = protectedMeshes.Contains(r);
                 int ownerId = meshOwners.TryGetValue(r, out int id) ? id : 0;
-                bool markerMesh = needsWorldDepth || visibleOwners.Contains(ownerId);
+                // JC | 2026-11-18 | 월드 깊이의 소비자는 아이콘뿐입니다. 화면상 겹칠 수 없는 메시를
+                // 세 번 제출하지 않으며, 채움 보호 대상은 겹침과 무관하게 기존대로 기록합니다.
+                bool markerMesh = visibleOwners.Contains(ownerId);
+                if (needsWorldDepth && !markerMesh)
+                {
+                    Rect projected = ProjectBounds(clipMatrix, r.bounds);
+                    foreach (var region in markerRegions) if (region.Overlaps(projected)) { markerMesh = true; break; }
+                }
+                if (!protect && !markerMesh) return;
+                r.GetSharedMaterials(materials); block.Clear(); r.GetPropertyBlock(block);
                 for (int slot = 0; slot < materials.Count; slot++)
                 {
                     var source = materials[slot]; if (!source) continue;
@@ -196,6 +206,28 @@ namespace JC.Indicators
                 }
             }
             return visibleMarkers.Count > 0;
+        }
+        // JC | 2026-11-18 | 경계 필터/반 픽셀 오차를 여유 있게 포함한 화면 사각형입니다.
+        // 근평면을 가로지르는 메시의 투영은 전체 화면으로 취급해 잘못된 제외를 방지합니다.
+        internal static Rect ProjectBounds(Matrix4x4 matrix, Bounds bounds)
+        {
+            Vector3 min=bounds.min,max=bounds.max;Vector2 lo=Vector2.one*float.MaxValue,hi=Vector2.one*float.MinValue;
+            for(int i=0;i<8;i++){
+                var p=matrix*new Vector4((i&1)==0?min.x:max.x,(i&2)==0?min.y:max.y,(i&4)==0?min.z:max.z,1);
+                if(p.w<=.001f)return new Rect(0,0,1,1);
+                Vector2 uv=new Vector2(p.x/p.w*.5f+.5f,p.y/p.w*.5f+.5f);
+                lo=Vector2.Min(lo,uv);hi=Vector2.Max(hi,uv);
+            }
+            return Rect.MinMaxRect(lo.x,lo.y,hi.x,hi.y);
+        }
+        internal void CollectMarkerRegions(Camera camera,List<Rect> regions)
+        {
+            Matrix4x4 matrix=camera.projectionMatrix*camera.worldToCameraMatrix;
+            float x=4f/Mathf.Max(1,camera.pixelWidth),y=4f/Mathf.Max(1,camera.pixelHeight);
+            foreach(var marker in visibleMarkers)if(!marker.ownSurfaceOnly){
+                Rect r=ProjectBounds(matrix,marker.renderer.bounds);
+                regions.Add(Rect.MinMaxRect(r.xMin-x,r.yMin-y,r.xMax+x,r.yMax+y));
+            }
         }
         internal void Clear()
         {

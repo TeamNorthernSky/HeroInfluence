@@ -12,8 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a20ec047ec6b0749a24a270b5106811, type: 3}
   m_Name: BattleLook_DefaultProfile
   m_EditorClassIdentifier: 
+  amplifierMesh: {fileID: -8644661733804346190, guid: 68657d85e8733d54189d7f32346ccc09,
+    type: 3}
+  amplifierShadingMesh: {fileID: 4300000, guid: c7c5f891fe8d44a48a5507dd9b303ec6,
+    type: 2}
+  amplifierMask: {fileID: 2800000, guid: 18b4c204421ee9147a92237c91bb2efb, type: 3}
   settings:
-    saturation: 1.15
+    colorAdjustmentEnabled: 1
+    brightnessEv: -0.15
+    amplifierSurface:
+      enabled: 1
+      body: {r: 0.6653455, g: 0.6445748, b: 0.6855345, a: 1}
+      trim: {r: 0.3680083, g: 0.35115293, b: 0.42138356, a: 1}
+      accent: {r: 0.48, g: 0.32, b: 0.62, a: 1}
+      smoothness: 0.447
+      reflection: 0.418
+      occlusion: 0.57
+      normalStrength: 0.833
+    saturation: 1.1
     keyDirection: {x: -0.39573935, y: 0.7660446, z: -0.50652355}
     keyTint: {r: 1, g: 0.98, b: 0.94, a: 1}
     fillTint: {r: 0.87, g: 0.92, b: 1, a: 1}

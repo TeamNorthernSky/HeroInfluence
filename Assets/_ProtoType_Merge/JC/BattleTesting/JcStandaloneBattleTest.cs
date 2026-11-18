@@ -14,7 +14,9 @@ namespace JC.BattleTesting
         [Tooltip("이 씬이 검수하는 실제 전투 종류입니다.")] public Scenario scenario;
         [Tooltip("시작 파티·적 구성의 저장 프로필입니다. 편집은 초안에만 반영됩니다.")] public SimulationBattleConfig profile;
         [Tooltip("첫 전투의 실제 안내를 실행합니다. 시작/재시작 때 적용하며 기본은 자유 테스트입니다.")] public bool tutorialGuidance;
-        [Range(0, 3), Tooltip("아침·오후·저녁·새벽. 은행 실내 고정 조명은 유지합니다.")] public int period;
+        // JC | 2026-11-17 | 시간 선택은 실내 재질·유리·조명을 포함한 전체 시간대 묶음을 적용합니다.
+        // JC | 2026-11-18 | 네 연출 구간을 공통 이름으로 표시하고 실내 공통 표면은 전환하지 않습니다.
+        [Range(0, 3), Tooltip("오전·오후·해질녘·야간. 시간대별 유리·조명·환경을 적용하며 보스 공통 재질은 유지합니다.")] public int period;
         [HideInInspector] public GameObject stage;
         [HideInInspector] public BattleSceneManager manager;
         [HideInInspector] public GameObject[] runtimeRoots;
@@ -63,6 +65,11 @@ namespace JC.BattleTesting
         }
         void Start()
         {
+#if UNITY_EDITOR
+            // JC | 2026-11-17 | 에디트 실내 인스펙터에서 선택한 시간대로 검수를 시작합니다. 빌드/본게임에는 적용하지 않습니다.
+            if (scenario == Scenario.Boss || scenario == Scenario.Bank)
+                period = Mathf.Clamp(UnityEditor.SessionState.GetInt("JC.IndoorEditPeriod." + gameObject.scene.path, period), 0, 3);
+#endif
             if (restartPath == gameObject.scene.path && Draft)
             {
                 JsonUtility.FromJsonOverwrite(restartConfig, Draft);
@@ -110,7 +117,16 @@ namespace JC.BattleTesting
             // JC | 2026-11-12 | 안내 실행도 Simulation을 유지하여 튜토리얼 진행/보상 저장 경로에 진입하지 않습니다.
             manager.ConfigureStandaloneSimulation(scenario == Scenario.TutorialFirst && tutorialGuidance ? "TUT_01" : null);
             foreach (var root in runtimeRoots) if (root) root.SetActive(true);
-            presentation = JcArnoldBattlePresentation.ApplyStandalone(gameObject.scene, stage, Hours[Mathf.Clamp(period, 0, 3)], scenario == Scenario.TutorialFirst);
+            // JC | 2026-11-17 | 보스 프로필의 오후 시작이 17:30인데 고정 14:30으로 시작하면 아침 재질이 선택됩니다.
+            // 시작부터 원경 버튼과 같은 프로필 시각을 사용하여 첫 프레임의 실내/원경 시간대를 일치시킵니다.
+            double hour = Hours[Mathf.Clamp(period, 0, 3)];
+            if (scenario == Scenario.Boss)
+            {
+                var clock = JcBossBattleBackground.Load().cityTimeProfile;
+                clock.EnsureSegments();
+                hour = clock.segments[Mathf.Clamp(period, 0, 3)].hour;
+            }
+            presentation = JcArnoldBattlePresentation.ApplyStandalone(gameObject.scene, stage, hour, scenario == Scenario.TutorialFirst);
             JcSimulationBattleControls.AttachToScene(gameObject.scene);
             started = true; appliedPeriod = period;
             int slot = 0;
@@ -259,7 +275,8 @@ namespace JC.BattleTesting
             GUILayout.EndHorizontal();
             if (scenario != Scenario.Bank)
             {
-                int next = GUILayout.Toolbar(period, new[] { "아침", "오후", "저녁", "새벽" });
+                // JC | 2026-11-18 | 인스펙터와 같은 연출 구간명을 사용합니다.
+                int next = GUILayout.Toolbar(period, JcIndoorPeriodProfiles.Names);
                 if (next != period) { period = next; RefreshLighting(); }
             }
             GUILayout.EndArea(); GUI.matrix = old;

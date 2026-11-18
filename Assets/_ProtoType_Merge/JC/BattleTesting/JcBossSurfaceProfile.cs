@@ -31,6 +31,9 @@ namespace JC.BattleTesting
         public float tileVariation = .012f;
         [InspectorName("표면별 설정"), Tooltip("같은 재질에 여러 항목이 맞으면 아래쪽 항목이 우선합니다. 원본 재질 에셋은 수정하지 않습니다.")]
         public List<Surface> surfaces = new List<Surface>();
+        // JC | 2026-11-18 | 실내 슬롯 교체도 시간대별 조명 프로필이 아닌 공통 표면 초안에 저장합니다.
+        [InspectorName("공통 무대 재질 교체"), Tooltip("무대 상대 경로와 슬롯을 지정합니다. 창틀은 보호되며 유리는 시간대별 유리 프로필에서 조절하세요.")]
+        public List<JcBossEnvironmentProfile.MaterialSlot> materials = new List<JcBossEnvironmentProfile.MaterialSlot>();
 
         // JC | 2026-11-09 | 내보내기가 생성한 별도 재질을 원본 설정에 명시적으로 대응시킵니다.
         // 이름 비교는 사용하지 않아 같은 이름의 도시 재질이나 다른 슬롯을 잘못 보정하지 않습니다.

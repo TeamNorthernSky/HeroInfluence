@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ca2111452481c64894763cf796bcef5, type: 3}
   m_Name: JC_DayNight_Default
   m_EditorClassIdentifier: 
+  visualSky: {fileID: 11400000, guid: 90d2ff8aa3dc50245bd0a489d973363a, type: 2}
+  visualSkyHours: {x: 8.5, y: 14.5, z: 18, w: 2.5}
   skyShader: {fileID: 4800000, guid: ef5625516e71dc34bb9e649c14f50935, type: 3}
   startHour: 8.5
   hoursPerTurn: 6

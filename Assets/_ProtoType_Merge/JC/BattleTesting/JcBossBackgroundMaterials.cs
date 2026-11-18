@@ -9,6 +9,8 @@ namespace JC.BattleTesting
         public Material GlassProfile { get; private set; }
         public Material GlassDraft { get; private set; }
         readonly List<Renderer> panes = new List<Renderer>();
+        // JC | 2026-11-18 | 공통 실내 표면의 슬롯 교체가 시간대별 유리를 덮어쓰지 못하도록 대상 소유권을 공개합니다.
+        public bool IsGlass(Renderer renderer) => panes.Contains(renderer);
         // JC | 2026-11-05 | 내보낸 무대의 복제 재질도 제어하며, 종료 시 각 창의 실제 원래 재질로 복원합니다.
         readonly Dictionary<Renderer, Material> originalGlassMaterials = new Dictionary<Renderer, Material>();
         // JC | 2026-11-05 | 유리 메시/카메라 설정은 현재 보스전에만 적용하고 종료 시 원래 참조로 복원합니다.
@@ -26,7 +28,12 @@ namespace JC.BattleTesting
             instances.Clear(); UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering -= ResetCapture;
             Shader.SetGlobalFloat("_JcBossGlassColorReady", 0);
         }
-        static void ResetCapture(UnityEngine.Rendering.ScriptableRenderContext context, Camera camera) => Shader.SetGlobalFloat("_JcBossGlassColorReady", 0);
+        static void ResetCapture(UnityEngine.Rendering.ScriptableRenderContext context, Camera camera)
+        {
+            // JC | 2026-11-17 | 다음 카메라가 보스 수면 선행 렌더 상태를 상속하지 않게 함께 초기화합니다.
+            Shader.SetGlobalFloat("_JcBossGlassColorReady", 0);
+            Shader.SetGlobalFloat("_JcBossWaterCaptured", 0);
+        }
         public static bool UsesRefraction(Camera camera)
         {
             if (!camera) return false;
@@ -141,8 +148,10 @@ namespace JC.BattleTesting
         // JC | 2026-11-17 | 유리 광학 값을 명시 복사하여 시간대 전환 후 추가 셰이더 속성도 복제/저장 시 보존합니다.
         public static void CopyGlassValues(Material source, Material destination)
         {
-            foreach(var name in new[]{"_Tint","_GlossTint"}) destination.SetColor(name,source.GetColor(name));
-            foreach(var name in new[]{"_Opacity","_Thickness","_IOR","_RefractionStrength","_Absorption","_ReflectionStrength","_ReflectionRoughness","_FaceAlpha","_EdgeAlpha","_GlossStrength","_GlossSmoothness"})
+            // JC | 2026-11-17 | 연출 광택과 경계 완화도 기존 시간대 프로필 저장/불러오기 경로를 공유합니다.
+            foreach(var name in new[]{"_Tint","_GlossTint","_HighlightTint"}) destination.SetColor(name,source.GetColor(name));
+            foreach(var name in new[]{"_Opacity","_Thickness","_IOR","_RefractionStrength","_Absorption","_ReflectionStrength","_ReflectionRoughness","_FaceAlpha","_EdgeAlpha","_GlossStrength","_GlossSmoothness",
+                "_HighlightStrength","_HighlightWidth","_HighlightAngle","_HighlightSoftness","_RefractionEdgeFade"})
                 destination.SetFloat(name,source.GetFloat(name));
         }
         public void ApplyGlass()
@@ -170,6 +179,9 @@ namespace JC.BattleTesting
             var direction = axis == 0 ? Vector3.right : axis == 1 ? Vector3.up : Vector3.forward;
             extent[axis] = thickness / (2 * Mathf.Max(.0001f, transform.TransformVector(direction).magnitude));
             var vertices = new List<Vector3>(); var normals = new List<Vector3>(); var triangles = new List<int>();
+            // JC | 2026-11-17 | 전체 판의 연속 UV를 기록해 부피 두께를 바꾸어도 경계 마스크가 창틀에 붙어 유지됩니다.
+            var paneUVs = new List<Vector3>();
+            int wide = axis == 0 ? 2 : 0, high = axis == 1 ? 2 : 1;
             foreach (var normal in new[] { Vector3.right, Vector3.left, Vector3.up, Vector3.down, Vector3.forward, Vector3.back })
             {
                 var u = Mathf.Abs(normal.y) > .5f ? Vector3.right : Vector3.up;
@@ -178,11 +190,13 @@ namespace JC.BattleTesting
                 foreach (var corner in new[] { -u-v, u-v, u+v, -u+v })
                 {
                     vertices.Add(source.center + Vector3.Scale(normal + corner, extent)); normals.Add(normal);
+                    var local = normal + corner;
+                    paneUVs.Add(new Vector3(local[wide]*.5f+.5f,local[high]*.5f+.5f,Mathf.Abs(normal[axis])));
                 }
                 triangles.AddRange(new[] { start, start+1, start+2, start, start+2, start+3 });
             }
             var result = new Mesh { name = "보스 유리 · 얇은 입체" };
-            result.SetVertices(vertices); result.SetNormals(normals); result.SetTriangles(triangles, 0); result.RecalculateBounds();
+            result.SetVertices(vertices); result.SetNormals(normals); result.SetUVs(0,paneUVs); result.SetTriangles(triangles, 0); result.RecalculateBounds();
             return result;
         }
 

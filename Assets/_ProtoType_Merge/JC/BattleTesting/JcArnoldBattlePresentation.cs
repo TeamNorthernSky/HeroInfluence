@@ -221,15 +221,19 @@ namespace JC.BattleTesting
             bridge.Loaded(scene, LoadSceneMode.Single);
             return bridge;
         }
-        // JC | 2026-11-12 | 테스트 시간 선택은 도시/야외 조명만 바꾸며 은행 고정 실내광은 그대로 둡니다.
+        // JC | 2026-11-17 | 테스트 시간 선택은 원경뿐 아니라 저장된 실내 시간대 묶음 전체를 즉시 적용합니다.
+        // 보스/은행은 각자의 기존 프로필을 사용하고 일반 야외 전투의 조명 경로는 유지합니다.
         public void SetTestPeriod(int period)
         {
             if (!JcStandaloneBattleTest.IsTestScene(gameObject.scene)) return;
-            double hour = new[] { 8.5, 14.5, 20.5, 2.5 }[Mathf.Clamp(period, 0, 3)];
-            if (bossBackground)
-                foreach (var root in gameObject.scene.GetRootGameObjects())
-                    foreach (var city in root.GetComponentsInChildren<JcBossCityLighting>()) city.SelectPeriod(period);
-            else if (!bankSettings)
+            period = Mathf.Clamp(period, 0, 3);
+            double hour = new[] { 8.5, 14.5, 20.5, 2.5 }[period];
+            if (bossBackground || bankSettings)
+            {
+                if (!JcBossCityLighting.SelectScenePeriod(gameObject.scene, period))
+                    JcIndoorEnvironment.SelectScenePeriod(gameObject.scene, period);
+            }
+            else
                 JC.Environment.JcDayNightController.EnsureBattle(gameObject.scene, hour, lightingProfile, false);
         }
 

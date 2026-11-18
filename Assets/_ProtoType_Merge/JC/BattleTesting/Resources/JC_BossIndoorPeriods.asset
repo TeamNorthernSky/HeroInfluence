@@ -10,96 +10,101 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7300fda7b46e411297a174dd61e9f429, type: 3}
-  m_Name: "\uC0C8\uBCBD \uC2E4\uB0B4 \uC870\uBA85"
+  m_Name: "\uC57C\uAC04 \uC2E4\uB0B4 \uC870\uBA85"
   m_EditorClassIdentifier: 
   ibl:
     enabled: 1
     environment: {fileID: 11400000, guid: ad02f6952ae86d8499048871c34d70e3, type: 2}
-    diffuseIntensity: 0.35
-    specularIntensity: 0.5
-    tint: {r: 1, g: 1, b: 1, a: 1}
+    diffuseIntensity: 0.25
+    specularIntensity: 0.42
+    tint: {r: 0.78, g: 0.86, b: 1, a: 1}
     rotation: 0
     bankProbeBlend: 0
   characterLighting: 0
   ssaoFeature: {fileID: 0}
   ssaoEnabled: 1
-  ssaoIntensity: 0.86
-  ssaoRadius: 0.9
-  ssaoDirectLightingStrength: 0.407
+  ssaoIntensity: 0.8
+  ssaoRadius: 0.22
+  ssaoDirectLightingStrength: 0.25
   ssaoDownsample: 0
   isolateInterior: 1
+  bossEmphasisEnabled: 1
+  bossContrast: 0.326
+  bossContrastPivot: 0.358
+  bossSpotReception: 2.9
+  bossSpotReflection: 2.04
   windows:
   - label: "\uCE21\uBA74 \uCC3D 1"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay1"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 88
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 2"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay2"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 88
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 3"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay3"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 88
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 4"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay4"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 88
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.054
   - label: "\uB4A4\uD3B8 \uCC3D 5"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay5"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 88
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 6"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay6"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 88
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.153
   directionalIntensity: 1
   directionalTint: {r: 1, g: 1, b: 1, a: 1}
@@ -110,6 +115,7 @@ MonoBehaviour:
   lights:
   - battlePulse: 0
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 1
     label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
     enabled: 1
@@ -117,7 +123,7 @@ MonoBehaviour:
     position: {x: 0, y: 6, z: 0}
     rotation: {x: 25, y: -34.45, z: 0}
     color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 0.8
+    intensity: 0.48000002
     range: 10
     spotAngle: 94
     innerSpotRatio: 0.6
@@ -125,19 +131,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 1"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -29}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 0.91, g: 0.95, b: 1, a: 1}
+    intensity: 5.5000005
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -145,19 +153,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 2"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -29}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 0.91, g: 0.95, b: 1, a: 1}
+    intensity: 18.150002
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -165,19 +175,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 3"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -15}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 0.91, g: 0.95, b: 1, a: 1}
+    intensity: 5.5000005
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -185,19 +197,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 4"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -15}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 0.91, g: 0.95, b: 1, a: 1}
+    intensity: 18.150002
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -205,19 +219,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 5"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -1}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 0.91, g: 0.95, b: 1, a: 1}
+    intensity: 6.6000004
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -225,19 +241,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 6"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -1}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 0.91, g: 0.95, b: 1, a: 1}
+    intensity: 6.6000004
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -245,26 +263,74 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
-  - battlePulse: 1
+  - battlePulse: 0
     aimAtBoss: 1
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uBCF4\uC2A4 \uAC15\uC870 \uC2A4\uD3FF"
     enabled: 1
     type: 1
-    position: {x: 7, y: 16.75, z: -11}
-    rotation: {x: 45.14691, y: 338.9625, z: 0}
-    color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 70
-    range: 19
-    spotAngle: 92
-    innerSpotRatio: 0
-    shadows: 2
-    shadowStrength: 1
+    position: {x: 3.96, y: 16.75, z: -11}
+    rotation: {x: 60.83099, y: 0, z: 0}
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
+    intensity: 55
+    range: 30.1
+    spotAngle: 111.4
+    innerSpotRatio: 0.423
+    shadows: 0
+    shadowStrength: 0.326
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    excludeExteriorShadows: 0
+    playerBackFill: 0
+    label: "\uC544\uAD70 \uC8FC\uAD11 \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -10, y: 19.75, z: -37}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
+    intensity: 53
+    range: 24
+    spotAngle: 90
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    excludeExteriorShadows: 1
+    playerBackFill: 0
+    label: "\uBCF4\uC2A4\xB7\uC624\uBE0C\uC81D\uD2B8\xB7\uCC45\uC0C1 \uC8FC\uAD11
+      \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -29.46, y: 58.67, z: -18.235237}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 0.84, g: 0.9, b: 1, a: 1}
+    intensity: 777
+    range: 72
+    spotAngle: 37.4
+    innerSpotRatio: 0.585
+    shadows: 2
+    shadowStrength: 0.921
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
@@ -274,7 +340,6 @@ MonoBehaviour:
   battlePulseMix: 0.22
   battlePulseSeconds: 1.4
   battlePulseInterval: 4
-  materials: []
 --- !u!21 &-7890423603691133983
 Material:
   serializedVersion: 8
@@ -282,7 +347,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: "\uC800\uB141 \uC720\uB9AC"
+  m_Name: "\uD574\uC9C8\uB158 \uC720\uB9AC"
   m_Shader: {fileID: 4800000, guid: 1cf2c0cc665041641aef155494e382e7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -300,20 +365,26 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Absorption: 0.99
+    - _Absorption: 0.7
     - _EdgeAlpha: 0.087
-    - _FaceAlpha: 0.09
-    - _GlossSmoothness: 0.75
-    - _GlossStrength: 0.35
-    - _IOR: 1.39
-    - _Opacity: 0
+    - _FaceAlpha: 0.104
+    - _GlossSmoothness: 1
+    - _GlossStrength: 1
+    - _HighlightAngle: -35
+    - _HighlightSoftness: 0.861
+    - _HighlightStrength: 0.03
+    - _HighlightWidth: 0.117
+    - _IOR: 1.545
+    - _Opacity: 0.136
     - _ReflectionRoughness: 0
-    - _ReflectionStrength: 0.699
-    - _RefractionStrength: 0.86
-    - _Thickness: 0.123
+    - _ReflectionStrength: 0.835
+    - _RefractionEdgeFade: 0.118
+    - _RefractionStrength: 0.12
+    - _Thickness: 0.133
     m_Colors:
     - _GlossTint: {r: 1, g: 1, b: 1, a: 1}
-    - _Tint: {r: 0.346, g: 0.8364881, b: 1, a: 1}
+    - _HighlightTint: {r: 1, g: 0.87, b: 0.7, a: 1}
+    - _Tint: {r: 0.29, g: 0.16, b: 0.12, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &-4112171475897413222
 MonoBehaviour:
@@ -325,96 +396,101 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7300fda7b46e411297a174dd61e9f429, type: 3}
-  m_Name: "\uC800\uB141 \uC2E4\uB0B4 \uC870\uBA85"
+  m_Name: "\uD574\uC9C8\uB158 \uC2E4\uB0B4 \uC870\uBA85"
   m_EditorClassIdentifier: 
   ibl:
     enabled: 1
     environment: {fileID: 11400000, guid: ad02f6952ae86d8499048871c34d70e3, type: 2}
-    diffuseIntensity: 0.35
-    specularIntensity: 0.5
-    tint: {r: 1, g: 1, b: 1, a: 1}
+    diffuseIntensity: 0.57
+    specularIntensity: 0.75
+    tint: {r: 1, g: 0.91, b: 0.83, a: 1}
     rotation: 0
     bankProbeBlend: 0
   characterLighting: 0
   ssaoFeature: {fileID: 0}
   ssaoEnabled: 1
-  ssaoIntensity: 0.86
-  ssaoRadius: 0.9
-  ssaoDirectLightingStrength: 0.407
+  ssaoIntensity: 0.8
+  ssaoRadius: 0.22
+  ssaoDirectLightingStrength: 0.25
   ssaoDownsample: 0
   isolateInterior: 1
+  bossEmphasisEnabled: 1
+  bossContrast: 0.332
+  bossContrastPivot: 0.18
+  bossSpotReception: 2.69
+  bossSpotReflection: 1
   windows:
   - label: "\uCE21\uBA74 \uCC3D 1"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay1"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 179.2
+    color: {r: 1, g: 0.83, b: 0.67, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 2"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay2"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 179.2
+    color: {r: 1, g: 0.83, b: 0.67, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 3"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay3"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 179.2
+    color: {r: 1, g: 0.83, b: 0.67, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 4"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay4"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 179.2
+    color: {r: 1, g: 0.83, b: 0.67, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.054
   - label: "\uB4A4\uD3B8 \uCC3D 5"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay5"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 179.2
+    color: {r: 1, g: 0.83, b: 0.67, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 6"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay6"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 179.2
+    color: {r: 1, g: 0.83, b: 0.67, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.153
   directionalIntensity: 1
   directionalTint: {r: 1, g: 1, b: 1, a: 1}
@@ -425,6 +501,7 @@ MonoBehaviour:
   lights:
   - battlePulse: 0
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 1
     label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
     enabled: 1
@@ -432,7 +509,7 @@ MonoBehaviour:
     position: {x: 0, y: 6, z: 0}
     rotation: {x: 25, y: -34.45, z: 0}
     color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 0.8
+    intensity: 0.6
     range: 10
     spotAngle: 94
     innerSpotRatio: 0.6
@@ -440,19 +517,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 1"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -29}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.94, b: 0.88, a: 1}
+    intensity: 11.2
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -460,19 +539,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 2"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -29}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.94, b: 0.88, a: 1}
+    intensity: 36.96
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -480,19 +561,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 3"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -15}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.94, b: 0.88, a: 1}
+    intensity: 11.2
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -500,19 +583,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 4"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -15}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.94, b: 0.88, a: 1}
+    intensity: 36.96
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -520,19 +605,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 5"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -1}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.94, b: 0.88, a: 1}
+    intensity: 13.440001
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -540,19 +627,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 6"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -1}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.94, b: 0.88, a: 1}
+    intensity: 13.440001
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -560,26 +649,74 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
-  - battlePulse: 1
+  - battlePulse: 0
     aimAtBoss: 1
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uBCF4\uC2A4 \uAC15\uC870 \uC2A4\uD3FF"
     enabled: 1
     type: 1
-    position: {x: 7, y: 16.75, z: -11}
-    rotation: {x: 45.14691, y: 338.9625, z: 0}
-    color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 70
-    range: 19
-    spotAngle: 92
-    innerSpotRatio: 0
-    shadows: 2
+    position: {x: 3.96, y: 16.75, z: -11}
+    rotation: {x: 60.83099, y: 0, z: 0}
+    color: {r: 1, g: 0.9, b: 0.78, a: 1}
+    intensity: 32
+    range: 15
+    spotAngle: 60
+    innerSpotRatio: 0.5
+    shadows: 0
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    excludeExteriorShadows: 0
+    playerBackFill: 0
+    label: "\uC544\uAD70 \uC8FC\uAD11 \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -10, y: 19.75, z: -37}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 1, g: 0.9, b: 0.78, a: 1}
+    intensity: 99
+    range: 24
+    spotAngle: 90
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    excludeExteriorShadows: 1
+    playerBackFill: 0
+    label: "\uBCF4\uC2A4\xB7\uC624\uBE0C\uC81D\uD2B8\xB7\uCC45\uC0C1 \uC8FC\uAD11
+      \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -29.46, y: 58.67, z: -18.235237}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 1, g: 0.9, b: 0.78, a: 1}
+    intensity: 1337.121
+    range: 72
+    spotAngle: 36.869896
+    innerSpotRatio: 0.626246
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
@@ -589,266 +726,6 @@ MonoBehaviour:
   battlePulseMix: 0.22
   battlePulseSeconds: 1.4
   battlePulseInterval: 4
-  materials: []
---- !u!114 &-3613294485792563672
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a315932f4894f2d88e5436f04e37b21, type: 3}
-  m_Name: "\uC800\uB141 \uC2E4\uB0B4 \uD45C\uBA74"
-  m_EditorClassIdentifier: 
-  surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
-  tileSize: 4
-  tileOffset: {x: 0, y: 0}
-  jointWidth: 0.025
-  jointContrast: 0.12
-  jointNormal: 0.018
-  tileVariation: 0.012
-  surfaces:
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: 
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
-    rendererPath: 
-    color: {r: 0.63, g: 0.63, b: 0.63, a: 1}
-    defaultColor: {r: 0.63, g: 0.63, b: 0.63, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    rendererPath: 
-    color: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    defaultColor: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
-    rendererPath: 
-    color: {r: 0.65999997, g: 0.10999996, b: 0.13499996, a: 1}
-    defaultColor: {r: 0.65999997, g: 0.10999996, b: 0.13499996, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.08
-    specular: 0.012
-    variation: 0.025
-  - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
-    rendererPath: 
-    color: {r: 0.45999992, g: 0.089999996, b: 0.17999998, a: 1}
-    defaultColor: {r: 0.45999992, g: 0.089999996, b: 0.17999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.08
-    specular: 0.012
-    variation: 0.025
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: FinalStage/Floor
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths:
-    - "\uC2E4\uB0B4 \uBC14\uB2E5 \uC5F0\uC7A5"
-    - "\uC2E4\uB0B4 \uC55E\uCABD \uBC14\uB2E5 \uBCF4\uC644"
-    floorTiles: 1
-    smoothness: 0.18
-    specular: 0.022
-    variation: 0.045
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/01_Carpet
-    color: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    defaultColor: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
-    rendererPath: FinalStage/Floor
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.04
-    variation: 0
-  - source: {fileID: 2100000, guid: c303682e12157a446acc6900c65e3159, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.3574911, g: 0.38857278, b: 0.46728474, a: 1}
-    defaultColor: {r: 0.3574911, g: 0.38857278, b: 0.46728474, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.012
-    variation: 0
-  - source: {fileID: 2100000, guid: a092bd8f7a947384086e28d806d56211, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.47312057, g: 0.5063863, b: 0.5748709, a: 1}
-    defaultColor: {r: 0.47312057, g: 0.5063863, b: 0.5748709, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.22
-    specular: 0.018
-    variation: 0
-  - source: {fileID: 2100000, guid: b29b5c0c2e0c3504daf7d6299a78e8a0, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.748379, g: 0.6614203, b: 0.4613561, a: 1}
-    defaultColor: {r: 0.748379, g: 0.6614203, b: 0.4613561, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: b6adee6250809034eb6516459fb2e634, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
-    defaultColor: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.008
-    variation: 0
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: FinalStage/Pillar
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: FinalStage/Pillar
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 87f4c33073c71d644ba0f090737d8bf2, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/BevelledWindowProfiles"
-    color: {r: 0.39999998, g: 0.42999998, b: 0.45999992, a: 1}
-    defaultColor: {r: 0.39999998, g: 0.42999998, b: 0.45999992, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/CorniceTrim"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/ValanceHem"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/LowerWallGilt"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  exportedMaterials:
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    exported: {fileID: 2100000, guid: a4f6e8cd8afb14747b966b92c45b529e, type: 2}
-  - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
-    exported: {fileID: 2100000, guid: 953df449190c46343bba439997b910bf, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 63b5d244e7d9cb24bbc7fcc4c27d6312, type: 2}
-  - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
-    exported: {fileID: 2100000, guid: 8dc2cdb037043154abf1480f60471784, type: 2}
-  - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
-    exported: {fileID: 2100000, guid: 938fa7908a6ebbe46a9ec6ddb3706cb0, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: fbeedfd5476598349915ca1f8618322f, type: 2}
-  - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
-    exported: {fileID: 2100000, guid: c8c564801c2633b4f87b1111c7af07a3, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 0f36c3ac1ca13c74198f6afbc72a6279, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: dbd120aa44f2e1946a337ddfe612242b, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: 7b73c42e88f9ad2479f2ff556fd8e2ed, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: c09dc630d6baa314f94e6f7922d0acce, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 8ffb07c4824aa9544a4ee17bbf13450b, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: fb8ecade4d509f545beedcab66a9a3ea, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 2570d5bb5657452498d56dcbf9baa8cf, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: ef54925a9569fd5458f1c708997c6bb9, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: c9a0e38041fb04b42b26e020fabebfb6, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: cddf890957469ec4f8ded92f3b5d2e3e, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: afc0536a0b01a9e4ebe35c7146206a46, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: f68c16cd114daa24f9731ecec50880a7, type: 2}
 --- !u!21 &-2981568035426595998
 Material:
   serializedVersion: 8
@@ -874,20 +751,26 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Absorption: 0.99
+    - _Absorption: 0.7
     - _EdgeAlpha: 0.087
-    - _FaceAlpha: 0.09
-    - _GlossSmoothness: 0.75
-    - _GlossStrength: 0.35
-    - _IOR: 1.39
-    - _Opacity: 0
+    - _FaceAlpha: 0.104
+    - _GlossSmoothness: 1
+    - _GlossStrength: 1
+    - _HighlightAngle: -35
+    - _HighlightSoftness: 0.861
+    - _HighlightStrength: 0.06
+    - _HighlightWidth: 0.117
+    - _IOR: 1.545
+    - _Opacity: 0.136
     - _ReflectionRoughness: 0
-    - _ReflectionStrength: 0.699
-    - _RefractionStrength: 0.86
-    - _Thickness: 0.123
+    - _ReflectionStrength: 0.835
+    - _RefractionEdgeFade: 0.118
+    - _RefractionStrength: 0.12
+    - _Thickness: 0.133
     m_Colors:
     - _GlossTint: {r: 1, g: 1, b: 1, a: 1}
-    - _Tint: {r: 0.346, g: 0.8364881, b: 1, a: 1}
+    - _HighlightTint: {r: 0.96, g: 0.97999996, b: 1, a: 1}
+    - _Tint: {r: 0.119999744, g: 0.17999977, b: 0.28999975, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &-2271834432805508413
 MonoBehaviour:
@@ -901,10 +784,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca026b837f6125942a6dcaca67539dc0, type: 3}
   m_Name: "\uC624\uD6C4 \uC811\uC810 \uC74C\uC601"
   m_EditorClassIdentifier: 
-  shadingEnabled: 0
-  tint: {r: 0.25, g: 0.23, b: 0.21, a: 1}
-  strength: 0.18
-  width: 0.35
+  shadingEnabled: 1
+  tint: {r: 0.25, g: 0.25, b: 0.25, a: 1}
+  strength: 0.42
+  width: 0.9
   softness: 1
   targetMaterials:
   - {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
@@ -946,12 +829,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca026b837f6125942a6dcaca67539dc0, type: 3}
-  m_Name: "\uC0C8\uBCBD \uC811\uC810 \uC74C\uC601"
+  m_Name: "\uC57C\uAC04 \uC811\uC810 \uC74C\uC601"
   m_EditorClassIdentifier: 
-  shadingEnabled: 0
-  tint: {r: 0.25, g: 0.23, b: 0.21, a: 1}
-  strength: 0.18
-  width: 0.35
+  shadingEnabled: 1
+  tint: {r: 0.25, g: 0.25, b: 0.25, a: 1}
+  strength: 0.42
+  width: 0.9
   softness: 1
   targetMaterials:
   - {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
@@ -975,294 +858,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cda6cddc7aae4c19922fa313882e89fa, type: 3}
   m_Name: JC_BossIndoorPeriods
   m_EditorClassIdentifier: 
+  commonBossSurfaces: {fileID: 7420070306768340925}
   periods:
   - bossLighting: {fileID: 5370338391236984320}
     bankLighting: {fileID: 0}
     glass: {fileID: 5602799300295096274}
-    surfaces: {fileID: 7420070306768340925}
     bankMaterials: {fileID: 0}
     toon: {fileID: 1829865940048479799}
     contact: {fileID: 4031487771285532249}
   - bossLighting: {fileID: 5315839484394338970}
     bankLighting: {fileID: 0}
     glass: {fileID: -2981568035426595998}
-    surfaces: {fileID: 212191435834809154}
     bankMaterials: {fileID: 0}
     toon: {fileID: -1731784247096115139}
     contact: {fileID: -2271834432805508413}
   - bossLighting: {fileID: -4112171475897413222}
     bankLighting: {fileID: 0}
     glass: {fileID: -7890423603691133983}
-    surfaces: {fileID: -3613294485792563672}
     bankMaterials: {fileID: 0}
     toon: {fileID: 5876370580880064647}
     contact: {fileID: 1072849099366956085}
   - bossLighting: {fileID: -8476266942499540601}
     bankLighting: {fileID: 0}
     glass: {fileID: 5477435401806869800}
-    surfaces: {fileID: 4782062248272931822}
     bankMaterials: {fileID: 0}
     toon: {fileID: 660905238101527301}
     contact: {fileID: -235079494174461350}
---- !u!114 &212191435834809154
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a315932f4894f2d88e5436f04e37b21, type: 3}
-  m_Name: "\uC624\uD6C4 \uC2E4\uB0B4 \uD45C\uBA74"
-  m_EditorClassIdentifier: 
-  surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
-  tileSize: 4
-  tileOffset: {x: 0, y: 0}
-  jointWidth: 0.025
-  jointContrast: 0.12
-  jointNormal: 0.018
-  tileVariation: 0.012
-  surfaces:
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: 
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
-    rendererPath: 
-    color: {r: 0.63, g: 0.63, b: 0.63, a: 1}
-    defaultColor: {r: 0.63, g: 0.63, b: 0.63, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    rendererPath: 
-    color: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    defaultColor: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
-    rendererPath: 
-    color: {r: 0.65999997, g: 0.10999996, b: 0.13499996, a: 1}
-    defaultColor: {r: 0.65999997, g: 0.10999996, b: 0.13499996, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.08
-    specular: 0.012
-    variation: 0.025
-  - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
-    rendererPath: 
-    color: {r: 0.45999992, g: 0.089999996, b: 0.17999998, a: 1}
-    defaultColor: {r: 0.45999992, g: 0.089999996, b: 0.17999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.08
-    specular: 0.012
-    variation: 0.025
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: FinalStage/Floor
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths:
-    - "\uC2E4\uB0B4 \uBC14\uB2E5 \uC5F0\uC7A5"
-    - "\uC2E4\uB0B4 \uC55E\uCABD \uBC14\uB2E5 \uBCF4\uC644"
-    floorTiles: 1
-    smoothness: 0.18
-    specular: 0.022
-    variation: 0.045
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/01_Carpet
-    color: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    defaultColor: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
-    rendererPath: FinalStage/Floor
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.04
-    variation: 0
-  - source: {fileID: 2100000, guid: c303682e12157a446acc6900c65e3159, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.3574911, g: 0.38857278, b: 0.46728474, a: 1}
-    defaultColor: {r: 0.3574911, g: 0.38857278, b: 0.46728474, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.012
-    variation: 0
-  - source: {fileID: 2100000, guid: a092bd8f7a947384086e28d806d56211, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.47312057, g: 0.5063863, b: 0.5748709, a: 1}
-    defaultColor: {r: 0.47312057, g: 0.5063863, b: 0.5748709, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.22
-    specular: 0.018
-    variation: 0
-  - source: {fileID: 2100000, guid: b29b5c0c2e0c3504daf7d6299a78e8a0, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.748379, g: 0.6614203, b: 0.4613561, a: 1}
-    defaultColor: {r: 0.748379, g: 0.6614203, b: 0.4613561, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: b6adee6250809034eb6516459fb2e634, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
-    defaultColor: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.008
-    variation: 0
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: FinalStage/Pillar
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: FinalStage/Pillar
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 87f4c33073c71d644ba0f090737d8bf2, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/BevelledWindowProfiles"
-    color: {r: 0.39999998, g: 0.42999998, b: 0.45999992, a: 1}
-    defaultColor: {r: 0.39999998, g: 0.42999998, b: 0.45999992, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/CorniceTrim"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/ValanceHem"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/LowerWallGilt"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  exportedMaterials:
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    exported: {fileID: 2100000, guid: a4f6e8cd8afb14747b966b92c45b529e, type: 2}
-  - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
-    exported: {fileID: 2100000, guid: 953df449190c46343bba439997b910bf, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 63b5d244e7d9cb24bbc7fcc4c27d6312, type: 2}
-  - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
-    exported: {fileID: 2100000, guid: 8dc2cdb037043154abf1480f60471784, type: 2}
-  - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
-    exported: {fileID: 2100000, guid: 938fa7908a6ebbe46a9ec6ddb3706cb0, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: fbeedfd5476598349915ca1f8618322f, type: 2}
-  - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
-    exported: {fileID: 2100000, guid: c8c564801c2633b4f87b1111c7af07a3, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 0f36c3ac1ca13c74198f6afbc72a6279, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: dbd120aa44f2e1946a337ddfe612242b, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: 7b73c42e88f9ad2479f2ff556fd8e2ed, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: c09dc630d6baa314f94e6f7922d0acce, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 8ffb07c4824aa9544a4ee17bbf13450b, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: fb8ecade4d509f545beedcab66a9a3ea, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 2570d5bb5657452498d56dcbf9baa8cf, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: ef54925a9569fd5458f1c708997c6bb9, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: c9a0e38041fb04b42b26e020fabebfb6, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: cddf890957469ec4f8ded92f3b5d2e3e, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: afc0536a0b01a9e4ebe35c7146206a46, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: f68c16cd114daa24f9731ecec50880a7, type: 2}
 --- !u!114 &660905238101527301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1273,7 +894,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3606c28893e51b24aa2bfc1f1befa6ab, type: 3}
-  m_Name: "\uC0C8\uBCBD \uD230"
+  m_Name: "\uC57C\uAC04 \uD230"
   m_EditorClassIdentifier: 
   surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
   toonEnabled: 0
@@ -1293,12 +914,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca026b837f6125942a6dcaca67539dc0, type: 3}
-  m_Name: "\uC800\uB141 \uC811\uC810 \uC74C\uC601"
+  m_Name: "\uD574\uC9C8\uB158 \uC811\uC810 \uC74C\uC601"
   m_EditorClassIdentifier: 
-  shadingEnabled: 0
-  tint: {r: 0.25, g: 0.23, b: 0.21, a: 1}
-  strength: 0.18
-  width: 0.35
+  shadingEnabled: 1
+  tint: {r: 0.25, g: 0.25, b: 0.25, a: 1}
+  strength: 0.42
+  width: 0.9
   softness: 1
   targetMaterials:
   - {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
@@ -1320,7 +941,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3606c28893e51b24aa2bfc1f1befa6ab, type: 3}
-  m_Name: "\uC544\uCE68 \uD230"
+  m_Name: "\uC624\uC804 \uD230"
   m_EditorClassIdentifier: 
   surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
   toonEnabled: 0
@@ -1340,12 +961,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca026b837f6125942a6dcaca67539dc0, type: 3}
-  m_Name: "\uC544\uCE68 \uC811\uC810 \uC74C\uC601"
+  m_Name: "\uC624\uC804 \uC811\uC810 \uC74C\uC601"
   m_EditorClassIdentifier: 
-  shadingEnabled: 0
-  tint: {r: 0.25, g: 0.23, b: 0.21, a: 1}
-  strength: 0.18
-  width: 0.35
+  shadingEnabled: 1
+  tint: {r: 0.25, g: 0.25, b: 0.25, a: 1}
+  strength: 0.42
+  width: 0.9
   softness: 1
   targetMaterials:
   - {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
@@ -1357,265 +978,6 @@ MonoBehaviour:
   - start: {x: -22.51, y: 0.25, z: 24.509998}
     end: {x: 49, y: 0.25, z: 24.509998}
     receiverDirection: {x: 0, y: 0, z: -1}
---- !u!114 &4782062248272931822
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a315932f4894f2d88e5436f04e37b21, type: 3}
-  m_Name: "\uC0C8\uBCBD \uC2E4\uB0B4 \uD45C\uBA74"
-  m_EditorClassIdentifier: 
-  surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
-  tileSize: 4
-  tileOffset: {x: 0, y: 0}
-  jointWidth: 0.025
-  jointContrast: 0.12
-  jointNormal: 0.018
-  tileVariation: 0.012
-  surfaces:
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: 
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
-    rendererPath: 
-    color: {r: 0.63, g: 0.63, b: 0.63, a: 1}
-    defaultColor: {r: 0.63, g: 0.63, b: 0.63, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    rendererPath: 
-    color: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    defaultColor: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
-    rendererPath: 
-    color: {r: 0.65999997, g: 0.10999996, b: 0.13499996, a: 1}
-    defaultColor: {r: 0.65999997, g: 0.10999996, b: 0.13499996, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.08
-    specular: 0.012
-    variation: 0.025
-  - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
-    rendererPath: 
-    color: {r: 0.45999992, g: 0.089999996, b: 0.17999998, a: 1}
-    defaultColor: {r: 0.45999992, g: 0.089999996, b: 0.17999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.08
-    specular: 0.012
-    variation: 0.025
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: FinalStage/Floor
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths:
-    - "\uC2E4\uB0B4 \uBC14\uB2E5 \uC5F0\uC7A5"
-    - "\uC2E4\uB0B4 \uC55E\uCABD \uBC14\uB2E5 \uBCF4\uC644"
-    floorTiles: 1
-    smoothness: 0.18
-    specular: 0.022
-    variation: 0.045
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/01_Carpet
-    color: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    defaultColor: {r: 0.5926193, g: 0.17558157, b: 0.23209411, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
-    rendererPath: FinalStage/Floor
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.04
-    variation: 0
-  - source: {fileID: 2100000, guid: c303682e12157a446acc6900c65e3159, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.3574911, g: 0.38857278, b: 0.46728474, a: 1}
-    defaultColor: {r: 0.3574911, g: 0.38857278, b: 0.46728474, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.012
-    variation: 0
-  - source: {fileID: 2100000, guid: a092bd8f7a947384086e28d806d56211, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.47312057, g: 0.5063863, b: 0.5748709, a: 1}
-    defaultColor: {r: 0.47312057, g: 0.5063863, b: 0.5748709, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.22
-    specular: 0.018
-    variation: 0
-  - source: {fileID: 2100000, guid: b29b5c0c2e0c3504daf7d6299a78e8a0, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.748379, g: 0.6614203, b: 0.4613561, a: 1}
-    defaultColor: {r: 0.748379, g: 0.6614203, b: 0.4613561, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.28
-    specular: 0.028
-    variation: 0.025
-  - source: {fileID: 2100000, guid: b6adee6250809034eb6516459fb2e634, type: 2}
-    rendererPath: FinalStage/Desk/Rebuilt/02_Desk
-    color: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
-    defaultColor: {r: 0.17558157, g: 0.19966337, b: 0.23746112, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.008
-    variation: 0
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    rendererPath: FinalStage/Pillar
-    color: {r: 1, g: 1, b: 1, a: 1}
-    defaultColor: {r: 1, g: 1, b: 1, a: 1}
-    colorInitialized: 1
-    colorOnly: 0
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.12
-    specular: 0.018
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: FinalStage/Pillar
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 87f4c33073c71d644ba0f090737d8bf2, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/BevelledWindowProfiles"
-    color: {r: 0.39999998, g: 0.42999998, b: 0.45999992, a: 1}
-    defaultColor: {r: 0.39999998, g: 0.42999998, b: 0.45999992, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/CorniceTrim"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/ValanceHem"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  - source: {fileID: 2100000, guid: 20ae0e4cf33731448b5675c89836d285, type: 2}
-    rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/LowerWallGilt"
-    color: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    defaultColor: {r: 0.89, g: 0.68, b: 0.29999998, a: 1}
-    colorInitialized: 1
-    colorOnly: 1
-    additionalRendererPaths: []
-    floorTiles: 0
-    smoothness: 0.18
-    specular: 0.02
-    variation: 0.035
-  exportedMaterials:
-  - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
-    exported: {fileID: 2100000, guid: a4f6e8cd8afb14747b966b92c45b529e, type: 2}
-  - source: {fileID: 2100000, guid: 9e9a8df0556cbf84993eefe58667289f, type: 2}
-    exported: {fileID: 2100000, guid: 953df449190c46343bba439997b910bf, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 63b5d244e7d9cb24bbc7fcc4c27d6312, type: 2}
-  - source: {fileID: 2100000, guid: feaae775af72e91479835e8195f51c0a, type: 2}
-    exported: {fileID: 2100000, guid: 8dc2cdb037043154abf1480f60471784, type: 2}
-  - source: {fileID: 2100000, guid: bf3220104546cb04297ab93659c4e693, type: 2}
-    exported: {fileID: 2100000, guid: 938fa7908a6ebbe46a9ec6ddb3706cb0, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: fbeedfd5476598349915ca1f8618322f, type: 2}
-  - source: {fileID: 2100000, guid: 762cf6dd4a0f7de43a7975be62561f3f, type: 2}
-    exported: {fileID: 2100000, guid: c8c564801c2633b4f87b1111c7af07a3, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 0f36c3ac1ca13c74198f6afbc72a6279, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: dbd120aa44f2e1946a337ddfe612242b, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: 7b73c42e88f9ad2479f2ff556fd8e2ed, type: 2}
-  - source: {fileID: 2100000, guid: ad90d38f22cb71c44ba34c7d6917980d, type: 2}
-    exported: {fileID: 2100000, guid: c09dc630d6baa314f94e6f7922d0acce, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 8ffb07c4824aa9544a4ee17bbf13450b, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: fb8ecade4d509f545beedcab66a9a3ea, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: 2570d5bb5657452498d56dcbf9baa8cf, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: ef54925a9569fd5458f1c708997c6bb9, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: c9a0e38041fb04b42b26e020fabebfb6, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: cddf890957469ec4f8ded92f3b5d2e3e, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: afc0536a0b01a9e4ebe35c7146206a46, type: 2}
-  - source: {fileID: 2100000, guid: 91276d10b84399a4ea66e4c74d450ae4, type: 2}
-    exported: {fileID: 2100000, guid: f68c16cd114daa24f9731ecec50880a7, type: 2}
 --- !u!114 &5315839484394338970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1631,91 +993,96 @@ MonoBehaviour:
   ibl:
     enabled: 1
     environment: {fileID: 11400000, guid: ad02f6952ae86d8499048871c34d70e3, type: 2}
-    diffuseIntensity: 0.35
-    specularIntensity: 0.5
-    tint: {r: 1, g: 1, b: 1, a: 1}
+    diffuseIntensity: 0.84000003
+    specularIntensity: 0.78
+    tint: {r: 1, g: 0.99, b: 0.98, a: 1}
     rotation: 0
     bankProbeBlend: 0
   characterLighting: 0
   ssaoFeature: {fileID: 0}
   ssaoEnabled: 1
-  ssaoIntensity: 0.86
-  ssaoRadius: 0.9
-  ssaoDirectLightingStrength: 0.407
+  ssaoIntensity: 2.19
+  ssaoRadius: 1.194
+  ssaoDirectLightingStrength: 0.747
   ssaoDownsample: 0
   isolateInterior: 1
+  bossEmphasisEnabled: 1
+  bossContrast: 0.349
+  bossContrastPivot: 0.18
+  bossSpotReception: 1.57
+  bossSpotReflection: 1
   windows:
   - label: "\uCE21\uBA74 \uCC3D 1"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay1"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 216
+    color: {r: 1, g: 0.98, b: 0.95, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 2"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay2"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 216
+    color: {r: 1, g: 0.98, b: 0.95, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 3"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay3"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 216
+    color: {r: 1, g: 0.98, b: 0.95, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 4"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay4"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 216
+    color: {r: 1, g: 0.98, b: 0.95, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.054
   - label: "\uB4A4\uD3B8 \uCC3D 5"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay5"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 216
+    color: {r: 1, g: 0.98, b: 0.95, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 6"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay6"
-    intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    intensity: 216
+    color: {r: 1, g: 0.98, b: 0.95, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
-    shadows: 2
+    softness: 0.16
+    shadows: 0
     shadowStrength: 0.153
   directionalIntensity: 1
   directionalTint: {r: 1, g: 1, b: 1, a: 1}
@@ -1726,6 +1093,7 @@ MonoBehaviour:
   lights:
   - battlePulse: 0
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 1
     label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
     enabled: 1
@@ -1733,7 +1101,7 @@ MonoBehaviour:
     position: {x: 0, y: 6, z: 0}
     rotation: {x: 25, y: -34.45, z: 0}
     color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 0.8
+    intensity: 0.6
     range: 10
     spotAngle: 94
     innerSpotRatio: 0.6
@@ -1741,19 +1109,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 1"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -29}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.99, b: 0.98, a: 1}
+    intensity: 13.5
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -1761,19 +1131,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 2"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -29}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.99, b: 0.98, a: 1}
+    intensity: 44.55
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -1781,19 +1153,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 3"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -15}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.99, b: 0.98, a: 1}
+    intensity: 13.5
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -1801,19 +1175,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 4"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -15}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.99, b: 0.98, a: 1}
+    intensity: 44.55
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -1821,19 +1197,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 5"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -1}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.99, b: 0.98, a: 1}
+    intensity: 16.2
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -1841,19 +1219,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 6"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -1}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 0.99, b: 0.98, a: 1}
+    intensity: 16.2
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -1861,26 +1241,74 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
-  - battlePulse: 1
+  - battlePulse: 0
     aimAtBoss: 1
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uBCF4\uC2A4 \uAC15\uC870 \uC2A4\uD3FF"
     enabled: 1
     type: 1
-    position: {x: 7, y: 16.75, z: -11}
-    rotation: {x: 45.14691, y: 338.9625, z: 0}
-    color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 70
-    range: 19
-    spotAngle: 92
-    innerSpotRatio: 0
-    shadows: 2
+    position: {x: 3.96, y: 16.75, z: -11}
+    rotation: {x: 60.83099, y: 0, z: 0}
+    color: {r: 1, g: 0.99, b: 0.98, a: 1}
+    intensity: 45
+    range: 15
+    spotAngle: 60
+    innerSpotRatio: 0.5
+    shadows: 0
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    excludeExteriorShadows: 0
+    playerBackFill: 0
+    label: "\uC544\uAD70 \uC8FC\uAD11 \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -10, y: 19.75, z: -37}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 112
+    range: 24
+    spotAngle: 90
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    excludeExteriorShadows: 1
+    playerBackFill: 0
+    label: "\uBCF4\uC2A4\xB7\uC624\uBE0C\uC81D\uD2B8\xB7\uCC45\uC0C1 \uC8FC\uAD11
+      \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -29.46, y: 58.67, z: -18.235237}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 1522.8322
+    range: 72
+    spotAngle: 36.869896
+    innerSpotRatio: 0.626246
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
@@ -1890,7 +1318,6 @@ MonoBehaviour:
   battlePulseMix: 0.22
   battlePulseSeconds: 1.4
   battlePulseInterval: 4
-  materials: []
 --- !u!114 &5370338391236984320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1901,95 +1328,100 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7300fda7b46e411297a174dd61e9f429, type: 3}
-  m_Name: "\uC544\uCE68 \uC2E4\uB0B4 \uC870\uBA85"
+  m_Name: "\uC624\uC804 \uC2E4\uB0B4 \uC870\uBA85"
   m_EditorClassIdentifier: 
   ibl:
     enabled: 1
     environment: {fileID: 11400000, guid: ad02f6952ae86d8499048871c34d70e3, type: 2}
-    diffuseIntensity: 0.35
-    specularIntensity: 0.5
+    diffuseIntensity: 0.62
+    specularIntensity: 0.7
     tint: {r: 1, g: 1, b: 1, a: 1}
     rotation: 0
     bankProbeBlend: 0
   characterLighting: 0
   ssaoFeature: {fileID: 0}
   ssaoEnabled: 1
-  ssaoIntensity: 1.62
-  ssaoRadius: 1.43
-  ssaoDirectLightingStrength: 0.885
+  ssaoIntensity: 1.84
+  ssaoRadius: 0.667
+  ssaoDirectLightingStrength: 0.652
   ssaoDownsample: 0
   isolateInterior: 1
+  bossEmphasisEnabled: 1
+  bossContrast: 0.359
+  bossContrastPivot: 0.18
+  bossSpotReception: 1.53
+  bossSpotReflection: 1.61
   windows:
   - label: "\uCE21\uBA74 \uCC3D 1"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay1"
     intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
+    softness: 0.16
     shadows: 0
     shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 2"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay2"
     intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
+    softness: 0.16
     shadows: 0
     shadowStrength: 0.1
   - label: "\uCE21\uBA74 \uCC3D 3"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay3"
     intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
+    softness: 0.16
     shadows: 0
     shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 4"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay4"
     intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
+    softness: 0.16
     shadows: 0
     shadowStrength: 0.054
   - label: "\uB4A4\uD3B8 \uCC3D 5"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay5"
     intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
+    softness: 0.16
     shadows: 0
     shadowStrength: 0.1
   - label: "\uB4A4\uD3B8 \uCC3D 6"
     enabled: 1
     rendererPath: "\uBCF4\uC2A4 \uD640 \xB7 \uCE21\uD6C4\uBA74 \uC5F0\uC18D \uCC3D\uD638/GlassBay6"
     intensity: 160
-    color: {r: 1, g: 0.93, b: 0.83, a: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
     pitch: 25
     yaw: 0
     standOff: 12
     range: 48
-    softness: 0.025
+    softness: 0.16
     shadows: 0
     shadowStrength: 0.153
   directionalIntensity: 1
@@ -2001,6 +1433,7 @@ MonoBehaviour:
   lights:
   - battlePulse: 0
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 1
     label: "\uD50C\uB808\uC774\uC5B4 4\uC885 \xB7 \uD6C4\uBA74 \uBCF4\uC870\uAD11"
     enabled: 1
@@ -2008,7 +1441,7 @@ MonoBehaviour:
     position: {x: 0, y: 6, z: 0}
     rotation: {x: 25, y: -34.45, z: 0}
     color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 0.8
+    intensity: 0.6
     range: 10
     spotAngle: 94
     innerSpotRatio: 0.6
@@ -2016,19 +1449,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 1"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -29}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 10
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -2036,18 +1471,20 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 2"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -29}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
     intensity: 33
     range: 19
     spotAngle: 140
@@ -2056,19 +1493,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 3"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -15}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 10
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -2076,18 +1515,20 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 4"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -15}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}
     intensity: 33
     range: 19
     spotAngle: 140
@@ -2096,19 +1537,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 5"
     enabled: 1
     type: 1
     position: {x: -6, y: 18.75, z: -1}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 12
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -2116,19 +1559,21 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
   - battlePulse: 1
     aimAtBoss: 0
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uCC9C\uC7A5 6"
     enabled: 1
     type: 1
     position: {x: 10, y: 18.75, z: -1}
     rotation: {x: 90, y: 0, z: 0}
-    color: {r: 0.96, g: 0.975, b: 1, a: 1}
-    intensity: 33
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 12
     range: 19
     spotAngle: 140
     innerSpotRatio: 0.65
@@ -2136,26 +1581,74 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
-  - battlePulse: 1
+  - battlePulse: 0
     aimAtBoss: 1
+    excludeExteriorShadows: 0
     playerBackFill: 0
     label: "\uC784\uC2DC \uBCF4\uC2A4 \uAC15\uC870 \uC2A4\uD3FF"
     enabled: 1
     type: 1
-    position: {x: 7, y: 16.75, z: -11}
-    rotation: {x: 45.14691, y: 338.9625, z: 0}
-    color: {r: 1, g: 1, b: 1, a: 1}
-    intensity: 70
-    range: 19
-    spotAngle: 92
-    innerSpotRatio: 0
-    shadows: 2
+    position: {x: 3.96, y: 16.75, z: -11}
+    rotation: {x: 60.83099, y: 0, z: 0}
+    color: {r: 1, g: 0.985, b: 0.97, a: 1}
+    intensity: 30
+    range: 15
+    spotAngle: 60
+    innerSpotRatio: 0.5
+    shadows: 0
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    shadowQuality: 1
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    excludeExteriorShadows: 0
+    playerBackFill: 0
+    label: "\uC544\uAD70 \uC8FC\uAD11 \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -10, y: 19.75, z: -37}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 88
+    range: 24
+    spotAngle: 90
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    excludeExteriorShadows: 1
+    playerBackFill: 0
+    label: "\uBCF4\uC2A4\xB7\uC624\uBE0C\uC81D\uD2B8\xB7\uCC45\uC0C1 \uC8FC\uAD11
+      \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -29.46, y: 58.67, z: -18.235237}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 1188.552
+    range: 72
+    spotAngle: 36.869896
+    innerSpotRatio: 0.626246
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295
@@ -2165,7 +1658,6 @@ MonoBehaviour:
   battlePulseMix: 0.22
   battlePulseSeconds: 1.4
   battlePulseInterval: 4
-  materials: []
 --- !u!21 &5477435401806869800
 Material:
   serializedVersion: 8
@@ -2173,47 +1665,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: "\uC0C8\uBCBD \uC720\uB9AC"
-  m_Shader: {fileID: 4800000, guid: 1cf2c0cc665041641aef155494e382e7, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs: []
-    m_Ints: []
-    m_Floats:
-    - _Absorption: 0.99
-    - _EdgeAlpha: 0.087
-    - _FaceAlpha: 0.09
-    - _GlossSmoothness: 0.75
-    - _GlossStrength: 0.35
-    - _IOR: 1.39
-    - _Opacity: 0
-    - _ReflectionRoughness: 0
-    - _ReflectionStrength: 0.699
-    - _RefractionStrength: 0.86
-    - _Thickness: 0.123
-    m_Colors:
-    - _GlossTint: {r: 1, g: 1, b: 1, a: 1}
-    - _Tint: {r: 0.346, g: 0.8364881, b: 1, a: 1}
-  m_BuildTextureStacks: []
---- !u!21 &5602799300295096274
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: "\uC544\uCE68 \uC720\uB9AC"
+  m_Name: "\uC57C\uAC04 \uC720\uB9AC"
   m_Shader: {fileID: 4800000, guid: 1cf2c0cc665041641aef155494e382e7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -2235,16 +1687,68 @@ Material:
     - _EdgeAlpha: 0.087
     - _FaceAlpha: 0.104
     - _GlossSmoothness: 1
-    - _GlossStrength: 3.2
+    - _GlossStrength: 1
+    - _HighlightAngle: -35
+    - _HighlightSoftness: 0.861
+    - _HighlightStrength: 0.02
+    - _HighlightWidth: 0.117
     - _IOR: 1.545
     - _Opacity: 0.136
     - _ReflectionRoughness: 0
     - _ReflectionStrength: 0.835
+    - _RefractionEdgeFade: 0.118
     - _RefractionStrength: 0.12
     - _Thickness: 0.133
     m_Colors:
     - _GlossTint: {r: 1, g: 1, b: 1, a: 1}
-    - _Tint: {r: 0, g: 0.10881404, b: 0.37735847, a: 1}
+    - _HighlightTint: {r: 0.75, g: 0.85, b: 1, a: 1}
+    - _Tint: {r: 0.09999969, g: 0.1599997, b: 0.2899997, a: 1}
+  m_BuildTextureStacks: []
+--- !u!21 &5602799300295096274
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "\uC624\uC804 \uC720\uB9AC"
+  m_Shader: {fileID: 4800000, guid: 1cf2c0cc665041641aef155494e382e7, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _Absorption: 0.7
+    - _EdgeAlpha: 0.087
+    - _FaceAlpha: 0.104
+    - _GlossSmoothness: 1
+    - _GlossStrength: 1
+    - _HighlightAngle: -35
+    - _HighlightSoftness: 0.861
+    - _HighlightStrength: 0.05
+    - _HighlightWidth: 0.117
+    - _IOR: 1.545
+    - _Opacity: 0.136
+    - _ReflectionRoughness: 0
+    - _ReflectionStrength: 0.835
+    - _RefractionEdgeFade: 0.118
+    - _RefractionStrength: 0.12
+    - _Thickness: 0.133
+    m_Colors:
+    - _GlossTint: {r: 1, g: 1, b: 1, a: 1}
+    - _HighlightTint: {r: 0.82547176, g: 0.9033861, b: 1, a: 1}
+    - _Tint: {r: 0, g: 0.108813696, b: 0.3773581, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &5876370580880064647
 MonoBehaviour:
@@ -2256,7 +1760,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3606c28893e51b24aa2bfc1f1befa6ab, type: 3}
-  m_Name: "\uC800\uB141 \uD230"
+  m_Name: "\uD574\uC9C8\uB158 \uD230"
   m_EditorClassIdentifier: 
   surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
   toonEnabled: 0
@@ -2276,7 +1780,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1a315932f4894f2d88e5436f04e37b21, type: 3}
-  m_Name: "\uC544\uCE68 \uC2E4\uB0B4 \uD45C\uBA74"
+  m_Name: "\uACF5\uD1B5 \uC2E4\uB0B4 \uD45C\uBA74"
   m_EditorClassIdentifier: 
   surfaceShader: {fileID: 4800000, guid: a35dbe54feb24e1e81dab297f37072d4, type: 3}
   tileSize: 4.08
@@ -2486,6 +1990,7 @@ MonoBehaviour:
     smoothness: 0.757
     specular: 0.427
     variation: 0
+  materials: []
   exportedMaterials:
   - source: {fileID: 2100000, guid: eb70356e54fd8dd43871f37a3aebe0cc, type: 2}
     exported: {fileID: 2100000, guid: a4f6e8cd8afb14747b966b92c45b529e, type: 2}

@@ -13,6 +13,12 @@ namespace JC.BattleTesting.Editor
 
         public override void OnInspectorGUI()
         {
+            DrawGlass();
+            DrawSurfaces((JcBossBackgroundMaterials)target);
+        }
+        // JC | 2026-11-18 | 상위 인스펙터에서 시간대 유리와 공통 표면을 별도 펼침 영역으로 표시합니다.
+        public void DrawGlass()
+        {
             var settings = (JcBossBackgroundMaterials)target;
             var draft = settings.GlassDraft;
             // JC | 2026-11-17 | 미초기화 상태도 빈 인스펙터 대신 실제 사용 위치를 안내합니다.
@@ -21,7 +27,7 @@ namespace JC.BattleTesting.Editor
                 EditorGUILayout.HelpBox("보스 전투 진입 후 JC_IndoorEnvironment 또는 하위 JC_Materials에서 유리를 조절할 수 있습니다.", MessageType.Info);
                 return;
             }
-            EditorGUILayout.LabelField("보스 홀 유리", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("선택 시간대 · 보스 홀 유리", EditorStyles.boldLabel);
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.ObjectField("저장 대상", settings.GlassProfile, typeof(Material), false);
             EditorGUILayout.HelpBox("현재 전투의 초안에 즉시 반영됩니다. 아래 저장 버튼을 눌러야 Play 종료 후와 다음 보스전에도 유지됩니다. 불투명도 0은 투과 유리, 1은 배경을 가리는 틴트색입니다.", MessageType.Info);
@@ -56,6 +62,14 @@ namespace JC.BattleTesting.Editor
             FloatControl(draft,"_GlossStrength","광택 강도",0,4);
             FloatControl(draft,"_GlossSmoothness","광택 선명도",0,1);
             draft.SetColor("_GlossTint",EditorGUILayout.ColorField("광택 색상",draft.GetColor("_GlossTint")));
+            // JC | 2026-11-17 | 물리 반사와 별도로 유리다운 하이라이트 띠를 실시간 조절하고 같은 시간대 프로필에 저장합니다.
+            EditorGUILayout.Space();EditorGUILayout.LabelField("연출 광택 · 가짜 유리 하이라이트",EditorStyles.boldLabel);
+            FloatControl(draft,"_HighlightStrength","하이라이트 강도",0,2);
+            FloatControl(draft,"_HighlightWidth","띠 폭",.01f,.5f);
+            FloatControl(draft,"_HighlightAngle","띠 각도",-90,90);
+            FloatControl(draft,"_HighlightSoftness","띠 부드러움",.05f,1);
+            draft.SetColor("_HighlightTint",EditorGUILayout.ColorField("하이라이트 색상",draft.GetColor("_HighlightTint")));
+            FloatControl(draft,"_RefractionEdgeFade","창 가장자리 굴절 완화",.005f,.25f);
             settings.ApplyGlass();
             if (GUILayout.Button("현재 유리 값을 프로필에 저장"))
             {
@@ -66,7 +80,7 @@ namespace JC.BattleTesting.Editor
                 AssetDatabase.SaveAssetIfDirty(profile);
             }
             if (GUILayout.Button("유리 프로필 불러오기 · 즉시 적용")) { CopyGlass(settings.GlassProfile, draft); settings.ApplyGlass(); }
-            DrawSurfaces(settings);
+
         }
 
         // JC | 2026-11-17 | 에디트/플레이/시간대 캐시가 같은 유리 속성 목록으로 저장·불러오기합니다.
@@ -76,10 +90,10 @@ namespace JC.BattleTesting.Editor
         { draft.SetFloat(property,EditorGUILayout.Slider(label,draft.GetFloat(property),min,max)); }
 
         // JC | 2026-11-05 | 바닥 줄눈과 표면별 약한 반사를 동일한 초안/명시적 저장 방식으로 제공합니다.
-        static void DrawSurfaces(JcBossBackgroundMaterials settings)
+        public static void DrawSurfaces(JcBossBackgroundMaterials settings)
         {
             if (!settings.SurfaceDraft) return;
-            EditorGUILayout.Space(); EditorGUILayout.LabelField("실내 표면 · 큼직한 바닥 줄눈",EditorStyles.boldLabel);
+            EditorGUILayout.Space(); EditorGUILayout.LabelField("모든 시간대 공통 · 실내 표면",EditorStyles.boldLabel);
             using(new EditorGUI.DisabledScope(true)) EditorGUILayout.ObjectField("저장 대상",settings.SurfaceSource,typeof(JcBossSurfaceProfile),false);
             var serialized = new SerializedObject(settings.SurfaceDraft); serialized.Update();
             foreach(var field in new[]{"tileSize","tileOffset","jointWidth","jointContrast","jointNormal","tileVariation"})
@@ -95,8 +109,11 @@ namespace JC.BattleTesting.Editor
                 }
             }
             DrawSurfaceList(serialized.FindProperty("surfaces"));
+            // JC | 2026-11-18 | 조명 인스펙터에서 옮긴 슬롯 교체도 공통 초안/저장에 포함합니다.
+            EditorGUILayout.PropertyField(serialized.FindProperty("materials"),true);
+            EditorGUILayout.HelpBox("색상·거칠기·반사량·줄눈·재질 교체는 모든 시간대 공통입니다. 기본색 복원 기준은 이전에 저장한 기준색을 유지합니다.",MessageType.Info);
             if(serialized.ApplyModifiedProperties())settings.ApplySurfaces();
-            if(GUILayout.Button("현재 실내 표면 값을 프로필에 저장"))
+            if(GUILayout.Button("공통 실내 표면 저장 · 모든 시간대 적용"))
             {
                 Undo.RecordObject(settings.SurfaceSource,"보스 실내 표면 저장");
                 var name=settings.SurfaceSource.name;
@@ -104,7 +121,7 @@ namespace JC.BattleTesting.Editor
                 settings.SurfaceSource.name=name;settings.SurfaceSource.hideFlags=HideFlags.None;
                 EditorUtility.SetDirty(settings.SurfaceSource);AssetDatabase.SaveAssetIfDirty(settings.SurfaceSource);
             }
-            if(GUILayout.Button("실내 표면 저장값 다시 적용"))settings.ReloadSurfaces();
+            if(GUILayout.Button("공통 실내 표면 저장값 다시 적용"))settings.ReloadSurfaces();
             EditorGUILayout.HelpBox("유리와 실내 표면은 각각 저장합니다. 두 프로필 모두 테스트와 실제 BE490에 적용됩니다. 줄눈은 얕은 표면 표현이며 바닥 높이·전투 셀은 바꾸지 않습니다.",MessageType.Info);
         }
 

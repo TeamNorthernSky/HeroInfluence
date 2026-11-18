@@ -98,10 +98,12 @@ namespace JC.BattleTesting.Editor
         }
         public static void SelectPeriod(JcIndoorEnvironment control,int period)
         {
-            control.SelectPeriod(period);
+            // JC | 2026-11-17 | 플레이 중 인스펙터도 에디트 전용 Control과 무관하게 원경/실내 전체를 함께 전환합니다.
+            if (!control || period < 0 || period > 3) return;
+            if (!JcBossCityLighting.SelectScenePeriod(control.gameObject.scene, period))
+                JcIndoorEnvironment.SelectScenePeriod(control.gameObject.scene, period);
             if(control!=Control)return;
-            if(city)city.SelectPeriod(period);
-            control.ApplyDraft();MarkTemporary();
+            MarkTemporary();
             SessionState.SetInt("JC.IndoorEditPeriod."+scene.path,period);
             EditorApplication.QueuePlayerLoopUpdate();SceneView.RepaintAll();
         }

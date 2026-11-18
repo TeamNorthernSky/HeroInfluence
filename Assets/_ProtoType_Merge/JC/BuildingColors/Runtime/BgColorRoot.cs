@@ -12,6 +12,57 @@ namespace JC.BuildingColors
         [Tooltip("같은 종류의 색상 바리에이션 ID입니다.")] public string variantId;
     }
 
+    // JC | 2026-11-18 | 원본 재질별 후보를 씬마다 공유합니다. 동적 생성/재질 교체 감지는 유지하되
+    // 주기 재수집의 슬롯 조회를 프레임당 최대 256개로 나눠 정적 보스 배경의 0.1초 정지를 막습니다.
+    internal sealed class BgColorSceneIndex
+    {
+        static readonly Dictionary<int,BgColorSceneIndex> scenes=new Dictionary<int,BgColorSceneIndex>();
+        readonly UnityEngine.SceneManagement.Scene scene;
+        readonly List<GameObject> roots=new List<GameObject>();
+        readonly List<Renderer> renderers=new List<Renderer>();
+        readonly List<Renderer> rootRenderers=new List<Renderer>();
+        readonly List<Material> materials=new List<Material>();
+        Dictionary<Material,List<Renderer>> published=new Dictionary<Material,List<Renderer>>();
+        Dictionary<Material,List<Renderer>> pending=new Dictionary<Material,List<Renderer>>();
+        int cursor=-1,lastFrame=-1;
+        bool invalid=true;
+        double nextScan;
+        internal int Revision {get;private set;}
+        BgColorSceneIndex(UnityEngine.SceneManagement.Scene value){scene=value;}
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void Reset(){scenes.Clear();UnityEngine.SceneManagement.SceneManager.sceneUnloaded-=Unloaded;UnityEngine.SceneManagement.SceneManager.sceneUnloaded+=Unloaded;}
+        static void Unloaded(UnityEngine.SceneManagement.Scene value){scenes.Remove(value.handle);}
+        internal static BgColorSceneIndex Get(UnityEngine.SceneManagement.Scene value)
+        {if(!scenes.TryGetValue(value.handle,out var index))scenes.Add(value.handle,index=new BgColorSceneIndex(value));return index;}
+        internal static void Invalidate(UnityEngine.SceneManagement.Scene value)
+        {if(scenes.TryGetValue(value.handle,out var index)){index.cursor=-1;index.nextScan=0;index.invalid=true;index.lastFrame=-1;}}
+        internal IEnumerable<Renderer> Candidates(Material material)
+        {return published.TryGetValue(material,out var found)?found:Array.Empty<Renderer>();}
+        internal void Advance()
+        {
+            if(!scene.IsValid()||!scene.isLoaded)return;
+            bool immediate=invalid||!Application.isPlaying;
+            if(!immediate&&lastFrame==Time.frameCount)return;
+            lastFrame=Time.frameCount;
+            if(cursor<0){if(!invalid&&Time.realtimeSinceStartupAsDouble<nextScan)return;
+                roots.Clear();scene.GetRootGameObjects(roots);renderers.Clear();
+                foreach(var root in roots){rootRenderers.Clear();root.GetComponentsInChildren<Renderer>(true,rootRenderers);renderers.AddRange(rootRenderers);}
+                foreach(var list in pending.Values)list.Clear();cursor=0;}
+            int end=immediate?renderers.Count:Math.Min(renderers.Count,cursor+256);
+            for(;cursor<end;cursor++){
+                var renderer=renderers[cursor];if(!renderer)continue;renderer.GetSharedMaterials(materials);
+                for(int slot=0;slot<materials.Count;slot++){
+                    var material=JC.Environment.JcNightMaterialBindings.Original(materials[slot]);if(!material)continue;
+                    if(!pending.TryGetValue(material,out var list))pending.Add(material,list=new List<Renderer>());
+                    if(list.Count==0||list[list.Count-1]!=renderer)list.Add(renderer);
+                }
+            }
+            if(cursor<renderers.Count)return;
+            var old=published;published=pending;pending=old;cursor=-1;
+            invalid=false;Revision++;nextScan=Time.realtimeSinceStartupAsDouble+2;
+        }
+    }
+
     [ExecuteAlways,DisallowMultipleComponent]
     public sealed class BgColorRoot : MonoBehaviour
     {
@@ -28,13 +79,17 @@ namespace JC.BuildingColors
         int appliedProfileHash=int.MinValue;
         GameObject generatedRoot;
         DecorativeObjectRegistry registry;
+        // JC | 2026-11-18 | 보스처럼 등록부가 없는 씬은 매초 계층 전체를 다시 검색하지 않습니다.
+        bool registrySearched;
+        int registryRootCount=-1;
         readonly Dictionary<string,List<BgColorSetEntry>> variants=new Dictionary<string,List<BgColorSetEntry>>();
         readonly HashSet<string> supportedTypes=new HashSet<string>();
         public int GeneratedVariantCount=>generatedRoot?generatedRoot.GetComponentsInChildren<BgColorModifier>(true).Length:0;
 
-        void OnEnable(){InvalidateTargets();appliedProfileHash=int.MinValue;refreshRequested=true;}
+        // JC | 2026-11-18 | 재활성화 때 등록부 검색도 다시 열어 OnDisable에서 해제한 이벤트를 재연결합니다.
+        void OnEnable(){DecorativeObjectRegistry.LifecycleChanged+=RegistryLifecycleChanged;registrySearched=false;nextProfileCheck=0;InvalidateTargets();appliedProfileHash=int.MinValue;refreshRequested=true;}
         void OnValidate(){appliedProfileHash=int.MinValue;refreshRequested=true;}
-        void OnDisable(){Unsubscribe();RemoveGenerated(true);InvalidateTargets();}
+        void OnDisable(){DecorativeObjectRegistry.LifecycleChanged-=RegistryLifecycleChanged;Unsubscribe();RemoveGenerated(true);InvalidateTargets();}
         void OnDestroy(){Unsubscribe();RemoveGenerated(true);}
         void Update()
         {
@@ -49,13 +104,19 @@ namespace JC.BuildingColors
         {
             if(registry)return;
             var scene=gameObject.scene;if(!scene.IsValid()||!scene.isLoaded)return;
+            if(registrySearched&&registryRootCount==scene.rootCount)return;
+            registrySearched=true;registryRootCount=scene.rootCount;
             foreach(var g in scene.GetRootGameObjects()){registry=g.GetComponentInChildren<DecorativeObjectRegistry>(true);if(registry)break;}
             if(!registry)return;
             registry.DecorativeObjectRegistered+=Changed;
             registry.DecorativeObjectUnregistered+=Changed;
         }
+        // JC | 2026-11-18 | 기존 루트 아래에 등록부가 늦게 추가돼도 음수 캐시를 해제해 다시 연결합니다.
+        void RegistryLifecycleChanged(DecorativeObjectRegistry value)
+        {if(value&&value.gameObject.scene==gameObject.scene){registrySearched=false;nextProfileCheck=0;}}
         void Unsubscribe(){if(registry){registry.DecorativeObjectRegistered-=Changed;registry.DecorativeObjectUnregistered-=Changed;}registry=null;}
-        void Changed(DecorativeObjectPlacement placement){InvalidateTargets();refreshRequested=true;}
+        // JC | 2026-11-18 | 등록/해제 이벤트는 주기 캐시를 기다리지 않고 모든 색상 소유자를 함께 갱신합니다.
+        void Changed(DecorativeObjectPlacement placement){BgColorSceneIndex.Invalidate(gameObject.scene);InvalidateTargets();refreshRequested=true;}
         void InvalidateTargets(){cachedRenderers=null;cachedScope=null;nextScan=0;}
         bool CacheInvalid(){
             if(cachedRenderers==null||cachedScope!=targetRoot||cachedPlaying!=Application.IsPlaying(gameObject))return true;
@@ -109,14 +170,16 @@ namespace JC.BuildingColors
         public void RefreshTargets()
         {
             if(!isActiveAndEnabled)return;
-            RebuildVariants();appliedProfileHash=ProfileHash();refreshRequested=false;RefreshBindings();
+            registrySearched=false;RebuildVariants();appliedProfileHash=ProfileHash();refreshRequested=false;RefreshBindings();
         }
         void RefreshBindings()
         {
+            // JC | 2026-11-18 | 여러 종류/바리에이션도 한 번 만든 씬 인덱스를 공유합니다.
+            BgColorSceneIndex.Invalidate(gameObject.scene);
             InvalidateTargets();var children=Children.Where(c=>c.isActiveAndEnabled).ToArray();
             // Release every old owner first so changing a seed cannot restore a stale colour over a new owner.
             foreach(var c in children)c.ResetTargets();
-            foreach(var c in children){c.Rebind();c.ApplyNow();}
+            foreach(var c in children){c.RebindCached();c.ApplyNow();}
         }
         int ProfileHash()
         {

@@ -1,8 +1,32 @@
 using UnityEngine;
 
+// JC | 2026-11-18 | 증폭기 몸체만 부드러운 도장 표면으로 조절합니다. 구체 VFX와 다른 유닛은 기존 표현을 유지합니다.
+[System.Serializable]
+public sealed class JcAmplifierSurfaceSettings
+{
+    [InspectorName("증폭기 표면 보정 사용")] public bool enabled = true;
+    [InspectorName("몸체 색상")] public Color body = new Color(.84f,.86f,.89f,1);
+    [InspectorName("받침 색상")] public Color trim = new Color(.48f,.51f,.58f,1);
+    [InspectorName("포인트 색상")] public Color accent = new Color(.48f,.32f,.62f,1);
+    [Range(0,1), InspectorName("매끄러움"), Tooltip("낮추면 넓고 부드러운 반사가 됩니다. 기존 몸체의 노멀은 유지합니다.")]
+    public float smoothness = .3f;
+    [Range(0,1), InspectorName("반사 강도"), Tooltip("실내 조명·IBL의 표면 반사 배율입니다. 다른 캐릭터나 방의 IBL은 바꾸지 않습니다.")]
+    public float reflection = .55f;
+    [Range(0,1), InspectorName("홈 음영 강도"), Tooltip("메시에서 미리 구운 AO입니다. 씬 전체 SSAO와 독립적이며 추가 실시간 AO 패스를 만들지 않습니다.")]
+    public float occlusion = .55f;
+    // JC | 2026-11-18 | 원본 AI 메시의 울렁이는 명암만 줄이고 정점 위치·삼각형·UV·실루엣은 보존합니다.
+    [Range(0,1), InspectorName("판넬 법선 정리"), Tooltip("0은 원본 법선, 1은 정리된 판넬/곡면 법선입니다. 외곽선의 찌그러짐은 수정하지 않습니다.")]
+    public float normalStrength = .85f;
+}
+
 [System.Serializable]
 public sealed class JcBattleLookSettings
 {
+    // JC | 2026-11-18 | 시간대 프로필과 독립된 캐릭터 색 보정입니다. 실제광/IBL 계산 후에도 적용하며 0 EV는 기존 밝기입니다.
+    public bool colorAdjustmentEnabled = true;
+    [Range(-2,2)] public float brightnessEv;
+    // JC | 2026-11-18 | 기존 초안/프로필 저장 흐름으로 증폭기 설정도 함께 직렬화합니다.
+    public JcAmplifierSurfaceSettings amplifierSurface = new JcAmplifierSurfaceSettings();
     [Range(0,2), Tooltip("캐릭터·전투 오브젝트 채도입니다. 1은 원색, 1.15는 색을 약간 더 선명하게 합니다.")]
     public float saturation = 1.15f;
     [Tooltip("캐릭터에 비추는 가상 주광 방향입니다. 배경 조명 강도와 독립적이며 월드 공간의 빛이 오는 방향입니다.")]
@@ -42,6 +66,14 @@ public sealed class JcBattleLookSettings
 [CreateAssetMenu(menuName="JC/Battle/Character Look Profile")]
 public sealed class JcBattleLookProfile : ScriptableObject
 {
+    // JC | 2026-11-18 | 메시 참조와 베이크 데이터는 공유 프로필이 소유하고 원본 FBX·재질에는 쓰지 않습니다.
+    [Tooltip("증폭기 몸체의 원본 메시입니다. 유닛 ID와 이 메시가 모두 맞는 렌더러만 보정합니다.")]
+    public Mesh amplifierMesh;
+    // JC | 2026-11-18 | 원본은 Read/Write를 켜지 않습니다. 읽기 가능한 참조 사본의 법선 전용 블렌드셰이프에서 보정량을 얻습니다.
+    [Tooltip("원본과 정점·UV·삼각형이 같은 읽기 가능한 참조 메시입니다. JC_PanelNormals에는 정점 이동 없이 법선 변화량만 들어 있습니다.")]
+    public Mesh amplifierShadingMesh;
+    [Tooltip("R: 받침, G: 포인트, B: AO 가시도. 원본 UV로 베이크한 선형 데이터입니다.")]
+    public Texture2D amplifierMask;
     [Tooltip("저장된 캐릭터 명암·채도·비인간형 몰딩 설정입니다." )]
     public JcBattleLookSettings settings = new JcBattleLookSettings();
 }

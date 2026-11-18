@@ -137,7 +137,8 @@ namespace JC.EnvironmentDetail
 
         void OnDestroy()
         {
-            if(visibility) { visibility.ForceLOD(0); Destroy(visibility); }
+            // JC | 2026-11-17 | 폐기하는 LOD는 전환할 필요가 없습니다. 씬 종료 시 비활성 그룹 강제 전환 경고를 막습니다.
+            if(visibility) Destroy(visibility);
             foreach(var r in pieces) if(r) { r.enabled=false; Destroy(r.gameObject); }
             foreach(var m in meshes) if(m) Destroy(m);
         }

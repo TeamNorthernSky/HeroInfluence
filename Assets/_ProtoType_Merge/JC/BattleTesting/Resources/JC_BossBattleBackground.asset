@@ -23,10 +23,10 @@ MonoBehaviour:
     type: 2}
   environmentProfile: {fileID: 11400000, guid: 1c3257bfd296497cb38a1af53b8225ce, type: 2}
   interiorPipeline: {fileID: 11400000, guid: fc8096095f9dcd04489a47957ed8b0f5, type: 2}
-  surfaceProfile: {fileID: 11400000, guid: 2a4334a981404e1ba0255eb40b5fb82d, type: 2}
+  surfaceProfile: {fileID: 7420070306768340925, guid: 6cc3ba2484a99fb41aa8a858328496b7,
+    type: 2}
   citySun: {fileID: 7951856378101774353, guid: 9645966940bcb644dabd04f707a31404, type: 3}
   cityTimeProfile: {fileID: 11400000, guid: 8ff1ab1614516ff46829124c1192f1eb, type: 2}
-  citySkyProfile: {fileID: 11400000, guid: 90d2ff8aa3dc50245bd0a489d973363a, type: 2}
   cityShadowDistance: 300
   cityLodLibrary: {fileID: 11400000, guid: d135c8f9569cb824bbdf65e8d8958d45, type: 2}
   cityLod:

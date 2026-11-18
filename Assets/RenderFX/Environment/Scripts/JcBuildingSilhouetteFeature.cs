@@ -94,6 +94,8 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
     {
         // JC | 2026-11-05 | 일반/오버레이 카메라에는 새 패스를 추가하지 않고 이전 카메라의 투과색도 사용하지 않습니다.
         Shader.SetGlobalFloat("_JcBossGlassColorReady", 0);
+        // JC | 2026-11-17 | 탐사/오버레이 카메라의 수면은 기존 일반 투명 렌더를 사용합니다.
+        Shader.SetGlobalFloat("_JcBossWaterCaptured", 0);
         if (renderingData.cameraData.renderType != CameraRenderType.Overlay &&
             JC.BattleTesting.JcBossBackgroundMaterials.UsesRefraction(renderingData.cameraData.camera)) renderer.EnqueuePass(bossGlass);
         Shader.SetGlobalFloat("_JcEventGhostActive", 0);
@@ -110,24 +112,32 @@ public sealed partial class JcBuildingSilhouetteFeature : ScriptableRendererFeat
             eventOcclusion.Setup(eventController, renderingData.cameraData.camera);
             renderer.EnqueuePass(eventOcclusion);
         }
-        bool hasTuning = JcBuildingSilhouetteController.TryGetSettings(renderingData.cameraData.camera, out var tuning);
-        maskPass.Setup(hasTuning, tuning, renderingData.cameraData.camera);
-        compositePass.Setup(silhouetteMaterial, compositeIndex);
-        shadowRemovalPass.Setup(silhouetteMaterial);
-        renderer.EnqueuePass(maskPass);
         var scene = type == CameraType.SceneView ? UnityEngine.SceneManagement.SceneManager.GetActiveScene()
             : renderingData.cameraData.camera.gameObject.scene;
         bool known = PartyOcclusionFadeController.TryHasFadedObjects(scene, out bool hasFaded);
-        var party = hasFaded ? PartyOcclusionFadeController.FadedParty(scene) : null;
-        if (partyShadows.Prepare(party, ref renderingData))
-            renderer.EnqueuePass(partyShadows);
-        if (!known || hasFaded)
-            renderer.EnqueuePass(shadowRemovalPass);
-        float reduction = JC.Environment.JcDayNightController.PartyWallReduction(scene);
-        maskPass.party = reduction > 0 ? party : null;
-        maskPass.partyMaterial = silhouetteMaterial;
-        maskPass.partyReduction = reduction;
-        renderer.EnqueuePass(compositePass);
+        // JC | 2026-11-17 | 보스전에는 탐사 가림 컨트롤러가 없어도 전체 불투명 장면을 재렌더하던 비용이 있었습니다.
+        // 등록된 보스 무대에 실제 투명화 대상이 없을 때만 마스크·그림자 제거·합성을 생략합니다.
+        // 탐사/은행의 기존 경로와 유리·수면, 아래 튜토리얼/호버 강조는 그대로 유지합니다.
+        bool bossWithoutFade = !hasFaded &&
+            JC.BattleTesting.JcIndoorEnvironment.TryGetCellPreset(scene, out bool isBoss) && isBoss;
+        if (!bossWithoutFade)
+        {
+            bool hasTuning = JcBuildingSilhouetteController.TryGetSettings(renderingData.cameraData.camera, out var tuning);
+            maskPass.Setup(hasTuning, tuning, renderingData.cameraData.camera);
+            compositePass.Setup(silhouetteMaterial, compositeIndex);
+            shadowRemovalPass.Setup(silhouetteMaterial);
+            renderer.EnqueuePass(maskPass);
+            var party = hasFaded ? PartyOcclusionFadeController.FadedParty(scene) : null;
+            if (partyShadows.Prepare(party, ref renderingData))
+                renderer.EnqueuePass(partyShadows);
+            if (!known || hasFaded)
+                renderer.EnqueuePass(shadowRemovalPass);
+            float reduction = JC.Environment.JcDayNightController.PartyWallReduction(scene);
+            maskPass.party = reduction > 0 ? party : null;
+            maskPass.partyMaterial = silhouetteMaterial;
+            maskPass.partyReduction = reduction;
+            renderer.EnqueuePass(compositePass);
+        }
         // 튜토리얼 안내가 있으면 일반 호버보다 우선한다. 외곽선 합성은 같은 패스를 사용한다.
         bool tutorial = tutorialOwner != null && tutorialTarget != null && tutorialTarget.gameObject.scene == scene;
         bool hover = hoverOwner != null && hoverTarget != null && hoverTarget.gameObject.scene == scene;

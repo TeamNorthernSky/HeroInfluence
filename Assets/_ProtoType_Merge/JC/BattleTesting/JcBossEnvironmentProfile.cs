@@ -16,6 +16,18 @@ namespace JC.BattleTesting
         // JC | 2026-11-12 | 외부 환경 차단과 새 실내 전용 IBL의 역할을 구분합니다.
         [InspectorName("월드 조명 차단"), Tooltip("외부 태양광·환경광·환경 반사·자체 밝기 보정을 차단합니다. 창문광·추가 라이트와 켜진 실내 전용 IBL은 받습니다.")]
         public bool isolateInterior = true;
+        // JC | 2026-11-18 | 기존 야간 저장값은 유지하면서 네 시간대별 보스 응답으로 확장합니다. 공통 캐릭터 색상·실제 광량과 독립적입니다.
+        [Header("시간대별 · 보스 몸체 강조")]
+        [UnityEngine.Serialization.FormerlySerializedAs("nightBossContrastEnabled")]
+        [InspectorName("보스 몸체 강조 사용")] public bool bossEmphasisEnabled;
+        [Range(0,.6f), InspectorName("보스 강조 대비"), Tooltip("0은 원래 명암입니다. 값을 올리면 율리아·증폭기 몸체의 어두운 면을 더 낮춥니다. 밝은 면과 기존 광원은 유지합니다.")]
+        [UnityEngine.Serialization.FormerlySerializedAs("nightBossContrast")] public float bossContrast = .25f;
+        [Range(.05f,1), InspectorName("암부 적용 범위"), Tooltip("실제 조명 계산 후 선형 밝기 기준입니다. 높일수록 중간 밝기까지 보정합니다. 공통 채도·밝기 보정 이전에 적용됩니다.")]
+        [UnityEngine.Serialization.FormerlySerializedAs("nightBossContrastPivot")] public float bossContrastPivot = .18f;
+        [Range(0,3), InspectorName("강조 스팟 수광 배율"), Tooltip("1은 기존 수광, 0은 강조 스팟의 기여만 제거합니다. 율리아·증폭기 몸체에만 적용하며 다른 광원·IBL·배경의 수광은 유지합니다.")]
+        public float bossSpotReception = 1;
+        [Range(0,3), InspectorName("강조 스팟 반사광 배율"), Tooltip("강조 스팟의 정반사 광택만 추가로 조절합니다. 0에서도 확산광은 유지합니다. 최종 정반사는 수광 배율 × 반사광 배율입니다.")]
+        public float bossSpotReflection = 1;
         [InspectorName("창문 투사광"), Tooltip("실제 창문 메시의 크기와 위치를 사용합니다. 창문광·추가광·실내 IBL을 모두 끄면 실내는 검게 됩니다.")]
         public List<WindowLight> windows = new List<WindowLight>();
 
@@ -31,7 +43,8 @@ namespace JC.BattleTesting
             [InspectorName("좌우 방향"), Range(-60,60), Tooltip("창 안쪽 정면 방향에서 좌우로 회전합니다.")] public float yaw;
             [InspectorName("창밖 광원 거리"), Min(1), Tooltip("창문 중심에서 투사 광원까지의 거리입니다. 클수록 빛이 평행하게 들어옵니다.")] public float standOff = 12;
             [InspectorName("도달 거리"), Min(1), Tooltip("광원에서 빛이 도달하는 월드 거리입니다.")] public float range = 48;
-            [InspectorName("가장자리 부드러움"), Range(.001f,.2f), Tooltip("창문 마스크 가장자리의 흐림 비율입니다.")] public float softness = .025f;
+            // JC | 2026-11-17 | 창 경계 안팎으로 퍼지는 폭이며 큰 값일수록 인접 창문광이 완만하게 이어집니다.
+            [InspectorName("가장자리 부드러움"), Range(.001f,.2f), Tooltip("창문 투사 마스크가 경계 안팎으로 번지는 폭입니다. 큰 값은 창 사이의 어두운 띠를 부드럽게 풀어 줍니다.")] public float softness = .16f;
             [InspectorName("그림자"), Tooltip("창틀과 캐릭터 등의 실제 그림자를 사용합니다. 현재 품질의 추가광 그림자 설정을 따릅니다.")] public LightShadows shadows = LightShadows.Soft;
             [InspectorName("그림자 강도"), Range(0,1), Tooltip("이 창문광의 그림자 강도입니다.")] public float shadowStrength = 1;
         }
@@ -62,18 +75,22 @@ namespace JC.BattleTesting
         [InspectorName("색 혼합량"), Range(0,.3f)] public float battlePulseMix = .22f;
         [InspectorName("왕복 시간 · 실제 초"), Min(1.2f)] public float battlePulseSeconds = 1.4f;
         [InspectorName("최소 시작 간격 · 실제 초"), Min(4)] public float battlePulseInterval = 4;
-        [Header("보스 무대 전용 셰이딩")]
-        [Tooltip("지정한 무대 렌더러 슬롯에만 재질 복제본을 적용합니다. 원본 재질·캐릭터·다른 전투에는 적용하지 않습니다.")]
-        [InspectorName("무대 전용 재질 목록")] public List<MaterialSlot> materials = new List<MaterialSlot>();
+        // JC | 2026-11-18 | 재질 교체 목록은 공통 JcBossSurfaceProfile로 이동하여 시간대 조명에서 분리합니다.
 
         public enum LocalLightType { Point, Spot }
+        // JC | 2026-11-17 | 보스 전용 URP의 세 해상도 등급을 프로필에 저장합니다. 기존 광원은 중간 등급을 유지합니다.
+        public enum LocalShadowQuality { Low, Medium, High }
 
         [Serializable]
         public sealed class LocalLight
         {
             // JC | 2026-11-09 | 임시 연출 대상 광원만 색 변화/보스 추적에 참여하며 저장된 기본색은 보존합니다.
             [InspectorName("전투 색 변화 참여")] public bool battlePulse;
-            [InspectorName("보스 몸체 조준"), Tooltip("위치는 유지하고 살아 있는 율리아 몸체를 향해 스폿 방향만 맞춥니다.")] public bool aimAtBoss;
+            // JC | 2026-11-18 | 정면 배치의 X는 실제 몸통 중심에 맞추고 높이와 Z는 저장 위치로 조절합니다.
+            [InspectorName("보스 정면 · 몸체 조준"), Tooltip("플레이 중 율리아 몸통 중심과 월드 X를 자동으로 맞춥니다. 높이와 Z는 저장 위치를 유지하므로 Z를 율리아보다 작은 쪽에 두면 -Z 정면에서 비춥니다. 회전은 몸통 중심을 향해 자동 계산합니다.")] public bool aimAtBoss;
+            // JC | 2026-11-18 | 수광은 유지하고 이 조명의 그림자에서만 외곽 구조물을 제외합니다. 다른 광원/메시의 그림자 스위치는 변경하지 않습니다.
+            [InspectorName("외곽 구조물 그림자 제외"), Tooltip("이 조명에 한해 외곽 기둥·상하단 벽·창호·몰딩의 그림자를 제외합니다. 캐릭터·증폭기·책상 그림자와 구조물 자체의 조명은 유지합니다.")]
+            public bool excludeExteriorShadows;
             // JC | 2026-11-09 | 은행과 같은 조명 측 전용 설정이며 기본값은 꺼짐입니다.
             [InspectorName("플레이어 4종 후면 보조광"), Tooltip("일반 표면 대신 플레이어 4종의 뒷면만 비춥니다. 실제 Light 그림자는 만들지 않습니다.")] public bool playerBackFill;
             [Tooltip("하위 라이트 오브젝트 이름입니다.")] [InspectorName("이름")] public string label = "추가 조명";
@@ -90,6 +107,8 @@ namespace JC.BattleTesting
             [Range(0, 1), Tooltip("이 조명의 그림자 불투명도입니다.")] [InspectorName("그림자 강도")] public float shadowStrength = 1;
             [Range(0, 2), Tooltip("그림자 깊이 오차 보정입니다.")] [InspectorName("그림자 깊이 보정")] public float shadowBias = .05f;
             [Range(0, 3), Tooltip("그림자 표면 오차 보정입니다.")] [InspectorName("그림자 표면 보정")] public float shadowNormalBias = .4f;
+            [InspectorName("그림자 해상도 등급"), Tooltip("보스 전용 URP 기준 낮음 128 / 중간 256 / 높음 1024입니다.")]
+            public LocalShadowQuality shadowQuality = LocalShadowQuality.Medium;
             [Tooltip("이 조명이 영향을 주는 레이어입니다.")] [InspectorName("영향 레이어")] public LayerMask cullingMask = -1;
         }
 
