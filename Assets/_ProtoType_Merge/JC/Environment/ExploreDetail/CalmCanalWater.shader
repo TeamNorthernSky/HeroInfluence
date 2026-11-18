@@ -27,17 +27,7 @@ Shader "JC/Environment/Calm Canal Water"
  }
  SubShader {
   Tags {"RenderPipeline"="UniversalPipeline" "RenderType"="Transparent" "Queue"="Transparent"}
-  Pass {
-   Tags {"LightMode"="UniversalForward"}
-   ZWrite Off Cull Back
-   Blend SrcAlpha OneMinusSrcAlpha
-   HLSLPROGRAM
-   #pragma target 3.5
-   #pragma vertex vert
-   #pragma fragment frag
-   #pragma multi_compile_fog
-   #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-   #pragma multi_compile_fragment _ _SHADOWS_SOFT
+  HLSLINCLUDE
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
    #include "../CloudShadows/JcCloudShadowCommon.hlsl"
@@ -48,6 +38,8 @@ Shader "JC/Environment/Calm Canal Water"
     float _UseWaterTime,_WaterTime;float4 _Flow,_Reflection,_Normals;float _PlanarAvailable;float4x4 _PlanarVP;float _FollowCanal;float4 _FlowMapBounds;
    CBUFFER_END
    float _JcWaterReflectionPass;
+   // JC | 2026-11-17 | 보스 카메라가 선행 렌더한 물은 일반 투명 패스에서 중복 합성하지 않습니다.
+   float _JcBossWaterCaptured;
    TEXTURE2D(_PlanarReflection);SAMPLER(sampler_PlanarReflection);
    TEXTURE2D(_NormalBroad);SAMPLER(sampler_NormalBroad);
    TEXTURE2D(_NormalDetail);SAMPLER(sampler_NormalDetail);
@@ -236,6 +228,36 @@ Shader "JC/Environment/Calm Canal Water"
     float alpha=1-(1-saturate(_Transmission.x))*exp(-thickness*max(0,_Transmission.y));
     return half4(MixFog(JcApplyCloud(color,i.world),i.fog),alpha);
    }
+   half4 fragForward(V i):SV_Target { clip(.5-_JcBossWaterCaptured); return frag(i); }
+  ENDHLSL
+  // JC | 2026-11-17 | 같은 수면 계산을 공유하고 보스 유리 캡처 패스만 별도로 선택합니다.
+  Pass {
+   Name "ForwardWater"
+   Tags {"LightMode"="UniversalForward"}
+   ZWrite Off Cull Back
+   Blend SrcAlpha OneMinusSrcAlpha
+   HLSLPROGRAM
+   #pragma target 3.5
+   #pragma vertex vert
+   #pragma fragment fragForward
+   #pragma multi_compile_fog
+   #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+   #pragma multi_compile_fragment _ _SHADOWS_SOFT
+   ENDHLSL
+  }
+  // JC | 2026-11-17 | 같은 수면 계산을 공유하고 보스 유리 캡처 패스만 별도로 선택합니다.
+  Pass {
+   Name "BossBackgroundWater"
+   Tags {"LightMode"="JcBossWater"}
+   ZWrite Off Cull Back
+   Blend SrcAlpha OneMinusSrcAlpha
+   HLSLPROGRAM
+   #pragma target 3.5
+   #pragma vertex vert
+   #pragma fragment frag
+   #pragma multi_compile_fog
+   #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+   #pragma multi_compile_fragment _ _SHADOWS_SOFT
    ENDHLSL
   }
  }

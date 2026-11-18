@@ -35,9 +35,18 @@ namespace JC.BattleTesting.Editor
         public override void OnInspectorGUI()
         {
             var test = (JcStandaloneBattleTest)target;
+            // JC | 2026-11-17 | 테스트 시작 시간 변경도 에디트 미리보기의 재질/조명 전체에 즉시 반영합니다.
+            int previousPeriod = test.period;
             serializedObject.Update();
             DrawPropertiesExcluding(serializedObject, "m_Script");
             serializedObject.ApplyModifiedProperties();
+            if (!Application.isPlaying && previousPeriod != test.period)
+            {
+                SessionState.SetInt("JC.IndoorEditPeriod." + test.gameObject.scene.path, test.period);
+                var preview = JcIndoorEditPreview.Control;
+                if (preview && preview.gameObject.scene == test.gameObject.scene)
+                    JcIndoorEditPreview.SelectPeriod(preview, test.period);
+            }
             if (!test.Draft) { EditorGUILayout.HelpBox("시작 프로필이 필요합니다.", MessageType.Error); return; }
             var values = new SerializedObject(test.Draft);
             values.Update(); DrawPropertiesExcluding(values, "m_Script", "allies"); values.ApplyModifiedProperties();

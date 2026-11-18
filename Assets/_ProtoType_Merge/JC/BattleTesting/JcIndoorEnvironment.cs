@@ -82,7 +82,8 @@ namespace JC.BattleTesting
                 // JC | 2026-11-17 | 하위 오브젝트를 직접 선택해도 유리·표면 조절 및 프로필 저장 인스펙터를 표시합니다.
                 BossMaterials.hideFlags = HideFlags.None;
                 BossMaterials.ContactShading = Contact;
-                BossMaterials.Initialize(stage,period?.glass ? period.glass : boss.glassProfile,camera,period?.surfaces ? period.surfaces : boss.surfaceProfile);
+                // JC | 2026-11-18 | 진입 시에도 시간대별 복제 표면 대신 단일 공통 원본을 사용합니다.
+                BossMaterials.Initialize(stage,period?.glass ? period.glass : boss.glassProfile,camera,PeriodProfiles ? PeriodProfiles.commonBossSurfaces : boss.surfaceProfile);
                 Boss = Add<JcBossEnvironment>("JC_Lighting"); Boss.Initialize(period?.bossLighting ? period.bossLighting : boss.environmentProfile,stage.transform);
                 BossMaterials.Environment = Boss; Boss.SurfaceController = BossMaterials; BossMaterials.ApplySurfaces();
             }
@@ -128,6 +129,22 @@ namespace JC.BattleTesting
                 return item.Boss && item.Boss.Isolated;
             }
             return JcBossEnvironment.UsesLocalLighting(renderer);
+        }
+        // JC | 2026-11-18 | 같은 씬의 현재 시간대 초안만 조회합니다. x=대비 y=암부범위 z=강조광 수광 w=정반사. 아군·다른 적·은행에는 중립값을 돌립니다.
+        public static Vector4 BossSurfaceResponse(Renderer renderer)
+        {
+            var neutral=new Vector4(0,.18f,1,1);
+            if(!renderer) return neutral;
+            var unit=renderer.GetComponentInParent<BattleCharactor>();
+            if(!unit || unit.IsPlayer || (unit.TemplateIndex!="40001" && unit.TemplateIndex!="40002" && unit.TemplateIndex!="40003")) return neutral;
+            foreach(var item in instances)
+            {
+                if(!item || !item.isActiveAndEnabled || item.gameObject.scene!=renderer.gameObject.scene || SceneManager.GetActiveScene()!=item.gameObject.scene || !item.Boss || !item.Boss.Isolated) continue;
+                var draft=item.Boss.Draft;
+                if(!draft || !draft.bossEmphasisEnabled || draft.characterLighting==JcIndoorEnvironmentProfile.CharacterLighting.Soft) return neutral;
+                return new Vector4(Mathf.Clamp(draft.bossContrast,0,.6f),Mathf.Clamp(draft.bossContrastPivot,.05f,1),Mathf.Clamp(draft.bossSpotReception,0,3),Mathf.Clamp(draft.bossSpotReflection,0,3));
+            }
+            return neutral;
         }
         void LateUpdate()
         {

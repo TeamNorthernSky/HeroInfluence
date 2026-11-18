@@ -19,12 +19,13 @@ namespace JC.BattleTesting
             periodClock.SegmentPair(JC.Environment.JcDayNightController.CurrentHours,out int index,out _,out _);
             return index;
         }
-        public IEnumerable<(Object source,Object draft)> DraftPairs()
+        // JC | 2026-11-18 | 전체 초안 백업에는 공통 표면을 포함하고 시간대 저장/재로드에서는 제외합니다.
+        public IEnumerable<(Object source,Object draft)> DraftPairs(bool includeCommon = true)
         {
             if (Source && Draft) yield return (Source,Draft);
             if (BossMaterials) {
                 if(BossMaterials.GlassProfile && BossMaterials.GlassDraft) yield return (BossMaterials.GlassProfile,BossMaterials.GlassDraft);
-                if(BossMaterials.SurfaceSource && BossMaterials.SurfaceDraft) yield return (BossMaterials.SurfaceSource,BossMaterials.SurfaceDraft);
+                if(includeCommon && BossMaterials.SurfaceSource && BossMaterials.SurfaceDraft) yield return (BossMaterials.SurfaceSource,BossMaterials.SurfaceDraft);
             }
             if(BankMaterials && BankMaterials.Source && BankMaterials.Draft) yield return (BankMaterials.Source,BankMaterials.Draft);
             if(Toon && Toon.Source && Toon.Draft) yield return (Toon.Source,Toon.Draft);
@@ -48,6 +49,16 @@ namespace JC.BattleTesting
                 } else CopyDraft(pair.draft,snapshot);
             }
         }
+        // JC | 2026-11-17 | 테스트 버튼/원경 버튼/실내 인스펙터가 같은 씬의 전체 실내 프로필을 즉시 선택합니다.
+        // 자동 시간 추적을 꺼 둔 초안도 명시 선택에는 응답하며 다른 씬과 저장 프로필은 수정하지 않습니다.
+        public static void SelectScenePeriod(UnityEngine.SceneManagement.Scene scene, int index)
+        {
+            if (index < 0 || index > 3) return;
+            foreach (var item in instances)
+                if (item && item.initialized && item.gameObject.scene == scene) item.SelectPeriod(index);
+            var test = JcStandaloneBattleTest.ForScene(scene);
+            if (Application.isPlaying && test) test.period = index;
+        }
         public void SelectPeriod(int index,bool followTime=false)
         {
             if(index<0 || index>3) return;
@@ -57,7 +68,8 @@ namespace JC.BattleTesting
             RememberDrafts(); PeriodIndex=index;
             if(Boss) Boss.SelectProfile(period.bossLighting);
             if(Bank) Bank.SelectProfile(period.bankLighting);
-            if(BossMaterials) { BossMaterials.SelectGlassProfile(period.glass); BossMaterials.SelectSurfaceProfile(period.surfaces); }
+            // JC | 2026-11-18 | 공통 표면 초안은 시간대 전환으로 재초기화하지 않습니다. 유리만 전환합니다.
+            if(BossMaterials) BossMaterials.SelectGlassProfile(period.glass);
             if(BankMaterials) BankMaterials.SelectProfile(period.bankMaterials);
             if(Toon) Toon.SelectProfile(period.toon);
             if(Contact) Contact.SelectProfile(period.contact);

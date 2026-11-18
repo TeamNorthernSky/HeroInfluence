@@ -28,6 +28,15 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
 
     private RectTransform minimapRect;
     private Plane groundPlane;
+    // JC | 2026-11-18 | DH의 기존 참조/표시 계약을 유지합니다. 없는 로더의 전씬 검색은 초당 한 번,
+    // 선의 위치/색상 갱신은 실제 표시 결과가 바뀔 때만 수행해 Canvas 재빌드를 줄입니다.
+    private float nextReferenceSearch;
+    private bool hasDrawState;
+    private Vector2 lastCenter, lastBox;
+    private Rect lastRect;
+    private Color lastColor;
+    private float lastThickness;
+    private bool lastClamp;
 
     private void Awake()
     {
@@ -37,10 +46,17 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
 
     private void OnEnable()
     {
+        nextReferenceSearch = 0; hasDrawState = false;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         ResolveReferences();
         EnsureLines();
         Refresh();
     }
+
+    // JC | 2026-11-18 | 추가 로드/재진입에서 지연 없이 참조를 다시 찾습니다.
+    private void OnDisable() => UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    { nextReferenceSearch = 0; hasDrawState = false; }
 
     private void LateUpdate()
     {
@@ -71,6 +87,10 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
 
         Rect rect = minimapRect.rect;
         Vector2 center = WorldToMinimapPosition(cameraGroundCenter, viewOrigin, gridSize, rect);
+        if (hasDrawState && center == lastCenter && rect == lastRect && lastBox == fixedBoxSizeNormalized &&
+            lastColor == lineColor && lastThickness == lineThickness && lastClamp == clampToMinimap) return;
+        hasDrawState = true; lastCenter = center; lastRect = rect; lastBox = fixedBoxSizeNormalized;
+        lastColor = lineColor; lastThickness = lineThickness; lastClamp = clampToMinimap;
         SetFixedBoxCorners(center, rect);
         ApplyLines();
     }
@@ -172,6 +192,7 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
             if (lineImages[i] != null)
                 continue;
 
+            hasDrawState = false;
             GameObject lineObject = new GameObject($"CameraViewportLine_{i + 1}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             lineObject.transform.SetParent(minimapRect, false);
 
@@ -191,6 +212,7 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
 
     private void SetLinesVisible(bool visible)
     {
+        if (!visible) hasDrawState = false;
         for (int i = 0; i < lineImages.Length; i++)
         {
             if (lineImages[i] != null)
@@ -285,10 +307,12 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
         if (targetCamera == null)
             targetCamera = Camera.main;
 
-        if (levelLoader == null)
+        bool search = Time.unscaledTime >= nextReferenceSearch;
+        if (search) nextReferenceSearch = Time.unscaledTime + 1f;
+        if (search && levelLoader == null)
             levelLoader = FindFirstObjectByType<LevelLoader>();
 
-        if (levelZoneLayoutLoader == null)
+        if (search && levelZoneLayoutLoader == null)
             levelZoneLayoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
 
         if (levelZoneLayoutData == null && levelZoneLayoutLoader != null)
@@ -303,10 +327,10 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
         if (gridManager == null && levelLoader != null)
             gridManager = levelLoader.GridManager;
 
-        if (gridManager == null)
+        if (search && gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
 
-        if (partyRegistry == null)
+        if (search && partyRegistry == null)
             partyRegistry = FindFirstObjectByType<PartyRegistry>();
     }
 

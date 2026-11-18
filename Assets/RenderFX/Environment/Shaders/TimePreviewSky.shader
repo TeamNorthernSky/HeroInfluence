@@ -42,14 +42,45 @@ Shader "JC/Environment/Time Preview Sky"
    V vert(float4 v:POSITION){V o;o.p=UnityObjectToClipPos(v);o.d=v.xyz;return o;}
    float3 rotateY(float3 v,float angle){float sn,cs;sincos(radians(angle),sn,cs);return float3(cs*v.x-sn*v.z,v.y,sn*v.x+cs*v.z);}
    float disk(float3 ray,float3 direction,float radius){float c=dot(ray,normalize(direction));return smoothstep(cos(radians(radius*1.15)),cos(radians(radius*.85)),c);}
+   // JC | 2026-11-18 | 공유 HDR 구름 3장에서 분석한 13개 덩어리 중심입니다. 원본 이미지/색/알파는 그대로 읽습니다.
+   // 각 중심 주위의 각크기만 약 1/10로 축소하고 반복하지 않아 구름 개수와 원래 공전 위치를 유지합니다.
+   // w는 원본 구름 경계에 여유를 포함한 축소 탄젠트 반경이며, 영역 밖은 빈 하늘로 남깁니다.
+   float4 bossCloudRay(float3 ray){
+    const float4 patches[13]={
+     float4(-0.952917955,0.223512459,-0.204913524,0.045044945),
+     float4(0.943584409,0.252034579,0.214772053,0.034581392),
+     float4(0.445662419,0.197602896,0.873119753,0.037762532),
+     float4(0.596686157,0.201209658,-0.776839947,0.032616990),
+     float4(-0.366617012,0.213187425,-0.905617518,0.032776917),
+     float4(-0.529852563,0.238996327,0.813718021,0.033479115),
+     float4(0.211371799,0.519138039,-0.828141086,0.013955103),
+     float4(-0.137733151,0.516376637,0.845212842,0.013344853),
+     float4(0.083409261,0.787881341,-0.610152348,0.022241859),
+     float4(0.232925356,0.791294653,0.565330479,0.019888844),
+     float4(0.608771269,0.793037646,-0.022109573,0.019629339),
+     float4(-0.452796378,0.790183314,0.413020302,0.021934305),
+     float4(-0.536222988,0.794479536,-0.285073981,0.019756523)
+    };
+    float nearest=-2;float4 patch=patches[0];
+    [unroll] for(int index=0;index<13;index++){
+     float similarity=dot(ray,patches[index].xyz);
+     if(similarity>nearest){nearest=similarity;patch=patches[index];}
+    }
+    float3 tangent=ray/max(nearest,.001)-patch.xyz;
+    if(nearest<=0 || length(tangent)>patch.w)return float4(0,1,0,0);
+    return float4(normalize(patch.xyz+tangent*10),1);
+   }
    half4 frag(V i):SV_Target {
     float3 ray=normalize(i.d),baseDir=rotateY(ray,-_Rotation);
     // JC | 2026-11-17 | 보스의 낮은 구름을 아래로 내리되 천정 쪽 구름과 탐사 표시 방향은 유지합니다.
     float cloudDrop=_JcBossHorizonBlend*.22*(1-smoothstep(.2,.8,ray.y));
     float3 cloudBase=normalize(float3(baseDir.x,baseDir.y+cloudDrop,baseDir.z));
     float3 cloudDir=rotateY(cloudBase,-fmod(_CloudOffset+_JcSkyCloudTime*_CloudSpeed,360));
+    // JC | 2026-11-18 | 탐사 경로는 원본 방향으로 샘플링하고 보스의 구름 레이어만 독립 축소합니다.
+    float4 cloudSample=_JcBossHorizonBlend>.5 ? bossCloudRay(cloudDir) : float4(cloudDir,1);
     float3 bg=texCUBE(_DayBase,baseDir).rgb*_Weights.x*_DayExposure+texCUBE(_DuskBase,baseDir).rgb*_Weights.y+texCUBE(_NightBase,baseDir).rgb*_Weights.z*_NightExposure;
-    float4 cloud=texCUBE(_DayCloud,cloudDir)*_Weights.x+texCUBE(_DuskCloud,cloudDir)*_Weights.y+texCUBE(_NightCloud,cloudDir)*_Weights.z;
+    float4 cloud=0;
+    if(cloudSample.w>0)cloud=texCUBE(_DayCloud,cloudSample.xyz)*_Weights.x+texCUBE(_DuskCloud,cloudSample.xyz)*_Weights.y+texCUBE(_NightCloud,cloudSample.xyz)*_Weights.z;
     // JC | 2026-11-17 | 하늘 윗부분은 원본 그대로 두고 수평선의 지형 실루엣부터 하부 풍경·파도 묘사까지 부드럽게 덮습니다.
     // 낮은 태양/달은 아래 기존 천체 합성을 유지하며 땅/바다 텍스처를 다시 드러내지 않습니다.
     float conceal=_JcBossHorizonBlend*(1-smoothstep(.08,.18,ray.y));

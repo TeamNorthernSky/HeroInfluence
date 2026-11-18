@@ -78,6 +78,17 @@ namespace JC.Environment {
    if(t<.35f)return 1-Mathf.SmoothStep(0,1,t/.35f);
    return t>.65f?Mathf.SmoothStep(0,1,(t-.65f)/.35f):0;
   }
+  // JC | 2026-11-18 | 복원한 천체는 현재 기획의 실제 광원 방위를 따릅니다. 게임 그림자 궤도는 수정하지 않습니다.
+  public void SkyCelestials(double hours,out Vector3 sunDirection,out Vector3 moonDirection) {
+   var key=Evaluate(hours);
+   var direction=-(Quaternion.Euler(key.elevation,key.azimuth+180f,0)*Vector3.forward);
+   float h=Mathf.Repeat((float)(hours%24),24);
+   float dusk=ClockHourForKey(DuskKeyHour),rise=ClockHourForKey(20.5f);
+   float set=ClockHourForKey(5f),dawn=ClockHourForKey(DawnKeyHour);
+   // 교대 중앙은 직접광이 꺼져 있으므로 이 시점에 태양/달을 교체합니다.
+   bool solar=h>=(set+dawn)*.5f && h<(dusk+rise)*.5f;
+   sunDirection=solar?direction:-direction;moonDirection=-sunDirection;
+  }
   float MotionValue(Key key,bool azimuth)=>azimuth?key.azimuth:key.elevation;
  }
 }

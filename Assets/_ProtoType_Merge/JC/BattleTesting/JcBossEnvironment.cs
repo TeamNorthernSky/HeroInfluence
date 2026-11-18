@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal; // JC | 2026-11-17 | 개별 조명의 URP 그림자 등급을 적용합니다.
 using UnityEngine.SceneManagement;
 
 namespace JC.BattleTesting
@@ -96,7 +97,8 @@ namespace JC.BattleTesting
             RenderSettings.reflectionIntensity = baseline.reflection * Mathf.Max(0, Draft.reflectionIntensity);
             }
             // JC | 2026-11-05 | 창문광과 추가광은 동일한 수광 그룹에 묶고 표면 재생성 뒤에도 분리를 유지합니다.
-            ApplyLights(); ApplyWindows(); ApplyMaterials();
+            // JC | 2026-11-18 | 광원별 그림자 그룹은 무대/캐릭터 렌더 레이어에만 적용하며 저장된 조절값은 그대로 사용합니다.
+            ApplyShadowLayers(); ApplyLights(); ApplyWindows(); ApplyMaterials();
             if (SurfaceController) SurfaceController.ApplySurfaces();
             applied = true;
         }
@@ -129,6 +131,16 @@ namespace JC.BattleTesting
                     spec.position, spec.rotation, spec.color, spec.intensity, spec.range, spec.spotAngle, spec.innerSpotRatio,
                     spec.shadows, spec.shadowStrength, spec.shadowBias, spec.shadowNormalBias);
                 ConfigureLocalLight(light, spec.cullingMask);
+                // JC | 2026-11-18 | 보스 조준 스팟만 식별합니다. 수광 배율은 캐릭터 셰이더에서 처리하며 실제 광량/범위와 그림자 수신 그룹은 유지합니다.
+                var lightData=light.GetUniversalAdditionalLightData();
+                lightData.renderingLayers=LocalLightMask | (spec.aimAtBoss && spec.type==JcBossEnvironmentProfile.LocalLightType.Spot && !spec.playerBackFill ? BossSpotMarker : 0u);
+                // JC | 2026-11-18 | 외곽 그림자 제외는 지정한 주광에만 적용합니다. 조명 수광 그룹 및 다른 광원의 그림자는 유지합니다.
+                lightData.customShadowLayers=true;
+                lightData.shadowRenderingLayers=spec.excludeExteriorShadows ? InteriorCasterMask : LocalLightMask;
+                // JC | 2026-11-17 | URP 14는 해상도 등급의 공개 setter가 없어 직렬화 필드만 갱신합니다.
+                // Light.shadowCustomResolution은 이 URP 경로에서 사용하지 않으므로 유효한 0~2 등급을 전달합니다.
+                JsonUtility.FromJsonOverwrite("{\"m_AdditionalLightsShadowResolutionTier\":" +
+                    Mathf.Clamp((int)spec.shadowQuality, 0, 2) + "}", light.GetUniversalAdditionalLightData());
                 if(spec.playerBackFill) JcIndoorLightSettings.ApplyPlayerFill(light,spec.enabled);
             }
         }
@@ -137,8 +149,10 @@ namespace JC.BattleTesting
         void ApplyMaterials()
         {
             RestoreMaterials(); ValidationMessage = string.Empty;
-            if (Draft.materials == null) return;
-            foreach (var spec in Draft.materials)
+            // JC | 2026-11-18 | 공통 표면만 재질 교체를 소유하며 시간대 조명은 재질을 바꾸지 않습니다.
+            var overrides = SurfaceController && SurfaceController.SurfaceDraft ? SurfaceController.SurfaceDraft.materials : null;
+            if (overrides == null) return;
+            foreach (var spec in overrides)
             {
                 if (spec == null || !spec.enabled) continue;
                 var node = string.IsNullOrEmpty(spec.rendererPath) ? Stage : Stage.Find(spec.rendererPath);
@@ -150,6 +164,8 @@ namespace JC.BattleTesting
                 }
                 // JC | 2026-11-17 | 분리한 창틀 재질은 다른 실내 표면의 재질 덮어쓰기로 교체하지 않습니다.
                 if (JcBossSurfaceProfile.IsWindowFrame(target, Stage)) continue;
+                // JC | 2026-11-18 | 공통 슬롯 교체로 유리의 시간대별 재질을 우회하지 않습니다.
+                if (SurfaceController && SurfaceController.IsGlass(target)) continue;
                 if (!originalMaterials.ContainsKey(target)) originalMaterials.Add(target, target.sharedMaterials);
                 var materials = target.sharedMaterials;
                 var copy = new Material(spec.material) { hideFlags = HideFlags.DontSave, name = spec.material.name + " (보스전 전용)" };
@@ -191,6 +207,7 @@ namespace JC.BattleTesting
             foreach (var light in localLights) if (light) light.enabled = false;
             foreach (var light in windowLights) if (light) light.enabled = false;
             RestoreCityLayers();
+            RestoreShadowLayers(); // JC | 2026-11-18 | 보스 전용 그룹이 다음 씬/편집 상태에 남지 않도록 복구합니다.
             RestoreMaterials();
             // JC | 2026-11-05 | 도시의 밝기는 공통 시간대가 소유합니다. 실내 프로필 변경으로 원경을 덮어쓰지 않습니다.
             if(!JcBossCityLighting.IsActive(gameObject.scene))
@@ -205,7 +222,8 @@ namespace JC.BattleTesting
             if (Stage && SurfaceController && SurfaceController.isActiveAndEnabled) SurfaceController.ApplySurfaces();
         }
         void OnEnable() { if (initialized) ApplyDraft(); }
-        void OnDestroy() { UnregisterLocalLighting(); Release(Draft); if (lightRoot) Release(lightRoot.gameObject); }
+        // JC | 2026-11-18 | 종료 순서에 관계없이 렌더 레이어 복구는 반복 호출해도 안전합니다.
+        void OnDestroy() { RestoreShadowLayers(); UnregisterLocalLighting(); Release(Draft); if (lightRoot) Release(lightRoot.gameObject); }
         static void Release(Object value)
         {
             if (!value) return;

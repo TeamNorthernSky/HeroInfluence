@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using JC.Environment;
 using TMPro;
@@ -121,18 +121,30 @@ namespace JC.BattleTesting
                 QualitySettings.renderPipeline = pipeline;
             }
             // JC | 2026-11-17 | 하늘 표시 프로필만 전달하여 기존 보스 조명·반사 계산을 유지합니다.
-            Clock = JcDayNightController.EnsureCity(gameObject.scene, hour, settings.cityTimeProfile, settings.citySkyProfile);
+            Clock = JcDayNightController.EnsureCity(gameObject.scene, hour, settings.cityTimeProfile);
             Clock.Settings.SegmentPair(hour, out int segment, out _, out _); SelectedPeriod = segment;
             RefreshLamps();
         }
 
-        // JC | 2026-11-05 | 프로필의 실제 구간 시각을 읽습니다. GameManager/턴/저장 데이터에는 쓰지 않습니다.
+        // JC | 2026-11-17 | 등록된 원경만 조회해 실내 인스펙터와 전투 테스트 버튼의 시간 선택을 공유합니다.
+        public static bool SelectScenePeriod(Scene scene, int index)
+        {
+            if (index < 0 || index > 3) return false;
+            bool selected = false;
+            foreach (var item in active)
+                if (item && item.initialized && item.gameObject.scene == scene && item.Clock && item.Clock.Settings)
+                { item.SelectPeriod(index); selected = true; }
+            return selected;
+        }
+        // JC | 2026-11-17 | 원경과 실내 재질·유리·조명·IBL·툰·접점 음영을 같은 선택으로 적용합니다.
+        // GameManager/턴/저장 데이터와 원본 프로필에는 쓰지 않습니다.
         public void SelectPeriod(int index)
         {
             if (!Clock || !Clock.Settings || index < 0 || index > 3) return;
             Clock.Settings.EnsureSegments(); SelectedPeriod = index;
             Clock.previewHour = Clock.Settings.segments[index].hour;
             Clock.ApplyHour(Clock.previewHour); RefreshLamps(); RefreshButtons();
+            JcIndoorEnvironment.SelectScenePeriod(gameObject.scene, index);
         }
         void RefreshLamps()
         {
@@ -168,7 +180,7 @@ namespace JC.BattleTesting
             layout.childControlWidth = true; layout.childControlHeight = true;
             // JC | 2026-11-09 | 콘솔에 추가하는 시간대 버튼도 개발자 Noto 및 자동 대체 정책을 사용합니다.
             var font = DebugPanelManager.ResolveDeveloperFont();
-            string[] names = { "아침", "오후", "저녁", "새벽" };
+            string[] names = JcIndoorPeriodProfiles.Names; // JC | 2026-11-18 | 탐사와 같은 연출 구간명입니다.
             for (int i = 0; i < 4; i++)
             {
                 int period = i;

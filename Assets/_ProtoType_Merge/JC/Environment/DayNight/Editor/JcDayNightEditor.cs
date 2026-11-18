@@ -16,7 +16,8 @@ namespace JC.Environment.Editor {
    if(GUILayout.Button("전체 구간 초기화")){Undo.RecordObject(c.Settings,"전체 구간 초기화");c.Settings.ResetAllSegments();EditorUtility.SetDirty(c.Settings);}
    common=EditorGUILayout.Foldout(common,"공통 태양·전환·가독성·창문 설정");
    // JC | 2026-11-04 | 왼쪽 높은 산의 그림자를 별도로 줄이고 기존 조절·명시 저장 경로를 사용합니다.
-   if(common){var so=new SerializedObject(c.Settings);so.Update();foreach(var name in new[]{"continuousSunArc","solarNoonElevation","mountainShadowHeight","leftMountainShadowHeight","transitionSeconds","sunriseHour","sunsetHour","twilightHalfWidth","twilightDurationMultiplier","cloudSpeedMultiplier","disabledUIAlpha","nightObjectAmbientBoost","indoorNightObjectAmbientBoost","windowOnHour","windowOffHour","windowFadeSeconds","windowTint","windowIntensity"})EditorGUILayout.PropertyField(so.FindProperty(name),true);if(so.ApplyModifiedProperties())c.Settings.NotifyChanged();}
+   // JC | 2026-11-18 | 표시 하늘 참조/연출 시각도 기존 초안·명시 저장 방식으로 편집합니다.
+   if(common){var so=new SerializedObject(c.Settings);so.Update();foreach(var name in new[]{"visualSky","visualSkyHours","continuousSunArc","solarNoonElevation","mountainShadowHeight","leftMountainShadowHeight","transitionSeconds","sunriseHour","sunsetHour","twilightHalfWidth","twilightDurationMultiplier","cloudSpeedMultiplier","disabledUIAlpha","nightObjectAmbientBoost","indoorNightObjectAmbientBoost","windowOnHour","windowOffHour","windowFadeSeconds","windowTint","windowIntensity"})EditorGUILayout.PropertyField(so.FindProperty(name),true);if(so.ApplyModifiedProperties())c.Settings.NotifyChanged();}
    if(!Application.isPlaying&&GUILayout.Button("미리보기 복원")){c.preview=false;c.Cancel();}
   }
  }
@@ -29,7 +30,7 @@ namespace JC.Environment.Editor {
    EditorGUILayout.HelpBox("다음 구간까지 실제 시간 간격으로 보간합니다. 조절값은 현재 시각에 즉시 반영됩니다. 종료 전 저장 버튼을 누르세요.",MessageType.Info);
    var so=new SerializedObject(p);so.Update();var item=so.FindProperty("segments").GetArrayElementAtIndex(slot.index);
    string[] fields={"hour","lightColor","lightIntensity","shadowMultiplier","sky","horizon","ground","ambientMultiplier","reflectionTint","reflectionMultiplier","waterMultiplier","partyFillEnabled","characterFill","occludedPartyClarity","npcFillEnabled","npcFill","enemyFillEnabled","enemyFill","screenColorEnabled","screenColorStrength","screenColorFilter","screenSaturation","screenContrast","screenExposure"};
-   string[] labels={"기준 시각","방향광 색상","방향광 강도","그림자 강도 배율","하늘 상부 색상","수평선·안개 색상","지면 방향 색상","물체 환경광 배율","환경 반사 색상","환경 반사 강도 배율","수면 밝기 배율","파티 밝기 보정 사용","파티 보조 밝기","건물 뒤 파티 선명도 (%)","NPC 밝기 보정 사용","NPC 보조 밝기","필드 적 밝기 보정 사용","필드 적 보조 밝기","화면 색보정 사용","색보정 적용 강도","화면 색상 필터","화면 채도","화면 대비","화면 노출"};
+   string[] labels={"기준 시각","방향광 색상","방향광 강도","그림자 강도 배율","환경광 · 하늘 방향 색상","환경광 · 수평선/안개 색상","환경광 · 지면 방향 색상","물체 환경광 배율","환경 반사 색상","환경 반사 강도 배율","수면 밝기 배율","파티 밝기 보정 사용","파티 보조 밝기","건물 뒤 파티 선명도 (%)","NPC 밝기 보정 사용","NPC 보조 밝기","필드 적 밝기 보정 사용","필드 적 보조 밝기","화면 색보정 사용","색보정 적용 강도","화면 색상 필터","화면 채도","화면 대비","화면 노출"};
    for(int i=0;i<fields.Length;i++)EditorGUILayout.PropertyField(item.FindPropertyRelative(fields[i]),new GUIContent(labels[i],item.FindPropertyRelative(fields[i]).tooltip));
    if(so.ApplyModifiedProperties())p.NotifyChanged();
    if(!p.ValidSegmentTimes())EditorGUILayout.HelpBox("구간 1→2→3→4→1이 중복 없이 24시간을 한 번 순환하도록 설정하세요. 유효하지 않은 동안에는 기본 시각 순서를 사용합니다.",MessageType.Error);

@@ -23,9 +23,9 @@ MonoBehaviour:
   characterLighting: 0
   ssaoFeature: {fileID: 0}
   ssaoEnabled: 1
-  ssaoIntensity: 0.86
-  ssaoRadius: 0.9
-  ssaoDirectLightingStrength: 0.407
+  ssaoIntensity: 0.8
+  ssaoRadius: 0.22
+  ssaoDirectLightingStrength: 0.25
   ssaoDownsample: 0
   isolateInterior: 1
   windows:
@@ -265,6 +265,27 @@ MonoBehaviour:
     shadowStrength: 1
     shadowBias: 0.05
     shadowNormalBias: 0.4
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  - battlePulse: 0
+    aimAtBoss: 0
+    playerBackFill: 0
+    label: "\uC544\uAD70 \uC8FC\uAD11 \xB7 \uC2E4\uC81C \uADF8\uB9BC\uC790"
+    enabled: 1
+    type: 1
+    position: {x: -10, y: 19.75, z: -37}
+    rotation: {x: 60, y: 60, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    intensity: 180
+    range: 30
+    spotAngle: 105
+    innerSpotRatio: 0.7
+    shadows: 2
+    shadowStrength: 1
+    shadowBias: 0.015
+    shadowNormalBias: 0.08
+    shadowQuality: 2
     cullingMask:
       serializedVersion: 2
       m_Bits: 4294967295

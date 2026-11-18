@@ -34,6 +34,8 @@ namespace JC.BattleTesting
             foreach (var item in SurfaceDraft.surfaces) if (item != null) item.EnsureColor();
             foreach (var renderer in stageRoot.GetComponentsInChildren<Renderer>(true))
             {
+                // JC | 2026-11-18 | 유리는 전용 시간대 초안만 적용하며 공통 색상/표면 규칙에서는 제외합니다.
+                if (IsGlass(renderer)) continue;
                 var originals = renderer.sharedMaterials;
                 var result = (Material[])originals.Clone(); bool changed = false;
                 for (int slot = 0; slot < originals.Length; slot++)
@@ -67,7 +69,7 @@ namespace JC.BattleTesting
                         copy.SetColor("_SpecColor", Color.Lerp(new Color(.04f,.04f,.04f), copy.GetColor("_BaseColor"), metal));
                         copy.SetFloat("_SurfaceVariation", 0); copy.SetFloat("_FloorTiles", 0);
                     }
-                    // JC | 2026-11-17 | 시간대 프로필의 타일 오프셋을 줄눈 좌표에 전달합니다.
+                    // JC | 2026-11-18 | 공통 표면 프로필의 타일 오프셋을 모든 시간대 줄눈에 전달합니다.
                     copy.SetVector("_TileOffset", new Vector4(SurfaceDraft.tileOffset.x, SurfaceDraft.tileOffset.y, 0, 0));
                     copy.SetFloat("_TileSize", SurfaceDraft.tileSize); copy.SetFloat("_JointWidth", SurfaceDraft.jointWidth);
                     copy.SetFloat("_JointContrast", SurfaceDraft.jointContrast); copy.SetFloat("_JointNormal", SurfaceDraft.jointNormal);
@@ -83,12 +85,7 @@ namespace JC.BattleTesting
             if (Environment) Environment.ResumeMaterialOverrides();
         }
 
-        // JC | 2026-11-17 | 시간대별 표면 설정을 동일 적용기에서 사용합니다.
-        public void SelectSurfaceProfile(JcBossSurfaceProfile profile)
-        {
-            if (!profile || !SurfaceDraft) return;
-            SurfaceSource = profile; JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(profile), SurfaceDraft);
-        }
+        // JC | 2026-11-18 | 공통 표면은 시간대별 선택 없이 하나의 원본에서만 다시 불러옵니다.
         public void ReloadSurfaces()
         {
             if (!SurfaceSource || !SurfaceDraft) return;

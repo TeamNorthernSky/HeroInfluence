@@ -11,11 +11,14 @@ half JcIndoorOcclusion(float3 positionWS, float3 normalWS)
     float4 clip=TransformWorldToHClip(positionWS);
     float2 uv=ComputeScreenPos(clip).xy / clip.w;
     float2 screenRadius=radius*float2(UNITY_MATRIX_P._m00,UNITY_MATRIX_P._m11)*.5/max(.01,clip.w);
-    float2 directions[8]={float2(1,0),float2(-1,0),float2(0,1),float2(0,-1),float2(.707,.707),float2(-.707,.707),float2(.707,-.707),float2(-.707,-.707)};
+    // JC | 2026-11-17 | 같은 거리의 8개 복제 윤곽 대신 반경을 분산한 16개 표본으로 접점만 누적합니다.
+    // 화면 노이즈/시간 회전 없이 안정적으로 유지하며 동일 평면의 깊이 오차는 제외합니다.
+    float planeBias=max(.015,radius*.08);
     float occlusion=0;
-    [unroll] for(int j=0;j<8;j++)
+    [unroll] for(int j=0;j<16;j++)
     {
-        float2 sampleUV=uv+directions[j]*screenRadius*(j<4?.45:.85);
+        float angle=j*2.39996323;
+        float2 sampleUV=uv+float2(cos(angle),sin(angle))*screenRadius*sqrt((j+.5)/16);
         if(any(sampleUV<0)||any(sampleUV>1))continue;
         float depth=SampleSceneDepth(sampleUV);
         #if !UNITY_REVERSED_Z
@@ -23,9 +26,11 @@ half JcIndoorOcclusion(float3 positionWS, float3 normalWS)
         #endif
         float3 delta=ComputeWorldSpacePosition(sampleUV,depth,UNITY_MATRIX_I_VP)-positionWS;
         float distance=length(delta);
-        float facing=saturate((dot(normalWS,delta)-.015)/max(.001,distance));
-        occlusion+=facing*saturate(1-distance/radius);
+        float facing=smoothstep(planeBias,planeBias+radius*.25,dot(normalWS,delta));
+        float falloff=1-smoothstep(radius*.15,radius,distance);
+        occlusion+=facing*falloff;
     }
-    return saturate(1-occlusion*.5*_JcIndoorSsao.x*_JcIndoorSsao.z);
+    // JC | 2026-11-17 | 직접광 영향은 조명 항에서 적용합니다. 강도 증가가 검은 얼룩으로 즉시 포화되지 않게 합니다.
+    return exp2(-occlusion*(2.0/16)*_JcIndoorSsao.x);
 }
 #endif

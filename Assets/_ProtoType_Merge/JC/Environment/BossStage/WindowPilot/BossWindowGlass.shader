@@ -17,6 +17,13 @@ Shader "JC/Environment/Boss Window Glass"
         _GlossStrength ("광택 강도", Range(0,4)) = .35
         _GlossSmoothness ("광택 선명도", Range(0,1)) = .75
         _GlossTint ("광택 색상", Color) = (1,1,1,1)
+        // JC | 2026-11-17 | 실광/IBL과 독립적인 유리 표현이며 창틀 재질에는 적용하지 않습니다.
+        _HighlightStrength ("연출 하이라이트 강도", Range(0,2)) = .18
+        _HighlightWidth ("연출 하이라이트 폭", Range(.01,.5)) = .12
+        _HighlightAngle ("연출 하이라이트 각도", Range(-90,90)) = -30
+        _HighlightSoftness ("연출 하이라이트 부드러움", Range(.05,1)) = .8
+        _HighlightTint ("연출 하이라이트 색", Color) = (.78,.88,1,1)
+        _RefractionEdgeFade ("창 가장자리 굴절 완화", Range(.005,.25)) = .06
     }
     SubShader
     {
@@ -44,13 +51,15 @@ Shader "JC/Environment/Boss Window Glass"
             TEXTURE2D_X(_JcBossGlassColor); SAMPLER(sampler_JcBossGlassColor);
             float _JcBossGlassColorReady;
             CBUFFER_START(UnityPerMaterial)
-                half4 _Tint, _GlossTint;
+                half4 _Tint, _GlossTint, _HighlightTint;
+                float _HighlightStrength, _HighlightWidth, _HighlightAngle, _HighlightSoftness, _RefractionEdgeFade;
                 half _GlossStrength, _GlossSmoothness;
                 float _Thickness, _IOR, _RefractionStrength, _Absorption;
                 half _FaceAlpha, _EdgeAlpha, _ReflectionStrength, _ReflectionRoughness, _Opacity;
             CBUFFER_END
-            struct Attributes { float4 vertex:POSITION; float3 normal:NORMAL; UNITY_VERTEX_INPUT_INSTANCE_ID };
-            struct Varyings { float4 pos:SV_POSITION; float3 world:TEXCOORD0; half3 normal:TEXCOORD1; UNITY_VERTEX_OUTPUT_STEREO };
+            // JC | 2026-11-17 | 판의 UV와 앞/뒷면 마스크로 창틀 경계 및 얇은 옆면의 굴절/하이라이트를 제한합니다.
+            struct Attributes { float4 vertex:POSITION; float3 normal:NORMAL; float3 pane:TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            struct Varyings { float4 pos:SV_POSITION; float3 world:TEXCOORD0; half3 normal:TEXCOORD1; float3 pane:TEXCOORD2; UNITY_VERTEX_OUTPUT_STEREO };
             Varyings Vert(Attributes v)
             {
                 UNITY_SETUP_INSTANCE_ID(v);
@@ -58,6 +67,7 @@ Shader "JC/Environment/Boss Window Glass"
                 o.world=TransformObjectToWorld(v.vertex.xyz);
                 o.pos=TransformWorldToHClip(o.world);
                 o.normal=TransformObjectToWorldNormal(v.normal);
+                o.pane=v.pane;
                 return o;
             }
             // JC | 2026-11-17 | 시선·법선·실제 광원 방향으로 부드러운 반짝임을 계산하며 광량 감쇠를 따릅니다.
@@ -82,12 +92,17 @@ Shader "JC/Environment/Boss Window Glass"
                 float4 shifted=TransformWorldToHClip(i.world+displacement*_RefractionStrength);
                 float4 screen=ComputeScreenPos(shifted);
                 float2 refractedUV=screen.xy/max(.0001,screen.w);
-                float edgeFade=saturate(min(min(uv.x,uv.y),min(1-uv.x,1-uv.y))*40);
+                // JC | 2026-11-17 | 화면 경계뿐 아니라 실제 유리판 경계에서 변위를 연속적으로 0으로 줄입니다.
+                float paneEdge=min(min(i.pane.x,i.pane.y),min(1-i.pane.x,1-i.pane.y));
+                float paneFade=smoothstep(0,max(.005,_RefractionEdgeFade),paneEdge)*saturate(i.pane.z);
+                float edgeFade=saturate(min(min(uv.x,uv.y),min(1-uv.x,1-uv.y))*40)*paneFade;
                 refractedUV=lerp(uv,refractedUV,edgeFade);
                 // JC | 2026-11-05 | 화면 밖 및 유리 앞의 기둥/캐릭터가 굴절에 끌려 들어오는 것을 제한합니다.
                 float sceneDepth=LinearEyeDepth(SampleSceneDepth(saturate(refractedUV)),_ZBufferParams);
                 float glassDepth=-TransformWorldToView(i.world).z;
-                if(any(refractedUV<0)||any(refractedUV>1)||sceneDepth<glassDepth+.001)refractedUV=uv;
+                // JC | 2026-11-17 | 창틀 깊이에서 원본 UV로 갑자기 전환하지 않고 여유 깊이에 따라 부드럽게 복귀합니다.
+                float depthFade=smoothstep(.015,.20,sceneDepth-glassDepth);
+                refractedUV=lerp(uv,saturate(refractedUV),depthFade);
                 half3 background=_JcBossGlassColorReady>.5 ? SAMPLE_TEXTURE2D_X(_JcBossGlassColor,sampler_JcBossGlassColor,UnityStereoTransformScreenSpaceTex(refractedUV)).rgb : SampleSceneColor(refractedUV);
                 half rim=(1-facing)*(1-facing);
                 float opticalPath=_Thickness/max(.25,abs(dot(transmitted,n)));
@@ -111,7 +126,15 @@ Shader "JC/Environment/Boss Window Glass"
                         gloss+=GlassGloss(GetAdditionalLight(lightIndex,i.world,half4(1,1,1,1)),n,v);
                     LIGHT_LOOP_END
                 #endif
-                return half4(lerp(glassColor,reflection,saturate(fresnel))+gloss*_GlossTint.rgb*_GlossStrength,1);
+                // JC | 2026-11-17 | 광원이 비추지 않아도 읽히는 두 개의 부드러운 띠입니다. IBL/실광 반사 값은 보존합니다.
+                float angle=radians(_HighlightAngle);
+                float band=dot(i.pane.xy-.5,float2(cos(angle),sin(angle)))+(v.x+v.z)*.10;
+                float width=max(.01,_HighlightWidth), feather=max(.002,width*_HighlightSoftness);
+                float highlight=1-smoothstep(width-feather,width,abs(band+.22));
+                highlight+=(1-smoothstep(width*.45-feather*.4,width*.45,abs(band-.23)))*.45;
+                highlight*=smoothstep(0,.025,paneEdge)*saturate(i.pane.z);
+                return half4(lerp(glassColor,reflection,saturate(fresnel))+gloss*_GlossTint.rgb*_GlossStrength+
+                    _HighlightTint.rgb*(_HighlightStrength*highlight),1);
             }
             ENDHLSL
         }

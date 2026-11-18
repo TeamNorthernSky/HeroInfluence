@@ -8,7 +8,7 @@ namespace JC.BattleTesting.Editor
     {
         UnityEditor.Editor lighting,materials,toon,contact;
         // JC | 2026-11-17 | 유리 조절을 긴 조명 항목 아래 숨기지 않고 첫 펼침 항목으로 노출합니다.
-        bool lightOpen=true,materialOpen=true,toonOpen,contactOpen;
+        bool lightOpen=true,materialOpen=true,commonOpen=true,toonOpen,contactOpen;
         void OnDisable() { DestroyImmediate(lighting); DestroyImmediate(materials); DestroyImmediate(toon); DestroyImmediate(contact); }
         public override void OnInspectorGUI()
         {
@@ -21,8 +21,11 @@ namespace JC.BattleTesting.Editor
                 if(Application.isPlaying) control.FollowTime=EditorGUILayout.Toggle("전투 시간대 자동 적용",control.FollowTime);
                 int period=GUILayout.Toolbar(control.PeriodIndex,JcIndoorPeriodProfiles.Names);
                 if(period!=control.PeriodIndex) JcIndoorEditPreview.SelectPeriod(control,period);
-                EditorGUILayout.HelpBox("선택 시간대의 초안만 편집합니다. 아래 버튼은 현재 시간대의 모든 항목을 저장합니다. 항목별 저장도 가능하며 시간대를 바꿔도 초안은 유지됩니다.",MessageType.Info);
-                if(GUILayout.Button("현재 시간대 전체 설정을 프로필에 저장")) SavePeriod(control);
+                // JC | 2026-11-18 | 공통 재질로 분리한 보스와 기존 은행의 저장 범위를 구별해 안내합니다.
+                EditorGUILayout.HelpBox(control.IsBoss
+                    ? "아래 버튼은 현재 시간대의 조명·유리·음영 설정을 저장합니다. 공통 실내 표면은 별도 저장합니다. 시간대를 바꿔도 미저장 초안은 유지됩니다."
+                    : "아래 버튼은 현재 시간대의 재질·조명·음영 설정을 모두 저장합니다. 시간대를 바꿔도 미저장 초안은 유지됩니다.",MessageType.Info);
+                if(GUILayout.Button(control.IsBoss ? "현재 시간대 설정 저장 · 공통 표면 제외" : "현재 시간대 전체 설정을 프로필에 저장")) SavePeriod(control);
                 if(GUILayout.Button("현재 시간대 저장값 다시 적용")) ReloadPeriod(control);
             }
             EditorGUILayout.HelpBox(control.IsBoss ? "보스 테스트와 실제 BE490의 공유 설정입니다. 은행 프로필과 독립적입니다." : "BankTestScene과 실제 은행 전투의 공유 설정입니다. 보스 프로필과 독립적입니다.",MessageType.Info);
@@ -35,8 +38,16 @@ namespace JC.BattleTesting.Editor
                     EditorGUILayout.PropertyField(serialized.FindProperty(field));
             }
             if(serialized.ApplyModifiedProperties()) control.ApplyDraft();
-            materialOpen=EditorGUILayout.Foldout(materialOpen,control.IsBoss ? "유리 · 실내 표면 (실시간 / 프로필 저장)" : "재질 · 표면",true);
-            if(materialOpen) Draw(control.BankMaterials ? (Object)control.BankMaterials : control.BossMaterials,ref materials);
+            materialOpen=EditorGUILayout.Foldout(materialOpen,control.IsBoss ? "선택 시간대 · 유리와 하이라이트" : "재질 · 표면",true);
+            // JC | 2026-11-18 | 보스 공통 표면을 시간대 유리·조명 저장 영역에서 분리합니다. 은행 UI는 기존 경로를 유지합니다.
+            if(control.IsBoss && control.BossMaterials) {
+                if(materialOpen) {
+                    CreateCachedEditor(control.BossMaterials,null,ref materials);
+                    ((JcBossBackgroundMaterialsEditor)materials).DrawGlass();
+                }
+                commonOpen=EditorGUILayout.Foldout(commonOpen,"공통 실내 재질 · 모든 시간대",true);
+                if(commonOpen) JcBossBackgroundMaterialsEditor.DrawSurfaces(control.BossMaterials);
+            } else if(materialOpen) Draw(control.BankMaterials,ref materials);
             lightOpen=EditorGUILayout.Foldout(lightOpen,"조명 · 환경",true);
             if(lightOpen) Draw(control.Bank ? (Object)control.Bank : control.Boss,ref lighting);
             toonOpen=EditorGUILayout.Foldout(toonOpen,"툰 명암",true);
@@ -47,10 +58,10 @@ namespace JC.BattleTesting.Editor
             if(EditorGUI.EndChangeCheck()) { EditorApplication.QueuePlayerLoopUpdate(); SceneView.RepaintAll(); }
             EditorGUILayout.HelpBox("조절은 즉시 반영됩니다. 각 항목의 현재 값 저장 버튼으로 해당 프로필을 저장하세요. 저장하지 않은 초안은 Play 전환·스크립트 재컴파일 때 폐기됩니다. 명암 방식과 주변 음영은 조명 프로필에 함께 저장됩니다.",MessageType.None);
         }
-        // JC | 2026-11-17 | 명시 버튼으로만 선택 시간대의 원본을 저장하며 나머지 시간대와 씬은 저장하지 않습니다.
+        // JC | 2026-11-18 | 현재 시간대 저장/재로드는 공통 표면을 제외하며 나머지 시간대와 씬은 저장하지 않습니다.
         public static void SavePeriod(JcIndoorEnvironment control)
         {
-            foreach(var pair in control.DraftPairs())
+            foreach(var pair in control.DraftPairs(false))
             {
                 Undo.RecordObject(pair.source,"실내 시간대 전체 저장");
                 var name=pair.source.name;var flags=pair.source.hideFlags;
@@ -63,7 +74,7 @@ namespace JC.BattleTesting.Editor
         }
         public static void ReloadPeriod(JcIndoorEnvironment control)
         {
-            foreach(var pair in control.DraftPairs()) JcIndoorEnvironment.CopyDraft(pair.source,pair.draft);
+            foreach(var pair in control.DraftPairs(false)) JcIndoorEnvironment.CopyDraft(pair.source,pair.draft);
             control.RememberDrafts();control.ApplyAllDrafts();
             EditorApplication.QueuePlayerLoopUpdate();SceneView.RepaintAll();
         }

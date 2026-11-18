@@ -6,13 +6,16 @@ namespace JC.BattleTesting
     [CreateAssetMenu(menuName="JC/전투/실내 시간대 프로필")]
     public sealed class JcIndoorPeriodProfiles : ScriptableObject
     {
-        public static readonly string[] Names = { "아침", "오후", "저녁", "새벽" };
+        // JC | 2026-11-18 | 게임 시각과 별개인 미술 연출 구간 이름을 공통으로 표시합니다.
+        public static readonly string[] Names = { "오전", "오후", "해질녘", "야간" };
+        [InspectorName("보스 공통 실내 표면"), Tooltip("유리 외 실내 색상·반사·줄눈·재질 교체를 모든 시간대에 공통 적용합니다.")]
+        public JcBossSurfaceProfile commonBossSurfaces;
         [Serializable] public sealed class Period
         {
             public JcBossEnvironmentProfile bossLighting;
             public JcBankEnvironmentProfile bankLighting;
             public Material glass;
-            public JcBossSurfaceProfile surfaces;
+
             public JcBankMaterialProfile bankMaterials;
             public JcBankToonProfile toon;
             public JC.Environment.JcContactShadingProfile contact;

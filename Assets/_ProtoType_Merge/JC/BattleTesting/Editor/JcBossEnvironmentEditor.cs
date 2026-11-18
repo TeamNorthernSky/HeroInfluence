@@ -26,9 +26,17 @@ namespace JC.BattleTesting.Editor
             serialized.Update();
             // JC | 2026-11-12 | 외부 도시 환경 잠금과 독립적으로 실내 IBL을 조절합니다.
             JcIndoorIblEditor.Draw(serialized,controller.Draft.ibl,false);
+            // JC | 2026-11-18 | 네 시간대마다 대비/수광/반사를 독립 저장합니다. 공통 캐릭터 색상과 광원 자체 밝기는 변경하지 않습니다.
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("선택 시간대 · 율리아와 증폭기 몸체",EditorStyles.boldLabel);
+            foreach(var field in new[]{"bossEmphasisEnabled","bossSpotReception","bossSpotReflection","bossContrast","bossContrastPivot"})
+                EditorGUILayout.PropertyField(serialized.FindProperty(field));
+            EditorGUILayout.HelpBox("현재 선택한 시간대의 실내 실제 조명에서 율리아·양옆 증폭기 몸체에만 적용됩니다. 수광 1 / 반사광 1은 기존 스팟 반응이며, 반사광 0에서도 확산광은 남습니다. 다른 광원·IBL·공통 채도·밝기·아군·배경·VFX는 그대로입니다. 사용을 끄면 세 보정을 함께 끄고 비교합니다.\nJC_IndoorEnvironment → 원하는 시간대 → 조명·환경에서 조절하고, 플레이 종료 전 ‘현재 값을 프로필에 저장’으로 보존하세요. 본게임과 테스트가 같은 시간대 프로필을 사용합니다. 자동 조준은 플레이 중 생성된 율리아 본체 중심을 사용합니다.",MessageType.Info);
+            // JC | 2026-11-18 | 정면 조준 시 실제로 자동 계산되는 축과 프로필에서 조절하는 축을 구분해 안내합니다.
+            EditorGUILayout.HelpBox("보스 정면 · 몸체 조준: 플레이 중 X는 율리아 몸통에 맞춰지고 회전은 자동 조준됩니다. 추가 라이트의 위치 Y로 높이, Z로 전방 거리를 조절하세요. 스폿 중심부 비율을 높이면 중심의 밝은 영역이 넓어지고 경계 전환 폭은 줄어듭니다.", MessageType.None);
             // JC | 2026-11-05 | 조명 차단과 창문광도 기존 즉시 반영/명시적 프로필 저장 흐름을 사용합니다.
-            foreach (string field in new[] { "isolateInterior", "windows", "directionalIntensity", "directionalTint", "shadowStrength", "ambientIntensity", "ambientTint", "reflectionIntensity", "lights", "materials" })
-                using(new EditorGUI.DisabledScope(worldCity && field!="isolateInterior" && field!="windows" && field!="lights" && field!="materials"))
+            foreach (string field in new[] { "isolateInterior", "windows", "directionalIntensity", "directionalTint", "shadowStrength", "ambientIntensity", "ambientTint", "reflectionIntensity", "lights" })
+                using(new EditorGUI.DisabledScope(worldCity && field!="isolateInterior" && field!="windows" && field!="lights"))
                     EditorGUILayout.PropertyField(serialized.FindProperty(field), true);
             if (serialized.ApplyModifiedProperties()) controller.ApplyDraft();
 
@@ -42,20 +50,7 @@ namespace JC.BattleTesting.Editor
                 EditorGUILayout.PropertyField(serialized.FindProperty(field));
             if (serialized.ApplyModifiedProperties()) controller.ApplyDraft();
 
-            // JC | 2026-11-05 | 씬 참조는 프로필에 저장하지 않고 무대 상대 경로로 바꿔 양쪽 진입 경로에서 재사용합니다.
-            var renderer = (Renderer)EditorGUILayout.ObjectField("셰이딩 대상 추가", null, typeof(Renderer), true);
-            if (renderer)
-            {
-                if (renderer.transform == controller.Stage || renderer.transform.IsChildOf(controller.Stage))
-                {
-                    controller.Draft.materials.Add(new JcBossEnvironmentProfile.MaterialSlot {
-                        rendererPath = AnimationUtility.CalculateTransformPath(renderer.transform, controller.Stage),
-                        material = renderer.sharedMaterial, enabled = false
-                    });
-                    controller.ApplyDraft();
-                }
-                else EditorGUILayout.HelpBox("보스 무대 안의 렌더러만 사용할 수 있습니다.", MessageType.Warning);
-            }
+            // JC | 2026-11-18 | 무대 재질 교체는 JC_Materials의 공통 표면 영역에서 조절합니다.
             if (!string.IsNullOrEmpty(controller.ValidationMessage)) EditorGUILayout.HelpBox(controller.ValidationMessage, MessageType.Warning);
             var pipeline = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             if (pipeline && (controller.Draft.lights.Exists(x => x != null && x.enabled) || controller.Draft.windows.Exists(x => x != null && x.enabled)))

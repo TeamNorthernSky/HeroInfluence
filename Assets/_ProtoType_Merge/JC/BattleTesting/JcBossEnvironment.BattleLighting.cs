@@ -9,6 +9,9 @@ namespace JC.BattleTesting
         BattleFlowManager lightingFlow;
         BossController lightingBoss;
         BattleCharactor lightingBossUnit, movingWheel;
+        // JC | 2026-11-18 | 몸체의 초기 중심을 유닛 로컬 좌표로 보관해 루트 이동/스케일은 따라가되 대기 애니메이션으로 스폿이 흔들리지 않게 합니다.
+        Renderer lightingBossBody;
+        Vector3 lightingBossBodyCenter;
         Vector3 wheelOrigin;
         bool wheelArmed, lightingBattleEnded;
         float nextLightingLookup;
@@ -70,13 +73,37 @@ namespace JC.BattleTesting
 
         void BindLightingActor(BattleCharactor actor)
         {
+            // JC | 2026-11-18 | 보스만 조준하되 새 전투 참가자의 그림자 그룹은 진영과 무관하게 등록합니다.
+            RegisterActorShadowLayers(actor);
             if (!actor || actor.IsPlayer || actor.IsDead || actor.gameObject.scene != gameObject.scene ||
                 BattleScenarioUnitKey.Normalize(actor.TemplateIndex) != "40001") return;
             var controller = actor.GetComponent<BossController>();
             if (!controller || controller == lightingBoss) return;
             if (lightingBoss) lightingBoss.ImmediatePhaseEntered -= LightingPhaseEntered;
             lightingBoss = controller; lightingBossUnit = actor;
+            lightingBossBody=null;
+            CacheBossBodyAim();
             lightingBoss.ImmediatePhaseEntered += LightingPhaseEntered;
+        }
+
+        // JC | 2026-11-18 | 불투명 본체 중 가장 큰 메시만 사용합니다. 보호막/구체/파티클 및 작은 무기를 조준 경계에 포함하지 않습니다.
+        void CacheBossBodyAim()
+        {
+            if(!lightingBossUnit)return;
+            float largest=0;
+            foreach(var renderer in lightingBossUnit.GetComponentsInChildren<Renderer>(true))
+            {
+                if(!(renderer is SkinnedMeshRenderer) && !(renderer is MeshRenderer))continue;
+                if(!renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer.GetComponentInParent<BattleCharactor>()!=lightingBossUnit)continue;
+                bool body=false;
+                foreach(var material in renderer.sharedMaterials)
+                    if(material && material.shader && (material.shader.name=="Universal Render Pipeline/Lit" || material.shader.name=="JC/Battle/SoftCharacter") && (!material.HasProperty("_Surface") || material.GetFloat("_Surface")<.5f)) {body=true;break;}
+                if(!body)continue;
+                var size=renderer.bounds.size;float volume=size.x*size.y*size.z;
+                if(volume<=largest)continue;
+                largest=volume;lightingBossBody=renderer;
+            }
+            if(lightingBossBody)lightingBossBodyCenter=lightingBossUnit.transform.InverseTransformPoint(lightingBossBody.bounds.center);
         }
 
         void LightingPhaseEntered(int phase)
@@ -132,7 +159,16 @@ namespace JC.BattleTesting
                 light.color = spec.battlePulse ? Color.Lerp(spec.color, spec.color * violet, mix) : spec.color;
                 if (spec.aimAtBoss && spec.type == JcBossEnvironmentProfile.LocalLightType.Spot && lightingBossUnit && !lightingBossUnit.IsDead)
                 {
-                    var direction = lightingBossUnit.transform.position + Vector3.up * 1.2f - light.transform.position;
+                    // JC | 2026-11-18 | 고정 월드 높이 대신 실제 율리아 몸체 중심을 사용합니다. 아직 몸체가 생성되지 않았으면 저장 회전을 유지합니다.
+                    if(!lightingBossBody)CacheBossBodyAim();
+                    if(!lightingBossBody)continue;
+                    // JC | 2026-11-18 | 정면 강조광은 몸통과 월드 X를 맞춥니다. 프로필의 높이/Y와 전방/Z는 유지해 좌우로 비껴 비추지 않습니다.
+                    // 매번 저장 위치에서 계산하므로 시간대 변경·율리아 이동 후에도 누적 이동 없이 동일한 정면 배치를 유지합니다.
+                    var target = lightingBossUnit.transform.TransformPoint(lightingBossBodyCenter);
+                    var position = Stage.TransformPoint(spec.position);
+                    position.x = target.x;
+                    light.transform.position = position;
+                    var direction = target - position;
                     if (direction.sqrMagnitude > .001f) light.transform.rotation = Quaternion.LookRotation(direction, Stage.up);
                 }
             }
@@ -149,6 +185,7 @@ namespace JC.BattleTesting
             }
             if (lightingBoss) lightingBoss.ImmediatePhaseEntered -= LightingPhaseEntered;
             lightingFlow = null; lightingBoss = null; lightingBossUnit = null; movingWheel = null;
+            lightingBossBody=null;
             wheelArmed = false; pulseStarted = double.NegativeInfinity; nextPulseAllowed = double.NegativeInfinity;
             nextLightingLookup = 0;
             ApplyBattleLighting(Time.unscaledTimeAsDouble);

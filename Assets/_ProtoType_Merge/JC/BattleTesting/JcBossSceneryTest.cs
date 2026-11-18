@@ -10,7 +10,8 @@ namespace JC.BattleTesting
         [Tooltip("향후 베이크 결과를 연결할 시간대별 프리셋입니다.")] public JcBossSceneryBake bake;
         [Tooltip("도시 좌표 기준 편집 영역 최소값입니다.")] public Vector2 editMin;
         [Tooltip("도시 좌표 기준 편집 영역 최대값입니다.")] public Vector2 editMax;
-        [Tooltip("시작 시간대입니다. 0 아침, 1 오후, 2 저녁, 3 새벽.")][Range(0,3)] public int period;
+        // JC | 2026-11-18 | 저장된 시각 숫자 대신 탐사의 네 연출 구간으로 안내합니다.
+        [Tooltip("시작 시간대입니다. 0 오전, 1 오후, 2 해질녘, 3 야간.")][Range(0,3)] public int period;
         [Tooltip("창밖에 편집 영역 경계를 표시합니다.")] public bool showBoundary;
         readonly float[] hours={8.5f,14.5f,20.5f,2.5f};
         readonly string[] labels={"08:30","14:30","20:30","02:30"};

@@ -3,6 +3,15 @@ using UnityEngine;
 namespace JC.Environment {
  [CreateAssetMenu(menuName="JC Environment/탐사 낮밤 설정")]
  public sealed partial class JcDayNightProfile : ScriptableObject {
+  // JC | 2026-11-18 | 게임 시각과 미술 연출 시각을 분리하며 탐사·전투·보스가 같은 하늘 원본을 참조합니다.
+  [InspectorName("텍스처 하늘 프로필"), Tooltip("표시용 하늘·구름만 읽습니다. 환경광과 실내 IBL은 기존 조명 프로필을 유지합니다.")]
+  public JC.Env.JcTimePreviewSettings visualSky;
+  [InspectorName("하늘 연출 시각 · 오전/오후/해질녘/야간"), Tooltip("게임 턴 시각은 바꾸지 않고 네 구간 사이를 순환 보간합니다.")]
+  public Vector4 visualSkyHours = new Vector4(8.5f,14.5f,18f,2.5f);
+  public float VisualSkyHour(double hours) {
+   SegmentPair(hours,out int a,out int b,out float t);
+   return Mathf.Repeat(visualSkyHours[a]+Mathf.Repeat(visualSkyHours[b]-visualSkyHours[a],24)*t,24);
+  }
   [Tooltip("시간대 하늘 셰이더입니다. 빌드에서 유지되는 명시적 참조입니다.")] public Shader skyShader;
   [Tooltip("1턴 시작 시각입니다. 8.5는 08:30입니다."),Range(0,24)] public float startHour=8.5f;
   [Tooltip("턴마다 흐르는 게임 시간입니다."),Range(1,24)] public float hoursPerTurn=6;

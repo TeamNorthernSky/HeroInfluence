@@ -124,6 +124,9 @@ public class MinimapController : MonoBehaviour
     private readonly HashSet<Vector2Int> exteriorCellCache = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> dirtyCells = new HashSet<Vector2Int>();
     private bool hasPendingTextureApply;
+    // JC | 2026-11-18 | 튜토리얼에 없는 등록부를 매 프레임 전씬 검색하지 않습니다.
+    // 늦게 생성된 참조는 1초 이내 다시 찾고 기존 미니맵 데이터/구독 로직은 유지합니다.
+    private float nextReferenceSearch;
 
     private bool HasLoadedZoneData =>
         viewSource == ViewSourceType.ZoneLayout
@@ -138,6 +141,8 @@ public class MinimapController : MonoBehaviour
 
     private void OnEnable()
     {
+        nextReferenceSearch = 0;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += ResetReferenceSearch;
         ResolveReferences();
 
         SubscribeToLevelLoaders();
@@ -149,6 +154,7 @@ public class MinimapController : MonoBehaviour
 
     private void OnDisable()
     {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= ResetReferenceSearch;
         UnsubscribeFromLevelLoaders();
         UnsubscribeFromHeroUnionStateChanges();
         ReleaseIcons(strategicIconPool);
@@ -1425,6 +1431,10 @@ public class MinimapController : MonoBehaviour
         Refresh();
     }
 
+    // JC | 2026-11-18 | 추가 씬 로드는 검색 대기를 해제해 새 참조를 바로 확인합니다.
+    private void ResetReferenceSearch(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+        => nextReferenceSearch = 0;
+
     private void ResolveReferences()
     {
         if (targetImage == null)
@@ -1432,10 +1442,12 @@ public class MinimapController : MonoBehaviour
 
         ResolveIconRoot();
 
-        if (levelLoader == null)
+        bool search = Time.unscaledTime >= nextReferenceSearch;
+        if (search) nextReferenceSearch = Time.unscaledTime + 1f;
+        if (search && levelLoader == null)
             levelLoader = FindFirstObjectByType<LevelLoader>();
 
-        if (levelZoneLayoutLoader == null)
+        if (search && levelZoneLayoutLoader == null)
             levelZoneLayoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
 
         if (levelZoneLayoutData == null && levelZoneLayoutLoader != null)
@@ -1450,28 +1462,28 @@ public class MinimapController : MonoBehaviour
         if (gridManager == null && levelLoader != null)
             gridManager = levelLoader.GridManager;
 
-        if (gridManager == null)
+        if (search && gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
 
-        if (partyRegistry == null)
+        if (search && partyRegistry == null)
             partyRegistry = FindFirstObjectByType<PartyRegistry>();
 
-        if (outpostRegistry == null)
+        if (search && outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
 
-        if (heroUnionRegistry == null)
+        if (search && heroUnionRegistry == null)
             heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
 
-        if (villainUnionBaseRegistry == null)
+        if (search && villainUnionBaseRegistry == null)
             villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();
 
-        if (enemyRegistry == null)
+        if (search && enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
 
-        if (mainEventRegistry == null)
+        if (search && mainEventRegistry == null)
             mainEventRegistry = FindFirstObjectByType<MainEventRegistry>();
 
-        if (subEventRegistry == null)
+        if (search && subEventRegistry == null)
             subEventRegistry = FindFirstObjectByType<SubEventRegistry>();
     }
 

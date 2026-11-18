@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
   m_Name: KJOutlineRendererFeature
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     stencilWriteMaterial: {fileID: 2100000, guid: 33937333170de934787b4433f8ecc2c1,
       type: 2}
@@ -82,7 +82,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
   m_Name: KJOutlineRendererFeature
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     stencilWriteMaterial: {fileID: 2100000, guid: c17c34d772895ca46896e87914a54d23,
       type: 2}
@@ -117,7 +117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
   m_Name: KJOutlineRendererFeature
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     stencilWriteMaterial: {fileID: 2100000, guid: c17c34d772895ca46896e87914a54d23,
       type: 2}

@@ -28,6 +28,8 @@ namespace JC.Indicators
                 this.regionId = regionId;
             }
         }
+        // JC | 2026-11-18 | 아이콘 화면 영역에 필요한 월드 깊이만 제출하며 RT 해상도/정밀도는 유지합니다.
+        private static readonly List<Rect> markerRegions = new List<Rect>();
         private static readonly List<Border> borders = new List<Border>();
         private static readonly List<JcTriggerAreaIndicator> controllers = new List<JcTriggerAreaIndicator>();
         private static readonly Dictionary<int, Buffer> buffers = new Dictionary<int, Buffer>();
@@ -146,12 +148,14 @@ namespace JC.Indicators
                 foreach (var controller in controllers) if (controller) controller.CollectBorders(borders, camera);
                 // JC | 2026-11-10 | 컨트롤러 전체를 확인합니다. 마커가 없어도 보호 G와 모든 버퍼 초기화는 유지합니다.
                 bool needsMarkerDepth = false, needsWorldDepth = false;
+                markerRegions.Clear();
                 // JC | 2026-11-12 | 모든 컨트롤러의 후보 목록을 한 번 준비합니다. 첫 후보에서 중단하면 뒤의 보호 마스크가 누락됩니다.
                 foreach (var controller in controllers)
                     if (controller)
                     {
                         needsMarkerDepth |= controller.PrepareMarkerCandidates(camera, planes);
                         needsWorldDepth |= controller.NeedsWorldDepth;
+                        controller.CollectMarkerRegions(camera,markerRegions);
                     }
                 command.SetGlobalFloat(activeId, 0);
                 command.SetGlobalMatrix("_JcTriggerDepthVP", projection * view);
@@ -172,7 +176,7 @@ namespace JC.Indicators
                 foreach (var controller in controllers) if (controller) controller.DrawOccluders(command, camera, properties);
                 command.SetGlobalTexture("_JcTriggerOccluderDepth", buffer.occluders);
                 // JC | 2026-11-10 | 세 메시 패스 직전에 최신 속성을 한 번 읽습니다. 패스 순서와 RT 의존성은 유지합니다.
-                foreach (var controller in controllers) if (controller) controller.PrepareWorldMeshes(camera, needsWorldDepth, planes);
+                foreach (var controller in controllers) if (controller) controller.PrepareWorldMeshes(camera, needsWorldDepth, planes, markerRegions);
                 command.SetRenderTarget(buffer.meshes);
                 command.ClearRenderTarget(false, true, new Color(65504, 65504, 65504, 65504));
                 foreach (var controller in controllers) if (controller) controller.DrawWorldMeshes(command, camera, "WorldMeshDepth");

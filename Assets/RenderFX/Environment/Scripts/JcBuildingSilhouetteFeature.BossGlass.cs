@@ -9,6 +9,8 @@ public sealed partial class JcBuildingSilhouetteFeature
     sealed class BossGlassPass : ScriptableRenderPass
     {
         RTHandle copy;
+        // JC | 2026-11-17 | 수면은 유리 배경 캡처 전에 한 번만 그립니다. 캐릭터/VFX의 일반 투명 패스는 유지합니다.
+        static readonly ShaderTagId WaterTag = new ShaderTagId("JcBossWater");
         public BossGlassPass()
         {
             renderPassEvent = RenderPassEvent.BeforeRenderingTransparents;
@@ -19,16 +21,22 @@ public sealed partial class JcBuildingSilhouetteFeature
             var descriptor = data.cameraData.cameraTargetDescriptor;
             descriptor.depthBufferBits = 0; descriptor.msaaSamples = 1;
             RenderingUtils.ReAllocateIfNeeded(ref copy, descriptor, FilterMode.Bilinear, TextureWrapMode.Clamp, name: "_JcBossGlassColor");
-            ConfigureTarget(copy);
+            ConfigureTarget(data.cameraData.renderer.cameraColorTargetHandle, data.cameraData.renderer.cameraDepthTargetHandle);
         }
         public override void Execute(ScriptableRenderContext context, ref RenderingData data)
         {
             var cmd = CommandBufferPool.Get("JC Boss glass full resolution color");
             try
             {
+                cmd.SetGlobalFloat("_JcBossWaterCaptured", 1);
+                context.ExecuteCommandBuffer(cmd); cmd.Clear();
+                var drawing = CreateDrawingSettings(WaterTag, ref data, SortingCriteria.CommonTransparent);
+                var filtering = new FilteringSettings(RenderQueueRange.transparent, data.cameraData.camera.cullingMask);
+                context.DrawRenderers(data.cullResults, ref drawing, ref filtering);
                 Blitter.BlitCameraTexture(cmd, data.cameraData.renderer.cameraColorTargetHandle, copy);
                 cmd.SetGlobalTexture("_JcBossGlassColor", copy.nameID);
                 cmd.SetGlobalFloat("_JcBossGlassColorReady", 1);
+                CoreUtils.SetRenderTarget(cmd, data.cameraData.renderer.cameraColorTargetHandle, data.cameraData.renderer.cameraDepthTargetHandle);
                 context.ExecuteCommandBuffer(cmd);
             }
             finally { CommandBufferPool.Release(cmd); }
