@@ -187,13 +187,20 @@ public sealed class ResourceGainNumberMotion
         go.layer = label.gameObject.layer;
         var rect = (RectTransform)go.transform;
         rect.SetParent(canvas.transform, false);
+        var hud = label.GetComponentInParent<ResourceHUDController>();
+        if (hud == null)
+        {
+            // Keep exploration party IP notices behind the HUD's modal layer.
+            var modalLayer = canvas.transform.Find("Layer_Modals");
+            if (modalLayer != null)
+                rect.SetSiblingIndex(modalLayer.GetSiblingIndex());
+        }
         rect.anchorMin = rect.anchorMax = new Vector2(.5f, .5f);
         rect.sizeDelta = new Vector2(112f, 36f);
         var background = go.GetComponent<Image>();
         background.color = new Color(.025f, .055f, .12f, .94f);
         background.raycastTarget = false;
         Sprite resourceIcon = noticeIcon != null ? noticeIcon() : null;
-        var hud = label.GetComponentInParent<ResourceHUDController>();
         if (hud != null)
             foreach (ResourceType resource in new[] { ResourceType.Money, ResourceType.Chip, ResourceType.Crystal, ResourceType.Supply })
                 if (hud.GetResourceAnchor(resource) == label.rectTransform)

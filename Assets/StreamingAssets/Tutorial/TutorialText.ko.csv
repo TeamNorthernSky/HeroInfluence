@@ -141,7 +141,7 @@ scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.Tutori
 20회 홍보해 저스티스의 영향력(I.P)을 높이세요.",위치: TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 4단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.TutorialContinueHint,홍보,104,홍보 실습 4단계,힌트,아무 곳이나 클릭하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 4단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_04.TutorialGuideBackground.TutorialPreviewLabel,홍보,105,홍보 실습 4단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_04/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 4단계
-scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_05.TutorialGuideBackground.Text.TMP,홍보,106,홍보 실습 5단계,본문,"슬라이더 또는 + / ? 버튼으로
+scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_05.TutorialGuideBackground.Text.TMP,홍보,106,홍보 실습 5단계,본문,"슬라이더 또는 + / - 버튼으로
 I.P 충전량을 1~20 사이에서
 조절한 뒤 진행 버튼을 클릭하세요.",위치: TutorialExploreUI/TutorialSteps/Explanation_05/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 5단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_05.TutorialGuideBackground.TutorialContinueHint,홍보,107,홍보 실습 5단계,힌트,안내한 조작을 완료하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_05/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 5단계
@@ -152,7 +152,7 @@ scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.Tutori
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.TutorialGuideBackground.TutorialContinueHint,홍보,111,홍보 실습 6단계,힌트,아무 곳이나 클릭하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_06/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 6단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_06.TutorialGuideBackground.TutorialPreviewLabel,홍보,112,홍보 실습 6단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_06/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 6단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.Text.TMP,홍보,113,홍보 실습 7단계,본문,"홍보 가능 횟수는 모든 영웅이 공유합니다.
-넘운 횟수 내에서 원하는 만큼 홍보할 수 있습니다.
+남은 횟수 내에서 원하는 만큼 홍보할 수 있습니다.
 루미나에게 남은 횟수를 모두 사용해 홍보해 보겠습니다.",위치: TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/Text (TMP) / 정렬 안내: 홍보 실습 7단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.TutorialContinueHint,홍보,114,홍보 실습 7단계,힌트,아무 곳이나 클릭하면 계속합니다.,위치: TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/TutorialContinueHint / 정렬 안내: 홍보 실습 7단계
 scene.TutorialExploreScene.TutorialExploreUI.TutorialSteps.Explanation_07.TutorialGuideBackground.TutorialPreviewLabel,홍보,115,홍보 실습 7단계,예시 화면 표제,사용법 안내 · 예시 화면,위치: TutorialExploreUI/TutorialSteps/Explanation_07/TutorialGuideBackground/TutorialPreviewLabel / 정렬 안내: 홍보 실습 7단계

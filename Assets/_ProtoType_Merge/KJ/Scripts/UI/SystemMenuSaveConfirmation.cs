@@ -13,6 +13,17 @@ public sealed class SystemMenuSaveConfirmation : MonoBehaviour
 
     private bool awaitingConfirmation;
 
+    private void OnEnable()
+    {
+        ModalManager.OnStackChanged += HandleModalStackChanged;
+    }
+
+    private void OnDisable()
+    {
+        ModalManager.OnStackChanged -= HandleModalStackChanged;
+        if (awaitingConfirmation) Cancel();
+    }
+
     // SystemMenuController installs its original save listener in Awake.
     private void Start()
     {
@@ -48,6 +59,13 @@ public sealed class SystemMenuSaveConfirmation : MonoBehaviour
     {
         awaitingConfirmation = false;
         if (popup != null) popup.SetActive(false);
+    }
+
+    private void HandleModalStackChanged()
+    {
+        // Closing the menu hides its child popup without clearing its own active flag.
+        if (awaitingConfirmation && popup != null && !popup.activeInHierarchy)
+            Cancel();
     }
 
     private void OnDestroy()
